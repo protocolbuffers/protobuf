@@ -15,6 +15,30 @@
 #include "upb/port/def.inc"
 
 extern const UPB_PRIVATE(upb_GeneratedExtensionListEntry)* UPB_PRIVATE(upb_generated_extension_list);
+/* pb.enumvalue.JsonEnumValueOptions: in-memory layout.
+ *
+ * 64-bit: 32 bytes (7 bytes padding)
+ * +--------+------+-------------------+--------+----------------+---------------------------+
+ * | Offset | Size | Field             | Type   | Storage        | Presence                  |
+ * +--------+------+-------------------+--------+----------------+---------------------------+
+ * |      0 |    8 | (message header)  |        | upb_Message    |                           |
+ * |      8 |    1 | (hasbits: 1 used) |        | uint8_t[]      |                           |
+ * |      9 |    7 | (padding)         |        |                |                           |
+ * |     16 |   16 | string = 1        | string | upb_StringView | hasbit 64 (byte 8, bit 0) |
+ * +--------+------+-------------------+--------+----------------+---------------------------+
+ *
+ * 32-bit: 24 bytes (7 bytes padding)
+ * +--------+------+-------------------+--------+----------------+---------------------------+
+ * | Offset | Size | Field             | Type   | Storage        | Presence                  |
+ * +--------+------+-------------------+--------+----------------+---------------------------+
+ * |      0 |    8 | (message header)  |        | upb_Message    |                           |
+ * |      8 |    1 | (hasbits: 1 used) |        | uint8_t[]      |                           |
+ * |      9 |    3 | (padding)         |        |                |                           |
+ * |     12 |    8 | string = 1        | string | upb_StringView | hasbit 64 (byte 8, bit 0) |
+ * |     20 |    4 | (padding)         |        |                |                           |
+ * +--------+------+-------------------+--------+----------------+---------------------------+
+ */
+
 typedef struct {
   upb_MiniTableField fields[1];
 } pb__enumvalue__JsonEnumValueOptions_msg_init_Fields;

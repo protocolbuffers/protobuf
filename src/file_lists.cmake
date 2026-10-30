@@ -994,6 +994,7 @@ set(protoc-gen-upb_minitable_srcs
   ${protobuf_SOURCE_DIR}/upb_generator/common/names.cc
   ${protobuf_SOURCE_DIR}/upb_generator/file_layout.cc
   ${protobuf_SOURCE_DIR}/upb_generator/minitable/generator.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/minitable/layout_comment.cc
   ${protobuf_SOURCE_DIR}/upb_generator/minitable/main.cc
   ${protobuf_SOURCE_DIR}/upb_generator/minitable/names.cc
   ${protobuf_SOURCE_DIR}/upb_generator/minitable/names_internal.cc
