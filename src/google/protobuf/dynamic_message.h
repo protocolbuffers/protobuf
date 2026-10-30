@@ -199,8 +199,8 @@ class PROTOBUF_EXPORT DynamicMapSorter {
           return first < second;
         }
         case FieldDescriptor::CPPTYPE_STRING: {
-          std::string first = reflection->GetString(*a, field_);
-          std::string second = reflection->GetString(*b, field_);
+          const std::string& first = reflection->GetString(*a, field_);
+          const std::string& second = reflection->GetString(*b, field_);
           return first < second;
         }
         default:
