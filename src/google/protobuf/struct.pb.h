@@ -68,6 +68,18 @@ PROTOBUF_EXPORT extern const ValueGlobalsTypeInternal Value_globals_;
 template <>
 internal::EnumTraitsT<::google::protobuf::NullValue_internal_data_>
     internal::EnumTraitsImpl::value<::google::protobuf::NullValue>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::ListValue_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::ListValue>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::Struct_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::Struct>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::Struct_FieldsEntry_DoNotUse_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::Struct_FieldsEntry_DoNotUse>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::Value_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::Value>;
 }  // namespace protobuf
 }  // namespace google
 

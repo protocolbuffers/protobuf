@@ -73,6 +73,33 @@ PROTOBUF_EXPORT extern const UInt32ValueGlobalsTypeInternal UInt32Value_globals_
 class UInt64Value;
 struct UInt64ValueGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const UInt64ValueGlobalsTypeInternal UInt64Value_globals_;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::BoolValue_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::BoolValue>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::BytesValue_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::BytesValue>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::DoubleValue_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::DoubleValue>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::FloatValue_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::FloatValue>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::Int32Value_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::Int32Value>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::Int64Value_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::Int64Value>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::StringValue_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::StringValue>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::UInt32Value_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::UInt32Value>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::UInt64Value_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::UInt64Value>;
 }  // namespace protobuf
 }  // namespace google
 

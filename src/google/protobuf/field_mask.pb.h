@@ -49,6 +49,9 @@ namespace protobuf {
 class FieldMask;
 struct FieldMaskGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const FieldMaskGlobalsTypeInternal FieldMask_globals_;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::FieldMask_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::FieldMask>;
 }  // namespace protobuf
 }  // namespace google
 

@@ -79,6 +79,21 @@ internal::EnumTraitsT<::google::protobuf::Field_Kind_internal_data_>
 template <>
 internal::EnumTraitsT<::google::protobuf::Syntax_internal_data_>
     internal::EnumTraitsImpl::value<::google::protobuf::Syntax>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::Enum_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::Enum>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::EnumValue_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::EnumValue>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::Field_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::Field>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::Option_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::Option>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::Type_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::Type>;
 }  // namespace protobuf
 }  // namespace google
 

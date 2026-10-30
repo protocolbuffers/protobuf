@@ -49,6 +49,9 @@ namespace protobuf {
 class Any;
 struct AnyGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const AnyGlobalsTypeInternal Any_globals_;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::Any_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::Any>;
 }  // namespace protobuf
 }  // namespace google
 

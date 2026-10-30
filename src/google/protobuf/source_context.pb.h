@@ -49,6 +49,9 @@ namespace protobuf {
 class SourceContext;
 struct SourceContextGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const SourceContextGlobalsTypeInternal SourceContext_globals_;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::SourceContext_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::SourceContext>;
 }  // namespace protobuf
 }  // namespace google
 

@@ -57,6 +57,15 @@ PROTOBUF_EXPORT extern const MethodGlobalsTypeInternal Method_globals_;
 class Mixin;
 struct MixinGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const MixinGlobalsTypeInternal Mixin_globals_;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::Api_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::Api>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::Method_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::Method>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::Mixin_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::Mixin>;
 }  // namespace protobuf
 }  // namespace google
 

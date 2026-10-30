@@ -49,6 +49,9 @@ namespace protobuf {
 class Duration;
 struct DurationGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const DurationGlobalsTypeInternal Duration_globals_;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::Duration_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::Duration>;
 }  // namespace protobuf
 }  // namespace google
 

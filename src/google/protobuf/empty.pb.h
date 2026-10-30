@@ -50,6 +50,9 @@ namespace protobuf {
 class Empty;
 struct EmptyGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const EmptyGlobalsTypeInternal Empty_globals_;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::Empty_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::Empty>;
 }  // namespace protobuf
 }  // namespace google
 
