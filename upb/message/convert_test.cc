@@ -2846,3 +2846,69 @@ TEST(ConvertTest, EncodeFieldAsUnknownAbortOnError) {
                           0, dst_arena2.ptr());
   EXPECT_EQ(dst2, nullptr);
 }
+
+TEST(ConvertTest, DeepConvertClonesStringsAndEncodesUnknownExtensions) {
+  upb::Arena dst_arena;
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* dst_mt = &upb__test__convert__MessageWithKnown_msg_init;
+
+  upb_test_convert_MessageWithKnown* dst =
+      upb_test_convert_MessageWithKnown_new(dst_arena.ptr());
+
+  {
+    upb::Arena src_arena;
+    upb_test_convert_MessageWithExtension* src =
+        upb_test_convert_MessageWithExtension_new(src_arena.ptr());
+
+    upb_MessageValue ext_int32;
+    ext_int32.int32_val = 777;
+    ASSERT_TRUE(upb_Message_SetExtension(UPB_UPCAST(src),
+                                         upb_test_convert_ext_field_int32_ext,
+                                         &ext_int32, src_arena.ptr()));
+
+    std::string ext_str = "deep_copied_extension_string";
+    char* src_str_buf =
+        static_cast<char*>(upb_Arena_Malloc(src_arena.ptr(), ext_str.size()));
+    memcpy(src_str_buf, ext_str.data(), ext_str.size());
+    upb_MessageValue ext_string;
+    ext_string.str_val =
+        upb_StringView_FromDataAndSize(src_str_buf, ext_str.size());
+    ASSERT_TRUE(upb_Message_SetExtension(UPB_UPCAST(src),
+                                         upb_test_convert_ext_string_ext,
+                                         &ext_string, src_arena.ptr()));
+
+    ASSERT_TRUE(upb_Message_DeepConvert(UPB_UPCAST(src), src_mt,
+                                        UPB_UPCAST(dst), dst_mt, nullptr, 0, 0,
+                                        dst_arena.ptr()));
+    // Overwrite source string buffer before freeing src_arena to verify
+    // dst does not alias src_arena memory.
+    memset(src_str_buf, 'X', ext_str.size());
+  }
+
+  EXPECT_TRUE(upb_test_convert_MessageWithKnown_has_known_field_int32(dst));
+  EXPECT_EQ(777, upb_test_convert_MessageWithKnown_known_field_int32(dst));
+
+  // Verify the unknown extension (`ext_string`, field 1005) was encoded into
+  // dst's unknown wire bytes rather than stored as a non-canonical extension
+  // aliasing src_arena.
+  size_t wire_size = 0;
+  char* wire_buf = nullptr;
+  ASSERT_EQ(kUpb_EncodeStatus_Ok,
+            upb_Encode(UPB_UPCAST(dst), dst_mt, 0, dst_arena.ptr(), &wire_buf,
+                       &wire_size));
+
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(dst_arena.ptr());
+  ASSERT_EQ(upb_ExtensionRegistry_Add(extreg, upb_test_convert_ext_string_ext),
+            kUpb_ExtensionRegistryStatus_Ok);
+  upb_test_convert_MessageWithExtension* roundtrip =
+      upb_test_convert_MessageWithExtension_new(dst_arena.ptr());
+  ASSERT_EQ(kUpb_DecodeStatus_Ok,
+            upb_Decode(wire_buf, wire_size, UPB_UPCAST(roundtrip), src_mt,
+                       extreg, 0, dst_arena.ptr()));
+  upb_StringView roundtrip_str = upb_Message_GetExtensionString(
+      UPB_UPCAST(roundtrip), upb_test_convert_ext_string_ext,
+      upb_StringView_FromDataAndSize("", 0));
+  EXPECT_EQ("deep_copied_extension_string",
+            std::string(roundtrip_str.data, roundtrip_str.size));
+}
