@@ -10653,8 +10653,11 @@ upb_Message* upb_Message_DeepClone(const upb_Message* msg,
 bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
                              const upb_MiniTable* m, upb_Arena* arena) {
   UPB_ASSERT(!upb_Message_IsFrozen(dst));
-  memcpy(dst, src, m->UPB_PRIVATE(size));
-
+  // Skip the leading struct upb_Message header (dst + 1 / src + 1), which
+  // stores the tagged upb_Message_Internal* pointer and frozen bit, and copy
+  // only the trailing hasbits and field storage.
+  memcpy(dst + 1, src + 1, m->UPB_PRIVATE(size) - sizeof(upb_Message));
+  UPB_PRIVATE(_upb_Message_SetInternal)(dst, NULL);
   return UPB_PRIVATE(_upb_Message_CopyInternal)(dst, src, arena);
 }
 
