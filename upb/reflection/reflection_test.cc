@@ -5,19 +5,23 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+
 #include <cstring>
 #include <string>
 #include <string_view>
+#include <utility>
 
-#include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor.upb.h"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.upb.h"
+#include "google/protobuf/json_enumvalue_options.pb.h"
 #include "google/protobuf/unittest.upbdefs.h"
 #include "upb/base/status.hpp"
 #include "upb/mem/alloc.h"
@@ -432,28 +436,22 @@ TEST(ReflectionTest, ZeroWeakDependencyIndexWithNoDeps) {
   EXPECT_THAT(std::string(status.message()), HasSubstr("out of range"));
 }
 
-// Sets (pb.enumvalue.json).string option (extension field 998) on
-// EnumValueOptions.
+// Use the generated extension so C++ DescriptorPool sees the same option as
+// upb.
 static void SetCustomJsonOption(google::protobuf::EnumValueOptions* options,
                                 absl::string_view json_name) {
-  // Wire format for JsonEnumValueOptions { string string = 1 }:
-  // Field 1 (string, length-delimited): tag = (1 << 3) | 2 = 0x0a.
-  std::string payload;
-  payload.push_back('\x0a');
-  payload.push_back(static_cast<char>(json_name.size()));
-  payload.append(json_name);
-  // Field 998 is extension (pb.enumvalue.json) on EnumValueOptions.
-  options->mutable_unknown_fields()->AddLengthDelimited(998, payload);
+  options->MutableExtension(pb::enumvalue::json)->set_string(json_name);
 }
 
 struct TestEnumValueSpec {
   std::string name;
   int number;
-  std::string json_name;
+  const char*
+      json_name;  // nullptr means unset; "" is an explicitly empty string.
 };
 
-static absl::StatusOr<upb::DefPool> LoadEnumDescriptorWithValues(
-    absl::Span<const TestEnumValueSpec> values) {
+static google::protobuf::FileDescriptorProto MakeEnumDescriptorWithValues(
+    absl::Span<const TestEnumValueSpec> values, bool allow_alias = false) {
   google::protobuf::FileDescriptorProto file_proto;
   file_proto.set_name("test.proto");
   file_proto.set_syntax("editions");
@@ -461,18 +459,23 @@ static absl::StatusOr<upb::DefPool> LoadEnumDescriptorWithValues(
 
   google::protobuf::EnumDescriptorProto* enum_proto = file_proto.add_enum_type();
   enum_proto->set_name("TestEnum");
+  if (allow_alias) enum_proto->mutable_options()->set_allow_alias(true);
 
   for (const TestEnumValueSpec& v : values) {
     google::protobuf::EnumValueDescriptorProto* val_proto = enum_proto->add_value();
     val_proto->set_name(v.name);
     val_proto->set_number(v.number);
-    if (!v.json_name.empty()) {
+    if (v.json_name != nullptr) {
       SetCustomJsonOption(val_proto->mutable_options(), v.json_name);
     }
   }
+  return file_proto;
+}
 
+static absl::StatusOr<upb::DefPool> LoadEnumDescriptorWithValues(
+    absl::Span<const TestEnumValueSpec> values, bool allow_alias = false) {
   google::protobuf::FileDescriptorSet set;
-  *set.add_file() = file_proto;
+  *set.add_file() = MakeEnumDescriptorWithValues(values, allow_alias);
   return LoadDescriptorSetFromProto(set);
 }
 
@@ -481,7 +484,7 @@ TEST(ReflectionTest, EnumCustomJsonNameConflictDifferentNumberFails) {
   // JSON name must fail descriptor validation.
   absl::Status status =
       LoadEnumDescriptorWithValues({
-                                       {"VAL_ZERO", 0, ""},
+                                       {"VAL_ZERO", 0, nullptr},
                                        {"VAL_A", 1, "custom_name"},
                                        {"VAL_B", 2, "custom_name"},
                                    })
@@ -494,14 +497,316 @@ TEST(ReflectionTest, EnumCustomJsonNameConflictDifferentNumberFails) {
 TEST(ReflectionTest, EnumCustomJsonNameAliasedSameNumberSucceeds) {
   // Two aliased enum values with the SAME number (1 and 1) sharing the same
   // custom JSON name must succeed descriptor validation.
-  absl::Status status =
-      LoadEnumDescriptorWithValues({
-                                       {"VAL_ZERO", 0, ""},
-                                       {"VAL_A", 1, "custom_name"},
-                                       {"VAL_B", 1, "custom_name"},
-                                   })
-          .status();
+  absl::Status status = LoadEnumDescriptorWithValues(
+                            {
+                                {"VAL_ZERO", 0, nullptr},
+                                {"VAL_A", 1, "custom_name"},
+                                {"VAL_B", 1, "custom_name"},
+                            },
+                            true)
+                            .status();
   EXPECT_TRUE(status.ok()) << status.message();
+}
+
+TEST(ReflectionTest, EnumCustomJsonNameConflictsWithDeclaredNameInEitherOrder) {
+  for (bool reverse : {false, true}) {
+    for (const char* second_json :
+         {static_cast<const char*>(nullptr), "other"}) {
+      SCOPED_TRACE(reverse);
+      SCOPED_TRACE(second_json ? second_json : "unset");
+      TestEnumValueSpec values[] = {{"VAL_ZERO", 0, nullptr},
+                                    {"VAL_A", 1, "VAL_B"},
+                                    {"VAL_B", 2, second_json}};
+      if (reverse) std::swap(values[1], values[2]);
+
+      google::protobuf::DescriptorPool cpp_pool;
+      EXPECT_EQ(cpp_pool.BuildFile(MakeEnumDescriptorWithValues(values)),
+                nullptr);
+      absl::Status status = LoadEnumDescriptorWithValues(values).status();
+      EXPECT_FALSE(status.ok());
+      EXPECT_THAT(std::string(status.message()),
+                  HasSubstr("duplicate custom json_name (VAL_B) in enum"));
+    }
+  }
+}
+
+TEST(ReflectionTest, EnumCustomJsonNameAliasKeepsDeclaredNameInEitherOrder) {
+  for (bool reverse : {false, true}) {
+    SCOPED_TRACE(reverse);
+    // Both aliases must explicitly specify the same custom string, even when
+    // that string is the declared name of one alias.
+    TestEnumValueSpec values[] = {
+        {"VAL_ZERO", 0, nullptr}, {"VAL_A", 1, "VAL_B"}, {"VAL_B", 1, "VAL_B"}};
+    if (reverse) std::swap(values[1], values[2]);
+    const int b_index = reverse ? 1 : 2;
+
+    google::protobuf::DescriptorPool cpp_pool;
+    const auto* cpp_file =
+        cpp_pool.BuildFile(MakeEnumDescriptorWithValues(values, true));
+    ASSERT_NE(cpp_file, nullptr);
+    const auto* cpp_enum = cpp_file->enum_type(0);
+    EXPECT_EQ(cpp_enum->FindValueByName("VAL_B"), cpp_enum->value(b_index));
+    EXPECT_EQ(cpp_enum->FindValueByNumber(1), cpp_enum->value(1));
+
+    auto pool = LoadEnumDescriptorWithValues(values, true);
+    ASSERT_TRUE(pool.ok()) << pool.status();
+    const upb_EnumDef* e = upb_DefPool_FindEnumByName(pool->ptr(), "TestEnum");
+    ASSERT_NE(e, nullptr);
+    const upb_EnumValueDef* b = upb_EnumDef_Value(e, b_index);
+    EXPECT_EQ(upb_EnumDef_FindValueByName(e, "VAL_B"), b);
+    EXPECT_EQ(upb_EnumDef_FindValueByNameWithSize(e, "VAL_B_suffix", 5), b);
+    EXPECT_EQ(upb_EnumDef_FindByJsonName(e, "VAL_B"), b);
+    EXPECT_EQ(upb_EnumDef_FindValueByNumber(e, 1), upb_EnumDef_Value(e, 1));
+    EXPECT_EQ(upb_EnumDef_FindValueByName(e, "VAL_A"),
+              upb_EnumDef_Value(e, reverse ? 2 : 1));
+    EXPECT_EQ(upb_EnumDef_ValueCount(e), 3);
+  }
+}
+
+TEST(ReflectionTest, EnumCustomJsonNameAliasesRequireMatchingOptions) {
+  for (bool reverse : {false, true}) {
+    for (const char* second_json :
+         {static_cast<const char*>(nullptr), "other"}) {
+      SCOPED_TRACE(reverse);
+      SCOPED_TRACE(second_json ? second_json : "unset");
+      TestEnumValueSpec values[] = {{"VAL_ZERO", 0, nullptr},
+                                    {"VAL_A", 1, "VAL_B"},
+                                    {"VAL_B", 1, second_json}};
+      if (reverse) std::swap(values[1], values[2]);
+
+      google::protobuf::DescriptorPool cpp_pool;
+      EXPECT_EQ(cpp_pool.BuildFile(MakeEnumDescriptorWithValues(values, true)),
+                nullptr);
+      absl::Status status = LoadEnumDescriptorWithValues(values, true).status();
+      EXPECT_FALSE(status.ok());
+      EXPECT_THAT(std::string(status.message()),
+                  HasSubstr("must have the same custom JSON string"));
+    }
+  }
+}
+
+TEST(ReflectionTest, EnumCustomJsonNameAliasesPreserveJsonOnlyLookup) {
+  for (bool reverse : {false, true}) {
+    for (const char* json_name : {"custom_name", ""}) {
+      SCOPED_TRACE(reverse);
+      SCOPED_TRACE(json_name);
+      TestEnumValueSpec values[] = {{"VAL_ZERO", 0, nullptr},
+                                    {"VAL_A", 1, json_name},
+                                    {"VAL_B", 1, json_name}};
+      if (reverse) std::swap(values[1], values[2]);
+      google::protobuf::DescriptorPool cpp_pool;
+      ASSERT_NE(cpp_pool.BuildFile(MakeEnumDescriptorWithValues(values, true)),
+                nullptr);
+
+      auto pool = LoadEnumDescriptorWithValues(values, true);
+      ASSERT_TRUE(pool.ok()) << pool.status();
+      const upb_EnumDef* e =
+          upb_DefPool_FindEnumByName(pool->ptr(), "TestEnum");
+      ASSERT_NE(e, nullptr);
+      EXPECT_EQ(upb_EnumDef_FindValueByName(e, json_name), nullptr);
+      EXPECT_EQ(
+          upb_EnumDef_FindValueByNameWithSize(e, json_name, strlen(json_name)),
+          nullptr);
+      EXPECT_EQ(upb_EnumDef_FindByJsonName(e, json_name),
+                upb_EnumDef_Value(e, 1));
+      EXPECT_EQ(upb_EnumDef_FindValueByNumber(e, 1), upb_EnumDef_Value(e, 1));
+      EXPECT_EQ(upb_EnumDef_FindValueByName(e, "VAL_A"),
+                upb_EnumDef_Value(e, reverse ? 2 : 1));
+      EXPECT_EQ(upb_EnumDef_FindValueByName(e, "VAL_B"),
+                upb_EnumDef_Value(e, reverse ? 1 : 2));
+    }
+  }
+}
+
+TEST(ReflectionTest, EnumCustomJsonNameEmptyOptionDiffersFromUnset) {
+  for (bool reverse : {false, true}) {
+    SCOPED_TRACE(reverse);
+    TestEnumValueSpec values[] = {
+        {"VAL_ZERO", 0, nullptr}, {"VAL_A", 1, ""}, {"VAL_B", 1, nullptr}};
+    if (reverse) std::swap(values[1], values[2]);
+    google::protobuf::DescriptorPool cpp_pool;
+    EXPECT_EQ(cpp_pool.BuildFile(MakeEnumDescriptorWithValues(values, true)),
+              nullptr);
+    absl::Status status = LoadEnumDescriptorWithValues(values, true).status();
+    EXPECT_THAT(std::string(status.message()),
+                HasSubstr("must have the same custom JSON string"));
+  }
+}
+
+TEST(ReflectionTest, EnumCustomJsonNameEqualToOwnNameKeepsDeclaredLookup) {
+  const TestEnumValueSpec values[] = {{"VAL_ZERO", 0, nullptr},
+                                      {"VAL_A", 1, "VAL_A"}};
+  google::protobuf::DescriptorPool cpp_pool;
+  ASSERT_NE(cpp_pool.BuildFile(MakeEnumDescriptorWithValues(values)), nullptr);
+  auto pool = LoadEnumDescriptorWithValues(values);
+  ASSERT_TRUE(pool.ok()) << pool.status();
+  const upb_EnumDef* e = upb_DefPool_FindEnumByName(pool->ptr(), "TestEnum");
+  ASSERT_NE(e, nullptr);
+  EXPECT_EQ(upb_EnumDef_FindValueByName(e, "VAL_A"), upb_EnumDef_Value(e, 1));
+  EXPECT_EQ(upb_EnumDef_FindByJsonName(e, "VAL_A"), upb_EnumDef_Value(e, 1));
+}
+
+TEST(ReflectionTest, EnumAliasesWithoutCustomJsonNamesKeepDeclaredLookup) {
+  const TestEnumValueSpec values[] = {
+      {"VAL_ZERO", 0, nullptr}, {"VAL_A", 1, nullptr}, {"VAL_B", 1, nullptr}};
+  google::protobuf::DescriptorPool cpp_pool;
+  ASSERT_NE(cpp_pool.BuildFile(MakeEnumDescriptorWithValues(values, true)),
+            nullptr);
+  auto pool = LoadEnumDescriptorWithValues(values, true);
+  ASSERT_TRUE(pool.ok()) << pool.status();
+  const upb_EnumDef* e = upb_DefPool_FindEnumByName(pool->ptr(), "TestEnum");
+  ASSERT_NE(e, nullptr);
+  EXPECT_EQ(upb_EnumDef_FindValueByName(e, "VAL_A"), upb_EnumDef_Value(e, 1));
+  EXPECT_EQ(upb_EnumDef_FindValueByName(e, "VAL_B"), upb_EnumDef_Value(e, 2));
+  EXPECT_EQ(upb_EnumDef_FindValueByNumber(e, 1), upb_EnumDef_Value(e, 1));
+}
+
+TEST(ReflectionTest, EnumDuplicateNumbersRequireAllowAliasInEitherOrder) {
+  for (bool explicit_false : {false, true}) {
+    for (bool reverse : {false, true}) {
+      SCOPED_TRACE(explicit_false ? "allow_alias=false" : "allow_alias unset");
+      SCOPED_TRACE(reverse);
+      TestEnumValueSpec values[] = {{"VAL_ZERO", 0, nullptr},
+                                    {"VAL_A", 1, nullptr},
+                                    {"VAL_B", 1, nullptr}};
+      if (reverse) std::swap(values[1], values[2]);
+      auto proto = MakeEnumDescriptorWithValues(values);
+      if (explicit_false) {
+        proto.mutable_enum_type(0)->mutable_options()->set_allow_alias(false);
+      }
+      ASSERT_EQ(proto.enum_type(0).options().has_allow_alias(), explicit_false);
+
+      google::protobuf::DescriptorPool cpp_pool;
+      EXPECT_EQ(cpp_pool.BuildFile(proto), nullptr);
+      upb::Arena arena;
+      upb::DefPool pool;
+      upb::Status status;
+      EXPECT_FALSE(pool.AddFile(ToUpbDescriptorSet(proto, arena), &status));
+      EXPECT_THAT(status.error_message(),
+                  HasSubstr("option allow_alias = true;"));
+    }
+  }
+}
+
+TEST(ReflectionTest, EnumCustomJsonNameAliasesRequireAllowAliasInEitherOrder) {
+  for (bool explicit_false : {false, true}) {
+    for (bool reverse : {false, true}) {
+      for (const char* second_json :
+           {static_cast<const char*>(nullptr), "VAL_B"}) {
+        SCOPED_TRACE(explicit_false ? "allow_alias=false"
+                                    : "allow_alias unset");
+        SCOPED_TRACE(reverse);
+        SCOPED_TRACE(second_json ? second_json : "unset");
+        TestEnumValueSpec values[] = {{"VAL_ZERO", 0, nullptr},
+                                      {"VAL_A", 1, "VAL_B"},
+                                      {"VAL_B", 1, second_json}};
+        if (reverse) std::swap(values[1], values[2]);
+        auto proto = MakeEnumDescriptorWithValues(values);
+        if (explicit_false) {
+          proto.mutable_enum_type(0)->mutable_options()->set_allow_alias(false);
+        }
+        ASSERT_EQ(proto.enum_type(0).options().has_allow_alias(),
+                  explicit_false);
+
+        google::protobuf::DescriptorPool cpp_pool;
+        EXPECT_EQ(cpp_pool.BuildFile(proto), nullptr);
+        upb::Arena arena;
+        upb::DefPool pool;
+        upb::Status status;
+        EXPECT_FALSE(pool.AddFile(ToUpbDescriptorSet(proto, arena), &status));
+        EXPECT_THAT(status.error_message(),
+                    HasSubstr("option allow_alias = true;"));
+      }
+    }
+  }
+}
+
+TEST(ReflectionTest, EnumDuplicateNumberFailureLeavesPoolUsable) {
+  for (bool explicit_false : {false, true}) {
+    for (bool reverse : {false, true}) {
+      for (const char* json_name :
+           {static_cast<const char*>(nullptr), "VAL_B"}) {
+        SCOPED_TRACE(explicit_false ? "allow_alias=false"
+                                    : "allow_alias unset");
+        SCOPED_TRACE(reverse);
+        SCOPED_TRACE(json_name ? json_name : "unset");
+        upb::Arena arena;
+        upb::DefPool pool;
+        upb::Status status;
+        const google::protobuf::FileDescriptorProto existing =
+            ParseTextProtoOrDie(R"pb(
+              name: "existing.proto"
+              syntax: "proto2"
+              message_type { name: "ExistingMessage" }
+            )pb");
+        ASSERT_TRUE(pool.AddFile(ToUpbDescriptorSet(existing, arena), &status));
+        const auto* existing_message =
+            pool.FindMessageByName("ExistingMessage").ptr();
+        ASSERT_NE(existing_message, nullptr);
+
+        TestEnumValueSpec values[] = {{"VAL_ZERO", 0, nullptr},
+                                      {"VAL_A", 1, json_name},
+                                      {"VAL_B", 1, json_name}};
+        if (reverse) std::swap(values[1], values[2]);
+        auto proto = MakeEnumDescriptorWithValues(values);
+        if (explicit_false) {
+          proto.mutable_enum_type(0)->mutable_options()->set_allow_alias(false);
+        }
+        ASSERT_FALSE(pool.AddFile(ToUpbDescriptorSet(proto, arena), &status));
+        EXPECT_THAT(status.error_message(),
+                    HasSubstr("option allow_alias = true;"));
+        EXPECT_FALSE(pool.FindFileByName("test.proto"));
+        EXPECT_FALSE(pool.FindEnumByName("TestEnum"));
+        for (const auto& value : values) {
+          EXPECT_EQ(
+              upb_DefPool_FindEnumValueByName(pool.ptr(), value.name.c_str()),
+              nullptr);
+        }
+        EXPECT_EQ(pool.FindMessageByName("ExistingMessage").ptr(),
+                  existing_message);
+
+        // Reuse the same file and symbol names after the failed-add rollback.
+        proto.mutable_enum_type(0)->mutable_options()->set_allow_alias(true);
+        status.Clear();
+        ASSERT_TRUE(pool.AddFile(ToUpbDescriptorSet(proto, arena), &status))
+            << status.error_message();
+        EXPECT_TRUE(status.ok());
+        EXPECT_TRUE(pool.FindFileByName("test.proto"));
+        const auto* e = pool.FindEnumByName("TestEnum").ptr();
+        ASSERT_NE(e, nullptr);
+        EXPECT_EQ(upb_EnumDef_ValueCount(e), 3);
+        for (int i = 0; i < 3; ++i) {
+          EXPECT_EQ(upb_EnumDef_FindValueByName(e, values[i].name.c_str()),
+                    upb_EnumDef_Value(e, i));
+          EXPECT_EQ(upb_DefPool_FindEnumValueByName(pool.ptr(),
+                                                    values[i].name.c_str()),
+                    upb_EnumDef_Value(e, i));
+        }
+        EXPECT_EQ(upb_EnumDef_FindValueByNumber(e, 1), upb_EnumDef_Value(e, 1));
+        if (json_name) {
+          EXPECT_EQ(upb_EnumDef_FindByJsonName(e, json_name),
+                    upb_EnumDef_FindValueByName(e, "VAL_B"));
+        }
+        EXPECT_EQ(pool.FindMessageByName("ExistingMessage").ptr(),
+                  existing_message);
+      }
+    }
+  }
+}
+
+TEST(ReflectionTest, EnumDuplicateDeclaredNameIsStillRejected) {
+  for (int number : {1, 2}) {
+    SCOPED_TRACE(number);
+    const TestEnumValueSpec values[] = {{"VAL_ZERO", 0, nullptr},
+                                        {"VAL_A", 1, nullptr},
+                                        {"VAL_A", number, nullptr}};
+    google::protobuf::DescriptorPool cpp_pool;
+    EXPECT_EQ(cpp_pool.BuildFile(MakeEnumDescriptorWithValues(values, true)),
+              nullptr);
+    absl::Status status = LoadEnumDescriptorWithValues(values, true).status();
+    EXPECT_FALSE(status.ok());
+    EXPECT_THAT(std::string(status.message()), HasSubstr("duplicate symbol"));
+  }
 }
 
 TEST(ReflectionTest, LegacyJsonFieldConflictsKeepsCorrectNumberMapping) {
