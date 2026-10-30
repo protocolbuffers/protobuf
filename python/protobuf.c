@@ -19,6 +19,7 @@
 #include "python/free_threading/weak_map.h"
 #include "python/map.h"
 #include "python/message.h"
+#include "python/python_api.h"
 #include "python/repeated.h"
 #include "python/unknown_fields.h"
 #include "upb/mem/alloc.h"
@@ -105,7 +106,7 @@ static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
 // -----------------------------------------------------------------------------
 
 PyUpb_ModuleState* PyUpb_ModuleState_MaybeGet(void) {
-#if PY_VERSION_HEX >= 0x030D0000  // >= 3.13
+#if PYUPB_MIN_PY_VERSION_HEX >= 0x030D0000  // >= 3.13
   /* Calling `PyState_FindModule` during interpreter shutdown causes a crash. */
   if (Py_IsFinalizing()) {
     return NULL;
