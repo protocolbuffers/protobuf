@@ -471,6 +471,82 @@ TEST_P(MicroStringPrevTest, Clear) {
   }
 }
 
+TEST_F(MicroStringTest, SetAliasExternalAndArenaBuffer) {
+  const std::string external(64, 'E');
+  MicroString heap_str;
+  heap_str.SetAlias(external, heap_message());
+  EXPECT_EQ(heap_str.Get().data(), external.data());
+  EXPECT_EQ(heap_str.Get(), external);
+  heap_str.Destroy();
+
+  const std::string initial(64, 'R');
+  MicroString arena_str;
+  arena_str.Set(absl::string_view(initial), arena_message());
+  const std::string expected(arena_str.Get().substr(5, 40));
+  arena_str.SetAlias(arena_str.Get().substr(5, 40), arena_message());
+  EXPECT_EQ(arena_str.Get(), expected);
+}
+
+TEST_F(MicroStringTest, SetAliasFromOverlappingUnownedBuffer) {
+  static constexpr auto payload =
+      MicroString::MakeUnownedPayload("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+  const absl::string_view input = payload.get().substr(5);
+  ASSERT_GT(input.size(), MicroString::kInlineCapacity);
+
+  MicroString str;
+  str.SetUnowned(payload, heap_message());
+  str.SetAlias(input, heap_message());
+  EXPECT_EQ(str.Get().data(), input.data());
+  EXPECT_EQ(str.Get(), input);
+  str.Destroy();
+}
+
+TEST_F(MicroStringTest, SetAliasFromOwnHeapBuffer) {
+  // 1. Owned MicroRep (inline_capacity < size <= kMaxMicroRepCapacity)
+  {
+    std::string input(64, 'M');
+    for (size_t i = 0; i < input.size(); ++i) {
+      input[i] = static_cast<char>('A' + (i % 26));
+    }
+    MicroString str;
+    str.Set(absl::string_view(input), heap_message());
+    const std::string expected(str.Get().substr(7, 40));
+    str.SetAlias(str.Get().substr(7, 40), heap_message());
+    EXPECT_EQ(std::string(str.Get()), expected);
+    str.SetAlias(str.Get(), heap_message());
+    EXPECT_EQ(std::string(str.Get()), expected);
+    str.Destroy();
+  }
+
+  // 2. Owned LargeRep (kOwned: size > kMaxMicroRepCapacity)
+  {
+    std::string input(320, 'L');
+    for (size_t i = 0; i < input.size(); ++i) {
+      input[i] = static_cast<char>('a' + (i % 26));
+    }
+    MicroString str;
+    str.Set(absl::string_view(input), heap_message());
+    const std::string expected(str.Get().substr(13, 260));
+    str.SetAlias(str.Get().substr(13, 260), heap_message());
+    EXPECT_EQ(std::string(str.Get()), expected);
+    str.Destroy();
+  }
+
+  // 3. Owned StringRep (kString via rvalue std::string > 32 bytes)
+  {
+    std::string input(96, 'S');
+    for (size_t i = 0; i < input.size(); ++i) {
+      input[i] = static_cast<char>('0' + (i % 10));
+    }
+    const std::string expected = input.substr(9, 60);
+    MicroString str;
+    str.Set(std::move(input), heap_message());
+    str.SetAlias(str.Get().substr(9, 60), heap_message());
+    EXPECT_EQ(std::string(str.Get()), expected);
+    str.Destroy();
+  }
+}
+
 TEST_F(MicroStringTest, ClearOnAliasReusesSpace) {
   MicroString str;
   str.SetAlias("Some arbitrary string to alias here.", arena_message());

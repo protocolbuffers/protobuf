@@ -401,6 +401,11 @@ class PROTOBUF_EXPORT MicroString {
            kIsLargeRepTag;
   }
   bool is_inline() const { return !is_micro_rep() && !is_large_rep(); }
+  bool owns_payload() const {
+    if (!is_large_rep()) return true;
+    const LargeRepKind kind = large_rep_kind();
+    return kind == kOwned || kind == kString;
+  }
   size_t inline_size() const {
     ABSL_DCHECK(is_inline());
     return static_cast<uint8_t>(reinterpret_cast<uintptr_t>(rep_)) >> kTagShift;
