@@ -26,6 +26,7 @@
 #include "upb/message/message.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
+#include "upb/reflection/message.h"
 
 static std::string JsonEncodeGeneric(
     const upb_Message* msg, const upb_MessageDef* (*getmsgdef)(upb_DefPool*),
@@ -66,6 +67,209 @@ TEST(JsonTest, EncodeEnum) {
   EXPECT_EQ(R"({"firstTag":"Z_BAR"})", JsonEncode(foo, 0));
   EXPECT_EQ(R"({"firstTag":1})",
             JsonEncode(foo, upb_JsonEncode_FormatEnumsAsIntegers));
+}
+
+namespace {
+
+void AppendVarint(std::string* out, uint64_t v) {
+  while (v >= 0x80) {
+    out->push_back(static_cast<char>((v & 0x7f) | 0x80));
+    v >>= 7;
+  }
+  out->push_back(static_cast<char>(v));
+}
+
+void AppendTagVarint(std::string* out, uint32_t field_num, uint64_t v) {
+  AppendVarint(out, (static_cast<uint64_t>(field_num) << 3) | 0u);
+  AppendVarint(out, v);
+}
+
+void AppendTagBytes(std::string* out, uint32_t field_num,
+                    const std::string& bytes) {
+  AppendVarint(out, (static_cast<uint64_t>(field_num) << 3) | 2u);
+  AppendVarint(out, bytes.size());
+  out->append(bytes);
+}
+
+std::string EncodeFieldProto(const char* name, uint32_t number, uint32_t label,
+                             uint32_t type) {
+  std::string f;
+  AppendTagBytes(&f, 1, name);
+  AppendTagVarint(&f, 3, number);
+  AppendTagVarint(&f, 4, label);
+  AppendTagVarint(&f, 5, type);
+  return f;
+}
+
+std::string EncodeMessageProto(const char* name,
+                               std::initializer_list<std::string> fields) {
+  std::string m;
+  AppendTagBytes(&m, 1, name);
+  for (const auto& f : fields) {
+    AppendTagBytes(&m, 2, f);
+  }
+  return m;
+}
+
+bool LoadSerializedFileProto(upb_DefPool* pool, const char* filename,
+                             const std::string& serialized) {
+  static _upb_DefPool_Init* kEmptyDeps[1] = {nullptr};
+  _upb_DefPool_Init init = {
+      kEmptyDeps,
+      nullptr,
+      filename,
+      upb_StringView_FromDataAndSize(serialized.data(), serialized.size()),
+  };
+  return _upb_DefPool_LoadDefInitEx(pool, &init, /*rebuild_minitable=*/true);
+}
+
+}  // namespace
+
+TEST(JsonTest, CanonicalWellKnownTypesRetainClassification) {
+  // Build serialized FileDescriptorProto for canonical Duration, Timestamp,
+  // and 9 wrapper types (keep alive across DefPool lifetime because
+  // _upb_DefPool_LoadDefInitEx aliases descriptor strings).
+  std::string extra_file;
+  AppendTagBytes(&extra_file, 1, "canonical_extra_wkts.proto");
+  AppendTagBytes(&extra_file, 2, "google.protobuf");
+  AppendTagBytes(&extra_file, 12, "proto3");
+  for (const char* tname : {"Duration", "Timestamp"}) {
+    AppendTagBytes(
+        &extra_file, 4,
+        EncodeMessageProto(tname, {EncodeFieldProto("seconds", 1, 1, 3),
+                                   EncodeFieldProto("nanos", 2, 1, 5)}));
+  }
+  struct WrapperWire {
+    const char* name;
+    uint32_t proto_type;
+  };
+  const WrapperWire kWrappers[] = {
+      {"DoubleValue", 1},  {"FloatValue", 2},  {"Int64Value", 3},
+      {"UInt64Value", 4},  {"Int32Value", 5},  {"UInt32Value", 13},
+      {"BoolValue", 8},    {"StringValue", 9}, {"BytesValue", 12},
+  };
+  for (const auto& w : kWrappers) {
+    AppendTagBytes(
+        &extra_file, 4,
+        EncodeMessageProto(w.name,
+                           {EncodeFieldProto("value", 1, 1, w.proto_type)}));
+  }
+
+  upb::DefPool defpool;
+  const upb_MessageDef* box_m = upb_test_Box_getmsgdef(defpool.ptr());
+  ASSERT_NE(box_m, nullptr);
+  ASSERT_TRUE(LoadSerializedFileProto(
+      defpool.ptr(), "canonical_extra_wkts.proto", extra_file));
+
+  struct ExpectedWkt {
+    const char* full_name;
+    upb_WellKnown expected;
+  };
+  const ExpectedWkt kExpected[] = {
+      {"google.protobuf.Any", kUpb_WellKnown_Any},
+      {"google.protobuf.FieldMask", kUpb_WellKnown_FieldMask},
+      {"google.protobuf.Duration", kUpb_WellKnown_Duration},
+      {"google.protobuf.Timestamp", kUpb_WellKnown_Timestamp},
+      {"google.protobuf.DoubleValue", kUpb_WellKnown_DoubleValue},
+      {"google.protobuf.FloatValue", kUpb_WellKnown_FloatValue},
+      {"google.protobuf.Int64Value", kUpb_WellKnown_Int64Value},
+      {"google.protobuf.UInt64Value", kUpb_WellKnown_UInt64Value},
+      {"google.protobuf.Int32Value", kUpb_WellKnown_Int32Value},
+      {"google.protobuf.UInt32Value", kUpb_WellKnown_UInt32Value},
+      {"google.protobuf.BoolValue", kUpb_WellKnown_BoolValue},
+      {"google.protobuf.StringValue", kUpb_WellKnown_StringValue},
+      {"google.protobuf.BytesValue", kUpb_WellKnown_BytesValue},
+      {"google.protobuf.Value", kUpb_WellKnown_Value},
+      {"google.protobuf.ListValue", kUpb_WellKnown_ListValue},
+      {"google.protobuf.Struct", kUpb_WellKnown_Struct},
+  };
+  for (const auto& item : kExpected) {
+    const upb_MessageDef* m =
+        upb_DefPool_FindMessageByName(defpool.ptr(), item.full_name);
+    ASSERT_NE(m, nullptr) << item.full_name;
+    EXPECT_EQ(upb_MessageDef_WellKnownType(m), item.expected) << item.full_name;
+  }
+}
+
+TEST(JsonTest, NonCanonicalStructDescriptorDowngradesSafely) {
+  // Define google.protobuf.Struct with `int64 fields = 1;` instead of a map.
+  std::string forged_file;
+  AppendTagBytes(&forged_file, 1, "forged_struct.proto");
+  AppendTagBytes(&forged_file, 2, "google.protobuf");
+  AppendTagBytes(&forged_file, 12, "proto3");
+  AppendTagBytes(&forged_file, 4,
+                 EncodeMessageProto("Struct",
+                                    {EncodeFieldProto("fields", 1, 1, 3)}));
+
+  upb::Arena arena;
+  upb::DefPool pool;
+  upb::Status status;
+  ASSERT_TRUE(
+      LoadSerializedFileProto(pool.ptr(), "forged_struct.proto", forged_file));
+  const upb_MessageDef* struct_m =
+      upb_DefPool_FindMessageByName(pool.ptr(), "google.protobuf.Struct");
+  ASSERT_NE(struct_m, nullptr);
+  EXPECT_EQ(upb_MessageDef_WellKnownType(struct_m), kUpb_WellKnown_Unspecified);
+
+  const upb_FieldDef* f_def = upb_MessageDef_FindFieldByNumber(struct_m, 1);
+  ASSERT_NE(f_def, nullptr);
+  upb_Message* inst =
+      upb_Message_New(upb_MessageDef_MiniTable(struct_m), arena.ptr());
+  ASSERT_NE(inst, nullptr);
+  upb_MessageValue v;
+  v.int64_val = 0x4141414141414141LL;
+  ASSERT_TRUE(upb_Message_SetFieldByDef(inst, f_def, v, arena.ptr()));
+
+  // Without WKT validation, upb_JsonEncode union-puns 0x4141414141414141 as a
+  // `const upb_Map*` in `jsonenc_struct` and crashes with a wild-pointer read.
+  char out[128];
+  size_t n = upb_JsonEncode(inst, struct_m, pool.ptr(), 0, out, sizeof(out),
+                            status.ptr());
+  ASSERT_TRUE(status.ok()) << status.error_message();
+  EXPECT_EQ(std::string(out, n), R"({"fields":"4702111234474983745"})");
+
+  upb_Message* decoded =
+      upb_Message_New(upb_MessageDef_MiniTable(struct_m), arena.ptr());
+  ASSERT_TRUE(upb_JsonDecode(out, n, decoded, struct_m, pool.ptr(), 0,
+                             arena.ptr(), status.ptr()))
+      << status.error_message();
+  EXPECT_EQ(upb_Message_GetFieldByDef(decoded, f_def).int64_val,
+            0x4141414141414141LL);
+}
+
+TEST(JsonTest, NonCanonicalWrapperDescriptorDowngradesSafely) {
+  // Define google.protobuf.StringValue with field number 2 (missing field 1).
+  std::string forged_file;
+  AppendTagBytes(&forged_file, 1, "forged_wrapper.proto");
+  AppendTagBytes(&forged_file, 2, "google.protobuf");
+  AppendTagBytes(&forged_file, 12, "proto3");
+  AppendTagBytes(&forged_file, 4,
+                 EncodeMessageProto("StringValue",
+                                    {EncodeFieldProto("other", 2, 1, 5)}));
+
+  upb::Arena arena;
+  upb::DefPool pool;
+  upb::Status status;
+  ASSERT_TRUE(
+      LoadSerializedFileProto(pool.ptr(), "forged_wrapper.proto", forged_file));
+  const upb_MessageDef* wrap_m =
+      upb_DefPool_FindMessageByName(pool.ptr(), "google.protobuf.StringValue");
+  ASSERT_NE(wrap_m, nullptr);
+  EXPECT_EQ(upb_MessageDef_WellKnownType(wrap_m), kUpb_WellKnown_Unspecified);
+
+  upb_Message* inst =
+      upb_Message_New(upb_MessageDef_MiniTable(wrap_m), arena.ptr());
+  const upb_FieldDef* f_def = upb_MessageDef_FindFieldByNumber(wrap_m, 2);
+  upb_MessageValue v;
+  v.int32_val = 42;
+  ASSERT_TRUE(upb_Message_SetFieldByDef(inst, f_def, v, arena.ptr()));
+
+  // Without WKT validation, jsonenc_wrapper looks up field 1 (NULL) and crashes.
+  char out[64];
+  size_t n = upb_JsonEncode(inst, wrap_m, pool.ptr(), 0, out, sizeof(out),
+                            status.ptr());
+  ASSERT_TRUE(status.ok()) << status.error_message();
+  EXPECT_EQ(std::string(out, n), R"({"other":42})");
 }
 
 // Encode a single optional negative enum.
