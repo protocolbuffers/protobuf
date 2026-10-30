@@ -365,27 +365,24 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
 
   ~RepeatedField();
 
-  PROTOBUF_FUTURE_ADD_NODISCARD bool empty() const;
-  PROTOBUF_FUTURE_ADD_NODISCARD int size() const;
+  [[nodiscard]] bool empty() const;
+  [[nodiscard]] int size() const;
 
-  PROTOBUF_FUTURE_ADD_NODISCARD const_reference
-  Get(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  PROTOBUF_FUTURE_ADD_NODISCARD pointer Mutable(int index)
+  [[nodiscard]] const_reference Get(int index) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  [[nodiscard]] pointer Mutable(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
-  PROTOBUF_FUTURE_ADD_NODISCARD const_reference
-  operator[](int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  [[nodiscard]] const_reference operator[](int index) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return Get(index);
   }
-  PROTOBUF_FUTURE_ADD_NODISCARD reference operator[](int index)
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  [[nodiscard]] reference operator[](int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return *Mutable(index);
   }
 
-  PROTOBUF_FUTURE_ADD_NODISCARD const_reference
-  at(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  PROTOBUF_FUTURE_ADD_NODISCARD reference at(int index)
+  [[nodiscard]] const_reference at(int index) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  [[nodiscard]] reference at(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   void Set(int index, const Element& value);
   void Add(Element value);
@@ -438,7 +435,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   void Truncate(int new_size);
 
   void AddAlreadyReserved(Element value);
-  PROTOBUF_FUTURE_ADD_NODISCARD int Capacity() const;
+  [[nodiscard]] int Capacity() const;
 
   // Adds `n` elements to this instance asserting there is enough capacity.
   // The added elements are uninitialized if `Element` is trivial.
@@ -456,10 +453,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
 
   // Gets the underlying array.  This pointer is possibly invalidated by
   // any add or remove operation.
-  PROTOBUF_FUTURE_ADD_NODISCARD pointer mutable_data()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  PROTOBUF_FUTURE_ADD_NODISCARD const_pointer
-  data() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  [[nodiscard]] pointer mutable_data() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  [[nodiscard]] const_pointer data() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Swaps entire contents with "other". If they are separate arenas, then
   // copies data between each other.
@@ -468,40 +463,34 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   // Swaps two elements.
   void SwapElements(int index1, int index2);
 
-  PROTOBUF_FUTURE_ADD_NODISCARD iterator begin() ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  PROTOBUF_FUTURE_ADD_NODISCARD const_iterator
-  begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  PROTOBUF_FUTURE_ADD_NODISCARD const_iterator
-  cbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  PROTOBUF_FUTURE_ADD_NODISCARD iterator end() ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  PROTOBUF_FUTURE_ADD_NODISCARD const_iterator
-  end() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  PROTOBUF_FUTURE_ADD_NODISCARD const_iterator
-  cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  [[nodiscard]] iterator begin() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  [[nodiscard]] const_iterator begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  [[nodiscard]] const_iterator cbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  [[nodiscard]] iterator end() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  [[nodiscard]] const_iterator end() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  [[nodiscard]] const_iterator cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Reverse iterator support
-  PROTOBUF_FUTURE_ADD_NODISCARD reverse_iterator rbegin()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  [[nodiscard]] reverse_iterator rbegin() ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return reverse_iterator(end());
   }
-  PROTOBUF_FUTURE_ADD_NODISCARD const_reverse_iterator
-  rbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  [[nodiscard]] const_reverse_iterator rbegin() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return const_reverse_iterator(end());
   }
-  PROTOBUF_FUTURE_ADD_NODISCARD reverse_iterator rend()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  [[nodiscard]] reverse_iterator rend() ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return reverse_iterator(begin());
   }
-  PROTOBUF_FUTURE_ADD_NODISCARD const_reverse_iterator
-  rend() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  [[nodiscard]] const_reverse_iterator rend() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return const_reverse_iterator(begin());
   }
 
   // Returns the number of bytes used by the repeated field, excluding
   // sizeof(*this)
-  PROTOBUF_FUTURE_ADD_NODISCARD size_t SpaceUsedExcludingSelfLong() const;
+  [[nodiscard]] size_t SpaceUsedExcludingSelfLong() const;
 
-  PROTOBUF_FUTURE_ADD_NODISCARD int SpaceUsedExcludingSelf() const {
+  [[nodiscard]] int SpaceUsedExcludingSelf() const {
     return internal::ToIntSize(SpaceUsedExcludingSelfLong());
   }
 
@@ -522,7 +511,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
                  const_iterator last) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Gets the Arena on which this RepeatedField stores its elements.
-  PROTOBUF_FUTURE_ADD_NODISCARD inline Arena* GetArena() {
+  [[nodiscard]] inline Arena* GetArena() {
     // Note: we make this function non-const to force callers to call the
     // `mutable_*` accessor on the repeated field before calling `GetArena()`,
     // which initializes the field if it is split. If this method were const,
@@ -1723,12 +1712,8 @@ class RepeatedIterator {
       : it_(other.it_) {}
 
   // dereferenceable
-  PROTOBUF_FUTURE_ADD_NODISCARD constexpr reference operator*() const noexcept {
-    return *it_;
-  }
-  PROTOBUF_FUTURE_ADD_NODISCARD constexpr pointer operator->() const noexcept {
-    return it_;
-  }
+  [[nodiscard]] constexpr reference operator*() const noexcept { return *it_; }
+  [[nodiscard]] constexpr pointer operator->() const noexcept { return it_; }
 
  private:
   // Helper alias to hide the internal type.
@@ -1797,7 +1782,7 @@ class RepeatedIterator {
   }
 
   // indexable
-  PROTOBUF_FUTURE_ADD_NODISCARD constexpr reference operator[](
+  [[nodiscard]] constexpr reference operator[](
       difference_type d) const noexcept {
     return it_[d];
   }
