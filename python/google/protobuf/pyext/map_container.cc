@@ -460,12 +460,8 @@ PyObject* MapReflectionFriend::ScalarMapGetItem(PyObject* _self,
     }
   }
 
-  // 2. Frozen path: read-only lookup failed and message is frozen.
-  if (self->parent->state == MESSAGE_FROZEN) {
-    return SetMessageFrozenError();
-  }
-
-  // 3. Mutable path: insert default value for missing key.
+  // 2. Mutable path: insert default value for missing key (raises
+  // FrozenInstanceError via AssureWritable if the parent message is frozen).
   if (Message* mutable_message = self->GetMutableMessage();
       mutable_message != nullptr) {
     auto value = TryEmplace(mutable_message, self, map_key);
@@ -756,19 +752,13 @@ PyObject* MapReflectionFriend::MessageMapGetItem(PyObject* _self,
   auto map = reflection->GetMap(*message, self->parent_field_descriptor);
   if (map.ok()) {
     if (auto it = map->find(map_key); it != map->end()) {
-      MessageMutabilityState state = self->parent->state == MESSAGE_FROZEN
-                                         ? MESSAGE_FROZEN
-                                         : MESSAGE_UNPROMOTED;
-      return GetCMessage(self, &it->value().GetMessageValue(), state);
+      return GetCMessage(self, &it->value().GetMessageValue(),
+                         MESSAGE_UNPROMOTED);
     }
   }
 
-  // 2. Frozen path: read-only lookup failed and message is frozen.
-  if (self->parent->state == MESSAGE_FROZEN) {
-    return SetMessageFrozenError();
-  }
-
-  // 3. Mutable path: insert default submessage for missing key.
+  // 2. Mutable path: insert default submessage for missing key (raises
+  // FrozenInstanceError via AssureWritable if the parent message is frozen).
   if (Message* mutable_message = self->GetMutableMessage();
       mutable_message != nullptr) {
     auto value = TryEmplace(mutable_message, self, map_key);
@@ -793,9 +783,6 @@ PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
   // Wrap const map messages as MESSAGE_UNPROMOTED so string formatting does not
   // mutate parent state, while ensuring any subsequent write will promote the
   // parent hierarchy (including lazy fields) via AssureWritable.
-  MessageMutabilityState state = self->parent->state == MESSAGE_FROZEN
-                                     ? MESSAGE_FROZEN
-                                     : MESSAGE_UNPROMOTED;
   auto map = reflection->GetMap(*message, self->parent_field_descriptor);
   if (map.ok()) {
     for (auto entry : *map) {
@@ -803,7 +790,8 @@ PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
       if (key == nullptr) {
         return nullptr;
       }
-      value.reset(GetCMessage(self, &entry.value().GetMessageValue(), state));
+      value.reset(GetCMessage(self, &entry.value().GetMessageValue(),
+                              MESSAGE_UNPROMOTED));
       if (value == nullptr) {
         return nullptr;
       }
