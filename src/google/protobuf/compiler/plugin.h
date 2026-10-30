@@ -35,6 +35,8 @@
 //     protoc --plugin=protoc-gen-NAME=path/to/mybinary --NAME_out=OUT_DIR
 //   On Windows, make sure to include the .exe suffix:
 //     protoc --plugin=protoc-gen-NAME=path/to/mybinary.exe --NAME_out=OUT_DIR
+//   A bare filename is looked up on PATH:
+//     protoc --plugin=protoc-gen-NAME=mybinary --NAME_out=OUT_DIR
 
 #ifndef GOOGLE_PROTOBUF_COMPILER_PLUGIN_H__
 #define GOOGLE_PROTOBUF_COMPILER_PLUGIN_H__
