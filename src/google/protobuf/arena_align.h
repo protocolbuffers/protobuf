@@ -153,9 +153,8 @@ struct ArenaAlign {
   }
 };
 
-inline ArenaAlign ArenaAlignAs(size_t align) {
+constexpr ArenaAlign ArenaAlignAs(size_t align) {
   // align must be a non zero power of 2 >= 8
-  ABSL_DCHECK_NE(align, 0U);
   ABSL_DCHECK(absl::has_single_bit(align)) << "Invalid alignment " << align;
   return ArenaAlign{align};
 }
@@ -180,13 +179,13 @@ struct AlignFactory<true, align> {
 // overloaded 'Align align` argument reducing the alignment operations on
 // `ArenaAlignDefault` implementations to no-ops.
 template <size_t align>
-inline constexpr auto ArenaAlignAs() {
-  return AlignFactory<align <= ArenaAlignDefault::align, align>::Create();
+constexpr auto ArenaAlignAs() {
+  return AlignFactory<(align <= ArenaAlignDefault::align), align>::Create();
 }
 
 // Returns ArenaAlignAs<alignof(T)>
 template <typename T>
-inline constexpr auto ArenaAlignOf() {
+constexpr auto ArenaAlignOf() {
   return ArenaAlignAs<alignof(T)>();
 }
 

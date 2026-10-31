@@ -92,109 +92,144 @@ enum SymbolVisibility : int;
 PROTOBUF_EXPORT extern const uint32_t SymbolVisibility_internal_data_[];
 class DescriptorProto;
 struct DescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern DescriptorProtoGlobalsTypeInternal DescriptorProto_globals_;
+PROTOBUF_EXPORT extern DescriptorProtoGlobalsTypeInternal
+    DescriptorProto_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class DescriptorProto_ExtensionRange;
 struct DescriptorProto_ExtensionRangeGlobalsTypeInternal;
-PROTOBUF_EXPORT extern DescriptorProto_ExtensionRangeGlobalsTypeInternal DescriptorProto_ExtensionRange_globals_;
+PROTOBUF_EXPORT extern DescriptorProto_ExtensionRangeGlobalsTypeInternal
+    DescriptorProto_ExtensionRange_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class DescriptorProto_ReservedRange;
 struct DescriptorProto_ReservedRangeGlobalsTypeInternal;
-PROTOBUF_EXPORT extern DescriptorProto_ReservedRangeGlobalsTypeInternal DescriptorProto_ReservedRange_globals_;
+PROTOBUF_EXPORT extern DescriptorProto_ReservedRangeGlobalsTypeInternal
+    DescriptorProto_ReservedRange_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class EnumDescriptorProto;
 struct EnumDescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern EnumDescriptorProtoGlobalsTypeInternal EnumDescriptorProto_globals_;
+PROTOBUF_EXPORT extern EnumDescriptorProtoGlobalsTypeInternal
+    EnumDescriptorProto_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class EnumDescriptorProto_EnumReservedRange;
 struct EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal;
-PROTOBUF_EXPORT extern EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal EnumDescriptorProto_EnumReservedRange_globals_;
+PROTOBUF_EXPORT extern EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal
+    EnumDescriptorProto_EnumReservedRange_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class EnumOptions;
 struct EnumOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern EnumOptionsGlobalsTypeInternal EnumOptions_globals_;
+PROTOBUF_EXPORT extern EnumOptionsGlobalsTypeInternal
+    EnumOptions_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class EnumValueDescriptorProto;
 struct EnumValueDescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern EnumValueDescriptorProtoGlobalsTypeInternal EnumValueDescriptorProto_globals_;
+PROTOBUF_EXPORT extern EnumValueDescriptorProtoGlobalsTypeInternal
+    EnumValueDescriptorProto_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class EnumValueOptions;
 struct EnumValueOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern EnumValueOptionsGlobalsTypeInternal EnumValueOptions_globals_;
+PROTOBUF_EXPORT extern EnumValueOptionsGlobalsTypeInternal
+    EnumValueOptions_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class ExtensionRangeOptions;
 struct ExtensionRangeOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern ExtensionRangeOptionsGlobalsTypeInternal ExtensionRangeOptions_globals_;
+PROTOBUF_EXPORT extern ExtensionRangeOptionsGlobalsTypeInternal
+    ExtensionRangeOptions_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class ExtensionRangeOptions_Declaration;
 struct ExtensionRangeOptions_DeclarationGlobalsTypeInternal;
-PROTOBUF_EXPORT extern ExtensionRangeOptions_DeclarationGlobalsTypeInternal ExtensionRangeOptions_Declaration_globals_;
+PROTOBUF_EXPORT extern ExtensionRangeOptions_DeclarationGlobalsTypeInternal
+    ExtensionRangeOptions_Declaration_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class FeatureSet;
 struct FeatureSetGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FeatureSetGlobalsTypeInternal FeatureSet_globals_;
+PROTOBUF_EXPORT extern FeatureSetGlobalsTypeInternal
+    FeatureSet_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class FeatureSetDefaults;
 struct FeatureSetDefaultsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FeatureSetDefaultsGlobalsTypeInternal FeatureSetDefaults_globals_;
+PROTOBUF_EXPORT extern FeatureSetDefaultsGlobalsTypeInternal
+    FeatureSetDefaults_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class FeatureSetDefaults_FeatureSetEditionDefault;
 struct FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal FeatureSetDefaults_FeatureSetEditionDefault_globals_;
+PROTOBUF_EXPORT extern FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal
+    FeatureSetDefaults_FeatureSetEditionDefault_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class FeatureSet_ProtoLimitsFeature;
 struct FeatureSet_ProtoLimitsFeatureGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FeatureSet_ProtoLimitsFeatureGlobalsTypeInternal FeatureSet_ProtoLimitsFeature_globals_;
+PROTOBUF_EXPORT extern FeatureSet_ProtoLimitsFeatureGlobalsTypeInternal
+    FeatureSet_ProtoLimitsFeature_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class FeatureSet_VisibilityFeature;
 struct FeatureSet_VisibilityFeatureGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FeatureSet_VisibilityFeatureGlobalsTypeInternal FeatureSet_VisibilityFeature_globals_;
+PROTOBUF_EXPORT extern FeatureSet_VisibilityFeatureGlobalsTypeInternal
+    FeatureSet_VisibilityFeature_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class FieldDescriptorProto;
 struct FieldDescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FieldDescriptorProtoGlobalsTypeInternal FieldDescriptorProto_globals_;
+PROTOBUF_EXPORT extern FieldDescriptorProtoGlobalsTypeInternal
+    FieldDescriptorProto_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class FieldOptions;
 struct FieldOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FieldOptionsGlobalsTypeInternal FieldOptions_globals_;
+PROTOBUF_EXPORT extern FieldOptionsGlobalsTypeInternal
+    FieldOptions_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class FieldOptions_EditionDefault;
 struct FieldOptions_EditionDefaultGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FieldOptions_EditionDefaultGlobalsTypeInternal FieldOptions_EditionDefault_globals_;
+PROTOBUF_EXPORT extern FieldOptions_EditionDefaultGlobalsTypeInternal
+    FieldOptions_EditionDefault_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class FieldOptions_FeatureSupport;
 struct FieldOptions_FeatureSupportGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FieldOptions_FeatureSupportGlobalsTypeInternal FieldOptions_FeatureSupport_globals_;
+PROTOBUF_EXPORT extern FieldOptions_FeatureSupportGlobalsTypeInternal
+    FieldOptions_FeatureSupport_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class FileDescriptorProto;
 struct FileDescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FileDescriptorProtoGlobalsTypeInternal FileDescriptorProto_globals_;
+PROTOBUF_EXPORT extern FileDescriptorProtoGlobalsTypeInternal
+    FileDescriptorProto_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class FileDescriptorSet;
 struct FileDescriptorSetGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FileDescriptorSetGlobalsTypeInternal FileDescriptorSet_globals_;
+PROTOBUF_EXPORT extern FileDescriptorSetGlobalsTypeInternal
+    FileDescriptorSet_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class FileOptions;
 struct FileOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FileOptionsGlobalsTypeInternal FileOptions_globals_;
+PROTOBUF_EXPORT extern FileOptionsGlobalsTypeInternal
+    FileOptions_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class GeneratedCodeInfo;
 struct GeneratedCodeInfoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern GeneratedCodeInfoGlobalsTypeInternal GeneratedCodeInfo_globals_;
+PROTOBUF_EXPORT extern GeneratedCodeInfoGlobalsTypeInternal
+    GeneratedCodeInfo_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class GeneratedCodeInfo_Annotation;
 struct GeneratedCodeInfo_AnnotationGlobalsTypeInternal;
-PROTOBUF_EXPORT extern GeneratedCodeInfo_AnnotationGlobalsTypeInternal GeneratedCodeInfo_Annotation_globals_;
+PROTOBUF_EXPORT extern GeneratedCodeInfo_AnnotationGlobalsTypeInternal
+    GeneratedCodeInfo_Annotation_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class MessageOptions;
 struct MessageOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern MessageOptionsGlobalsTypeInternal MessageOptions_globals_;
+PROTOBUF_EXPORT extern MessageOptionsGlobalsTypeInternal
+    MessageOptions_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class MethodDescriptorProto;
 struct MethodDescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern MethodDescriptorProtoGlobalsTypeInternal MethodDescriptorProto_globals_;
+PROTOBUF_EXPORT extern MethodDescriptorProtoGlobalsTypeInternal
+    MethodDescriptorProto_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class MethodOptions;
 struct MethodOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern MethodOptionsGlobalsTypeInternal MethodOptions_globals_;
+PROTOBUF_EXPORT extern MethodOptionsGlobalsTypeInternal
+    MethodOptions_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class OneofDescriptorProto;
 struct OneofDescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern OneofDescriptorProtoGlobalsTypeInternal OneofDescriptorProto_globals_;
+PROTOBUF_EXPORT extern OneofDescriptorProtoGlobalsTypeInternal
+    OneofDescriptorProto_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class OneofOptions;
 struct OneofOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern OneofOptionsGlobalsTypeInternal OneofOptions_globals_;
+PROTOBUF_EXPORT extern OneofOptionsGlobalsTypeInternal
+    OneofOptions_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class ServiceDescriptorProto;
 struct ServiceDescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern ServiceDescriptorProtoGlobalsTypeInternal ServiceDescriptorProto_globals_;
+PROTOBUF_EXPORT extern ServiceDescriptorProtoGlobalsTypeInternal
+    ServiceDescriptorProto_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class ServiceOptions;
 struct ServiceOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern ServiceOptionsGlobalsTypeInternal ServiceOptions_globals_;
+PROTOBUF_EXPORT extern ServiceOptionsGlobalsTypeInternal
+    ServiceOptions_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class SourceCodeInfo;
 struct SourceCodeInfoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern SourceCodeInfoGlobalsTypeInternal SourceCodeInfo_globals_;
+PROTOBUF_EXPORT extern SourceCodeInfoGlobalsTypeInternal
+    SourceCodeInfo_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class SourceCodeInfo_Location;
 struct SourceCodeInfo_LocationGlobalsTypeInternal;
-PROTOBUF_EXPORT extern SourceCodeInfo_LocationGlobalsTypeInternal SourceCodeInfo_Location_globals_;
+PROTOBUF_EXPORT extern SourceCodeInfo_LocationGlobalsTypeInternal
+    SourceCodeInfo_Location_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class UninterpretedOption;
 struct UninterpretedOptionGlobalsTypeInternal;
-PROTOBUF_EXPORT extern UninterpretedOptionGlobalsTypeInternal UninterpretedOption_globals_;
+PROTOBUF_EXPORT extern UninterpretedOptionGlobalsTypeInternal
+    UninterpretedOption_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class UninterpretedOption_NamePart;
 struct UninterpretedOption_NamePartGlobalsTypeInternal;
-PROTOBUF_EXPORT extern UninterpretedOption_NamePartGlobalsTypeInternal UninterpretedOption_NamePart_globals_;
+PROTOBUF_EXPORT extern UninterpretedOption_NamePartGlobalsTypeInternal
+    UninterpretedOption_NamePart_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 template <>
 internal::EnumTraitsT<::google::protobuf::Edition_internal_data_>
     internal::EnumTraitsImpl::value<::google::protobuf::Edition>;

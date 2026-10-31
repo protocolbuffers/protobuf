@@ -294,9 +294,9 @@ class MapSorterPtr {
   // separate instantiations of sort.
   using storage_type = const void*;
 
-  // This const_iterator dereferenes the map entry pointer stored in the sorting
-  // array. This is the same interface as the Map::const_iterator type, and
-  // allows generated code to use the same loop body with either form:
+  // This const_iterator dereferences the map entry pointer stored in the
+  // sorting array. This is the same interface as the Map::const_iterator type,
+  // and allows generated code to use the same loop body with either form:
   //   for (const auto& entry : map) { ... }
   //   for (const auto& entry : MapSorterPtr(map)) { ... }
   struct const_iterator : public MapSorterIt<storage_type> {

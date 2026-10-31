@@ -388,9 +388,9 @@ class PROTOBUF_EXPORT SerialArena {
     return head_.load(std::memory_order_relaxed);
   }
 
-  char* ptr() { return ptr_.load(std::memory_order_relaxed); }
-  const char* ptr() const { return ptr_.load(std::memory_order_relaxed); }
-  void set_ptr(char* ptr) { return ptr_.store(ptr, std::memory_order_relaxed); }
+  char* ptr() { return ptr_; }
+  const char* ptr() const { return ptr_; }
+  void set_ptr(char* ptr) { ptr_ = ptr; }
   PROTOBUF_ALWAYS_INLINE void set_range(char* ptr, char* limit) {
     set_ptr(ptr);
     prefetch_ptr_ = ptr;
@@ -437,7 +437,7 @@ class PROTOBUF_EXPORT SerialArena {
   // Next pointer to allocate from.  Always 8-byte aligned.  Points inside
   // head_ (and head_->pos will always be non-canonical).  We keep these
   // here to reduce indirection.
-  std::atomic<char*> ptr_{ArbitraryInternalPointerForInit()};
+  char* ptr_ = ArbitraryInternalPointerForInit();
 
   // Limiting address up to which memory can be allocated from the head block.
   char* limit_ = ArbitraryInternalPointerForInit();
