@@ -10,7 +10,9 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <utility>
 
+#include "google/protobuf/any.pb.h"
 #include "google/protobuf/duration.pb.h"
 #include "google/protobuf/field_mask.pb.h"
 #include "google/protobuf/struct.pb.h"
@@ -54,6 +56,7 @@ using ::proto3::TestStringMapOverlay;
 using ::proto3::TestWrapper;
 using ::testing::ContainsRegex;
 using ::testing::ElementsAre;
+using ::testing::HasSubstr;
 using ::testing::IsEmpty;
 using ::testing::Not;
 using ::testing::Pair;
@@ -1320,6 +1323,38 @@ TEST_P(JsonTest, TestAnyWrappingEmptyValue) {
   EXPECT_EQ(round_trip->type_url(),
             "type.googleapis.com/google.protobuf.Value");
   EXPECT_EQ(round_trip->value(), "");
+}
+
+TEST_P(JsonTest, DeeplyNestedMessagesRejected) {
+  proto2_unittest::TestRecursiveMessage m;
+  proto2_unittest::TestRecursiveMessage* inner = &m;
+  for (int i = 0; i < 100; ++i) {
+    inner = inner->mutable_a();
+  }
+  inner->set_i(1);
+  EXPECT_OK(ToJson(m));
+
+  proto2_unittest::TestRecursiveMessage outer;
+  *outer.mutable_a() = m;
+  EXPECT_THAT(ToJson(outer), StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
+TEST_P(JsonTest, DeeplyNestedAnyRejected) {
+  // Each Any value is decoded with a fresh recursion limit while printing, so
+  // the printer has to bound the nesting it follows through them.
+  google::protobuf::Any any;
+  for (int i = 0; i < 100; ++i) {
+    google::protobuf::Any outer;
+    ASSERT_TRUE(outer.PackFrom(any));
+    any = std::move(outer);
+  }
+  EXPECT_OK(ToJson(any));
+
+  google::protobuf::Any outer;
+  ASSERT_TRUE(outer.PackFrom(any));
+  absl::StatusOr<std::string> json = ToJson(outer);
+  EXPECT_THAT(json, StatusIs(absl::StatusCode::kInvalidArgument));
+  EXPECT_THAT(json.status().message(), HasSubstr("too deeply nested"));
 }
 
 TEST_P(JsonTest, TestDuration) {
