@@ -41,29 +41,55 @@ namespace protobuf {
 namespace internal {
 
 namespace {
-bool ParsingEndsInBuffer(const char* ptr, const char* end, int depth) {
-  while (ptr < end) {
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic error "-Wunsafe-buffer-usage"
+#endif
+
+// Parses within a logical window while retaining the parser's physical slop
+// bytes for the low-level tag/varint decoders. `readable` describes the full
+// allocation that may be read; [begin, end) describes the logical parse window.
+bool ParsingEndsInBuffer(absl::Span<const char> readable, size_t begin,
+                         size_t end, int depth) {
+  ABSL_DCHECK_LE(begin, end);
+  ABSL_DCHECK_LE(end, readable.size());
+
+  size_t pos = begin;
+  auto update_pos = [&](const char* ptr) {
+    if (ptr == nullptr) return false;
+    const ptrdiff_t offset = ptr - readable.data();
+    if (offset < 0 || static_cast<size_t>(offset) > end) return false;
+    pos = static_cast<size_t>(offset);
+    return true;
+  };
+
+  while (pos < end) {
     uint32_t tag;
-    ptr = ReadTag(ptr, &tag);
-    if (ptr == nullptr || ptr > end) return false;
-    // ending on 0 tag is allowed and is the major reason for the necessity of
+    if (!update_pos(ReadTag(readable.subspan(pos).data(), &tag))) return false;
+    // Ending on a 0 tag is allowed and is the major reason for the necessity of
     // this function.
     if (tag == 0) return true;
     switch (tag & 7) {
       case 0: {  // Varint
         uint64_t val;
-        ptr = VarintParse(ptr, &val);
-        if (ptr == nullptr) return false;
+        if (!update_pos(VarintParse(readable.subspan(pos).data(), &val))) {
+          return false;
+        }
         break;
       }
       case 1: {  // fixed64
-        ptr += 8;
+        if (end - pos < sizeof(uint64_t)) return false;
+        pos += sizeof(uint64_t);
         break;
       }
       case 2: {  // len delim
+        const char* ptr = readable.subspan(pos).data();
         int32_t size = ReadSize(&ptr);
-        if (ptr == nullptr || size > end - ptr) return false;
-        ptr += size;
+        if (!update_pos(ptr) || size < 0 ||
+            static_cast<size_t>(size) > end - pos) {
+          return false;
+        }
+        pos += static_cast<size_t>(size);
         break;
       }
       case 3: {  // start group
@@ -75,7 +101,8 @@ bool ParsingEndsInBuffer(const char* ptr, const char* end, int depth) {
         break;
       }
       case 5: {  // fixed32
-        ptr += 4;
+        if (end - pos < sizeof(uint32_t)) return false;
+        pos += sizeof(uint32_t);
         break;
       }
       default:
@@ -84,6 +111,10 @@ bool ParsingEndsInBuffer(const char* ptr, const char* end, int depth) {
   }
   return false;
 }
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 }  // namespace
 
 bool EpsCopyInputStream::IsRequestedLessThanOrEqualTo(int requested,
@@ -101,14 +132,12 @@ bool EpsCopyInputStream::HasEnoughTillLimit(int requested, const char* ptr) {
 }
 
 // Only call if at start of tag.
-bool EpsCopyInputStream::ParseEndsInSlopRegion(const char* begin, int overrun,
-                                               int depth) {
-  constexpr int kSlopBytes = EpsCopyInputStream::kSlopBytes;
+bool EpsCopyInputStream::ParseEndsInSlopRegion(int overrun, int depth) {
   ABSL_DCHECK_GE(overrun, 0);
   ABSL_DCHECK_LE(overrun, kSlopBytes);
-  auto ptr = begin + overrun;
-  auto end = begin + kSlopBytes;
-  return ParsingEndsInBuffer(ptr, end, depth);
+  const absl::Span<const char> readable(patch_buffer_, kPatchBufferSize);
+  return ParsingEndsInBuffer(readable, static_cast<size_t>(overrun),
+                             kSlopBytes, depth);
 }
 
 const char* EpsCopyInputStream::NextBuffer(int overrun, int depth) {
@@ -127,7 +156,7 @@ const char* EpsCopyInputStream::NextBuffer(int overrun, int depth) {
   // patch_buffer_.
   std::memmove(patch_buffer_, buffer_end_, kSlopBytes);
   if (overall_limit_ > 0 &&
-      (depth < 0 || !ParseEndsInSlopRegion(patch_buffer_, overrun, depth))) {
+      (depth < 0 || !ParseEndsInSlopRegion(overrun, depth))) {
     const void* data;
     // ZeroCopyInputStream indicates Next may return 0 size buffers. Hence
     // we loop.
