@@ -53,9 +53,11 @@ static upb_UnknownToMessageRet upb_MiniTable_ParseUnknownMessage(
     const char* ptr = unknown->value.bytes.data;
     uint32_t tag;
     uint64_t message_len = 0;
-    // This assumes that the unknown field is a message type, so it is
-    // a delimited wire type.
     ptr = upb_WireReader_ReadTag(ptr, &tag, NULL);
+    if (!ptr || upb_WireReader_GetWireType(tag) != kUpb_WireType_Delimited) {
+      ret.status = kUpb_UnknownToMessage_ParseError;
+      return ret;
+    }
     ptr = upb_WireReader_ReadVarint(ptr, &message_len, NULL);
     data = ptr;
     size = message_len;
@@ -310,7 +312,8 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
             message ? kUpb_UnknownToMessage_Ok : kUpb_UnknownToMessage_NotFound;
         break;
     }
-  } while (unknown.status == kUpb_FindUnknown_Ok);
+  } while (unknown.status == kUpb_FindUnknown_Ok &&
+           ret.status == kUpb_UnknownToMessage_Ok);
   if (message) {
     if (is_oneof) {
       UPB_PRIVATE(_upb_Message_SetOneofCase)(msg, field);

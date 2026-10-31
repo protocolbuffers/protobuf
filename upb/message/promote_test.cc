@@ -166,6 +166,70 @@ TEST(GeneratedCode, DoesNotPromoteExtensionWithWrongWireType) {
   EXPECT_EQ(sizeof(serialized), GetUnknownLength(UPB_UPCAST(msg)));
 }
 
+TEST(GeneratedCode, DoesNotPromoteUnknownWithWrongWireType) {
+  // Regression test: FindUnknown2 matches by field number only, so if unknown
+  // data has the wrong wire type, ParseUnknownMessage must detect the mismatch
+  // and return ParseError instead of misinterpreting the field value as a
+  // length-delimited message.
+  upb_Arena* arena = upb_Arena_New();
+
+  upb_MiniTable* mini_table = CreateMiniTableWithEmptySubTablesOld(arena);
+  // Field index 1 is field number 5, type Message.
+  const upb_MiniTableField* msg_field =
+      upb_MiniTable_GetFieldByIndex(mini_table, 1);
+  EXPECT_TRUE(upb_MiniTable_SetSubMessage(
+      mini_table, (upb_MiniTableField*)msg_field,
+      &upb_0test__ModelWithExtensions_msg_init));
+
+  // Inject varint-encoded unknown field with field number 5 (wire type 0).
+  // Tag = (5 << 3) | 0 = 0x28, followed by a varint value.
+  {
+    upb_Message* msg = _upb_Message_New(mini_table, arena);
+    const char varint_unknown[] = {0x28, 0x05};
+    ASSERT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+        msg, varint_unknown, sizeof(varint_unknown), arena,
+        kUpb_AddUnknown_Copy));
+
+    upb_UnknownToMessageRet ret = upb_MiniTable_PromoteUnknownToMessage(
+        msg, mini_table, msg_field,
+        &upb_0test__ModelWithExtensions_msg_init, 0, arena);
+    EXPECT_NE(ret.status, kUpb_UnknownToMessage_Ok);
+  }
+
+  // Inject fixed32-encoded unknown field with field number 5 (wire type 5).
+  // Tag = (5 << 3) | 5 = 0x2d, followed by 4 bytes.
+  {
+    upb_Message* msg = _upb_Message_New(mini_table, arena);
+    const char fixed32_unknown[] = {0x2d, 0x00, 0x00, 0x01, 0x00};
+    ASSERT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+        msg, fixed32_unknown, sizeof(fixed32_unknown), arena,
+        kUpb_AddUnknown_Copy));
+
+    upb_UnknownToMessageRet ret = upb_MiniTable_PromoteUnknownToMessage(
+        msg, mini_table, msg_field,
+        &upb_0test__ModelWithExtensions_msg_init, 0, arena);
+    EXPECT_NE(ret.status, kUpb_UnknownToMessage_Ok);
+  }
+
+  // Inject fixed64-encoded unknown field with field number 5 (wire type 1).
+  // Tag = (5 << 3) | 1 = 0x29, followed by 8 bytes.
+  {
+    upb_Message* msg = _upb_Message_New(mini_table, arena);
+    const char fixed64_unknown[] = {0x29, 0xFF, 0xFF, 0xFF, 0xFF,
+                                    0xFF, 0xFF, 0xFF, 0x7F};
+    ASSERT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+        msg, fixed64_unknown, sizeof(fixed64_unknown), arena,
+        kUpb_AddUnknown_Copy));
+
+    upb_UnknownToMessageRet ret = upb_MiniTable_PromoteUnknownToMessage(
+        msg, mini_table, msg_field,
+        &upb_0test__ModelWithExtensions_msg_init, 0, arena);
+    EXPECT_NE(ret.status, kUpb_UnknownToMessage_Ok);
+  }
+
+  upb_Arena_Free(arena);
+}
+
 TEST(GeneratedCode, Extensions) {
   upb_Arena* arena = upb_Arena_New();
   upb_test_ModelWithExtensions* msg = upb_test_ModelWithExtensions_new(arena);
