@@ -49,7 +49,8 @@ namespace pb {
 namespace enumvalue {
 class JsonEnumValueOptions;
 struct JsonEnumValueOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern const JsonEnumValueOptionsGlobalsTypeInternal JsonEnumValueOptions_globals_;
+PROTOBUF_EXPORT extern const JsonEnumValueOptionsGlobalsTypeInternal
+    JsonEnumValueOptions_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 }  // namespace enumvalue
 }  // namespace pb
 namespace google {

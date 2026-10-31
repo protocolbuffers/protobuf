@@ -179,8 +179,8 @@ static_assert(alignof(VersionGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const VersionGlobalsTypeInternal Version_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const VersionGlobalsTypeInternal
+        Version_globals_ alignas(::_pbi::kClassDataAlignment) PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class CodeGeneratorResponse_File::_Internal {
  public:
   using HasBits = decltype(::std::declval<CodeGeneratorResponse_File>()._impl_._has_bits_);
@@ -316,8 +316,8 @@ static_assert(alignof(CodeGeneratorResponse_FileGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CodeGeneratorResponse_FileGlobalsTypeInternal CodeGeneratorResponse_File_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CodeGeneratorResponse_FileGlobalsTypeInternal
+        CodeGeneratorResponse_File_globals_ alignas(::_pbi::kClassDataAlignment) PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class CodeGeneratorResponse::_Internal {
  public:
   using HasBits = decltype(::std::declval<CodeGeneratorResponse>()._impl_._has_bits_);
@@ -463,8 +463,8 @@ static_assert(alignof(CodeGeneratorResponseGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CodeGeneratorResponseGlobalsTypeInternal CodeGeneratorResponse_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CodeGeneratorResponseGlobalsTypeInternal
+        CodeGeneratorResponse_globals_ alignas(::_pbi::kClassDataAlignment) PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class CodeGeneratorRequest::_Internal {
  public:
   using HasBits = decltype(::std::declval<CodeGeneratorRequest>()._impl_._has_bits_);
@@ -617,8 +617,8 @@ static_assert(alignof(CodeGeneratorRequestGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CodeGeneratorRequestGlobalsTypeInternal CodeGeneratorRequest_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CodeGeneratorRequestGlobalsTypeInternal
+        CodeGeneratorRequest_globals_ alignas(::_pbi::kClassDataAlignment) PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google

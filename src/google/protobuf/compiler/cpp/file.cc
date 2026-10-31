@@ -634,7 +634,8 @@ void FileGenerator::GenerateInternalForwardDeclarations(
         p->Emit({{"type", MsgGlobalsInstanceType(instance, options_)},
                  {"name", MsgGlobalsInstanceName(instance, options_)}},
                 R"cc(
-                  extern __attribute__((weak)) const $type$ $name$;
+                  extern __attribute__((weak))
+                  const $type$ $name$ alignas($pbi$::kClassDataAlignment);
                 )cc");
       }
     }
@@ -1368,7 +1369,8 @@ class FileGenerator::ForwardDeclarations {
           R"cc(
             class $class$;
             struct $globals_type$;
-            $dllexport_decl $extern $const $$globals_type$ $globals_name$;
+            $dllexport_decl $extern $const $$globals_type$
+                $globals_name$ alignas($pbi$::kClassDataAlignment);
           )cc");
     }
 
