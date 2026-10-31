@@ -198,7 +198,11 @@ uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed);
 /** Calculates the number of entries required to hold an expected number of
  * values, within the table's load factor (0.875). */
 UPB_INLINE size_t _upb_entries_needed_for(size_t expected_size) {
-  size_t need_entries = expected_size + 1 + expected_size / 7;
+  size_t extra = 1 + expected_size / 7;
+  if (UPB_UNLIKELY(expected_size > SIZE_MAX - extra)) {
+    return SIZE_MAX;
+  }
+  size_t need_entries = expected_size + extra;
   UPB_ASSERT(need_entries - (need_entries >> 3) >= expected_size);
   return need_entries;
 }
