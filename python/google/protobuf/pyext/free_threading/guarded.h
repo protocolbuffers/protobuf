@@ -142,21 +142,23 @@ class Guarded {
   ReadType Get(const ReadAccess& access ABSL_ATTRIBUTE_LIFETIME_BOUND) const {
     debug_guard_.CheckMatches(access.guard());
     if constexpr (kIsPointerLike) {
-      return Raw();
+      return free_threading_internal::RawPointer(value_);
     } else {
       return value_;
     }
   }
 
   // For pointer-like T, write access yields the mutable pointee `U*`. (For
-  // other T, a WriteAccess binds to the ReadAccess overload above; use Set() to
-  // modify the value.)
-  auto Get(const WriteAccess& access ABSL_ATTRIBUTE_LIFETIME_BOUND) const ->
-      typename Types::WriteType
-    requires kIsPointerLike
-  {
+  // other T, this overload is removed by SFINAE and a WriteAccess binds to the
+  // ReadAccess overload above; use Set() to modify the value.)
+  //
+  // This is a template only so that it can be constrained without C++20
+  // `requires` clauses (OSS builds are C++17).
+  template <bool kEnable = kIsPointerLike, std::enable_if_t<kEnable, int> = 0>
+  typename Types::WriteType Get(
+      const WriteAccess& access ABSL_ATTRIBUTE_LIFETIME_BOUND) const {
     debug_guard_.CheckMatches(access.guard());
-    return Raw();
+    return free_threading_internal::RawPointer(value_);
   }
 
   // Guarded::Set()
@@ -198,12 +200,6 @@ class Guarded {
   void BindQuiescent(const AccessGuard& guard) { debug_guard_.Set(&guard); }
 
  private:
-  auto Raw() const
-    requires kIsPointerLike
-  {
-    return free_threading_internal::RawPointer(value_);
-  }
-
   T value_{};
   ABSL_ATTRIBUTE_NO_UNIQUE_ADDRESS
   free_threading_internal::DebugGuardTracker debug_guard_;
