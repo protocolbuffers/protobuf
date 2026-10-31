@@ -3053,6 +3053,11 @@ const void* Reflection::GetRawRepeatedField(
 
 const FieldDescriptor* Reflection::GetOneofFieldDescriptor(
     const Message& message, const OneofDescriptor* oneof_descriptor) const {
+  if (oneof_descriptor->containing_type() != descriptor_) {
+    ReportReflectionUsageError(descriptor_, oneof_descriptor->field(0),
+                               "GetOneofFieldDescriptor",
+                               "OneofDescriptor does not match message type.");
+  }
   if (oneof_descriptor->is_synthetic()) {
     const FieldDescriptor* field = oneof_descriptor->field(0);
     return HasField(message, field) ? field : nullptr;
@@ -3486,6 +3491,11 @@ void Reflection::NaiveSwapHasBit(Message* message1, Message* message2,
 
 bool Reflection::HasOneof(const Message& message,
                           const OneofDescriptor* oneof_descriptor) const {
+  if (oneof_descriptor->containing_type() != descriptor_) {
+    ReportReflectionUsageError(descriptor_, oneof_descriptor->field(0),
+                               "HasOneof",
+                               "OneofDescriptor does not match message type.");
+  }
   if (oneof_descriptor->is_synthetic()) {
     return HasField(message, oneof_descriptor->field(0));
   }
@@ -3506,6 +3516,11 @@ void Reflection::ClearOneofField(Message* message,
 
 void Reflection::ClearOneof(Message* message,
                             const OneofDescriptor* oneof_descriptor) const {
+  if (oneof_descriptor->containing_type() != descriptor_) {
+    ReportReflectionUsageError(descriptor_, oneof_descriptor->field(0),
+                               "ClearOneof",
+                               "OneofDescriptor does not match message type.");
+  }
   if (oneof_descriptor->is_synthetic()) {
     ClearField(message, oneof_descriptor->field(0));
     return;
