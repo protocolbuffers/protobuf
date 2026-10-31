@@ -392,6 +392,12 @@ class Duration(object):
         nanos = 0
       else:
         seconds = int(value[:pos])
+        nano_value = value[pos + 1 : -1]
+        if len(nano_value) > 9:
+          raise ValueError(
+              'Failed to parse Duration: nanos {0} more than '
+              '9 fractional digits.'.format(nano_value)
+          )
         if value[0] == '-':
           nanos = int(round(float('-0{0}'.format(value[pos:-1])) * 1e9))
         else:

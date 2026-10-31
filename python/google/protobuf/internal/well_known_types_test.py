@@ -127,6 +127,20 @@ class TimeUtilTest(TimeUtilTestBase):
     message.FromJsonString('0.0000001s')
     self.assertEqual(100, message.nanos)
 
+    # Fractional digits beyond nanosecond precision cannot be represented
+    # and must be rejected, matching Timestamp.FromJsonString in this file
+    # and the C++ TimeUtil::FromString fix for the same inputs. Accepting
+    # them would silently round or drop digits (e.g. '1.0000000001s' used
+    # to parse as exactly 1s).
+    for text in (
+        '0.3294967297s',
+        '-0.3294967297s',
+        '1.0000000001s',
+        '0.1234567891s',
+    ):
+      with self.assertRaises(ValueError):
+        message.FromJsonString(text)
+
   def testTimestampIntegerConversion(self):
     message = timestamp_pb2.Timestamp()
     message.FromNanoseconds(1)
