@@ -7,9 +7,13 @@
 
 #include "google/protobuf/compiler/csharp/csharp_generator.h"
 
-#include <sstream>
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
-#include "absl/strings/ascii.h"
 #include "absl/strings/charset.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"

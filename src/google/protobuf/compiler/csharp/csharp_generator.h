@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/csharp/c_sharp_features.pb.h"
 #include "google/protobuf/port_def.inc"
