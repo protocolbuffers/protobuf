@@ -207,6 +207,13 @@ def _py_dist_transition_impl(settings, attr):
             "//command_line_option:platforms": platform,
             "//python:python_version": version,
             "//python:limited_api": True,
+            # Py_LIMITED_API (derived from `version`) determines which Python
+            # versions the wheel is compatible with, but the headers themselves
+            # can come from a newer Python. Newer headers are strictly better:
+            # for example, the inline Py_INCREF()/Py_DECREF() in pre-3.12
+            # headers are unaware of immortal objects, and will eventually
+            # make None mortal when run on Python 3.14+.
+            "@rules_python//python/config_settings:python_version": attr.limited_api_python_headers_version,
         })
 
     for version in attr.full_api_versions:
@@ -215,6 +222,9 @@ def _py_dist_transition_impl(settings, attr):
                 "//command_line_option:platforms": platform,
                 "//python:python_version": version,
                 "//python:limited_api": False,
+                # Full API builds must use the headers of the exact version
+                # they target, e.g. "311" -> "3.11".
+                "@rules_python//python/config_settings:python_version": version[0] + "." + version[1:],
             })
 
     return transitions
@@ -226,6 +236,7 @@ _py_dist_transition = transition(
         "//command_line_option:platforms",
         "//python:python_version",
         "//python:limited_api",
+        "@rules_python//python/config_settings:python_version",
     ],
 )
 
@@ -247,6 +258,11 @@ py_dist = rule(
         ),
         "pure_python_wheel": attr.label(mandatory = True),
         "limited_api_platforms": attr.string_dict(),
+        "limited_api_python_headers_version": attr.string(
+            mandatory = True,
+            doc = "The rules_python Python version (e.g. \"3.14\") whose headers are used to " +
+                  "build limited API wheels.",
+        ),
         "full_api_versions": attr.string_list(),
         "full_api_platforms": attr.string_list(),
         "_allowlist_function_transition": attr.label(
