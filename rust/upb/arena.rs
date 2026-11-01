@@ -14,6 +14,20 @@ use core::slice;
 
 pub type RawArena = sys_arena::RawArena;
 
+#[repr(C)]
+struct CleanupHeader {
+    next: *mut CleanupHeader,
+    drop_fn: unsafe fn(*mut CleanupHeader),
+    type_id: core::any::TypeId,
+    owner: *const (),
+}
+
+#[repr(C)]
+struct CleanupEntry<T> {
+    header: CleanupHeader,
+    value: T,
+}
+
 /// A wrapper over a `upb_Arena`.
 ///
 /// This is not a safe wrapper per se, because the allocation functions still
@@ -33,11 +47,12 @@ pub type RawArena = sys_arena::RawArena;
 pub struct Arena {
     // Safety invariant: this must always be a valid arena
     raw: RawArena,
+    cleanups: UnsafeCell<*mut CleanupHeader>,
     _not_sync: PhantomData<UnsafeCell<()>>,
 }
 
 // SAFETY: `Arena` uniquely holds the underlying RawArena and has no
-// thread-local data.
+// thread-local data. All retained values in `cleanups` are required to be `Send`.
 unsafe impl Send for Arena {}
 
 impl Arena {
@@ -55,7 +70,7 @@ impl Arena {
         //   returned a non-null pointer, it is a valid arena.
         unsafe {
             let Some(raw) = sys_arena::upb_Arena_New() else { arena_new_failed() };
-            Self { raw, _not_sync: PhantomData }
+            Self { raw, cleanups: UnsafeCell::new(ptr::null_mut()), _not_sync: PhantomData }
         }
     }
 
@@ -75,7 +90,7 @@ impl Arena {
         //   if it returned a non-null pointer, it is a valid arena.
         unsafe {
             let Some(raw) = sys_arena::upb_Arena_NewSized(size_hint) else { arena_new_failed() };
-            Self { raw, _not_sync: PhantomData }
+            Self { raw, cleanups: UnsafeCell::new(ptr::null_mut()), _not_sync: PhantomData }
         }
     }
 
@@ -83,7 +98,7 @@ impl Arena {
     /// - The `raw_arena` must point to a valid arena.
     /// - The caller must ensure that the Arena's destructor does not run.
     pub unsafe fn from_raw(raw_arena: RawArena) -> Self {
-        Arena { raw: raw_arena, _not_sync: PhantomData }
+        Arena { raw: raw_arena, cleanups: UnsafeCell::new(ptr::null_mut()), _not_sync: PhantomData }
     }
 
     /// Returns the raw, UPB-managed pointer to the arena.
@@ -173,6 +188,140 @@ impl Arena {
         })
     }
 
+    /// Moves `value` into the arena associated with `owner`, replacing any
+    /// previously retained value for `owner`, and runs its destructor when
+    /// `owner`'s retained values or the arena are cleared/dropped.
+    ///
+    /// # Safety
+    /// - The caller must ensure that the returned reference (and any aliased pointers into `value`
+    ///   or into any previously retained value for `owner`) is not accessed after `clear_retained`,
+    ///   `clear_retained_for(owner)`, or a subsequent `retain_for(owner, ...)` is called.
+    /// - If `parent.fuse(self)` is called, ownership of retained values is transferred to `parent`
+    ///   and they will be dropped when `parent` is dropped.
+    pub unsafe fn retain_for<'a, T: Send + 'static>(&'a self, owner: *const (), value: T) -> &'a T {
+        unsafe fn drop_entry<T>(ptr: *mut CleanupHeader) {
+            unsafe {
+                let entry = ptr.cast::<CleanupEntry<T>>();
+                ptr::drop_in_place(&raw mut (*entry).value);
+            }
+        }
+
+        unsafe fn drop_boxed_entry<T>(ptr: *mut CleanupHeader) {
+            unsafe {
+                drop(Box::from_raw(ptr.cast::<CleanupEntry<T>>()));
+            }
+        }
+
+        let target_type = core::any::TypeId::of::<T>();
+        unsafe {
+            let mut prev_next: *mut *mut CleanupHeader = self.cleanups.get();
+            while !(*prev_next).is_null() {
+                let curr = *prev_next;
+                if (*curr).owner == owner {
+                    if (*curr).type_id == target_type {
+                        let entry = curr.cast::<CleanupEntry<T>>();
+                        ptr::drop_in_place(&raw mut (*entry).value);
+                        (&raw mut (*entry).value).write(value);
+                        return &(*entry).value;
+                    }
+                    *prev_next = (*curr).next;
+                    ((*curr).drop_fn)(curr);
+                } else {
+                    prev_next = &raw mut (*curr).next;
+                }
+            }
+        }
+
+        let size = core::mem::size_of::<CleanupEntry<T>>();
+        let align = core::mem::align_of::<CleanupEntry<T>>();
+
+        unsafe {
+            let head = *self.cleanups.get();
+            if align <= sys_arena::UPB_MALLOC_ALIGN {
+                if let Some(alloc) = self.checked_alloc(size, align) {
+                    let entry_ptr = alloc.as_mut_ptr().cast::<CleanupEntry<T>>();
+                    entry_ptr.write(CleanupEntry {
+                        header: CleanupHeader {
+                            next: head,
+                            drop_fn: drop_entry::<T>,
+                            type_id: target_type,
+                            owner,
+                        },
+                        value,
+                    });
+                    *self.cleanups.get() = entry_ptr.cast::<CleanupHeader>();
+                    return &(*entry_ptr).value;
+                }
+            }
+            let boxed = Box::new(CleanupEntry {
+                header: CleanupHeader {
+                    next: head,
+                    drop_fn: drop_boxed_entry::<T>,
+                    type_id: target_type,
+                    owner,
+                },
+                value,
+            });
+            let entry_ptr = Box::into_raw(boxed);
+            *self.cleanups.get() = entry_ptr.cast::<CleanupHeader>();
+            &(*entry_ptr).value
+        }
+    }
+
+    /// Drops all values retained via [`Arena::retain_for`].
+    ///
+    /// # Safety
+    /// - The caller must ensure that no references returned by [`Arena::retain_for`] or
+    ///   [`Arena::get_retained_for`] and no aliased message fields pointing into those retained
+    ///   values are accessed after this call.
+    pub unsafe fn clear_retained(&self) {
+        unsafe {
+            let mut curr = ptr::replace(self.cleanups.get(), ptr::null_mut());
+            while !curr.is_null() {
+                let next = (*curr).next;
+                ((*curr).drop_fn)(curr);
+                curr = next;
+            }
+        }
+    }
+
+    /// Drops all values retained for `owner` via [`Arena::retain_for`].
+    ///
+    /// # Safety
+    /// - The caller must ensure that no references returned by [`Arena::retain_for`] or
+    ///   [`Arena::get_retained_for`] for `owner` and no aliased message fields pointing into those
+    ///   retained values are accessed after this call.
+    pub unsafe fn clear_retained_for(&self, owner: *const ()) {
+        unsafe {
+            let mut prev_next: *mut *mut CleanupHeader = self.cleanups.get();
+            while !(*prev_next).is_null() {
+                let curr = *prev_next;
+                if (*curr).owner == owner {
+                    *prev_next = (*curr).next;
+                    ((*curr).drop_fn)(curr);
+                } else {
+                    prev_next = &raw mut (*curr).next;
+                }
+            }
+        }
+    }
+
+    /// Returns a reference to the retained value of type `T` for `owner`, if any.
+    pub fn get_retained_for<T: 'static>(&self, owner: *const ()) -> Option<&T> {
+        let target = core::any::TypeId::of::<T>();
+        unsafe {
+            let mut curr = *self.cleanups.get();
+            while !curr.is_null() {
+                if (*curr).owner == owner && (*curr).type_id == target {
+                    let entry = curr.cast::<CleanupEntry<T>>();
+                    return Some(&(*entry).value);
+                }
+                curr = (*curr).next;
+            }
+            None
+        }
+    }
+
     /// Fuse two arenas so they share the same lifetime.
     ///
     /// `fuse` will make it so that the memory allocated by `self` or `other` is
@@ -189,6 +338,19 @@ impl Arena {
             // recoverable error but a logic bug in a program.
             panic!("Could not fuse two UPB arenas.");
         }
+        if !ptr::eq(self, other) {
+            unsafe {
+                let other_head = ptr::replace(other.cleanups.get(), ptr::null_mut());
+                if !other_head.is_null() {
+                    let mut tail = other_head;
+                    while !(*tail).next.is_null() {
+                        tail = (*tail).next;
+                    }
+                    (*tail).next = *self.cleanups.get();
+                    *self.cleanups.get() = other_head;
+                }
+            }
+        }
     }
 }
 
@@ -202,6 +364,7 @@ impl Drop for Arena {
     #[inline]
     fn drop(&mut self) {
         unsafe {
+            self.clear_retained();
             sys_arena::upb_Arena_Free(self.raw);
         }
     }
@@ -211,6 +374,15 @@ impl Drop for Arena {
 mod tests {
     use super::*;
     use googletest::gtest;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::sync::Arc;
+
+    struct DropTracker(Arc<AtomicUsize>);
+    impl Drop for DropTracker {
+        fn drop(&mut self) {
+            self.0.fetch_add(1, Ordering::SeqCst);
+        }
+    }
 
     #[gtest]
     fn test_arena_new_and_free() {
@@ -229,5 +401,90 @@ mod tests {
         assert_eq!(initial_space, final_space);
         assert_eq!(slice.len(), 4096);
         assert_eq!(slice[4095], 42);
+    }
+
+    #[gtest]
+    fn test_arena_retain_for_and_drop() {
+        let drops = Arc::new(AtomicUsize::new(0));
+        let owner = 1usize as *const ();
+        {
+            let arena = Arena::new();
+            let retained = unsafe {
+                arena.retain_for(owner, (vec![1u8, 2, 3, 4], DropTracker(drops.clone())))
+            };
+            assert_eq!(retained.0.as_slice(), &[1, 2, 3, 4]);
+            assert_eq!(
+                arena.get_retained_for::<(Vec<u8>, DropTracker)>(owner).unwrap().0.as_slice(),
+                &[1, 2, 3, 4]
+            );
+            assert_eq!(drops.load(Ordering::SeqCst), 0);
+        }
+        assert_eq!(drops.load(Ordering::SeqCst), 1);
+    }
+
+    #[gtest]
+    fn test_arena_retain_for_replaces_previous_for_same_owner() {
+        let drops1 = Arc::new(AtomicUsize::new(0));
+        let drops2 = Arc::new(AtomicUsize::new(0));
+        let owner = 1usize as *const ();
+        let arena = Arena::new();
+        unsafe {
+            arena.retain_for(owner, (10u32, DropTracker(drops1.clone())));
+            assert_eq!(drops1.load(Ordering::SeqCst), 0);
+
+            arena.retain_for(owner, (20u32, DropTracker(drops2.clone())));
+            assert_eq!(drops1.load(Ordering::SeqCst), 1);
+            assert_eq!(drops2.load(Ordering::SeqCst), 0);
+        }
+        assert_eq!(arena.get_retained_for::<(u32, DropTracker)>(owner).unwrap().0, 20);
+        drop(arena);
+        assert_eq!(drops2.load(Ordering::SeqCst), 1);
+    }
+
+    #[gtest]
+    fn test_arena_retain_for_and_clear_for() {
+        let drops1 = Arc::new(AtomicUsize::new(0));
+        let drops2 = Arc::new(AtomicUsize::new(0));
+        let owner1 = 1usize as *const ();
+        let owner2 = 2usize as *const ();
+        let arena = Arena::new();
+        unsafe {
+            arena.retain_for(owner1, (10u32, DropTracker(drops1.clone())));
+            arena.retain_for(owner2, (20u32, DropTracker(drops2.clone())));
+        }
+        assert_eq!(arena.get_retained_for::<(u32, DropTracker)>(owner1).unwrap().0, 10);
+        assert_eq!(arena.get_retained_for::<(u32, DropTracker)>(owner2).unwrap().0, 20);
+
+        unsafe {
+            arena.clear_retained_for(owner1);
+        }
+        assert_eq!(drops1.load(Ordering::SeqCst), 1);
+        assert_eq!(drops2.load(Ordering::SeqCst), 0);
+        assert!(arena.get_retained_for::<(u32, DropTracker)>(owner1).is_none());
+        assert_eq!(arena.get_retained_for::<(u32, DropTracker)>(owner2).unwrap().0, 20);
+
+        drop(arena);
+        assert_eq!(drops2.load(Ordering::SeqCst), 1);
+    }
+
+    #[gtest]
+    fn test_arena_fuse_transfers_retained() {
+        let drops = Arc::new(AtomicUsize::new(0));
+        let owner = 99usize as *const ();
+        let parent = Arena::new();
+        {
+            let child = Arena::new();
+            unsafe {
+                child.retain_for(owner, (vec![7u8, 8, 9], DropTracker(drops.clone())));
+            }
+            parent.fuse(&child);
+        }
+        assert_eq!(drops.load(Ordering::SeqCst), 0);
+        assert_eq!(
+            parent.get_retained_for::<(Vec<u8>, DropTracker)>(owner).unwrap().0.as_slice(),
+            &[7, 8, 9]
+        );
+        drop(parent);
+        assert_eq!(drops.load(Ordering::SeqCst), 1);
     }
 }

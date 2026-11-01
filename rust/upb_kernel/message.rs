@@ -364,9 +364,16 @@ where
     }
 }
 
-impl<T: UpbGetMessagePtrMut> Clear for T {
+impl<T: UpbGetMessagePtrMut + UpbGetArena> Clear for T {
     fn clear(&mut self) {
-        unsafe { self.get_ptr_mut(Private).clear() }
+        let ptr = self.get_ptr_mut(Private);
+        let owner = ptr.raw().as_ptr() as *const ();
+        // SAFETY: `ptr.clear()` below clears all fields of `self`, so no aliased
+        // references into `owner`'s retained buffer remain.
+        unsafe {
+            self.get_arena(Private).clear_retained_for(owner);
+            ptr.clear()
+        }
     }
 }
 
@@ -409,6 +416,43 @@ where
 
     fn clear_and_parse_dont_enforce_required(&mut self, data: &[u8]) -> Result<(), ParseError> {
         clear_and_parse_helper(self, data, 0)
+    }
+
+    fn clear_and_parse_owned<B>(&mut self, data: B) -> Result<(), ParseError>
+    where
+        B: AsRef<[u8]> + Send + 'static,
+    {
+        let ptr = self.get_ptr_mut(Private);
+        let owner = ptr.raw().as_ptr() as *const ();
+        let arena = self.get_arena(Private);
+        let decode_options =
+            upb::wire::decode_options::CHECK_REQUIRED | upb::wire::decode_options::ALIAS_STRING;
+        // SAFETY:
+        // - `self` is a valid mutable message, and `ptr.clear()` clears all existing fields before
+        //   `arena.retain_for(owner, data)` replaces any previously retained buffer for `owner`.
+        // - `retained` is kept alive in `arena` until `self`'s arena is dropped or `self` is
+        //   cleared/re-parsed.
+        unsafe {
+            ptr.clear();
+            let retained = arena.retain_for(owner, data);
+            upb::wire::decode_with_options(
+                retained.as_ref(),
+                ptr,
+                generated_extension_registry().as_ptr(),
+                arena,
+                decode_options,
+            )
+        }
+        .map(|_| ())
+        .map_err(|_| {
+            Clear::clear(self);
+            ParseError
+        })
+    }
+
+    fn get_retained<B: 'static>(&mut self) -> Option<&B> {
+        let owner = self.get_ptr_mut(Private).raw().as_ptr() as *const ();
+        self.get_arena(Private).get_retained_for::<B>(owner)
     }
 }
 
@@ -466,14 +510,20 @@ where
     for<'a> View<'a, Self::Proxied>: UpbGetMessagePtr,
 {
     fn copy_from(&mut self, src: impl AsView<Proxied = Self::Proxied>) {
-        // SAFETY: self and src are both valid `T`s associated with
-        // `Self::mini_table()`.
+        let raw = self.get_ptr(Private).raw();
+        let owner = raw.as_ptr() as *const ();
+        let arena = self.get_arena(Private);
+        // SAFETY:
+        // - `upb_Message_DeepCopy` overwrites `self` with a deep copy of `src`, so no aliased
+        //   references into `owner`'s previously retained buffer remain.
+        // - `self` and `src` are both valid `T`s associated with `Self::mini_table()`.
         unsafe {
+            arena.clear_retained_for(owner);
             if !upb_Message_DeepCopy(
-                self.get_ptr(Private).raw(),
+                raw,
                 src.as_view().get_ptr(Private).raw(),
                 <Self::Proxied as AssociatedMiniTable>::mini_table(),
-                self.get_arena(Private).raw(),
+                arena.raw(),
             ) {
                 deep_copy_failed();
             }

@@ -21,9 +21,9 @@ pub trait UpbTypeConversions<Tag>: Proxied {
     fn to_message_value(val: View<'_, Self>) -> upb_MessageValue;
 
     /// # Safety
-    /// - `raw_arena` must point to a valid upb arena.
+    /// - `parent_arena` must be a valid upb arena.
     unsafe fn into_message_value_fuse_if_required(
-        raw_arena: RawArena,
+        parent_arena: &Arena,
         val: Self,
     ) -> upb_MessageValue;
 
@@ -67,13 +67,9 @@ where
     }
 
     unsafe fn into_message_value_fuse_if_required(
-        raw_parent_arena: RawArena,
+        parent_arena: &Arena,
         mut val: Self,
     ) -> upb_MessageValue {
-        // SAFETY: The arena memory is not freed due to `ManuallyDrop`.
-        let parent_arena =
-            std::mem::ManuallyDrop::new(unsafe { Arena::from_raw(raw_parent_arena) });
-
         parent_arena.fuse(val.get_arena(Private));
         upb_MessageValue { msg_val: Some(val.get_ptr(Private).raw()) }
     }
@@ -127,7 +123,7 @@ where
     }
 
     unsafe fn into_message_value_fuse_if_required(
-        _raw_parent_arena: RawArena,
+        _parent_arena: &Arena,
         val: Self,
     ) -> upb_MessageValue {
         upb_MessageValue { int32_val: val.into() }
@@ -168,7 +164,7 @@ macro_rules! impl_upb_type_conversions_for_scalars {
                 }
 
                 #[inline(always)]
-                unsafe fn into_message_value_fuse_if_required(_: RawArena, val: $t) -> upb_MessageValue {
+                unsafe fn into_message_value_fuse_if_required(_: &Arena, val: $t) -> upb_MessageValue {
                     <Self as UpbTypeConversions<PrimitiveTag>>::to_message_value(val)
                 }
 
@@ -219,12 +215,9 @@ impl UpbTypeConversions<PrimitiveTag> for ProtoBytes {
     }
 
     unsafe fn into_message_value_fuse_if_required(
-        raw_parent_arena: RawArena,
+        parent_arena: &Arena,
         val: ProtoBytes,
     ) -> upb_MessageValue {
-        // SAFETY: The arena memory is not freed due to `ManuallyDrop`.
-        let parent_arena = ManuallyDrop::new(unsafe { Arena::from_raw(raw_parent_arena) });
-
         let (view, arena) = val.inner.into_raw_parts();
         parent_arena.fuse(&arena);
 
@@ -259,13 +252,13 @@ impl UpbTypeConversions<PrimitiveTag> for ProtoString {
     }
 
     unsafe fn into_message_value_fuse_if_required(
-        raw_arena: RawArena,
+        parent_arena: &Arena,
         val: ProtoString,
     ) -> upb_MessageValue {
-        // SAFETY: `raw_arena` is valid as promised by the caller
+        // SAFETY: `parent_arena` is valid as promised by the caller
         unsafe {
             <ProtoBytes as UpbTypeConversions<PrimitiveTag>>::into_message_value_fuse_if_required(
-                raw_arena,
+                parent_arena,
                 val.into(),
             )
         }
