@@ -179,9 +179,10 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
        {"deprecation",
         descriptor->options().deprecated() ? "@java.lang.Deprecated" : ""},
        {"unrecognized_index", descriptor->value_count()},
-       {"proto_enum_class", context->EnforceLite()
-                                ? "com.google.protobuf.Internal.EnumLite"
-                                : "com.google.protobuf.ProtocolMessageEnum"},
+       {"proto_enum_class",
+        context->EnforceLite()
+            ? "com.google.protobuf.Internal.EnumLite"
+            : "com.google.protobuf.ProtocolMessageEnum, java.io.Serializable"},
        {"proto_non_null_annotation",
         [&] {
           if (!google::protobuf::internal::IsOss()) {
@@ -423,7 +424,7 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
         $proto_non_null_annotation$
         $deprecation$
         public$static$final class $classname$
-          implements $proto_enum_class$, java.io.Serializable, $interface_names$ {
+          implements $proto_enum_class$, $interface_names$ {
           static {
             $gen_code_version_validator$
           }
