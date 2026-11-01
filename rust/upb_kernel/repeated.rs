@@ -82,7 +82,7 @@ where
             upb_Array_Append(
                 repeated.as_raw(Private),
                 T::into_message_value_fuse_if_required(
-                    repeated.raw_arena(Private),
+                    repeated.arena(Private),
                     val.into_proxied(Private),
                 ),
                 repeated.raw_arena(Private),
@@ -150,7 +150,7 @@ where
                 repeated.as_raw(Private),
                 index,
                 T::into_message_value_fuse_if_required(
-                    repeated.raw_arena(Private),
+                    repeated.arena(Private),
                     val.into_proxied(Private),
                 ),
             )

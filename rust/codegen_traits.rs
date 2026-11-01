@@ -166,6 +166,9 @@ pub(crate) mod create {
     pub trait Parse: SealedInternal + Sized {
         fn parse(serialized: &[u8]) -> Result<Self, crate::ParseError>;
         fn parse_dont_enforce_required(serialized: &[u8]) -> Result<Self, crate::ParseError>;
+        fn parse_owned<B>(serialized: B) -> Result<Self, crate::ParseError>
+        where
+            B: AsRef<[u8]> + Send + 'static;
     }
 
     impl<T> Parse for T
@@ -181,6 +184,14 @@ pub(crate) mod create {
             let mut msg = Self::default();
             crate::ClearAndParse::clear_and_parse_dont_enforce_required(&mut msg, serialized)
                 .map(|_| msg)
+        }
+
+        fn parse_owned<B>(serialized: B) -> Result<Self, crate::ParseError>
+        where
+            B: AsRef<[u8]> + Send + 'static,
+        {
+            let mut msg = Self::default();
+            crate::ClearAndParse::clear_and_parse_owned(&mut msg, serialized).map(|_| msg)
         }
     }
 }
@@ -226,6 +237,23 @@ pub(crate) mod write {
             &mut self,
             data: &[u8],
         ) -> Result<(), crate::ParseError>;
+        fn clear_and_parse_owned<B>(&mut self, data: B) -> Result<(), crate::ParseError>
+        where
+            B: AsRef<[u8]> + Send + 'static,
+        {
+            self.clear_and_parse(data.as_ref())
+        }
+        /// Returns a reference to the buffer `B` retained by this specific message
+        /// via [`ClearAndParse::clear_and_parse_owned`] or [`crate::Parse::parse_owned`],
+        /// if supported by the kernel.
+        ///
+        /// Note: Retained buffers are associated with the specific message on which
+        /// `clear_and_parse_owned` / `parse_owned` was called; calling `get_retained`
+        /// on a nested submessage decoded as part of a parent message's parse will
+        /// return `None` (call `get_retained` on the parent message instead).
+        fn get_retained<B: 'static>(&mut self) -> Option<&B> {
+            None
+        }
     }
 
     /// Copies the contents from `src` into `self`.

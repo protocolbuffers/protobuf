@@ -301,3 +301,87 @@ fn deterministic_serialization_applies_to_nested_maps() {
         eq(&ascending.serialize_with_options(options).unwrap())
     );
 }
+
+#[gtest]
+fn test_clear_and_parse_owned_and_get_retained() {
+    let mut src = TestAllTypes::new();
+    src.set_optional_int64(99);
+    src.set_optional_bytes(b"zero-copy aliased payload bytes");
+    src.set_optional_string("zero-copy aliased string");
+    let serialized: Vec<u8> = src.serialize().unwrap();
+
+    let mut msg = TestAllTypes::new();
+    msg.clear_and_parse_owned(serialized.clone()).unwrap();
+    expect_that!(msg.optional_int64(), eq(99));
+    expect_that!(msg.optional_bytes(), eq(b"zero-copy aliased payload bytes"));
+    expect_that!(msg.optional_string(), eq("zero-copy aliased string"));
+
+    if let Some(retained) = msg.get_retained::<Vec<u8>>() {
+        expect_that!(retained, eq(&serialized));
+        let buf_range = retained.as_ptr_range();
+        expect_that!(buf_range.contains(&msg.optional_bytes().as_ptr()), eq(true));
+        expect_that!(buf_range.contains(&msg.optional_string().as_bytes().as_ptr()), eq(true));
+    }
+
+    // Subsequent non-owned clear_and_parse clears the retained buffer.
+    msg.clear_and_parse(&serialized).unwrap();
+    expect_that!(msg.get_retained::<Vec<u8>>(), eq(None));
+
+    // Direct Clear::clear and CopyFrom::copy_from also clear the retained buffer.
+    msg.clear_and_parse_owned(serialized.clone()).unwrap();
+    msg.clear();
+    expect_that!(msg.get_retained::<Vec<u8>>(), eq(None));
+
+    msg.clear_and_parse_owned(serialized).unwrap();
+    msg.copy_from(&src);
+    expect_that!(msg.get_retained::<Vec<u8>>(), eq(None));
+}
+
+#[gtest]
+fn test_clear_and_parse_owned_clears_retained_on_error() {
+    let mut src = TestAllTypes::new();
+    src.set_optional_bytes(b"valid payload");
+    let valid_bytes = src.serialize().unwrap();
+
+    let mut msg = TestAllTypes::new();
+    msg.clear_and_parse_owned(valid_bytes).unwrap();
+
+    let malformed_data = vec![0x08u8, 0x80];
+    expect_that!(msg.clear_and_parse_owned(malformed_data), err(anything()));
+    expect_that!(msg.get_retained::<Vec<u8>>(), eq(None));
+    expect_that!(msg.has_optional_bytes(), eq(false));
+}
+
+#[gtest]
+fn test_parse_owned_fused_into_parent_and_containers() {
+    use unittest_rust_proto::test_all_types::NestedMessage;
+
+    let mut nested_src = NestedMessage::new();
+    nested_src.set_bb(1234);
+    let nested_bytes = nested_src.serialize().unwrap();
+
+    let mut parent = TestAllTypes::new();
+    let is_upb = {
+        let mut child = NestedMessage::parse_owned(nested_bytes.clone()).unwrap();
+        let has_retained = child.get_retained::<Vec<u8>>().is_some();
+        parent.set_optional_nested_message(child);
+
+        let repeated_child = NestedMessage::parse_owned(nested_bytes.clone()).unwrap();
+        parent.repeated_nested_message_mut().push(repeated_child);
+        has_retained
+    };
+    expect_that!(parent.optional_nested_message().bb(), eq(1234));
+    expect_that!(parent.repeated_nested_message().get(0).unwrap().bb(), eq(1234));
+
+    if is_upb {
+        expect_that!(parent.get_retained::<Vec<u8>>(), eq(None));
+        expect_that!(
+            parent.optional_nested_message_mut().get_retained::<Vec<u8>>(),
+            some(eq(&nested_bytes))
+        );
+        expect_that!(
+            parent.repeated_nested_message_mut().get_mut(0).unwrap().get_retained::<Vec<u8>>(),
+            some(eq(&nested_bytes))
+        );
+    }
+}

@@ -160,13 +160,14 @@ where
         key: View<'_, K>,
         value: impl IntoProxied<Self>,
     ) -> bool {
-        let arena = map.inner(Private).raw_arena();
+        let arena = map.arena(Private);
+        let raw_arena = map.inner(Private).raw_arena();
         let insert_status = unsafe {
             upb_Map_Insert(
                 map.as_raw(Private),
                 K::to_message_value(key),
                 Self::into_message_value_fuse_if_required(arena, value.into_proxied(Private)),
-                arena,
+                raw_arena,
             )
         };
         match insert_status {
