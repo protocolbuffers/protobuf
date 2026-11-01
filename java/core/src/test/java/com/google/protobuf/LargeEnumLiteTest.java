@@ -13,6 +13,7 @@ import static org.junit.Assert.assertThrows;
 import com.google.protobuf.large.openaliasingenum.edition.LargeOpenAliasingEnum;
 import com.google.protobuf.large.openaliasingenum.edition.LargeOpenAliasingEnumParent;
 import com.google.protobuf.large.openenum.edition.LargeOpenEnum;
+import java.io.Serializable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -38,6 +39,11 @@ public class LargeEnumLiteTest {
   @Test
   public void testUnrecognizedGetNumberThrows() throws Exception {
     assertThrows(IllegalArgumentException.class, LargeOpenEnum.UNRECOGNIZED::getNumber);
+  }
+
+  @Test
+  public void testJavaSerializationNotSupported() {
+    assertThat(Serializable.class.isAssignableFrom(LargeOpenEnum.class)).isFalse();
   }
 
   @Test
