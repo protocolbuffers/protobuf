@@ -64,6 +64,19 @@ class DescriptorsTest extends TestBase
         $this->assertNull($enumDesc);
     }
 
+    public function testDescriptorPoolWithMaterializedPropertiesIsFreedOnce()
+    {
+        $pool = DescriptorPool::getGeneratedPool();
+        // Reading the properties allocates the object's property table, which
+        // must be released exactly once when the pool is freed.
+        $this->assertSame([], get_object_vars($pool));
+        unset($pool);
+
+        $pool = DescriptorPool::getGeneratedPool();
+        $desc = $pool->getDescriptorByClassName(get_class(new TestDescriptorsMessage()));
+        $this->assertInstanceOf('\Google\Protobuf\Descriptor', $desc);
+    }
+
     #########################################################
     # Test descriptor.
     #########################################################
