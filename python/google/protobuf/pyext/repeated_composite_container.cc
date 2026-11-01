@@ -48,21 +48,11 @@ static Py_ssize_t Length(PyObject* pself) {
 
 static PyObject* AttachQuiescentMessage(RepeatedCompositeContainer* self,
                                         ScopedPyObjectPtr child) {
-  Message* parent_msg = cmessage::AssureWritable(self->parent);
-  if (parent_msg == nullptr) return nullptr;
-
   CMessage* cmsg = reinterpret_cast<CMessage*>(child.get());
-  parent_msg->GetReflection()->UnsafeArenaAddAllocatedMessage(
-      parent_msg, self->parent_field_descriptor, cmsg->GetQuiescent());
-  MessageTree* old_tree = cmsg->GetTree();
-  MessageTree* new_tree = self->GetTree();
-  cmessage::UpdateSubtreeTree(cmsg, new_tree);
-  old_tree->Unref();
-  Py_INCREF(self->parent);
-  cmsg->parent = self->parent;
-  cmsg->parent_field_descriptor = self->parent_field_descriptor;
-  cmsg->has_mutable_map_ancestor = self->parent->has_mutable_map_ancestor;
-  cmessage::SetSubmessage(self->parent, cmsg);
+  if (!self->parent->AttachQuiescentChild(self->parent_field_descriptor,
+                                          cmsg)) {
+    return nullptr;
+  }
   return child.release();
 }
 
@@ -198,12 +188,10 @@ static PyObject* GetItem(RepeatedCompositeContainer* self, Py_ssize_t index,
   // 2. Any subsequent write on the child triggers AssureWritable, which
   //    promotes the entire parent hierarchy (e.g., marking LazyField ancestors
   //    dirty).
-  MessageMutabilityState state = self->parent->state == MESSAGE_FROZEN
-                                     ? MESSAGE_FROZEN
-                                     : MESSAGE_UNPROMOTED;
   return self->parent
       ->BuildSubMessageFromPointer(self->parent_field_descriptor, sub_message,
-                                   self->child_message_class, state)
+                                   self->child_message_class,
+                                   MESSAGE_UNPROMOTED)
       ->AsPyObject();
 }
 

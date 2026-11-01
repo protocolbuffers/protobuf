@@ -30,6 +30,7 @@
 #include "google/protobuf/breaking_changes.h"
 #include "google/protobuf/pyext/descriptor_containers.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
+#include "google/protobuf/pyext/free_threading/access_guard.h"
 #include "google/protobuf/pyext/free_threading_mutex.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/message_factory.h"
@@ -297,24 +298,26 @@ static PyObject* GetOrBuildMessageInDefaultPool(
   }
   CMessage* cmsg = reinterpret_cast<CMessage*>(value.get());
 
-  Message* cmsg_message = cmessage::AssureWritable(cmsg);
-  if (cmsg_message == nullptr) {
+  const bool ok = cmsg->WithWrite(false, [&](const WriteAccess& w) {
+    Message* cmsg_message = cmessage::AssureWritable(cmsg, w);
+    const Reflection* reflection = message.GetReflection();
+    const UnknownFieldSet& unknown_fields(
+        reflection->GetUnknownFields(message));
+    if (unknown_fields.empty()) {
+      cmsg_message->CopyFrom(message);
+    } else {
+      // Reparse options string!  XXX call cmessage::MergeFromString
+      if (!Reparse(message_factory, message, cmsg_message)) {
+        PyErr_Format(PyExc_ValueError, "Error reparsing Options message");
+        return false;
+      }
+    }
+    cmsg->Freeze(w);
+    return true;
+  });
+  if (!ok) {
     return nullptr;
   }
-
-  const Reflection* reflection = message.GetReflection();
-  const UnknownFieldSet& unknown_fields(reflection->GetUnknownFields(message));
-  if (unknown_fields.empty()) {
-    cmsg_message->CopyFrom(message);
-  } else {
-    // Reparse options string!  XXX call cmessage::MergeFromString
-    if (!Reparse(message_factory, message, cmsg_message)) {
-      PyErr_Format(PyExc_ValueError, "Error reparsing Options message");
-      return nullptr;
-    }
-  }
-
-  cmsg->state = MESSAGE_FROZEN;
 
   // Cache the result.
   {
