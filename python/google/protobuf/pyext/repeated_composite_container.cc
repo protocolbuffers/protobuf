@@ -284,10 +284,10 @@ static PyObject* Remove(PyObject* pself, PyObject* value) {
     return nullptr;
   }
 
-  Py_ssize_t len = Length(reinterpret_cast<PyObject*>(self));
-
-  for (Py_ssize_t i = 0; i < len; i++) {
-    ScopedPyObjectPtr item(GetItem(self, i, len));
+  // The comparison can run arbitrary Python code that modifies this container,
+  // so the length is re-read on every iteration and again before deleting.
+  for (Py_ssize_t i = 0; i < Length(pself); i++) {
+    ScopedPyObjectPtr item(GetItem(self, i));
     if (item == nullptr) {
       return nullptr;
     }
@@ -296,6 +296,10 @@ static PyObject* Remove(PyObject* pself, PyObject* value) {
       return nullptr;
     }
     if (result) {
+      // Like list.remove(), do nothing if the container shrank past the match.
+      if (i >= Length(pself)) {
+        Py_RETURN_NONE;
+      }
       ScopedPyObjectPtr py_index(PyLong_FromSsize_t(i));
       if (AssignSubscript(self, py_index.get(), nullptr) < 0) {
         return nullptr;
