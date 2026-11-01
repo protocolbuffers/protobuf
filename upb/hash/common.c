@@ -88,7 +88,7 @@ typedef bool eqlfunc_t(upb_key k1, upb_value v1, lookupkey_t k2);
 
 static bool isfull(upb_table* t) { return upb_table_isfull(t); }
 
-static bool init(upb_table* t, uint8_t size_lg2, upb_Arena* a) {
+static bool init(upb_table* t, size_t size_lg2, upb_Arena* a) {
   if (size_lg2 >= 32) {
     return false;
   }
@@ -351,8 +351,9 @@ static upb_SizePrefixString* upb_SizePrefixString_Copy(upb_StringView s,
   // A 2GB string will fail at serialization time, but we accept up to 4GB in
   // memory here.
   if (s.size > UINT32_MAX) return NULL;
-  upb_SizePrefixString* str =
-      upb_Arena_Malloc(a, sizeof(uint32_t) + s.size + 1);
+  size_t alloc_size;
+  if (upb_AddOverflow(s.size, sizeof(uint32_t) + 1, &alloc_size)) return NULL;
+  upb_SizePrefixString* str = upb_Arena_Malloc(a, alloc_size);
   if (str == NULL) return NULL;
   str->size = s.size;
   char* data = (char*)str->data;
@@ -528,7 +529,7 @@ static bool streql(upb_key k1, upb_value v1, lookupkey_t k2) {
 
 bool upb_strtable_init(upb_strtable* t, size_t expected_size, upb_Arena* a) {
   int size_lg2 = upb_Log2Ceiling(_upb_entries_needed_for(expected_size));
-  return init(&t->t, size_lg2, a);
+  return init(&t->t, (size_t)size_lg2, a);
 }
 
 void upb_strtable_clear(upb_strtable* t) {
@@ -738,7 +739,7 @@ static bool exteql(upb_key k1, upb_value v1, lookupkey_t k2) {
 
 bool upb_exttable_init(upb_exttable* t, size_t expected_size, upb_Arena* a) {
   int size_lg2 = upb_Log2Ceiling(_upb_entries_needed_for(expected_size));
-  return init(&t->t, size_lg2, a);
+  return init(&t->t, (size_t)size_lg2, a);
 }
 
 void upb_exttable_clear(upb_exttable* t) {
@@ -836,7 +837,7 @@ static void check(upb_inttable* t) {
 #endif
 }
 
-static bool upb_inttable_sizedinit(upb_inttable* t, int hsize_lg2,
+static bool upb_inttable_sizedinit(upb_inttable* t, size_t hsize_lg2,
                                    upb_Arena* a) {
   if (!init(&t->t, hsize_lg2, a)) return false;
   check(t);
