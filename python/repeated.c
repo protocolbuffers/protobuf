@@ -970,12 +970,14 @@ static PyObject* PyUpb_RepeatedContainer_Remove(PyObject* _self,
   upb_Array* arr = PyUpb_RepeatedContainer_AssureWritable(_self);
   if (!arr) return NULL;
   Py_ssize_t match_index = -1;
-  Py_ssize_t n = PyUpb_RepeatedContainer_Length(_self);
-  for (Py_ssize_t i = 0; i < n; ++i) {
+  // The comparison can run arbitrary Python code that modifies this container,
+  // so the length is re-read on every iteration and again before deleting.
+  for (Py_ssize_t i = 0; i < PyUpb_RepeatedContainer_Length(_self); ++i) {
     PyObject* elem = PyUpb_RepeatedContainer_Item(_self, i);
     if (!elem) return NULL;
     int eq = PyObject_RichCompareBool(elem, value, Py_EQ);
     Py_DECREF(elem);
+    if (eq < 0) return NULL;
     if (eq) {
       match_index = i;
       break;
@@ -985,7 +987,9 @@ static PyObject* PyUpb_RepeatedContainer_Remove(PyObject* _self,
     PyErr_SetString(PyExc_ValueError, "remove(x): x not in container");
     return NULL;
   }
-  if (PyUpb_RepeatedContainer_DeleteSubscript(arr, match_index, 1, 1) < 0) {
+  // Like list.remove(), do nothing if the container shrank past the match.
+  if (match_index < PyUpb_RepeatedContainer_Length(_self) &&
+      PyUpb_RepeatedContainer_DeleteSubscript(arr, match_index, 1, 1) < 0) {
     return NULL;
   }
   Py_RETURN_NONE;
