@@ -571,6 +571,100 @@ TEST(DescriptorPoolTest, OptionsUnderlayAndFallbackDatabase) {
   EXPECT_EQ(ext101->containing_type(), mid_msg);
 }
 
+TEST(DescriptorPoolTest, ConcurrentBuildFileAndFind) {
+  DescriptorPool::Options options;
+  options.thread_safe = true;
+  DescriptorPool pool(options);
+
+  constexpr int kNumThreads = 10;
+  constexpr int kFilesPerThread = 10;
+  std::vector<std::thread> threads;
+  threads.reserve(kNumThreads);
+
+  for (int t = 0; t < kNumThreads; ++t) {
+    threads.emplace_back([&pool, t] {
+      for (int i = 0; i < kFilesPerThread; ++i) {
+        FileDescriptorProto proto;
+        std::string file_name = absl::StrCat("file_", t, "_", i, ".proto");
+        std::string message_name = absl::StrCat("Msg_", t, "_", i);
+        proto.set_name(file_name);
+        auto* msg = proto.add_message_type();
+        msg->set_name(message_name);
+
+        const FileDescriptor* file = pool.BuildFile(proto);
+        ASSERT_NE(file, nullptr);
+        EXPECT_EQ(file->name(), file_name);
+
+        const Descriptor* desc = pool.FindMessageTypeByName(message_name);
+        ASSERT_NE(desc, nullptr);
+        EXPECT_EQ(desc->name(), message_name);
+        EXPECT_EQ(pool.FindFileByName(file_name), file);
+      }
+    });
+  }
+
+  for (auto& thread : threads) {
+    thread.join();
+  }
+
+  for (int t = 0; t < kNumThreads; ++t) {
+    for (int i = 0; i < kFilesPerThread; ++i) {
+      std::string file_name = absl::StrCat("file_", t, "_", i, ".proto");
+      std::string message_name = absl::StrCat("Msg_", t, "_", i);
+      EXPECT_NE(pool.FindFileByName(file_name), nullptr);
+      EXPECT_NE(pool.FindMessageTypeByName(message_name), nullptr);
+    }
+  }
+}
+
+TEST(DescriptorPoolTest, ConcurrentBuildFileWithUnderlay) {
+  DescriptorPool underlay;
+  FileDescriptorProto base_proto;
+  base_proto.set_name("base.proto");
+  auto* base_msg = base_proto.add_message_type();
+  base_msg->set_name("BaseMsg");
+  ASSERT_NE(underlay.BuildFile(base_proto), nullptr);
+
+  DescriptorPool::Options options;
+  options.underlay = &underlay;
+  options.thread_safe = true;
+  DescriptorPool pool(options);
+
+  constexpr int kNumThreads = 10;
+  constexpr int kFilesPerThread = 10;
+  std::vector<std::thread> threads;
+  threads.reserve(kNumThreads);
+
+  for (int t = 0; t < kNumThreads; ++t) {
+    threads.emplace_back([&pool, t] {
+      for (int i = 0; i < kFilesPerThread; ++i) {
+        // Underlay lookups should succeed concurrently with building.
+        const Descriptor* base_desc = pool.FindMessageTypeByName("BaseMsg");
+        ASSERT_NE(base_desc, nullptr);
+
+        FileDescriptorProto proto;
+        std::string file_name = absl::StrCat("sub_file_", t, "_", i, ".proto");
+        std::string message_name = absl::StrCat("SubMsg_", t, "_", i);
+        proto.set_name(file_name);
+        auto* msg = proto.add_message_type();
+        msg->set_name(message_name);
+
+        const FileDescriptor* file = pool.BuildFile(proto);
+        ASSERT_NE(file, nullptr);
+        EXPECT_EQ(file->name(), file_name);
+
+        const Descriptor* desc = pool.FindMessageTypeByName(message_name);
+        ASSERT_NE(desc, nullptr);
+        EXPECT_EQ(desc->name(), message_name);
+      }
+    });
+  }
+
+  for (auto& thread : threads) {
+    thread.join();
+  }
+}
+
 // Test simple files.
 class FileDescriptorTest : public testing::Test {
  protected:
