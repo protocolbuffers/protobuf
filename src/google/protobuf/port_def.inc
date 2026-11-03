@@ -244,7 +244,11 @@
 #ifdef PROTOBUF_CC
 #error PROTOBUF_CC was previously defined
 #endif
+#ifdef PROTOBUF_CC_PRESERVE_NONE
+#error PROTOBUF_CC_PRESERVE_NONE was previously defined
+#endif
 #define PROTOBUF_CC
+#define PROTOBUF_CC_PRESERVE_NONE false
 
 #if defined(__clang__)
 #define PROTOBUF_IGNORE_DEPRECATION_START \

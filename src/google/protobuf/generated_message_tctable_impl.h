@@ -899,6 +899,36 @@ class PROTOBUF_EXPORT TcParser final {
   }
 
   PROTOBUF_CC static const char* TagDispatch(PROTOBUF_TC_PARAM_NO_DATA_DECL);
+  // The parse function and field data that TagDispatch() jumps to for the tag
+  // at `ptr`. Unlike the FastFieldEntry it comes from, `data` already has the
+  // coded tag XORed in, as the target expects it.
+  struct NextDispatch {
+    TailCallParseFunc target;
+    TcFieldData data;
+  };
+  // Early tag dispatch keeps `NextDispatch` live across the current field's
+  // store, which relies on `preserve_none` (`PROTOBUF_CC_PRESERVE_NONE`) for
+  // enough caller-saved GPRs to avoid stack spills and on `PROTOBUF_TAILCALL`
+  // so the prepared loads are not discarded. It is also disabled under
+  // sanitizers because `ParseFromBoundedZeroCopyStream` leaves trailing slop
+  // bytes past `size` uncopied in the caller's stream buffer, where sanitizers
+  // may flag speculative 2-byte reads past the message bound.
+  static constexpr bool kEnableEarlyTagDispatch = PROTOBUF_TAILCALL &&
+                                                  PROTOBUF_CC_PRESERVE_NONE &&
+                                                  !internal::HasAnySanitizer();
+
+  // Does the loads of TagDispatch() for the tag at `ptr`, without the jump.
+  // Callers before ParseContext::DataAvailable(ptr) must use
+  // MaybePrepareTagDispatch() instead: `ptr` may be past the end of the data
+  // (within EpsCopyInputStream's 16-byte slop region), and the caller must not
+  // jump to the result when DataAvailable(ptr) is false.
+  static PROTOBUF_ALWAYS_INLINE NextDispatch
+  PrepareTagDispatch(const char* ptr, const TcParseTableBase* table);
+  // Prepares the next dispatch early when kEnableEarlyTagDispatch is true so
+  // the loads that a mispredicted dispatch jump depends on issue before the
+  // current field's store; otherwise returns an empty NextDispatch.
+  static PROTOBUF_ALWAYS_INLINE NextDispatch
+  MaybePrepareTagDispatch(const char* ptr, const TcParseTableBase* table);
   PROTOBUF_CC static const char* ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_DECL);
   PROTOBUF_CC static const char* ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_DECL);
   PROTOBUF_NOINLINE
@@ -1101,16 +1131,31 @@ class PROTOBUF_EXPORT TcParser final {
       PROTOBUF_TC_PARAM_DECL);
 };
 
-// Dispatch to the designated parse function
-PROTOBUF_ALWAYS_INLINE const char* TcParser::TagDispatch(
-    PROTOBUF_TC_PARAM_NO_DATA_DECL) {
+PROTOBUF_ALWAYS_INLINE TcParser::NextDispatch TcParser::PrepareTagDispatch(
+    const char* ptr, const TcParseTableBase* table) {
   const auto coded_tag = UnalignedLoad<uint16_t>(ptr);
   const size_t idx = coded_tag & table->fast_idx_mask;
   PROTOBUF_ASSUME((idx & 7) == 0);
   auto* fast_entry = table->fast_entry(idx >> 3);
   TcFieldData data = fast_entry->bits;
   data.data ^= coded_tag;
-  PROTOBUF_MUSTTAIL return fast_entry->target()(PROTOBUF_TC_PARAM_PASS);
+  return {fast_entry->target(), data};
+}
+
+// Dispatch to the designated parse function
+PROTOBUF_ALWAYS_INLINE const char* TcParser::TagDispatch(
+    PROTOBUF_TC_PARAM_NO_DATA_DECL) {
+  const NextDispatch next = PrepareTagDispatch(ptr, table);
+  TcFieldData data = next.data;
+  PROTOBUF_MUSTTAIL return next.target(PROTOBUF_TC_PARAM_PASS);
+}
+
+PROTOBUF_ALWAYS_INLINE TcParser::NextDispatch TcParser::MaybePrepareTagDispatch(
+    const char* ptr, const TcParseTableBase* table) {
+  if constexpr (!kEnableEarlyTagDispatch) {
+    return {};
+  }
+  return PrepareTagDispatch(ptr, table);
 }
 
 // We can only safely call from field to next field if the call is optimized

@@ -737,6 +737,27 @@ PROTOBUF_NOINLINE const char* TcParser::FastGcR2(PROTOBUF_TC_PARAM_DECL) {
       PROTOBUF_TC_PARAM_PASS);
 }
 
+// Tail-calls a dispatch that TcParser::MaybePrepareTagDispatch() prepared for
+// the tag at `ptr`, or falls back to ToTagDispatch() / ToParseLoop().
+// This must be a macro rather than a helper function because
+// [[clang::musttail]] requires the caller and callee signatures to match
+// TailCallParseFunc's six parameters, leaving no parameter slot to pass both
+// `next.target` and `next.data`.
+#define PROTOBUF_TC_PREPARED_DISPATCH(next)                                   \
+  do {                                                                        \
+    const NextDispatch prepared_next = (next);                                \
+    if constexpr (!kEnableEarlyTagDispatch) {                                 \
+      (void)prepared_next;                                                    \
+      PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS); \
+    } else {                                                                  \
+      if (!ctx->DataAvailable(ptr)) {                                         \
+        PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS); \
+      }                                                                       \
+      data = prepared_next.data;                                              \
+      PROTOBUF_MUSTTAIL return prepared_next.target(PROTOBUF_TC_PARAM_PASS);  \
+    }                                                                         \
+  } while (0)
+
 //////////////////////////////////////////////////////////////////////////////
 // Fixed fields
 //////////////////////////////////////////////////////////////////////////////
@@ -748,10 +769,14 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularFixed(
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
   ptr += sizeof(TagType);  // Consume tag
-  SetCachedHasBit(hasbits, data.hasbit_idx());
-  RefAt<LayoutType>(msg, data.offset()) = UnalignedLoad<LayoutType>(ptr);
+  const auto value = UnalignedLoad<LayoutType>(ptr);
   ptr += sizeof(LayoutType);
-  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  // Start the next dispatch before storing this field: its loads depend only
+  // on `ptr` and `table`.
+  const NextDispatch next = MaybePrepareTagDispatch(ptr, table);
+  SetCachedHasBit(hasbits, data.hasbit_idx());
+  RefAt<LayoutType>(msg, data.offset()) = value;
+  PROTOBUF_TC_PREPARED_DISPATCH(next);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastF32S1(PROTOBUF_TC_PARAM_DECL) {
@@ -988,9 +1013,11 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularVarint(
         PROTOBUF_TC_PARAM_PASS);
   }
 
+  const uint8_t byte = static_cast<uint8_t>(*ptr++);
+  const NextDispatch next = MaybePrepareTagDispatch(ptr, table);
   RefAt<FieldType>(msg, data.offset()) =
-      ZigZagDecodeHelper<FieldType, zigzag>(static_cast<uint8_t>(*ptr++));
-  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+      ZigZagDecodeHelper<FieldType, zigzag>(byte);
+  PROTOBUF_TC_PREPARED_DISPATCH(next);
 }
 
 template <typename FieldType, typename TagType, bool zigzag>
@@ -1003,9 +1030,10 @@ PROTOBUF_NOINLINE const char* TcParser::SingularVarBigint(
   if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
     PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
+  const NextDispatch next = MaybePrepareTagDispatch(ptr, table);
   RefAt<FieldType>(msg, data.offset()) =
       ZigZagDecodeHelper<FieldType, zigzag>(tmp);
-  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  PROTOBUF_TC_PREPARED_DISPATCH(next);
 }
 
 template <typename FieldType>
@@ -1020,9 +1048,10 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::FastVarintS1(
   if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
     PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
+  const NextDispatch next = MaybePrepareTagDispatch(ptr, table);
   SetCachedHasBit(hasbits, data.hasbit_idx());
   RefAt<FieldType>(msg, data.offset()) = res;
-  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  PROTOBUF_TC_PREPARED_DISPATCH(next);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastV8S1(PROTOBUF_TC_PARAM_DECL) {
@@ -1041,12 +1070,12 @@ PROTOBUF_NOINLINE const char* TcParser::FastV8S1(PROTOBUF_TC_PARAM_DECL) {
     uint8_t value = data.data >> 8;
     // The assume allows using a mov instead of test+setne.
     PROTOBUF_ASSUME(value <= 1);
-    field = static_cast<bool>(value);
-
     ptr += sizeof(TagType) + 1;  // Consume the tag and the value.
+    const NextDispatch next = MaybePrepareTagDispatch(ptr, table);
+    field = static_cast<bool>(value);
     SetCachedHasBit(hasbits, data.hasbit_idx());
 
-    PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+    PROTOBUF_TC_PREPARED_DISPATCH(next);
   }
 
   // If it didn't match above either the tag is wrong, or the value is encoded
@@ -1329,9 +1358,10 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularEnum(
     ptr = ptr2;
     PROTOBUF_MUSTTAIL return FastUnknownEnumFallback(PROTOBUF_TC_PARAM_PASS);
   }
+  const NextDispatch next = MaybePrepareTagDispatch(ptr, table);
   SetCachedHasBit(hasbits, data.hasbit_idx());
   RefAt<int32_t>(msg, data.offset()) = tmp;
-  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  PROTOBUF_TC_PREPARED_DISPATCH(next);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastErS1(PROTOBUF_TC_PARAM_DECL) {
@@ -1527,11 +1557,14 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularEnumSmallRange(
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
 
-  RefAt<int32_t>(msg, data.offset()) = v;
   ptr += sizeof(TagType) + 1;
+  const NextDispatch next = MaybePrepareTagDispatch(ptr, table);
+  RefAt<int32_t>(msg, data.offset()) = v;
   SetCachedHasBit(hasbits, data.hasbit_idx());
-  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  PROTOBUF_TC_PREPARED_DISPATCH(next);
 }
+
+#undef PROTOBUF_TC_PREPARED_DISPATCH
 
 PROTOBUF_NOINLINE const char* TcParser::FastEr0S1(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return SingularEnumSmallRange<uint8_t, 0>(
