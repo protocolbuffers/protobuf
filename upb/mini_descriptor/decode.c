@@ -384,6 +384,10 @@ static const char* upb_MtDecoder_DecodeOneofField(upb_MtDecoder* d,
   } else {
     UPB_ASSERT(current_align >= new_align);
   }
+  if ((size_t)(f - d->fields) + kOneofBase >=
+      kUpb_OneOfLayoutItem_IndexSentinel) {
+    upb_MdDecoder_ErrorJmp(&d->base, "Too many fields for oneof layout");
+  }
   // Prepend this field to the linked list.
   f->UPB_PRIVATE(offset) = item->field_index;
   item->field_index = (f - d->fields) + kOneofBase;
