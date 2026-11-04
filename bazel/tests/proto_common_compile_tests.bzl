@@ -50,6 +50,8 @@ def proto_common_compile_test_suite(name):
     ]
     if bazel_features.rules.analysis_tests_can_transition_on_experimental_incompatible_flags:
         tests.append(_test_compile_path_mapping)
+        tests.append(_test_compile_genproto_legacy_no_path_mapping)
+        tests.append(_test_compile_genproto_directory_no_path_mapping)
 
     test_suite(
         name = name,
@@ -454,6 +456,71 @@ def _test_compile_path_mapping_impl(env, target):
             matching.str_matches("*-out/cfg/bin/*/tests/_virtual_imports/*/A.proto"),
         ],
     )
+
+# Verifies `proto_common.compile` does not enable `supports-path-mapping` when `output_files == "legacy"`.
+def _test_compile_genproto_legacy_no_path_mapping(name):
+    util.helper_target(
+        proto_lang_toolchain,
+        name = name + "_genproto_legacy_toolchain",
+        command_line = "--java_out=param1,param2:$(OUT)",
+        mnemonic = "GenProto",
+        output_files = "legacy",
+        plugin = "//bazel/tests/testdata:plugin",
+        plugin_format_flag = "--plugin=%s",
+    )
+    util.helper_target(
+        compile_rule,
+        name = name + "_compile",
+        proto_dep = ":simple_proto",
+        plugin_output = "multiple",
+        toolchain = ":" + name + "_genproto_legacy_toolchain",
+    )
+
+    analysis_test(
+        name = name,
+        target = name + "_compile",
+        config_settings = {
+            "//command_line_option:experimental_output_paths": "strip",
+        },
+        impl = _test_compile_genproto_legacy_no_path_mapping_impl,
+    )
+
+def _test_compile_genproto_legacy_no_path_mapping_impl(env, target):
+    action = env.expect.that_target(target).action_named("GenProto")
+    action.argv().not_contains_predicate(matching.str_matches("*-out/cfg/*"))
+
+# Verifies `proto_common.compile` does not enable `supports-path-mapping` when `generated_files` contains a directory (`TreeArtifact`).
+def _test_compile_genproto_directory_no_path_mapping(name):
+    util.helper_target(
+        proto_lang_toolchain,
+        name = name + "_genproto_multiple_toolchain",
+        command_line = "--cpp_out=$(OUT)",
+        mnemonic = "GenProto",
+        output_files = "multiple",
+        plugin = "//bazel/tests/testdata:plugin",
+        plugin_format_flag = "--plugin=%s",
+    )
+    util.helper_target(
+        compile_rule,
+        name = name + "_compile",
+        declare_directory = True,
+        output_files = "multiple",
+        proto_dep = ":simple_proto",
+        toolchain = ":" + name + "_genproto_multiple_toolchain",
+    )
+
+    analysis_test(
+        name = name,
+        target = name + "_compile",
+        config_settings = {
+            "//command_line_option:experimental_output_paths": "strip",
+        },
+        impl = _test_compile_genproto_directory_no_path_mapping_impl,
+    )
+
+def _test_compile_genproto_directory_no_path_mapping_impl(env, target):
+    action = env.expect.that_target(target).action_named("GenProto")
+    action.argv().not_contains_predicate(matching.str_matches("*-out/cfg/*"))
 
 # Verifies usage of `proto_common.compile` with `experimental_progress_message` parameter
 def _test_compile_override_progress_message(name):
