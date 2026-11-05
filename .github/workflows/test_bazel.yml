@@ -25,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runner: [ ubuntu, windows, macos ]
+        runner: [ ubuntu-24.04, windows-2022, macos-15 ]
         bazelversion: [ '8.7.0', '9.2.0' ]
         bzlmod: [ true, false ]
         toolchain_resolution:
@@ -37,12 +37,15 @@ jobs:
           - "--incompatible_enable_proto_toolchain_resolution=false"
           # Uses protoc from source via toolchain resolution.
           - "--@com_google_protobuf//bazel/flags:prefer_prebuilt_protoc=false"
+        include:
+          - runner: macos-15
+            continuous-only: true
         exclude:
           - bazelversion: '9.2.0'
             bzlmod: false
           - bzlmod: false
             toolchain_resolution: "--@com_google_protobuf//bazel/flags:internal_do_not_use_require_prebuilt_protoc=true"
-    runs-on: ${{ matrix.runner }}-latest
+    runs-on: ${{ matrix.runner }}
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Examples ${{ matrix.runner }} ${{ matrix.bazelversion }}${{ matrix.bzlmod && ' (bzlmod)' || '' }} ${{ matrix.toolchain_resolution && ' (toolchain resolution)' || '' }}
     steps:
       - name: Checkout pending changes
@@ -100,7 +103,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
     name: Bazel Tests ubuntu
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v7

@@ -23,7 +23,7 @@ permissions:
 jobs:
   check:
     name: Check PR source
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - run: >
           ${{ github.event.pull_request.head.repo.full_name == 'protocolbuffers/protobuf' }} ||

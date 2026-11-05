@@ -44,7 +44,7 @@ jobs:
           - { name: JRuby 9.4 bazel 8, ruby: jruby-9.4.9.0, ffi: FFI, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.7.0-jruby-9.4.9.0-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7 ' }
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.name }} ${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
@@ -199,7 +199,7 @@ jobs:
           - { name: JRuby 9.4 bazel 8, ruby: jruby-9.4.9.0, ffi: NATIVE, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.7.0-jruby-9.4.9.0-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7 ' }
           - { name: JRuby 9.4 bazel 8, ruby: jruby-9.4.9.0, ffi: FFI, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.7.0-jruby-9.4.9.0-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7 ' }
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Install ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
