@@ -5718,9 +5718,9 @@ static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
     file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[21];
 static constexpr const ::_pb::ServiceDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fdescriptor_2eproto = nullptr;
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
 const ::uint32_t
-    TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-        protodesc_cold) = {
+    TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] = {
         0x083, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorSet, _impl_._has_bits_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorSet, _impl_._extensions_),
@@ -6190,8 +6190,8 @@ const ::uint32_t
         0,
 };
 
-static const ::_pbi::MigrationSchema
-    schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) static const ::_pbi::MigrationSchema
+    schemas[] = {
         {0, sizeof(::google::protobuf::FileDescriptorSet)},
         {6, sizeof(::google::protobuf::FileDescriptorProto)},
         {37, sizeof(::google::protobuf::DescriptorProto_ExtensionRange)},
@@ -6266,8 +6266,8 @@ static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
         &::google::protobuf::GeneratedCodeInfo_Annotation_globals_,
         &::google::protobuf::GeneratedCodeInfo_globals_,
 };
-const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-    protodesc_cold) = {
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] = {
     "\n google/protobuf/descriptor.proto\022\017goog"
     "le.protobuf\"U\n\021FileDescriptorSet\0222\n\004file"
     "\030\001 \003(\0132$.google.protobuf.FileDescriptorP"
