@@ -226,6 +226,25 @@ jobs:
             /test.sh ${{ matrix.flags}} ${{ env.SCCACHE_CMAKE_FLAGS }}
             -Dprotobuf_BUILD_TESTS=ON ${{ matrix.package_flags }}
 
+  # protobuf's CMake build (and its GoogleTest and Abseil dependencies) run
+  # under Bazel with cmake_bazel() (see cmake/cmake_bazel.bzl), one Bazel
+  # action per compile, so unchanged sources are cache hits across runs.
+  linux-cmake-bazel:
+    name: Linux CMake (cmake_bazel)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v7
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run cmake_bazel smoke test
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v7
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.7.0-4d8e80ef93b0219fb907af9dd4596b92946995d8
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: cpp_linux/cmake_bazel
+          bazel: test //cmake:protobuf_cmake_bazel_smoke_test --test_output=errors
+
   linux-cmake-install:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.

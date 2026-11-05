@@ -290,6 +290,219 @@ bazel_dep(
 cc_configure = use_extension("@rules_cc//cc:extensions.bzl", "cc_configure_extension")
 use_repo(cc_configure, "local_config_cc")
 
+################################################################################
+# CMake builds under Bazel with cmake_bazel() (see //cmake:cmake_bazel.bzl).
+#
+# Everything in this section is dev-only, so downstream Bazel consumers of
+# protobuf never see it. cmake_bazel() uses the official CMake and Ninja Linux
+# x86_64 release binaries below, and builds protobuf's CMake dependencies
+# (GoogleTest, Abseil) itself from the module repos pinned by the bazel_dep()s
+# above -- the same versions cmake/dependencies.cmake gives the CMake build --
+# so there is a single version pin and download per dependency.
+################################################################################
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "cmake_bazel_cmake",
+    build_file_content = """
+filegroup(
+    name = "cmake",
+    srcs = glob(["**"], exclude = ["**/* *"]),
+    visibility = ["//visibility:public"],
+)
+""",
+    dev_dependency = True,
+    sha256 = "630615d8e98ac33eba7fbe472626dff5c899c85af3c024585ae109166a6909d0",
+    strip_prefix = "cmake-3.31.8-linux-x86_64",
+    urls = ["https://github.com/Kitware/CMake/releases/download/v3.31.8/cmake-3.31.8-linux-x86_64.tar.gz"],
+)
+
+http_archive(
+    name = "cmake_bazel_ninja",
+    build_file_content = """
+exports_files(["ninja"], visibility = ["//visibility:public"])
+""",
+    dev_dependency = True,
+    sha256 = "0830252db77884957a1a4b87b05a1e2d9b5f658b8367f82999a941884cbe0238",
+    urls = ["https://github.com/ninja-build/ninja/releases/download/v1.13.1/ninja-linux.zip"],
+)
+
+# CMake source trees staged into external repositories as single buildable
+# trees, see cmake/cmake_source_repo.bzl. protobuf's CMakeLists.txt sits at the
+# workspace root and the per-package BUILD files under src/ prevent one
+# filegroup from spanning the tree; the dependency module repos expose no such
+# target either.
+cmake_source_repo = use_repo_rule("//cmake:cmake_source_repo.bzl", "cmake_source_repo")
+
+cmake_source_repo(
+    name = "protobuf-cmake-src",
+    dev_dependency = True,
+    dirs = [
+        "cmake",
+        "conformance",
+        # The per-language feature protos that cmake/install.cmake installs
+        # with the headers (release_all_options_protos_files in
+        # src/file_lists.cmake), alongside the Java one below.
+        "csharp/google/protobuf",
+        "editions",
+        "go/google/protobuf",
+        "java/core/src/main/resources",
+        "src",
+        "third_party/utf8_range",
+        "upb",
+        "upb_generator",
+    ],
+    # Staged but not inputs of the CMake build: files CMake never reads, so
+    # that editing them does not rebuild protobuf. (Bazel package markers are
+    # skipped by the rule itself; examples/ is not staged at all since
+    # protobuf_BUILD_EXAMPLES and protobuf_INSTALL_EXAMPLES are off.)
+    exclude = [
+        "**/*.md",
+        "cmake/*.bzl",
+        "cmake/*.py",
+        "cmake/*.sh",
+        "cmake/installed_*_golden.txt",
+    ],
+    # `lib_srcs` is the view read by //cmake:protobuf_cmake_bazel
+    # (protobuf_BUILD_TESTS=OFF, protobuf_BUILD_CONFORMANCE=OFF): the tree
+    # minus tests, test utilities, test data and conformance, so that
+    # test-only edits do not rebuild the libraries. Checked against
+    # src/file_lists.cmake: none of the libprotobuf*/libprotoc/libupb/protoc
+    # file lists match these patterns.
+    filegroups = {
+        # `cmake_files` is what the configure action reads: the files CMake
+        # itself reads while configuring the library build (CMake scripts,
+        # configure_file() templates, and the linker version scripts named in
+        # link options), minus the test-only CMake files excluded from
+        # `lib_srcs` too. Source edits never re-configure.
+        "cmake_files": [
+            "CMakeLists.txt",
+            "**/CMakeLists.txt",
+            "**/*.cmake",
+            "**/*.in",
+            "src/*.map",
+            "-cmake/conformance.cmake",
+            "-cmake/gtest.cmake",
+            "-cmake/tests.cmake",
+        ],
+        # Headers the CMake build includes that are not sources of any Bazel
+        # cc_library: checked-in generated code used only by CMake, and .inc
+        # fragments; added to every compile of //cmake:protobuf_cmake_bazel.
+        "common_hdrs": [
+            "**/*.inc",
+            "**/cmake/**/*.h",
+            "src/google/protobuf/**/*.pb.h",
+        ],
+        "lib_srcs": [
+            "**",
+            "-cmake/conformance.cmake",
+            "-cmake/gtest.cmake",
+            "-cmake/tests.cmake",
+            "-conformance/**",
+            "-editions/**",
+            "-**/test/**",
+            "-**/testdata/**",
+            "-**/testing/**",
+            "-**/*_test.cc",
+            "-**/*_test.h",
+            "-**/*_test.inc",
+            "-**/*_unittest.cc",
+            "-**/*_unittest.h",
+            "-**/*_unittest.inc",
+            "-**/*_unittest*.proto",
+            "-**/unittest*",
+            "-**/*test_util*",
+            "-**/test_*.proto",
+            "-**/mock_*",
+        ],
+    },
+    files = [
+        "CMakeLists.txt",
+        "LICENSE",
+        "version.json",
+    ],
+)
+
+# For each staged dependency, `cmake_files` is what its configure action reads
+# (CMake scripts, templates, and any other file CMake reads while configuring),
+# and `srcs` is everything else its build and install read.
+cmake_source_repo(
+    name = "googletest-cmake-src",
+    dev_dependency = True,
+    dirs = [
+        "googlemock",
+        "googletest",
+    ],
+    exclude = [
+        "**/*.md",
+        "googlemock/test/**",
+        "googletest/samples/**",
+        "googletest/test/**",
+    ],
+    filegroups = {
+        "cmake_files": [
+            "CMakeLists.txt",
+            "**/CMakeLists.txt",
+            "**/*.cmake",
+            "**/*.in",
+        ],
+        # gtest-all.cc and gmock-all.cc #include the other library sources
+        # instead of compiling them separately.
+        "textual_srcs": [
+            "googlemock/src/*.cc",
+            "googletest/src/*.cc",
+            "-googlemock/src/gmock-all.cc",
+            "-googlemock/src/gmock_main.cc",
+            "-googletest/src/gtest-all.cc",
+            "-googletest/src/gtest_main.cc",
+        ],
+    },
+    files = [
+        "CMakeLists.txt",
+        "LICENSE",
+    ],
+    root = "@googletest//:CMakeLists.txt",
+)
+
+cmake_source_repo(
+    name = "abseil-cpp-cmake-src",
+    dev_dependency = True,
+    dirs = [
+        "CMake",
+        "absl",
+    ],
+    exclude = ["**/*.md"],
+    filegroups = {
+        "cmake_files": [
+            "CMakeLists.txt",
+            "**/CMakeLists.txt",
+            "**/*.cmake",
+            "**/*.in",
+            # Read by the install rules in CMakeLists.txt while configuring,
+            # to generate the installed copy with the compiled ABI options.
+            "absl/base/options.h",
+        ],
+        # Abseil's sources minus tests and benchmarks (ABSL_BUILD_TESTING is
+        # off), so they get no compile actions. If CMake compiles one of
+        # them anyway, configure fails rather than skipping it.
+        "lib_srcs": [
+            "**",
+            "-**/*_benchmark.cc",
+            "-**/*_test.cc",
+        ],
+        # The one *_test.cc compiled into a test helper library
+        # (per_thread_sem_test_common, built with ABSL_BUILD_TEST_HELPERS).
+        "test_helper_srcs": [
+            "absl/synchronization/internal/per_thread_sem_test.cc",
+        ],
+    },
+    files = [
+        "CMakeLists.txt",
+        "LICENSE",
+    ],
+    root = "@abseil-cpp//:CMakeLists.txt",
+)
+
 # For the Lua upb implementation
 bazel_dep(name = "lua", version = "5.4.6", dev_dependency = True)
 

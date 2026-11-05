@@ -1,5 +1,7 @@
 load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load("//upb/cmake:build_defs.bzl", "staleness_test")
+load(":cmake_bazel.bzl", "cmake_bazel")
 
 py_binary(
     name = "dependencies_generator",
@@ -22,4 +24,105 @@ staleness_test(
     ],
     generated_pattern = "generated-in/%s",
     tags = ["manual"],
+)
+
+################################################################################
+# protobuf's CMake build under Bazel, split into fine-grained actions with
+# cmake_bazel() (see cmake_bazel.bzl): one configure action that only reads
+# the CMake files, one compile action per source file running the exact
+# command CMake generated for it, one link and one install action. Editing a
+# source file recompiles that file and relinks; everything else stays cached.
+#
+# The dependencies are built the same way, from the module repos pinned in
+# MODULE.bazel, and found by protobuf through CMAKE_PREFIX_PATH with
+# protobuf_LOCAL_DEPENDENCIES_ONLY=ON.
+#
+# Everything here is tagged `manual`; run with
+# `bazel test //cmake:protobuf_cmake_bazel_smoke_test`.
+################################################################################
+
+# Cache entries shared by every CMake build below. CMAKE_BUILD_TYPE is empty,
+# as in the current CMake CI: a Debug build would add the "d" library postfix.
+_COMMON_CACHE_ENTRIES = {
+    "CMAKE_BUILD_TYPE": "",
+    "CMAKE_CXX_STANDARD": "17",
+}
+
+_CMAKE_TAGS = ["manual"]
+
+py_binary(
+    name = "cmake_bazel_runner",
+    srcs = ["cmake_bazel_runner.py"],
+)
+
+# GoogleTest, needed by Abseil's test helpers (and later by protobuf's tests).
+cmake_bazel(
+    name = "googletest_cmake",
+    srcs = ["@googletest-cmake-src//:srcs"],
+    cache_entries = _COMMON_CACHE_ENTRIES | {
+        "BUILD_GMOCK": "ON",
+        "INSTALL_GTEST": "ON",
+    },
+    cmake_srcs = ["@googletest-cmake-src//:cmake_files"],
+    tags = _CMAKE_TAGS,
+    textual_srcs = ["@googletest-cmake-src//:textual_srcs"],
+)
+
+# Abseil, with the test helper libraries protobuf's tests link
+# (absl::scoped_mock_log, absl::status_matchers). Building one Abseil for both
+# the libraries and the tests means a GoogleTest bump also rebuilds protobuf's
+# libraries once, but avoids two different Abseil packages in one build.
+cmake_bazel(
+    name = "absl_cmake",
+    srcs = [
+        "@abseil-cpp-cmake-src//:lib_srcs",
+        "@abseil-cpp-cmake-src//:test_helper_srcs",
+    ],
+    cache_entries = _COMMON_CACHE_ENTRIES | {
+        "ABSL_BUILD_TESTING": "OFF",
+        "ABSL_BUILD_TEST_HELPERS": "ON",
+        "ABSL_ENABLE_INSTALL": "ON",
+        "ABSL_FIND_GOOGLETEST": "ON",
+        "ABSL_PROPAGATE_CXX_STD": "ON",
+        "ABSL_USE_EXTERNAL_GOOGLETEST": "ON",
+    },
+    cmake_srcs = ["@abseil-cpp-cmake-src//:cmake_files"],
+    tags = _CMAKE_TAGS,
+    deps = [":googletest_cmake"],
+)
+
+cmake_bazel(
+    name = "protobuf_cmake_bazel",
+    srcs = ["@protobuf-cmake-src//:lib_srcs"],
+    cache_entries = _COMMON_CACHE_ENTRIES | {
+        "protobuf_BUILD_CONFORMANCE": "OFF",
+        "protobuf_BUILD_EXAMPLES": "OFF",
+        "protobuf_BUILD_TESTS": "OFF",
+        "protobuf_LOCAL_DEPENDENCIES_ONLY": "ON",
+    },
+    cmake_srcs = ["@protobuf-cmake-src//:cmake_files"],
+    common_hdrs = ["@protobuf-cmake-src//:common_hdrs"],
+    # Each source's compile gets only the headers Bazel's own compile of it
+    # gets (its cc_library's headers and its deps' CcInfo headers), from the
+    # Bazel build of the same sources.
+    header_deps = [
+        "//pkg:protobuf",
+        "//pkg:protobuf_lite",
+        "//pkg:protoc",
+        "//pkg:protoc-gen-upb",
+        "//pkg:protoc-gen-upb_minitable",
+        "//pkg:protoc-gen-upbdefs",
+        "//pkg:upb",
+    ],
+    tags = _CMAKE_TAGS,
+    deps = [":absl_cmake"],
+)
+
+sh_test(
+    name = "protobuf_cmake_bazel_smoke_test",
+    srcs = ["cmake_bazel_smoke_test.sh"],
+    args = ["$(rootpath :protobuf_cmake_bazel)"],
+    data = [":protobuf_cmake_bazel"],
+    tags = _CMAKE_TAGS,
+    target_compatible_with = ["@platforms//os:linux"],
 )

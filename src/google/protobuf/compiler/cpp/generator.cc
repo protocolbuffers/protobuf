@@ -42,6 +42,12 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
+
+// DO NOT SUBMIT: unused variable to probe cmake_bazel() caching in the
+// linux-cmake-bazel GHA job (a one-file generator change). External linkage so
+// the compiled object actually changes.
+[[maybe_unused]] int cmake_bazel_cache_probe = 1;
+
 namespace {
 
 std::string NumberedCcFileName(absl::string_view basename, int number) {
