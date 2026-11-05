@@ -60,6 +60,7 @@ class JavaGeneratorTest : public CommandLineInterfaceTester {
     }
     return contents.find(substring) != std::string::npos;
   }
+
 };
 
 TEST_F(JavaGeneratorTest, Basic) {
