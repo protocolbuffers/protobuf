@@ -40,7 +40,6 @@ jobs:
 
     name: ${{ matrix.config.continuous-only && inputs.continuous-prefix || '' }} ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.runner || 'ubuntu-24.04' }}
-    runs-on: ${{ matrix.config.runner || 'ubuntu-24.04' }}
 
     steps:
       - name: Checkout pending changes
@@ -111,7 +110,6 @@ jobs:
 
   build_wheels:
     name: Build Wheels
-    runs-on: ubuntu-24.04
     runs-on: ubuntu-24.04
     if: ${{ github.event_name != 'pull_request_target' }}
     steps:
@@ -290,7 +288,6 @@ jobs:
           # We don't support 3.19.0 anymore, so our infra should show a failure.
           - version: "3.19.0"
             fail: true
-    runs-on: ubuntu-24.04
     runs-on: ubuntu-24.04
     if: ${{ github.event_name != 'pull_request_target' }}
     steps:
