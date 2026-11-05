@@ -630,9 +630,9 @@ static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
     file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fplugin_2eproto[1];
 static constexpr const ::_pb::ServiceDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fcompiler_2fplugin_2eproto = nullptr;
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
 const ::uint32_t
-    TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-        protodesc_cold) = {
+    TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto::offsets[] = {
         0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::Version, _impl_._has_bits_),
         7, // hasbit index offset
@@ -683,8 +683,9 @@ const ::uint32_t
         0,
 };
 
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
 static const ::_pbi::MigrationSchema
-    schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
+    schemas[] = {
         {0, sizeof(::google::protobuf::compiler::Version)},
         {11, sizeof(::google::protobuf::compiler::CodeGeneratorRequest)},
         {24, sizeof(::google::protobuf::compiler::CodeGeneratorResponse_File)},
@@ -697,8 +698,8 @@ static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
         &::google::protobuf::compiler::CodeGeneratorResponse_File_globals_,
         &::google::protobuf::compiler::CodeGeneratorResponse_globals_,
 };
-const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-    protodesc_cold) = {
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2eproto[] = {
     "\n%google/protobuf/compiler/plugin.proto\022"
     "\030google.protobuf.compiler\032 google/protob"
     "uf/descriptor.proto\"F\n\007Version\022\r\n\005major\030"
