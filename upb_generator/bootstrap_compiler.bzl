@@ -44,7 +44,6 @@ _bootstrap_visibility = [
     # TODO: b/396430482 - Remove protoc from bootstrap visibility.
     "//src/google/protobuf/compiler:__pkg__",
     "//src/google/protobuf/compiler/rust:__pkg__",
-    "//third_party/upb/github:__pkg__",
     "//upb_generator:__subpackages__",
     "//upb/reflection:__pkg__",
     "//upb/test:__pkg__",

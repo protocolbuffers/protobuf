@@ -12,6 +12,8 @@ Generates proto files into separate subdirectories without duplication.
 
 load("//bazel:proto_library.bzl", "proto_library")
 
+_STRIP_IMPORT_PREFIX = "/csharp/protos/unittest_deep_dependencies"
+
 def _pad(n):
     """Zero-pad a number to 2 digits."""
     return str(n) if n >= 10 else "0" + str(n)
@@ -64,7 +66,7 @@ def _generate_variant(variant, width, depth, package):
     proto_library(
         name = variant + "_file_00_00_proto",
         srcs = [":" + package + "/file_00_00.proto"],
-        strip_import_prefix = "/third_party/protobuf/csharp/protos/unittest_deep_dependencies",
+        strip_import_prefix = _STRIP_IMPORT_PREFIX,
     )
 
     # Level 1: WIDTH proto_library targets
@@ -73,7 +75,7 @@ def _generate_variant(variant, width, depth, package):
         proto_library(
             name = variant + "_file_01_" + i_pad + "_proto",
             srcs = [":" + package + "/file_01_" + i_pad + ".proto"],
-            strip_import_prefix = "/third_party/protobuf/csharp/protos/unittest_deep_dependencies",
+            strip_import_prefix = _STRIP_IMPORT_PREFIX,
             deps = [":" + variant + "_file_00_00_proto"],
             exports = [":" + variant + "_file_00_00_proto"],
         )
@@ -94,7 +96,7 @@ def _generate_variant(variant, width, depth, package):
             proto_library(
                 name = variant + "_file_" + level_pad + "_" + idx_pad + "_proto",
                 srcs = [":" + package + "/file_" + level_pad + "_" + idx_pad + ".proto"],
-                strip_import_prefix = "/third_party/protobuf/csharp/protos/unittest_deep_dependencies",
+                strip_import_prefix = _STRIP_IMPORT_PREFIX,
                 deps = deps,
                 exports = deps,
             )
@@ -103,7 +105,7 @@ def _generate_variant(variant, width, depth, package):
     proto_library(
         name = variant + "_entry_proto",
         srcs = [":" + package + "/file_entry.proto"],
-        strip_import_prefix = "/third_party/protobuf/csharp/protos/unittest_deep_dependencies",
+        strip_import_prefix = _STRIP_IMPORT_PREFIX,
         deps = [":" + variant + "_file_" + _pad(depth) + "_00_proto"],
         exports = [":" + variant + "_file_" + _pad(depth) + "_00_proto"],
     )
@@ -254,13 +256,13 @@ def _generate_csharp_sources(name, variant, all_files):
         srcs = [":" + f for f in all_files],
         outs = csharp_outputs,
         cmd = (
-            "$(location //net/proto2/compiler/public:protocol_compiler) " +
+            "$(location //:protoc) " +
             "--csharp_out=$(RULEDIR)/" + variant + "_cs " +
             "--csharp_opt=file_extension=.pb.cs " +
             "--csharp_opt=base_namespace=" + base_namespace + " " +
             "-I$$(dirname $$(dirname $(location :" + all_files[0] + "))) " +
             "$(SRCS)"
         ),
-        tools = ["//net/proto2/compiler/public:protocol_compiler"],
+        tools = ["//:protoc"],
         visibility = ["//src/google/protobuf/csharp:__subpackages__"],
     )
