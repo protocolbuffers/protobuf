@@ -67,6 +67,7 @@ jobs:
        github.event.pull_request.head.repo.full_name != 'protocolbuffers/protobuf')
 
     runs-on: ubuntu-26.04
+    runs-on: ubuntu-26.04
     outputs:
       # Store the sha for checkout so we can easily use it later.  For safe
       # events, this will be blank and use the defaults.
