@@ -453,15 +453,8 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
+        # MacOS Bazel and MacOS Intel Bazel live in test_macos.yml.
         include:
-          - name: MacOS Bazel
-            os: macos-15
-            cache_key: macos-15-bazel8
-            bazel: test //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
-          - name: MacOS Intel Bazel
-            os: macos-15
-            cache_key: macos-15-intel
-            bazel: test --cpu=darwin_x86_64 //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
           - name: Windows Bazel
             os: windows-2022
             cache_key: windows-2022-msvc-cl

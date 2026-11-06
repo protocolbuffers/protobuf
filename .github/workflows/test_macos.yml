@@ -1,0 +1,201 @@
+name: macOS Tests
+
+# Runs every presubmit macOS test that already uses Bazel on two macos-15
+# runners: one job for the native arm64 tests and one for the Intel
+# (--cpu=darwin_x86_64) tests. Each test is its own step, so GitHub reports
+# per-test timing and status. Within each job, steps are grouped by Bazel
+# version (8.7.0 first, then 9.2.0), and tests are combined into one invocation
+# only when their Bazel version, flags, and environment are identical.
+#
+# Each "Run" step keeps the exact command, Bazel version, cache key, and env it
+# had in its original workflow:
+#   - test_cpp.yml        `non-linux`                  (MacOS Bazel, MacOS Intel Bazel)
+#   - test_bazel.yml      `bazel-tests-windows-macos`  (Bazel Tests macos-15)
+#   - test_upb.yml        `macos`                      (macOS, macOS Intel)
+#   - test_python.yml     `macos`                      (MacOS Pure 3.12, MacOS C++ 3.12)
+#   - test_ruby.yml       `macos`                      (MacOS Ruby 4.0)
+#
+# Tests that need no host tooling run first. Host setup (Python, Ruby) runs
+# right before the first step that needed it originally, so earlier steps see
+# the same environment they had on their own runner. Every step after checkout
+# uses `!cancelled()` so one failing test doesn't skip the rest; the job still
+# fails if any step fails.
+#
+# The protobuf-ci/bazel action resets BAZEL_FLAGS on every invocation, so each
+# step gets only its own remote cache key.
+#
+# Not included: PHP conformance (stays on macos-15-intel in test_php.yml), and
+# continuous-only or non-Bazel macOS tests (unchanged in their original files).
+
+on:
+  workflow_call:
+    inputs:
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  arm64:
+    name: macOS Bazel arm64
+    runs-on: macos-15
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v7
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      # ---- Bazel 8.7.0, no host tooling required ----
+
+      # Combines two tests with identical Bazel version, flags, and
+      # environment into one invocation (--keep_going from protobuf-ci means a
+      # failure in one doesn't stop the other):
+      #   - test_cpp.yml `non-linux` "MacOS Bazel"
+      #   - test_bazel.yml `bazel-tests-windows-macos` (macos-15)
+      - name: Run C++ MacOS Bazel + Bazel Tests macos-15
+        if: ${{ !cancelled() }}
+        uses: protocolbuffers/protobuf-ci/bazel@v7
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          version: 8.7.0
+          bazel-cache: cpp_macos-15-bazel8
+          bazel: test //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests //bazel/...
+
+      # ---- Python 3.12 host (upb + Python, Bazel 9.2.0) ----
+
+      - name: Setup Python
+        if: ${{ !cancelled() }}
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: 'python/requirements.txt'
+
+      # Previously test_upb.yml `macos` "macOS".
+      - name: Run upb macOS
+        if: ${{ !cancelled() }}
+        uses: protocolbuffers/protobuf-ci/bazel@v7
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          version: 9.2.0
+          bazel-cache: upb-bazel-macos
+          bazel: test --//python:use_hermetic_python=true --@rules_python//python/config_settings:python_version=3.12 //benchmarks/... //lua/... //python/... //upb/... //upb_generator/...
+
+      # Previously test_python.yml `macos` setup steps.
+      - name: Validate Python version
+        if: ${{ !cancelled() }}
+        run: python3 --version | grep 3.12 || (echo "Invalid Python version - $(python3 --version)" && exit 1)
+      - name: Create and start virtual environment
+        if: ${{ !cancelled() }}
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+
+      # Previously test_python.yml `macos` "MacOS Pure 3.12".
+      - name: Run Python MacOS Pure 3.12
+        if: ${{ !cancelled() }}
+        uses: protocolbuffers/protobuf-ci/bazel@v7
+        env:
+          KOKORO_PYTHON_VERSION: "3.12"
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          version: 9.2.0
+          bazel-cache: python_macos/Pure_3.12
+          bazel: >-
+            test //python/... //python:python_version_test
+            --//python:use_hermetic_python=true
+            --@rules_python//python/config_settings:python_version=3.12
+            --test_env=KOKORO_PYTHON_VERSION=3.12
+            --macos_minimum_os=12.0
+
+      # Previously test_python.yml `macos` "MacOS C++ 3.12".
+      - name: Run Python MacOS C++ 3.12
+        if: ${{ !cancelled() }}
+        uses: protocolbuffers/protobuf-ci/bazel@v7
+        env:
+          KOKORO_PYTHON_VERSION: "3.12"
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          version: 9.2.0
+          bazel-cache: python_macos/C++_3.12
+          bazel: >-
+            test //python/... //python:python_version_test --define=use_fast_cpp_protos=true
+            --//python:use_hermetic_python=true
+            --@rules_python//python/config_settings:python_version=3.12
+            --test_env=KOKORO_PYTHON_VERSION=3.12
+            --macos_minimum_os=12.0
+
+      # ---- Ruby 4.0 host (Bazel 9.2.0) ----
+
+      # Previously test_ruby.yml `macos` setup steps.
+      - name: Pin Ruby version
+        if: ${{ !cancelled() }}
+        uses: ruby/setup-ruby@6e5d382445ae5590b7449d8b3bc8cb1c2c27f617 # v1.317.0
+        with:
+          ruby-version: "4.0"
+      - name: Validate Ruby version
+        if: ${{ !cancelled() }}
+        run: ruby --version | grep 4.0 || (echo "Invalid Ruby version - $(ruby --version)" && exit 1)
+
+      # Previously test_ruby.yml `macos` "MacOS Ruby 4.0".
+      - name: Run Ruby MacOS Ruby 4.0
+        if: ${{ !cancelled() }}
+        uses: protocolbuffers/protobuf-ci/bazel@v7
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          version: 9.2.0
+          bazel-cache: ruby_macos/4.0
+          bazel: test //ruby/... --test_env=KOKORO_RUBY_VERSION=4.0 --test_env=BAZEL=true
+
+      - name: Report disk usage
+        if: ${{ always() }}
+        run: df -h / && du -sh /private/var/tmp/_bazel_$(whoami) 2>/dev/null || true
+
+  x86_64:
+    name: macOS Bazel Intel
+    runs-on: macos-15
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v7
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      # ---- No host tooling required (Bazel 8.7.0) ----
+
+      # Previously test_cpp.yml `non-linux` "MacOS Intel Bazel".
+      - name: Run C++ MacOS Intel Bazel
+        if: ${{ !cancelled() }}
+        uses: protocolbuffers/protobuf-ci/bazel@v7
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          version: 8.7.0
+          bazel-cache: cpp_macos-15-intel
+          bazel: test --cpu=darwin_x86_64 //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
+
+      # ---- Python 3.12 host (upb, Bazel 9.2.0) ----
+
+      # Previously test_upb.yml `macos` setup step.
+      - name: Setup Python
+        if: ${{ !cancelled() }}
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: 'python/requirements.txt'
+
+      # Previously test_upb.yml `macos` "macOS Intel".
+      - name: Run upb macOS Intel
+        if: ${{ !cancelled() }}
+        uses: protocolbuffers/protobuf-ci/bazel@v7
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          version: 9.2.0
+          bazel-cache: upb-bazel-macos
+          bazel: test --cpu=darwin_x86_64 --//python:use_hermetic_python=true --@rules_python//python/config_settings:python_version=3.12 //benchmarks/... //lua/... //python/... //upb/... //upb_generator/...
+
+      - name: Report disk usage
+        if: ${{ always() }}
+        run: df -h / && du -sh /private/var/tmp/_bazel_$(whoami) 2>/dev/null || true

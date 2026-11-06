@@ -80,33 +80,7 @@ jobs:
           version: 9.2.0
           exclude-targets: -//python:conformance_test -//upb/reflection:def_builder_test
 
-  macos:
-    strategy:
-      fail-fast: false   # Don't cancel all jobs if one fails.
-      matrix:
-        config:
-          - { name: "macOS", bazel-command: "test" }
-          - { name: "macOS Intel", bazel-command: "test", flags: "--cpu=darwin_x86_64" }
-    name: ${{ matrix.config.name }}
-    runs-on: macos-15
-    steps:
-      - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v7
-        with:
-          ref: ${{ inputs.safe-checkout }}
-      - name: Setup Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
-        with:
-          python-version: 3.12
-          cache: pip
-          cache-dependency-path: 'python/requirements.txt'
-      - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v7
-        with:
-          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: "upb-bazel-macos"
-          bazel: ${{ matrix.config.bazel-command }} ${{ matrix.config.flags }}  --//python:use_hermetic_python=true --@rules_python//python/config_settings:python_version=3.12 //benchmarks/... //lua/... //python/... //upb/... //upb_generator/...
-          version: 9.2.0
+  # The macOS Bazel tests (macOS, macOS Intel) live in test_macos.yml.
 
   build_wheels:
     name: Build Wheels

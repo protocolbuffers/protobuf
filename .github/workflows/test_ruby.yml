@@ -147,7 +147,7 @@ jobs:
         - { version: "3.3", continuous-only: true }
         - { version: "3.4", ffi: NATIVE, continuous-only: true }
         - { version: "3.4", ffi: FFI, continuous-only: true }
-        - { version: "4.0", ffi: NATIVE }
+        # The presubmit 4.0 NATIVE entry lives in test_macos.yml.
         - { version: "4.0", ffi: FFI, continuous-only: true }
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} MacOS Ruby ${{ matrix.version }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}

@@ -79,7 +79,8 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         type: [ Pure, C++]
-        version: [ "3.12", "3.13", "3.14" ]
+        # The presubmit 3.12 entries live in test_macos.yml.
+        version: [ "3.13", "3.14" ]
         include:
           - type: Pure
             targets: //python/... //python:python_version_test
