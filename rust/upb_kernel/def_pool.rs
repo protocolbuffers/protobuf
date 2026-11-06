@@ -125,8 +125,19 @@ pub(super) fn load_all_extensions() {
     static LOADED: Once = Once::new();
     LOADED.call_once(|| {
         // Like `message_def`, build the inits before taking the lock.
-        let inits: Vec<DefPoolInit> =
+        #[allow(unused_mut)]
+        let mut inits: Vec<DefPoolInit> =
             EXTENSION_MINI_TABLE_TO_DEF_INITS.iter().map(|ext| (ext.def_init)()).collect();
+        // On Emscripten the slice above is empty; extensions register from static constructors
+        // instead (extension.rs).
+        #[cfg(target_os = "emscripten")]
+        super::__emscripten_mark_extension_def_inits_loaded();
+        #[cfg(target_os = "emscripten")]
+        inits.extend(
+            super::__emscripten_extension_mini_table_to_def_inits()
+                .into_iter()
+                .map(|ext| (ext.def_init)()),
+        );
 
         let mut pool = write_global_def_pool();
         for init in inits {

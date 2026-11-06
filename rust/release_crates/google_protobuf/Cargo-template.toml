@@ -18,7 +18,7 @@ description = "Protocol Buffers - Google's data interchange format"
 path = "src/shared.rs"
 
 [dependencies]
-linkme = "0.3.35"
+linkme = "=0.3.35"
 paste = { package = "paste-complete", version = "1.0.15"}
 protobuf_macros = { version = "{PROTOBUF_RUST_VERSION}", path = "../google_protobuf_macros", package = "google-protobuf-macros" }
 

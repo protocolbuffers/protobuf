@@ -48,6 +48,8 @@ rust_library(
     rustc_flags = select({
         ":use_upb_kernel": ["--cfg=upb_kernel"],
         "//conditions:default": ["--cfg=cpp_kernel"],
+    }) + select({
+        "//conditions:default": [],
     }),
     visibility = ["//visibility:public"],
     deps = [":protobuf_lite"],
@@ -60,6 +62,8 @@ rust_library(
     rustc_flags = select({
         ":use_upb_kernel": ["--cfg=upb_kernel"],
         "//conditions:default": ["--cfg=cpp_kernel"],
+    }) + select({
+        "//conditions:default": [],
     }),
     visibility = ["//visibility:public"],
     deps = select({

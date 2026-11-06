@@ -44,12 +44,13 @@ impl<Extendee, T: Proxied> ExtensionId<Extendee, T> {
     }
 }
 
+#[cfg(not(target_os = "emscripten"))]
 #[linkme::distributed_slice]
 pub static EXTENSIONS: [LazyLock<MiniTableExtensionInitPtr>];
 
 // The sentinel sections use ELF-only directives, so skip every Apple (Mach-O) target, not just
-// macOS.
-#[cfg(all(target_family = "unix", not(target_vendor = "apple")))]
+// macOS. Emscripten has no linkme backend (see below).
+#[cfg(all(target_family = "unix", not(target_vendor = "apple"), not(target_os = "emscripten")))]
 core::arch::global_asm!(
     r#"
     .section linkme_EXTENSIONS,"awR",@progbits
@@ -73,10 +74,11 @@ pub struct ExtensionMiniTableToDefInit {
     pub def_init: fn() -> DefPoolInit,
 }
 
+#[cfg(not(target_os = "emscripten"))]
 #[linkme::distributed_slice]
 pub static EXTENSION_MINI_TABLE_TO_DEF_INITS: [ExtensionMiniTableToDefInit];
 
-#[cfg(all(target_family = "unix", not(target_vendor = "apple")))]
+#[cfg(all(target_family = "unix", not(target_vendor = "apple"), not(target_os = "emscripten")))]
 core::arch::global_asm!(
     r#"
     .section linkme_EXTENSION_MINI_TABLE_TO_DEF_INITS,"awR",@progbits
@@ -91,11 +93,204 @@ core::arch::global_asm!(
     "#
 );
 
+// wasm32-unknown-emscripten: `linkme` has no backend for this target ("distributed_slice is not
+// implemented for this platform"), and it can't have one: rustc places `#[link_section]` statics
+// in Wasm *custom sections* (not addressable memory), except for `.init_array`. So on Emscripten
+// each generated extension registers itself from a static constructor instead: the
+// `EXTENSIONS!` macro below accepts the same element syntax that `#[linkme::distributed_slice]`
+// expands to in generated code, and emits a `.init_array` entry that runs from
+// `__wasm_call_ctors` (i.e. `_initialize`) before any parse. `EXTENSIONS` (the value) stays an
+// empty `DistributedSlice` so generated code still type-checks.
+//
+// Caveats: (1) rustc emits no `symbols.o` for Wasm, so wasm-ld only links a constructor if its
+// object file is pulled in by some other referenced symbol; an extension in a crate (codegen
+// unit) that nothing references is silently not registered (native linkme keeps it). (2) The
+// constructors use priority 101 so they run before default-priority (65535) static initializers;
+// a parse from an earlier constructor would freeze the registry without them. (3) On
+// `wasm32-unknown-emscripten`, `#[used]` on `__PROTOBUF_EXTENSION_CTOR` causes LLVM's Wasm
+// backend to mark the static `WASM_SYMBOL_EXPORTED`, so `wasm-ld`/`emcc` emits a Wasm global and
+// export entry per registered extension.
+#[cfg(target_os = "emscripten")]
+static EXTENSIONS_EMPTY: [LazyLock<MiniTableExtensionInitPtr>; 0] = [];
+
+// Verified against `linkme` 0.3.35 (`third_party/rust/linkme/v0_3`, pinned as `linkme = "=0.3.35"`
+// in `rust/release_crates/google_protobuf/Cargo-template.toml`): relies on `#[doc(hidden)]
+// DistributedSlice::private_new` and `linkme_impl` 0.3.35's `#![linkme_macro = ...]` /
+// `#![linkme_sort_key = ...]` expansion grammar in `__protobuf_upb_emscripten_extensions` below.
+#[cfg(target_os = "emscripten")]
+pub static EXTENSIONS: linkme::DistributedSlice<[LazyLock<MiniTableExtensionInitPtr>]> = unsafe {
+    linkme::DistributedSlice::private_new(
+        "EXTENSIONS",
+        core::ptr::addr_of!(EXTENSIONS_EMPTY),
+        core::ptr::addr_of!(EXTENSIONS_EMPTY),
+        core::ptr::addr_of!(EXTENSIONS_EMPTY).cast::<()>(),
+        core::ptr::addr_of!(EXTENSIONS_EMPTY).cast::<()>(),
+    )
+};
+
+#[cfg(target_os = "emscripten")]
+static EMSCRIPTEN_EXTENSIONS: std::sync::Mutex<Vec<&'static LazyLock<MiniTableExtensionInitPtr>>> =
+    std::sync::Mutex::new(Vec::new());
+
+/// For generated code only (via `EXTENSIONS!`): records one extension for the registry.
+#[cfg(target_os = "emscripten")]
+#[doc(hidden)]
+pub fn __emscripten_register_extension(ext: &'static LazyLock<MiniTableExtensionInitPtr>) {
+    debug_assert!(
+        !EMSCRIPTEN_REGISTRY_BUILT.load(std::sync::atomic::Ordering::Relaxed),
+        "protobuf extension registered after the extension registry was built"
+    );
+    EMSCRIPTEN_EXTENSIONS.lock().unwrap_or_else(|e| e.into_inner()).push(ext);
+}
+
+#[cfg(target_os = "emscripten")]
+static EMSCRIPTEN_REGISTRY_BUILT: std::sync::atomic::AtomicBool =
+    std::sync::atomic::AtomicBool::new(false);
+
+/// Number of extensions registered by static constructors (diagnostics for Wasm probes).
+#[cfg(target_os = "emscripten")]
+#[doc(hidden)]
+pub fn __emscripten_registered_extension_count() -> usize {
+    EMSCRIPTEN_EXTENSIONS.lock().unwrap_or_else(|e| e.into_inner()).len()
+}
+
+#[cfg(target_os = "emscripten")]
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __protobuf_upb_emscripten_extensions {
+    (
+        #![linkme_macro = $macro:path]
+        $(#![linkme_sort_key = $key:tt])*
+        $(#[$attr:meta])*
+        $vis:vis static $name:ident : $ty:ty = $init:expr;
+    ) => {
+        $(#[$attr])*
+        $vis static $name: $ty = $init;
+        const _: () = {
+            extern "C" fn __protobuf_register_extension() {
+                $crate::__internal::runtime::__emscripten_register_extension(&$name);
+            }
+            #[used]
+            #[unsafe(link_section = ".init_array.101")]
+            static __PROTOBUF_EXTENSION_CTOR: extern "C" fn() = __protobuf_register_extension;
+        };
+    };
+}
+
+#[cfg(target_os = "emscripten")]
+#[doc(hidden)]
+pub use __protobuf_upb_emscripten_extensions as EXTENSIONS;
+
+// Same Emscripten scheme for EXTENSION_MINI_TABLE_TO_DEF_INITS (reflection): generated code's
+// `#[linkme::distributed_slice($pbr$::EXTENSION_MINI_TABLE_TO_DEF_INITS)]` expands to the
+// `EXTENSION_MINI_TABLE_TO_DEF_INITS!` macro below, which registers the element from a
+// `.init_array` constructor; `load_all_extensions` (def_pool.rs) reads them via
+// `__emscripten_extension_mini_table_to_def_inits`. Both registrations of one extension are
+// emitted in the same generated block, so they live in the same object file and are linked (or
+// dropped, see caveat (1) above) together. With reflection support each extension therefore
+// exports two constructor globals (`__PROTOBUF_EXTENSION_CTOR` and
+// `__PROTOBUF_EXTENSION_DEF_INIT_CTOR`, see caveat (3) above). Lite-runtime builds (the default
+// Wasm toolchain implies `proto_force_lite_runtime`) emit no def-init elements.
+#[cfg(target_os = "emscripten")]
+static EXTENSION_MINI_TABLE_TO_DEF_INITS_EMPTY: [ExtensionMiniTableToDefInit; 0] = [];
+
+#[cfg(target_os = "emscripten")]
+pub static EXTENSION_MINI_TABLE_TO_DEF_INITS: linkme::DistributedSlice<
+    [ExtensionMiniTableToDefInit],
+> = unsafe {
+    linkme::DistributedSlice::private_new(
+        "EXTENSION_MINI_TABLE_TO_DEF_INITS",
+        core::ptr::addr_of!(EXTENSION_MINI_TABLE_TO_DEF_INITS_EMPTY),
+        core::ptr::addr_of!(EXTENSION_MINI_TABLE_TO_DEF_INITS_EMPTY),
+        core::ptr::addr_of!(EXTENSION_MINI_TABLE_TO_DEF_INITS_EMPTY).cast::<()>(),
+        core::ptr::addr_of!(EXTENSION_MINI_TABLE_TO_DEF_INITS_EMPTY).cast::<()>(),
+    )
+};
+
+#[cfg(target_os = "emscripten")]
+static EMSCRIPTEN_EXTENSION_DEF_INITS: std::sync::Mutex<Vec<&'static ExtensionMiniTableToDefInit>> =
+    std::sync::Mutex::new(Vec::new());
+
+/// For generated code only (via `EXTENSION_MINI_TABLE_TO_DEF_INITS!`).
+#[cfg(target_os = "emscripten")]
+#[doc(hidden)]
+pub fn __emscripten_register_extension_def_init(entry: &'static ExtensionMiniTableToDefInit) {
+    debug_assert!(
+        !EMSCRIPTEN_DEF_INITS_LOADED.load(std::sync::atomic::Ordering::Relaxed),
+        "protobuf extension def_init registered after load_all_extensions ran"
+    );
+    EMSCRIPTEN_EXTENSION_DEF_INITS.lock().unwrap_or_else(|e| e.into_inner()).push(entry);
+}
+
+/// Set by `load_all_extensions` (def_pool.rs) when it reads the registrations; a later
+/// registration (e.g. reflection used from an earlier static constructor) would be dropped.
+#[cfg(target_os = "emscripten")]
+static EMSCRIPTEN_DEF_INITS_LOADED: std::sync::atomic::AtomicBool =
+    std::sync::atomic::AtomicBool::new(false);
+
+/// Called by `load_all_extensions` before it reads the registrations.
+#[cfg(target_os = "emscripten")]
+#[doc(hidden)]
+pub fn __emscripten_mark_extension_def_inits_loaded() {
+    EMSCRIPTEN_DEF_INITS_LOADED.store(true, std::sync::atomic::Ordering::Relaxed);
+}
+
+/// Number of extension def_inits registered by static constructors (diagnostics for Wasm probes).
+#[cfg(target_os = "emscripten")]
+#[doc(hidden)]
+pub fn __emscripten_registered_extension_def_init_count() -> usize {
+    EMSCRIPTEN_EXTENSION_DEF_INITS.lock().unwrap_or_else(|e| e.into_inner()).len()
+}
+
+/// Entries registered by static constructors (read by `load_all_extensions`).
+#[cfg(target_os = "emscripten")]
+#[doc(hidden)]
+pub fn __emscripten_extension_mini_table_to_def_inits() -> Vec<&'static ExtensionMiniTableToDefInit>
+{
+    EMSCRIPTEN_EXTENSION_DEF_INITS.lock().unwrap_or_else(|e| e.into_inner()).clone()
+}
+
+#[cfg(target_os = "emscripten")]
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __protobuf_upb_emscripten_extension_def_inits {
+    (
+        #![linkme_macro = $macro:path]
+        $(#![linkme_sort_key = $key:tt])*
+        $(#[$attr:meta])*
+        $vis:vis static $name:ident : $ty:ty = $init:expr;
+    ) => {
+        $(#[$attr])*
+        $vis static $name: $ty = $init;
+        const _: () = {
+            extern "C" fn __protobuf_register_extension_def_init() {
+                $crate::__internal::runtime::__emscripten_register_extension_def_init(&$name);
+            }
+            #[used]
+            #[unsafe(link_section = ".init_array.101")]
+            static __PROTOBUF_EXTENSION_DEF_INIT_CTOR: extern "C" fn() =
+                __protobuf_register_extension_def_init;
+        };
+    };
+}
+
+#[cfg(target_os = "emscripten")]
+#[doc(hidden)]
+pub use __protobuf_upb_emscripten_extension_def_inits as EXTENSION_MINI_TABLE_TO_DEF_INITS;
+
 pub fn generated_extension_registry() -> RawExtensionRegistry {
     static EXTENSIONS_REGISTRY: LazyLock<ExtensionRegistryInitPtr> = LazyLock::new(|| unsafe {
         let registry = upb_ExtensionRegistry_New(THREAD_LOCAL_ARENA.with(|a| a.raw()));
         for extension in EXTENSIONS {
             upb_ExtensionRegistry_Add(registry, extension.0);
+        }
+        #[cfg(target_os = "emscripten")]
+        {
+            EMSCRIPTEN_REGISTRY_BUILT.store(true, std::sync::atomic::Ordering::Relaxed);
+            for extension in EMSCRIPTEN_EXTENSIONS.lock().unwrap_or_else(|e| e.into_inner()).iter()
+            {
+                upb_ExtensionRegistry_Add(registry, extension.0);
+            }
         }
         ExtensionRegistryInitPtr(registry)
     });
