@@ -338,6 +338,36 @@ TEST_F(JavaGeneratorTest, LargeOpenEnumAllowedEdition2024) {
   ExpectNoErrors();
 }
 
+TEST_F(JavaGeneratorTest, LargeEnumUsesLazyInternalValueMapHolder) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2024";
+    package proto2_unittest;
+    import "third_party/java/protobuf/java_features.proto";
+
+    enum Bar {
+      option features.(pb.java).large_enum = true;
+
+      AAA = 0;
+      BBB = 1;
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_out=lite:$tmpdir "
+      "foo.proto --experimental_editions");
+
+  ExpectNoErrors();
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "proto2_unittest/Bar.java"));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX "proto2_unittest/Bar.java",
+                                    "return InternalValueMap.INSTANCE;"));
+  EXPECT_TRUE(
+      FileContainsSubstring(PACKAGE_PREFIX "proto2_unittest/Bar.java",
+                            "private static final class InternalValueMap"));
+  EXPECT_FALSE(FileContainsSubstring(PACKAGE_PREFIX "proto2_unittest/Bar.java",
+                                     "internalValueMap"));
+}
+
 struct OpenEnumUnrecognizedTestCase {
   absl::string_view test_name;
   bool lite;
