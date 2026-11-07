@@ -94,10 +94,11 @@ class PROTOBUF_EXPORT SerialArena {
 
   // See comments on `cached_blocks_` member for details.
   PROTOBUF_ALWAYS_INLINE void* TryAllocateFromCachedBlock(size_t size) {
-    if (ABSL_PREDICT_FALSE(size < 16)) return nullptr;
+    if (ABSL_PREDICT_FALSE(size < kMinimumReturnedArraySize)) return nullptr;
     // We round up to the next larger block in case the memory doesn't match
     // the pattern we are looking for.
-    const size_t index = absl::bit_width(size - 1) - 4;
+    const size_t index = absl::bit_width(size - 1) -
+                         absl::bit_width(kMinimumReturnedArraySize - 1);
 
     if (ABSL_PREDICT_FALSE(index >= cached_block_length_)) return nullptr;
     auto& cached_head = cached_blocks_[index];
