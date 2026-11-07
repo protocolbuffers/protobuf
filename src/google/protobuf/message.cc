@@ -40,6 +40,7 @@
 #include "absl/strings/strip.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
@@ -74,7 +75,7 @@ void RegisterFileLevelMetadata(const DescriptorTable* descriptor_table);
 
 namespace {
 
-Metadata GetMetadataImpl(const internal::ClassData& data) {
+Metadata GetMetadataImpl(const ClassDataPrefix& data) {
   auto* table = data.descriptor_table();
   // Only codegen types provide a table. DynamicMessage does not provide a table
   // and instead eagerly initializes the descriptor/reflection members.
@@ -90,7 +91,7 @@ Metadata GetMetadataImpl(const internal::ClassData& data) {
 }
 
 // Helper function to get type name - logic from Message::GetTypeNameImpl
-absl::string_view GetTypeNameImpl(const ClassData* data) {
+absl::string_view GetTypeNameImpl(const ClassDataPrefix* data) {
   return GetMetadataImpl(*data).descriptor->full_name();
 }
 
@@ -103,7 +104,7 @@ std::string InitializationErrorStringImpl(const MessageLite& msg) {
 }  // namespace
 
 struct DescriptorMethodsFriend {
-  static const TcParseTableBase* GetTcParseTable(const ClassData* data) {
+  static const TcParseTableBase* GetTcParseTable(const ClassDataPrefix* data) {
     return GetMetadataImpl(*data).reflection->GetTcParseTable();
   }
 };
@@ -111,7 +112,8 @@ struct DescriptorMethodsFriend {
 namespace {
 
 // Helper function to get TcParseTable - logic from Message::GetTcParseTableImpl
-const internal::TcParseTableBase* GetTcParseTableImpl(const ClassData* data) {
+const internal::TcParseTableBase* GetTcParseTableImpl(
+    const ClassDataPrefix* data) {
   return DescriptorMethodsFriend::GetTcParseTable(data);
 }
 
@@ -431,10 +433,10 @@ void Message::DiscardUnknownFields() {
 }
 
 Metadata Message::GetMetadata() const {
-  return GetMetadataImpl(*GetClassData());
+  return GetMetadataImpl(*GetClassDataPrefix());
 }
 
-Metadata Message::GetMetadataImpl(const internal::ClassData& data) {
+Metadata Message::GetMetadataImpl(const internal::ClassDataPrefix& data) {
   return internal::GetMetadataImpl(data);
 }
 
@@ -470,7 +472,7 @@ size_t Message::MaybeComputeUnknownFieldsSize(
 }
 
 size_t Message::SpaceUsedLong() const {
-  return GetClassData()->descriptor_methods()->space_used_long(*this);
+  return GetClassDataPrefix()->descriptor_methods()->space_used_long(*this);
 }
 
 namespace internal {
