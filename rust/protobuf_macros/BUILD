@@ -25,8 +25,8 @@ rust_proc_macro(
         "//rust:__subpackages__",
     ],
     deps = [
-        "@crate_index//:quote",
-        "@crate_index//:syn",
+        "@crates_io_quote//:quote",
+        "@crates_io_syn//:syn",
     ],
 )
 

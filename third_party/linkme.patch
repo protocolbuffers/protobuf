@@ -1,0 +1,15 @@
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -150,7 +150,11 @@
+ mod distributed_slice;
+ mod private;
+ 
+-include!(concat!(env!("OUT_DIR"), "/private.rs"));
++#[doc(hidden)]
++pub mod __private36 {
++    #[doc(hidden)]
++    pub use crate::private::*;
++}
+ 
+ pub use linkme_impl::*;
+ 

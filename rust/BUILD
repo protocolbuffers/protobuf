@@ -147,7 +147,7 @@ rust_library(
     edition = "2024",
     proc_macro_deps = [
         "//rust/protobuf_macros",
-        "@crate_index//:paste",
+        "@crates_io_paste//:paste",
     ],
     rustc_flags = [
         "--cfg=upb_kernel",
@@ -157,7 +157,7 @@ rust_library(
     deps = [
         "//rust/upb",
         "//rust/upb:reflection",
-        "@crate_index//:linkme",
+        "@crates_io_linkme//:linkme",
     ],
 )
 
@@ -219,7 +219,7 @@ rust_library(
     edition = "2024",
     proc_macro_deps = [
         "//rust/protobuf_macros",
-        "@crate_index//:paste",
+        "@crates_io_paste//:paste",
     ],
     rustc_flags = [
         "--cfg=cpp_kernel",

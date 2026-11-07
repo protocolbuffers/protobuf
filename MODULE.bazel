@@ -201,27 +201,80 @@ rust.toolchain(
     versions = ["1.85.0"],
 )
 
-crate = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")
+# Crates used by the Rust runtime and its proc macros. These are fetched
+# directly rather than through crate_universe so that depending on protobuf
+# requires only the public rules of rules_rust.
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "crates_io_linkme",
+    build_file = "//third_party:linkme.BUILD",
+    patch_args = ["-p1"],
+    patches = ["//third_party:linkme.patch"],
+    sha256 = "e83272d46373fb8decca684579ac3e7c8f3d71d4cc3aa693df8759e260ae41cf",
+    strip_prefix = "linkme-0.3.36",
+    type = "tar.gz",
+    urls = ["https://static.crates.io/crates/linkme/linkme-0.3.36.crate"],
+)
+
+http_archive(
+    name = "crates_io_linkme_impl",
+    build_file = "//third_party:linkme_impl.BUILD",
+    sha256 = "32d59e20403c7d08fe62b4376edfe5c7fb2ef1e6b1465379686d0f21c8df444b",
+    strip_prefix = "linkme-impl-0.3.36",
+    type = "tar.gz",
+    urls = ["https://static.crates.io/crates/linkme-impl/linkme-impl-0.3.36.crate"],
+)
+
+http_archive(
+    name = "crates_io_paste",
+    build_file = "//third_party:paste.BUILD",
+    sha256 = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a",
+    strip_prefix = "paste-1.0.15",
+    type = "tar.gz",
+    urls = ["https://static.crates.io/crates/paste/paste-1.0.15.crate"],
+)
+
+http_archive(
+    name = "crates_io_proc_macro2",
+    build_file = "//third_party:proc_macro2.BUILD",
+    sha256 = "985e7ec9bb745e6ce6535b544d84d6cd6f7ad8bd711c398938ae983b91a766d9",
+    strip_prefix = "proc-macro2-1.0.107",
+    type = "tar.gz",
+    urls = ["https://static.crates.io/crates/proc-macro2/proc-macro2-1.0.107.crate"],
+)
+
+http_archive(
+    name = "crates_io_quote",
+    build_file = "//third_party:quote.BUILD",
+    sha256 = "1fbf4db142a473a8d80c26bbf18454ed458bf8d26c8219c331daecfdbd079001",
+    strip_prefix = "quote-1.0.47",
+    type = "tar.gz",
+    urls = ["https://static.crates.io/crates/quote/quote-1.0.47.crate"],
+)
+
+http_archive(
+    name = "crates_io_syn",
+    build_file = "//third_party:syn.BUILD",
+    sha256 = "872831b642d1a07999a962a351ed35b955ea2cfc8f3862091e2a240a84f17297",
+    strip_prefix = "syn-2.0.119",
+    type = "tar.gz",
+    urls = ["https://static.crates.io/crates/syn/syn-2.0.119.crate"],
+)
+
+http_archive(
+    name = "crates_io_unicode_ident",
+    build_file = "//third_party:unicode_ident.BUILD",
+    sha256 = "e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75",
+    strip_prefix = "unicode-ident-1.0.24",
+    type = "tar.gz",
+    urls = ["https://static.crates.io/crates/unicode-ident/unicode-ident-1.0.24.crate"],
+)
+
+crate = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate", dev_dependency = True)
 crate.spec(
     package = "googletest",
     version = "0.14.2",
-)
-crate.spec(
-    package = "linkme",
-    version = "0.3.35",
-)
-crate.spec(
-    package = "paste",
-    version = "1.0.15",
-)
-crate.spec(
-    package = "quote",
-    version = "1.0.38",
-)
-crate.spec(
-    features = ["full"],
-    package = "syn",
-    version = ">=2, <3",
 )
 crate.from_specs(
     cargo_lockfile = "//rust:Cargo.lock",

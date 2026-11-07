@@ -1,6 +1,14 @@
 exports_files([
     "BUILD.bazel",
     "jsoncpp.BUILD",
+    "linkme.BUILD",
+    "linkme.patch",
+    "linkme_impl.BUILD",
+    "paste.BUILD",
+    "proc_macro2.BUILD",
+    "quote.BUILD",
     "rules_fuzzing.patch",
+    "syn.BUILD",
+    "unicode_ident.BUILD",
     "zlib.BUILD",
 ])
