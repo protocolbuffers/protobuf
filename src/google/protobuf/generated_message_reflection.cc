@@ -3764,7 +3764,7 @@ const MapFieldBase* Reflection::GetMapData(const Message& message,
 
 template <typename T>
 static uint32_t AlignTo(uint32_t v) {
-  return static_cast<uint32_t>(internal::MemoryAlign{alignof(T)}.Ceil(v));
+  return static_cast<uint32_t>(internal::MemoryAlign::Of<T>().Ceil(v));
 }
 
 static internal::TailCallParseFunc GetFastParseFunction(
@@ -4035,7 +4035,8 @@ class AssignDescriptorsHelper {
     if (message_globals_data_[0] != nullptr) {
       auto* default_instance =
           MessageGlobalsBase::ToDefaultInstance(message_globals_data_[0]);
-      auto& class_data = *internal::GetClassData(*default_instance);
+      auto& class_data =
+          *internal::PrivateAccess::GetClassDataPrefix(*default_instance);
       // If there is no descriptor_table in the class data, then it is not
       // interested in receiving reflection information either.
       if (class_data.descriptor_table() != nullptr) {
