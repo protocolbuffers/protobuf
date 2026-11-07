@@ -17,6 +17,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <type_traits>
 #include <variant>
 
 #include "absl/log/absl_check.h"
@@ -109,6 +110,7 @@ class MessageCreator {
   uint32_t allocation_size_;
   Tag tag_;
   uint8_t alignment_;
+  [[maybe_unused]] uint16_t padding_ = 0;
   Func func_;
 };
 
@@ -154,109 +156,41 @@ struct PROTOBUF_EXPORT ReflectionData {
 // otherwise be null. We can have some metadata in ClassData telling us if we
 // have them and their offset.
 
-struct PROTOBUF_EXPORT ClassData {
-  using IsInitializedFunc = bool (*PROTOBUF_NULLABLE)(const MessageLite&);
-  using MergeToFromFunc = void (*PROTOBUF_NONNULL)(MessageLite& to,
-                                                   const MessageLite& from_msg);
+// `ClassDataPrefix` is a 32-byte struct with the most frequently accessed
+// members of `ClassData`.
+struct PROTOBUF_EXPORT ClassDataPrefix {
   using DestroyMessageFunc = void (*PROTOBUF_NONNULL)(MessageLite& msg);
-  using ClearFunc = void (*PROTOBUF_NONNULL)(MessageLite& msg);
-  using ByteSizeLongFunc = size_t (*PROTOBUF_NONNULL)(const MessageLite&);
-  using SerializeFunc = uint8_t* PROTOBUF_NULLABLE (*PROTOBUF_NONNULL)(
-      const MessageLite& msg, uint8_t* PROTOBUF_NULLABLE ptr,
-      io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
-  IsInitializedFunc is_initialized;
-  MergeToFromFunc merge_to_from;
-  internal::MessageCreator message_creator;
+  union ReflectionDataOrTypeName {
+    explicit constexpr ReflectionDataOrTypeName(
+        ReflectionData* PROTOBUF_NONNULL reflection_data)
+        : reflection_data(reflection_data) {}
+    explicit constexpr ReflectionDataOrTypeName(
+        const char* PROTOBUF_NONNULL type_name)
+        : type_name(type_name) {}
+    ReflectionData* PROTOBUF_NONNULL reflection_data;
+    const char* PROTOBUF_NONNULL type_name;
+  };
+
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   DestroyMessageFunc destroy_message;
-  ClearFunc clear;
-  ByteSizeLongFunc byte_size_long;
-  SerializeFunc serialize;
-#endif  // PROTOBUF_CUSTOM_VTABLE
+#endif
 
-  // Offset of the CachedSize member.
-  uint32_t cached_size_offset;
-  // LITE objects (ie !descriptor_methods) collocate their name as a
-  // char[] just beyond the ClassData.
-  bool is_lite;
-  bool is_dynamic = false;
+  ReflectionDataOrTypeName aux_data;
 
-  // In normal mode we have the small constructor to avoid the cost in
-  // codegen.
-#if !defined(PROTOBUF_CUSTOM_VTABLE)
-  constexpr ClassData(
-      IsInitializedFunc is_initialized, MergeToFromFunc merge_to_from,
-      internal::MessageCreator message_creator, uint32_t cached_size_offset,
-      std::variant<ReflectionData*, const char*> reflection_or_name)
-      : is_initialized(is_initialized),
-        merge_to_from(merge_to_from),
-        message_creator(message_creator),
-        cached_size_offset(cached_size_offset),
-        is_lite(std::holds_alternative<const char*>(reflection_or_name)),
-        aux_data(GetAuxFromVariant(reflection_or_name)) {}
-#endif  // !PROTOBUF_CUSTOM_VTABLE
+  internal::MessageCreator message_creator;
 
-  // But we always provide the full constructor even in normal mode to make
-  // helper code simpler.
-  constexpr ClassData(
-      IsInitializedFunc is_initialized, MergeToFromFunc merge_to_from,
-      internal::MessageCreator message_creator,
+  constexpr ClassDataPrefix(
       [[maybe_unused]] DestroyMessageFunc destroy_message,
-      [[maybe_unused]] ClearFunc clear,
-      [[maybe_unused]] ByteSizeLongFunc byte_size_long,
-      [[maybe_unused]] SerializeFunc serialize, uint32_t cached_size_offset,
-      std::variant<ReflectionData*, const char*> reflection_or_name)
-      : is_initialized(is_initialized),
-        merge_to_from(merge_to_from),
-        message_creator(message_creator),
+      std::variant<ReflectionData*, const char*> reflection_or_name,
+      internal::MessageCreator message_creator)
+      :
 #if defined(PROTOBUF_CUSTOM_VTABLE)
         destroy_message(destroy_message),
-        clear(clear),
-        byte_size_long(byte_size_long),
-        serialize(serialize),
-#endif  // PROTOBUF_CUSTOM_VTABLE
-        cached_size_offset(cached_size_offset),
-        is_lite(std::holds_alternative<const char*>(reflection_or_name)),
-        aux_data(GetAuxFromVariant(reflection_or_name)) {
+#endif
+        aux_data(GetAuxFromVariant(reflection_or_name)),
+        message_creator(message_creator) {
   }
-
-  const TcParseTableBase* PROTOBUF_NONNULL GetTcParseTable() const;
-
-  const MessageLite* PROTOBUF_NONNULL default_instance() const;
-
-  // Defined in message_lite.h.
-  MessageLite* PROTOBUF_NONNULL New(Arena* PROTOBUF_NULLABLE arena) const;
-
-  // Defined in message_lite.h.
-  MessageLite* PROTOBUF_NONNULL New(SerialArena* PROTOBUF_NULLABLE arena) const;
-
-  MessageLite* PROTOBUF_NONNULL New(std::nullptr_t) const {
-    return New(static_cast<Arena*>(nullptr));
-  }
-
-  // Defined in message_lite.h.
-  MessageLite* PROTOBUF_NONNULL PlacementNew(
-      void* PROTOBUF_NONNULL mem, Arena* PROTOBUF_NULLABLE arena) const;
-
-  uint32_t allocation_size() const { return message_creator.allocation_size(); }
-
-  uint8_t alignment() const { return message_creator.alignment(); }
-
-  template <typename MessageLite = google::protobuf::MessageLite>
-  PROTOBUF_ALWAYS_INLINE void MergeToFrom(MessageLite& to,
-                                          const MessageLite& from) const {
-    ABSL_DCHECK(this == to.GetClassData())
-        << "Incorrect class data passed to MergeToFrom: expected "
-        << to.GetTypeName() << ", got "
-        << TypeDependent<MessageLite>(default_instance())->GetTypeName();
-    ABSL_DCHECK(this == from.GetClassData())
-        << "Invalid call to MergeFrom between types " << to.GetTypeName()
-        << " and " << from.GetTypeName();
-    this->merge_to_from(to, from);
-  }
-
-  std::string DebugName() const;
 
   // Accessors for reflection related data (!LITE only).
   const Reflection* PROTOBUF_NULLABLE reflection() const {
@@ -286,27 +220,13 @@ struct PROTOBUF_EXPORT ClassData {
     reflection_data()->get_metadata_tracker();
   }
 
+  // Returns the ReflectionData object (non-LITE only).
   ReflectionData* PROTOBUF_NONNULL reflection_data() const {
-    ABSL_DCHECK(!is_lite);
     return aux_data.reflection_data;
   }
 
   // Accessors for type name (LITE only).
-  const char* PROTOBUF_NONNULL type_name() const {
-    ABSL_DCHECK(is_lite);
-    return aux_data.type_name;
-  }
-
-  union ReflectionDataOrTypeName {
-    explicit constexpr ReflectionDataOrTypeName(
-        ReflectionData* PROTOBUF_NONNULL reflection_data)
-        : reflection_data(reflection_data) {}
-    explicit constexpr ReflectionDataOrTypeName(
-        const char* PROTOBUF_NONNULL type_name)
-        : type_name(type_name) {}
-    ReflectionData* PROTOBUF_NONNULL reflection_data;
-    const char* PROTOBUF_NONNULL type_name;
-  } aux_data;
+  const char* PROTOBUF_NONNULL type_name() const { return aux_data.type_name; }
 
   static constexpr ReflectionDataOrTypeName GetAuxFromVariant(
       std::variant<ReflectionData*, const char*> reflection_or_name) {
@@ -318,6 +238,122 @@ struct PROTOBUF_EXPORT ClassData {
           std::get<ReflectionData*>(reflection_or_name));
     }
   }
+
+  uint32_t allocation_size() const { return message_creator.allocation_size(); }
+
+  uint8_t alignment() const { return message_creator.alignment(); }
+};
+
+static_assert(std::has_unique_object_representations_v<ClassDataPrefix>,
+              "ClassDataPrefix must exactly fit its members with no padding.");
+
+struct PROTOBUF_EXPORT ClassData : ClassDataPrefix {
+  using IsInitializedFunc = bool (*PROTOBUF_NULLABLE)(const MessageLite&);
+  using MergeToFromFunc = void (*PROTOBUF_NONNULL)(MessageLite& to,
+                                                   const MessageLite& from_msg);
+  using ClearFunc = void (*PROTOBUF_NONNULL)(MessageLite& msg);
+  using ByteSizeLongFunc = size_t (*PROTOBUF_NONNULL)(const MessageLite&);
+  using SerializeFunc = uint8_t* PROTOBUF_NULLABLE (*PROTOBUF_NONNULL)(
+      const MessageLite& msg, uint8_t* PROTOBUF_NULLABLE ptr,
+      io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
+
+  IsInitializedFunc is_initialized;
+  MergeToFromFunc merge_to_from;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  ClearFunc clear;
+  ByteSizeLongFunc byte_size_long;
+  SerializeFunc serialize;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
+  // Offset of the CachedSize member.
+  uint32_t cached_size_offset;
+  // LITE objects (ie !descriptor_methods) collocate their name as a
+  // char[] just beyond the ClassData.
+  bool is_lite;
+  bool is_dynamic = false;
+
+  // In normal mode we have the small constructor to avoid the cost in
+  // codegen.
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+  constexpr ClassData(
+      IsInitializedFunc is_initialized, MergeToFromFunc merge_to_from,
+      internal::MessageCreator message_creator, uint32_t cached_size_offset,
+      std::variant<ReflectionData*, const char*> reflection_or_name)
+      : ClassDataPrefix(/*destroy_message_fn=*/nullptr, reflection_or_name,
+                        message_creator),
+        is_initialized(is_initialized),
+        merge_to_from(merge_to_from),
+        cached_size_offset(cached_size_offset),
+        is_lite(std::holds_alternative<const char*>(reflection_or_name)) {}
+#endif  // !PROTOBUF_CUSTOM_VTABLE
+
+  // But we always provide the full constructor even in normal mode to make
+  // helper code simpler.
+  constexpr ClassData(
+      IsInitializedFunc is_initialized, MergeToFromFunc merge_to_from,
+      internal::MessageCreator message_creator_obj,
+      ClassDataPrefix::DestroyMessageFunc destroy_message_fn,
+      [[maybe_unused]] ClearFunc clear,
+      [[maybe_unused]] ByteSizeLongFunc byte_size_long,
+      [[maybe_unused]] SerializeFunc serialize, uint32_t cached_size_offset,
+      std::variant<ReflectionData*, const char*> reflection_or_name)
+      : ClassDataPrefix(destroy_message_fn, reflection_or_name,
+                        message_creator_obj),
+        is_initialized(is_initialized),
+        merge_to_from(merge_to_from),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        clear(clear),
+        byte_size_long(byte_size_long),
+        serialize(serialize),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+        cached_size_offset(cached_size_offset),
+        is_lite(std::holds_alternative<const char*>(reflection_or_name)) {
+  }
+
+  const TcParseTableBase* PROTOBUF_NONNULL GetTcParseTable() const;
+
+  const MessageLite* PROTOBUF_NONNULL default_instance() const;
+
+  // Defined in message_lite.h.
+  MessageLite* PROTOBUF_NONNULL New(Arena* PROTOBUF_NULLABLE arena) const;
+
+  // Defined in message_lite.h.
+  MessageLite* PROTOBUF_NONNULL New(SerialArena* PROTOBUF_NULLABLE arena) const;
+
+  MessageLite* PROTOBUF_NONNULL New(std::nullptr_t) const {
+    return New(static_cast<Arena*>(nullptr));
+  }
+
+  // Defined in message_lite.h.
+  MessageLite* PROTOBUF_NONNULL PlacementNew(
+      void* PROTOBUF_NONNULL mem, Arena* PROTOBUF_NULLABLE arena) const;
+
+  template <typename MessageLite = google::protobuf::MessageLite>
+  PROTOBUF_ALWAYS_INLINE void MergeToFrom(MessageLite& to,
+                                          const MessageLite& from) const {
+    ABSL_DCHECK(this == to.GetClassData())
+        << "Incorrect class data passed to MergeToFrom: expected "
+        << to.GetTypeName() << ", got "
+        << TypeDependent<MessageLite>(default_instance())->GetTypeName();
+    ABSL_DCHECK(this == from.GetClassData())
+        << "Invalid call to MergeFrom between types " << to.GetTypeName()
+        << " and " << from.GetTypeName();
+    this->merge_to_from(to, from);
+  }
+
+  std::string DebugName() const;
+
+  // Returns the ReflectionData object (non-LITE only).
+  ReflectionData* PROTOBUF_NONNULL reflection_data() const {
+    ABSL_DCHECK(!is_lite);
+    return ClassDataPrefix::reflection_data();
+  }
+
+  // Accessors for type name (LITE only).
+  const char* PROTOBUF_NONNULL type_name() const {
+    ABSL_DCHECK(is_lite);
+    return ClassDataPrefix::type_name();
+  }
 };
 
 // We use a secondary vtable for descriptor based methods. This way ClassData
@@ -325,11 +361,11 @@ struct PROTOBUF_EXPORT ClassData {
 // costs in MessageLite.
 struct PROTOBUF_EXPORT DescriptorMethods {
   using GetTypeNameFunc = absl::string_view (*PROTOBUF_NONNULL)(
-      const ClassData* PROTOBUF_NONNULL data);
+      const ClassDataPrefix* PROTOBUF_NONNULL data);
   using InitializationErrorMessageFunc =
       std::string (*PROTOBUF_NONNULL)(const MessageLite&);
   using GetTcTableFunc = const internal::TcParseTableBase* PROTOBUF_NONNULL (
-      *PROTOBUF_NONNULL)(const ClassData* PROTOBUF_NONNULL data);
+      *PROTOBUF_NONNULL)(const ClassDataPrefix* PROTOBUF_NONNULL data);
   using SpaceUsedLongFunc = size_t (*PROTOBUF_NONNULL)(const MessageLite&);
   using DebugStringFunc = std::string (*PROTOBUF_NONNULL)(const MessageLite&);
   using VerifyLazyFieldConsistencyFunc =

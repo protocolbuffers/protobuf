@@ -45,6 +45,7 @@
 #include "absl/strings/substitute.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arena_test_util.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -55,6 +56,7 @@
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/private_access.h"
 #include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
@@ -1680,6 +1682,42 @@ TEST(MESSAGE_TEST_NAME, IsInitializedSplitBytestream) {
   UNITTEST::TestRequiredForeign fconcatenated;
   EXPECT_TRUE(fconcatenated.ParsePartialFromString(bytes));
   EXPECT_TRUE(fconcatenated.IsInitialized());
+}
+
+TEST(MESSAGE_TEST_NAME, ClassDataWithUnknownFields_Delete) {
+  const internal::ClassData* class_data =
+      internal::MessageTraits<UNITTEST::TestAllTypes>::class_data();
+
+  auto msg = std::make_unique<UNITTEST::TestAllTypes>();
+  msg->mutable_unknown_fields()->AddVarint(100, 1);
+  EXPECT_EQ(internal::GetClassData(*msg), class_data);
+  EXPECT_EQ(internal::PrivateAccess::GetClassDataPrefix(*msg)->destroy_message,
+            class_data->destroy_message);
+
+  // Deleting a MessageLite will force lookup of the ClassData.
+  delete static_cast<MessageLite*>(msg.release());
+}
+
+TEST(MESSAGE_TEST_NAME, ClassDataWithUnknownFields_GetReflection) {
+  auto msg = std::make_unique<UNITTEST::TestAllTypes>();
+  msg->mutable_unknown_fields()->AddVarint(100, 1);
+
+  // Look up the descriptor through the Message base class, which will go
+  // through `Message::GetMetadata`.
+  const Descriptor* descriptor =
+      static_cast<Message*>(msg.get())->GetDescriptor();
+  EXPECT_EQ(descriptor, UNITTEST::TestAllTypes::descriptor());
+}
+
+TEST(MESSAGE_TEST_NAME, ClassDataWithUnknownFields_GetReflection_OnArena) {
+  Arena arena;
+  auto* msg = google::protobuf::Arena::Create<UNITTEST::TestAllTypes>(&arena);
+  msg->mutable_unknown_fields()->AddVarint(100, 1);
+
+  // Look up the descriptor through the Message base class, which will go
+  // through `Message::GetMetadata`.
+  const Descriptor* descriptor = static_cast<Message*>(msg)->GetDescriptor();
+  EXPECT_EQ(descriptor, UNITTEST::TestAllTypes::descriptor());
 }
 
 TEST(MESSAGE_FACTORY_TEST_NAME, GeneratedFactoryLookup) {

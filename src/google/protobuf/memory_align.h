@@ -90,6 +90,8 @@ struct MemoryAlign {
     return reinterpret_cast<T*>((intptr + align - 1) & ~(align - 1));
   }
 
+  constexpr size_t CeilDefaultAligned(size_t n) const;
+
   template <typename T>
   T* CeilDefaultAligned(T* ptr) const;
 
@@ -105,6 +107,17 @@ struct ArenaAlignDefault : MemoryAlign {
   static constexpr size_t align = 8;  // NOLINT
 
   constexpr ArenaAlignDefault() : MemoryAlign{align} {}
+
+  constexpr size_t CeilDefaultAligned(size_t n) const {
+    ABSL_DCHECK(IsAligned(n));
+    return n;
+  }
+
+  template <typename T>
+  constexpr T* CeilDefaultAligned(T* ptr) const {
+    ABSL_DCHECK(IsAligned(ptr));
+    return ptr;
+  }
 };
 
 constexpr MemoryAlign ArenaAlignAs(size_t align) {
@@ -119,6 +132,11 @@ constexpr size_t MemoryAlign::Padded(size_t n) const {
          "alignment >= `kMinArenaAlignment`.";
   ABSL_DCHECK(ArenaAlignDefault{}.IsAligned(n));
   return n + align - ArenaAlignDefault{}.align;
+}
+
+constexpr size_t MemoryAlign::CeilDefaultAligned(size_t n) const {
+  ABSL_DCHECK(ArenaAlignDefault{}.IsAligned(n));
+  return Ceil(n);
 }
 
 template <typename T>
