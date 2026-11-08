@@ -1808,6 +1808,16 @@ class MessageTest(unittest.TestCase):
     with self.assertRaises(TypeError):
       m.repeated_int32.extend([5, 6, 'hi', 7])
 
+  def testRepeatedFieldSliceWithZeroStepRaises(self, message_module):
+    m = message_module.TestAllTypes(repeated_int32=[1, 2, 3])
+    m.repeated_nested_message.add(bb=1)
+    with self.assertRaises(ValueError):
+      m.repeated_int32[::0]  # pylint: disable=pointless-statement
+    with self.assertRaises(ValueError):
+      m.repeated_nested_message[::0]  # pylint: disable=pointless-statement
+    with self.assertRaises(ValueError):
+      del m.repeated_nested_message[::0]
+
   def testExtendFloatWithPythonList(self, message_module):
     """Test extending repeated float fields with python lists."""
     m = message_module.TestAllTypes()
