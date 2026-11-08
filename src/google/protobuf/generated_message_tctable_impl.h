@@ -700,7 +700,7 @@ class PROTOBUF_EXPORT TcParser final {
 #if !defined(NDEBUG) && !(defined(_MSC_VER) && defined(_M_IX86))
     // Check the alignment in debug mode, except in 32-bit msvc because it does
     // not respect the alignment as expressed by `alignof(T)`
-    if (ABSL_PREDICT_FALSE(!MemoryAlign{alignof(T)}.IsAligned(target))) {
+    if (ABSL_PREDICT_FALSE(!MemoryAlign::Of<T>().IsAligned(target))) {
       AlignFail(std::integral_constant<size_t, alignof(T)>(),
                 reinterpret_cast<uintptr_t>(target));
     }
@@ -715,7 +715,7 @@ class PROTOBUF_EXPORT TcParser final {
 #if !defined(NDEBUG) && !(defined(_MSC_VER) && defined(_M_IX86))
     // Check the alignment in debug mode, except in 32-bit msvc because it does
     // not respect the alignment as expressed by `alignof(T)`
-    if (ABSL_PREDICT_FALSE(!MemoryAlign{alignof(T)}.IsAligned(target))) {
+    if (ABSL_PREDICT_FALSE(!MemoryAlign::Of<T>().IsAligned(target))) {
       AlignFail(std::integral_constant<size_t, alignof(T)>(),
                 reinterpret_cast<uintptr_t>(target));
     }
