@@ -1152,7 +1152,7 @@ TEST(RepeatedField, MutableDataIsMutable) {
   EXPECT_EQ(1, field.Get(0));
   // The fact that this line compiles would be enough, but we'll check the
   // value anyway.
-  *field.mutable_data() = 2;
+  field[0] = 2;
   EXPECT_EQ(2, field.Get(0));
 }
 
