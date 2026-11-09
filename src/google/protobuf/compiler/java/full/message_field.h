@@ -14,6 +14,7 @@
 
 #include <string>
 
+#include "absl/types/optional.h"
 #include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
