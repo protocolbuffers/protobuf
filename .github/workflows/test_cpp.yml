@@ -213,7 +213,8 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/sccache@v7
         with:
-          cache-prefix: linux-cmake
+          # DO NOT SUBMIT: fresh sccache prefix per run, to measure a cold build.
+          cache-prefix: linux-cmake-cold-${{ github.run_id }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
       - name: Run tests
@@ -225,6 +226,37 @@ jobs:
           command: >-
             /test.sh ${{ matrix.flags}} ${{ env.SCCACHE_CMAKE_FLAGS }}
             -Dprotobuf_BUILD_TESTS=ON ${{ matrix.package_flags }}
+
+  # protobuf's CMake build and CMake test suite (the ctest entries of
+  # linux-cmake), with its Abseil, GoogleTest and jsoncpp dependencies, under
+  # Bazel with cmake_bazel() (see cmake/cmake_bazel.bzl and
+  # cmake/protobuf_cmake_bazel.bzl): one Bazel action per compile, and Bazel
+  # test results, so unchanged work is a cache hit across runs. One cache key
+  # for both configurations: the dependency builds are shared.
+  linux-cmake-bazel:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          # linux-cmake default / Package / Ninja: C++17, static libraries.
+          - suffix: ""
+          - name: C++20
+            suffix: _cxx20
+    name: Linux CMake (cmake_bazel) ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v7
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Build and run the CMake tests
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v7
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.7.0-4d8e80ef93b0219fb907af9dd4596b92946995d8
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: cpp_linux/cmake_bazel
+          # DO NOT SUBMIT: --noremote_accept_cached, to measure a cold build.
+          bazel: test //cmake:cmake_bazel${{ matrix.suffix }}_tests --test_output=errors --noremote_accept_cached
 
   linux-cmake-install:
     strategy:

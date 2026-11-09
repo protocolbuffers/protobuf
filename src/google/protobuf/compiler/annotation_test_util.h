@@ -25,6 +25,9 @@ namespace protobuf {
 namespace compiler {
 namespace annotation_test_util {
 
+// DO NOT SUBMIT: unused variable to probe cmake_bazel() header rebuilds.
+[[maybe_unused]] inline constexpr int kCmakeBazelHeaderProbe = 3;
+
 // Struct that contains the file generated from a .proto file and its
 // GeneratedCodeInfo. For example, the Java generator will fill this struct
 // (for some 'foo.proto') with:
