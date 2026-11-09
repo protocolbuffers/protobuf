@@ -419,15 +419,10 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD void* PROTOBUF_NONNULL
   AllocateAligned(size_t size, size_t align = 8) {
     if (align <= internal::ArenaAlignDefault{}.align) {
-      return Allocate(internal::ArenaAlignDefault{}.Ceil(size));
+      return AllocateDefaultAligned(internal::ArenaAlignDefault{}.Ceil(size));
     } else {
-      // We are wasting space by over allocating align - 8 bytes. Compared
-      // to a dedicated function that takes current alignment in consideration.
-      // Such a scheme would only waste (align - 8)/2 bytes on average, but
-      // requires a dedicated function in the outline arena allocation
-      // functions. Possibly re-evaluate tradeoffs later.
-      auto align_as = internal::ArenaAlignAs(align);
-      return align_as.Ceil(Allocate(align_as.Padded(size)));
+      return AllocateOverAligned(internal::ArenaAlignAs(align).Ceil(size),
+                                 align);
     }
   }
 
@@ -753,8 +748,10 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     if constexpr (is_destructor_skippable<T>::value) {
       return AllocateAligned(sizeof(T), alignof(T));
     } else {
+      size_t align = std::max(alignof(T), internal::ArenaAlignDefault::align);
+      size_t size = internal::ArenaAlignAs(align).Ceil(sizeof(T));
       return AllocateAlignedWithCleanup(
-          sizeof(T), alignof(T), &internal::cleanup::arena_destruct_object<T>);
+          size, align, &internal::cleanup::arena_destruct_object<T>);
     }
   }
 
@@ -829,7 +826,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     }
   }
 
-  void* PROTOBUF_NONNULL Allocate(size_t n);
+  void* PROTOBUF_NONNULL AllocateDefaultAligned(size_t n);
+  void* PROTOBUF_NONNULL AllocateOverAligned(size_t n, size_t align);
   void* PROTOBUF_NONNULL AllocateForArray(size_t n);
   void* PROTOBUF_NONNULL AllocateAlignedWithCleanup(
       size_t n, size_t align,
@@ -1251,7 +1249,8 @@ MessageCreator::AllocateMessage(Arena* PROTOBUF_NULLABLE arena) const {
 inline void* PROTOBUF_NONNULL
 MessageCreator::AllocateMessage(SerialArena* PROTOBUF_NULLABLE arena) const {
   if (arena != nullptr) {
-    return arena->AllocateAligned(ArenaAlignDefault{}.Ceil(allocation_size_));
+    return arena->AllocateDefaultAligned(
+        ArenaAlignDefault{}.Ceil(allocation_size_));
   } else {
     return Allocate(allocation_size_);
   }
