@@ -78,7 +78,13 @@ def CEscape(text, as_utf8) -> str:
     return ''.join([_byte_escapes[c] for c in text])
 
 
-_CUNESCAPE_HEX = re.compile(r'(\\+)(?:(?:x([0-9a-fA-F])(?![0-9a-fA-F]))|(\?))')
+# Matches the escapes that the 'unicode_escape' codec does not decode as C
+# does. It also matches escaped backslashes, so that the backslash after one is
+# not taken as the start of an escape.
+_CUNESCAPE_NON_CODEC = re.compile(
+    r'\\(\\|x([0-9a-fA-F])(?![0-9a-fA-F])|(\?)'
+    r'|u([0-9a-fA-F]{4})|U([0-9a-fA-F]{8}))'
+)
 
 
 _UNESCAPE_TRIGRAPH = True
@@ -97,22 +103,23 @@ def CUnescape(
   """
   unescape_trigraph = _UNESCAPE_TRIGRAPH
 
-  def ReplaceHexOrTrigraph(m):
-    # Only replace the match if the number of leading back slashes is odd. i.e.
-    # the slash itself is not escaped.
-    if len(m.group(1)) & 1:
-      if m.group(2) is not None:
-        return m.group(1) + 'x0' + m.group(2)
-      if unescape_trigraph and m.group(3) is not None:
-        return m.group(1)[:-1] + m.group(3)
+  def ReplaceNonCodecEscape(m):
+    if m.group(2) is not None:
+      return r'\x0' + m.group(2)
+    if unescape_trigraph and m.group(3) is not None:
+      return m.group(3)
+    code_point = m.group(4) or m.group(5)
+    if code_point is not None:
+      # Escaping each UTF-8 byte keeps a decoded character, such as a
+      # backslash, from being read as part of an escape by the codec.
+      utf8 = chr(int(code_point, 16)).encode('utf-8')
+      return ''.join(r'\x%02x' % byte for byte in utf8)
     return m.group(0)
 
-  # This is required because the 'string_escape' encoding doesn't
-  # allow single-digit hex escapes (like '\xf').
-  result = _CUNESCAPE_HEX.sub(ReplaceHexOrTrigraph, text)
+  # The 'unicode_escape' codec doesn't decode some C escapes, such as
+  # single-digit hex escapes (like '\xf'), the way C does.
+  result = _CUNESCAPE_NON_CODEC.sub(ReplaceNonCodecEscape, text)
 
-  # Replaces Unicode escape sequences with their character equivalents.
-  result = result.encode('raw_unicode_escape').decode('raw_unicode_escape')
   # Encode Unicode characters as UTF-8, then decode to Latin-1 escaping
   # unprintable characters.
   result = result.encode('utf-8').decode('unicode_escape')

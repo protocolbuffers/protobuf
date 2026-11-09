@@ -51,6 +51,19 @@ class TextEncodingTestCase(unittest.TestCase):
     self.assertEqual(b"\\?", text_encoding.CUnescape("\\\\?"))
     self.assertEqual(b"\\?", text_encoding.CUnescape("\\\\\\?"))
 
+  def testCUnescapeUnicode(self):
+    self.assertEqual(b"\xc3\xa9", text_encoding.CUnescape("\\u00e9"))
+    self.assertEqual(
+        b"\xf0\x9f\x98\x80", text_encoding.CUnescape("\\U0001f600")
+    )
+    self.assertEqual(b"\\u00e9", text_encoding.CUnescape("\\\\u00e9"))
+
+  def testCUnescapeUnicodeBackslash(self):
+    self.assertEqual(b"\\", text_encoding.CUnescape("\\u005c"))
+    self.assertEqual(b"\\n", text_encoding.CUnescape("\\u005cn"))
+    self.assertEqual(b"\\x41", text_encoding.CUnescape("\\U0000005cx41"))
+    self.assertEqual(b"\\\\", text_encoding.CUnescape("\\\\\\u005c"))
+
 
 if __name__ == "__main__":
   unittest.main()
