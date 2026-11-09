@@ -8,9 +8,9 @@
 // The gtest fixture for conformance test suites.
 //
 // ConformanceTest is the fixture every conformance test should use.  It
-// handles edition gating, per-test statistics and, for now, performance-test
-// filtering.  A suite overrides DefaultPriority() (see TestPriority in
-// testee.h) to say how important its tests are.
+// handles edition gating and, for now, performance-test filtering.  A suite
+// overrides DefaultPriority() (see TestPriority in testee.h) to say how
+// important its tests are.
 //
 // Its Testee() builds a test against the global testee, at the suite's
 // priority or at the one it is given.
@@ -52,7 +52,6 @@
 #include <gtest/gtest.h>
 #include "absl/base/nullability.h"
 #include "absl/strings/string_view.h"
-#include "conformance/test_environment.h"
 #include "conformance/testee.h"
 #include "google/protobuf/descriptor.h"
 
@@ -74,12 +73,9 @@ namespace conformance {
 //                 Yields(WhenParsed(EqualsBinaryProto(input))));
 //   }
 //
-// Subclasses that override SetUp(), TearDown() or TearDownTestSuite() must
-// call the base implementation, first thing in SetUp() and last thing in
-// TearDown() and TearDownTestSuite(), so that the statistics recorded there
-// cover the whole test.  The base SetUp() may skip the test.  gtest only skips
-// the test body on GTEST_SKIP(), so an overriding SetUp() must bail out itself
-// afterwards:
+// Subclasses that override SetUp() must call the base implementation first
+// thing.  It may skip the test.  gtest only skips the test body on
+// GTEST_SKIP(), so an overriding SetUp() must bail out itself afterwards:
 //
 //   void SetUp() override {
 //     ConformanceTest::SetUp();
@@ -98,15 +94,8 @@ class ConformanceTest : public testing::Test {
 
   // Skips the test if it isn't the kind (performance or regular) selected by
   // the environment or if MessageUnderTest() isn't supported under
-  // --maximum_edition, and snapshots statistics for TearDown().
+  // --maximum_edition.
   void SetUp() override;
-
-  // Records this test's statistics as test properties and accumulates them for
-  // the suite.
-  void TearDown() override;
-
-  // Records the suite's accumulated statistics as suite properties.
-  static void TearDownTestSuite();
 
   // Whether this is a performance test.  Performance tests only run when the
   // environment was configured with `performance = true`, and regular tests
@@ -144,9 +133,6 @@ class ConformanceTest : public testing::Test {
   internal::Test Testee(absl::string_view name);
   internal::Test Testee(TestPriority priority);
   internal::Test Testee(TestPriority priority, absl::string_view name);
-
- private:
-  internal::Statistics initial_statistics_;
 };
 
 // The fixture for performance conformance tests.
