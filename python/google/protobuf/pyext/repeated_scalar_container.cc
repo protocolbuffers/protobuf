@@ -27,6 +27,7 @@
 #include "google/protobuf/message.h"
 #include "google/protobuf/reflection.h"
 #include "google/protobuf/breaking_changes.h"
+#include "google/protobuf/pyext/free_threading/access_guard.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/safe_numerics.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
@@ -232,74 +233,102 @@ struct RaiiPyBuffer {
   ~RaiiPyBuffer() { PyBuffer_Release(view); }
 };
 
+// Returns a span over the elements of `source` WITHOUT copying, or
+// std::nullopt if they can't be viewed as T (e.g. strings, or a float field
+// read as an integer). `message` and `field_descriptor` are the destination.
+//
+// The span borrows the storage of `source`'s message, so it must not be used
+// after `r` (read access to `source`'s tree) is released.
 template <typename T>
-std::optional<SourceSpan<T>> TrySourceSpanFromRepeatedScalarContainer(
-    const Message* message, PyObject* value,
-    const FieldDescriptor* field_descriptor) {
-  if (Py_TYPE(value) == &RepeatedScalarContainer_Type) {
-    const auto* container =
-        reinterpret_cast<const RepeatedScalarContainer*>(value);
-    const auto* field = container->parent_field_descriptor;
-    const auto* value_message = container->parent->DeprecatedUnguardedMessage();
-    const Reflection* reflection = value_message->GetReflection();
-    bool is_self_assign = field_descriptor == field && message == value_message;
-    if constexpr (!std::is_same_v<T, absl::string_view>) {
-      if (field->cpp_type() == field_descriptor->cpp_type()) {
-        return SourceSpan<T>(
-            RepeatedScalarContainerFriend::GetRepeatedFieldSpan<T>(
-                reflection, value_message, field),
-            is_self_assign);
-      }
+std::optional<SourceSpan<T>> TryBorrowRepeatedFieldSpan(
+    const Message* message, const FieldDescriptor* field_descriptor,
+    const RepeatedScalarContainer* source, const ReadAccess& r) {
+  const Message* value_message = source->TargetMessage(r);
+  const FieldDescriptor* field = source->parent_field_descriptor;
+  const Reflection* reflection = value_message->GetReflection();
+  bool is_self_assign = field_descriptor == field && message == value_message;
+  if constexpr (!std::is_same_v<T, absl::string_view>) {
+    if (field->cpp_type() == field_descriptor->cpp_type()) {
+      return SourceSpan<T>(
+          RepeatedScalarContainerFriend::GetRepeatedFieldSpan<T>(
+              reflection, value_message, field),
+          is_self_assign);
     }
-    if constexpr (std::is_integral_v<T>) {
-      switch (field->cpp_type()) {
-        case FieldDescriptor::CPPTYPE_INT32:
-          return SourceSpan<T>(
-              RepeatedScalarContainerFriend::GetRepeatedFieldSpan<int32_t>(
-                  reflection, value_message, field));
-        case FieldDescriptor::CPPTYPE_INT64:
-          return SourceSpan<T>(
-              RepeatedScalarContainerFriend::GetRepeatedFieldSpan<int64_t>(
-                  reflection, value_message, field));
-        case FieldDescriptor::CPPTYPE_UINT32:
-          return SourceSpan<T>(
-              RepeatedScalarContainerFriend::GetRepeatedFieldSpan<uint32_t>(
-                  reflection, value_message, field));
-        case FieldDescriptor::CPPTYPE_UINT64:
-          return SourceSpan<T>(
-              RepeatedScalarContainerFriend::GetRepeatedFieldSpan<uint64_t>(
-                  reflection, value_message, field));
-        case FieldDescriptor::CPPTYPE_BOOL:
-          return SourceSpan<T>(
-              RepeatedScalarContainerFriend::GetRepeatedFieldSpan<Bool>(
-                  reflection, value_message, field));
-        default:
-          break;
+  }
+  if constexpr (std::is_integral_v<T>) {
+    switch (field->cpp_type()) {
+      case FieldDescriptor::CPPTYPE_INT32:
+        return SourceSpan<T>(
+            RepeatedScalarContainerFriend::GetRepeatedFieldSpan<int32_t>(
+                reflection, value_message, field));
+      case FieldDescriptor::CPPTYPE_INT64:
+        return SourceSpan<T>(
+            RepeatedScalarContainerFriend::GetRepeatedFieldSpan<int64_t>(
+                reflection, value_message, field));
+      case FieldDescriptor::CPPTYPE_UINT32:
+        return SourceSpan<T>(
+            RepeatedScalarContainerFriend::GetRepeatedFieldSpan<uint32_t>(
+                reflection, value_message, field));
+      case FieldDescriptor::CPPTYPE_UINT64:
+        return SourceSpan<T>(
+            RepeatedScalarContainerFriend::GetRepeatedFieldSpan<uint64_t>(
+                reflection, value_message, field));
+      case FieldDescriptor::CPPTYPE_BOOL:
+        return SourceSpan<T>(
+            RepeatedScalarContainerFriend::GetRepeatedFieldSpan<Bool>(
+                reflection, value_message, field));
+      default:
+        break;
+    }
+  } else if constexpr (std::is_floating_point_v<T>) {
+    switch (field->cpp_type()) {
+      case FieldDescriptor::CPPTYPE_FLOAT: {
+        return SourceSpan<T>(
+            RepeatedScalarContainerFriend::GetRepeatedFieldSpan<float>(
+                reflection, value_message, field));
       }
-    } else if constexpr (std::is_floating_point_v<T>) {
-      switch (field->cpp_type()) {
-        case FieldDescriptor::CPPTYPE_FLOAT: {
-          return SourceSpan<T>(
-              RepeatedScalarContainerFriend::GetRepeatedFieldSpan<float>(
-                  reflection, value_message, field));
-        }
-        case FieldDescriptor::CPPTYPE_DOUBLE: {
-          return SourceSpan<T>(
-              RepeatedScalarContainerFriend::GetRepeatedFieldSpan<double>(
-                  reflection, value_message, field));
-        }
-        default:
-          break;
+      case FieldDescriptor::CPPTYPE_DOUBLE: {
+        return SourceSpan<T>(
+            RepeatedScalarContainerFriend::GetRepeatedFieldSpan<double>(
+                reflection, value_message, field));
       }
+      default:
+        break;
     }
   }
 
   return std::nullopt;
 }
 
+// Zero-copy path for a RepeatedScalarContainer source: calls
+// `func(message, span)` with a span borrowed from the source's storage. Holds
+// write access to `self` and read access to the source for the whole call,
+// because `func` reads directly from the source. Returns std::nullopt if
+// `value` isn't a RepeatedScalarContainer whose elements can be viewed as T, so
+// that the caller can fall back to CallWithConvertedSpan().
+template <typename T, typename Func>
+std::optional<bool> TryCallWithBorrowedContainerSpan(
+    RepeatedScalarContainer* self, PyObject* value,
+    const FieldDescriptor* field_descriptor, Func&& func) {
+  if (Py_TYPE(value) != &RepeatedScalarContainer_Type) return std::nullopt;
+  const auto* container =
+      reinterpret_cast<const RepeatedScalarContainer*>(value);
+  return RepeatedScalarContainer::WithWriteRead(
+      self, container, std::optional<bool>(false),
+      [&](const WriteAccess& w, const ReadAccess& r) -> std::optional<bool> {
+        Message* message = self->TargetMessage(w);
+        std::optional<SourceSpan<T>> source_span =
+            TryBorrowRepeatedFieldSpan<T>(message, field_descriptor, container,
+                                          r);
+        if (!source_span.has_value()) return std::nullopt;
+        return CallWithSpanHandlingExceptions<T>(
+            source_span->span(),
+            [&](absl::Span<const T> span) { return func(message, span); });
+      });
+}
+
 template <typename T>
-std::optional<SourceSpan<T>> TrySourceSpanFromBuffer(const Message* message,
-                                                     const Py_buffer& view) {
+std::optional<SourceSpan<T>> TrySourceSpanFromBuffer(const Py_buffer& view) {
   const char fmt = view.format != nullptr ? view.format[0] : 0;
   size_t size = static_cast<size_t>(view.len / view.itemsize);
   if (size > std::numeric_limits<int>::max()) {
@@ -437,17 +466,32 @@ absl::Span<const T> SourceSpanFromPyIterable(
   return absl::MakeConstSpan(values);
 }
 
+// Path for any other source (buffer protocol or iterable): calls
+// `func(message, span)` with a span that owns its data (or keeps the buffer
+// alive). The span is built while holding NO lock, because that may run Python
+// code; only then is write access to `self` taken to call `func`.
+//
+// WARNING: for a buffer-protocol source (e.g. a numpy array, `array.array`, or
+// a `memoryview` of a `bytearray`), the span points into the exporter's memory,
+// and nothing stops another thread from writing elements while `func` reads
+// them. Holding the buffer export keeps that memory from being resized or
+// freed, so this cannot cause a use-after-free, but a concurrent write is a
+// data race: `func` may see a mix of old and new (or torn) values. As with any
+// other consumer of the buffer protocol, which has no synchronization, it is
+// the caller's responsibility not to modify the source concurrently. Iterable
+// sources don't have this problem: their elements are copied into `values`
+// (or, for strings, refer to immutable `str`/`bytes` objects in
+// `keep_objects`).
 template <typename T, typename Func>
-bool CallWithSpanImpl(const Message* message, PyObject* value,
-                      const FieldDescriptor* field_descriptor, Func&& func) {
-  std::optional<SourceSpan<T>> source_span =
-      TrySourceSpanFromRepeatedScalarContainer<T>(message, value,
-                                                  field_descriptor);
+bool CallWithConvertedSpan(RepeatedScalarContainer* self, PyObject* value,
+                           const FieldDescriptor* field_descriptor,
+                           Func&& func) {
   Py_buffer view;
   std::optional<RaiiPyBuffer> view_raii;
-  if (!source_span.has_value() && GetContiguous1DView(value, &view)) {
+  std::optional<SourceSpan<T>> source_span;
+  if (GetContiguous1DView(value, &view)) {
     view_raii.emplace(&view);
-    source_span = TrySourceSpanFromBuffer<T>(message, view);
+    source_span = TrySourceSpanFromBuffer<T>(view);
   }
   std::vector<ScopedPyObjectPtr> keep_objects;
   std::vector<T> values;
@@ -455,23 +499,36 @@ bool CallWithSpanImpl(const Message* message, PyObject* value,
     source_span = SourceSpan<T>(SourceSpanFromPyIterable<T>(
         value, field_descriptor, keep_objects, values));
   }
-  return CallWithSpanHandlingExceptions<T>(source_span->span(),
-                                           std::forward<Func>(func));
+  return self->WithWrite(false, [&](const WriteAccess& w) {
+    Message* message = self->TargetMessage(w);
+    return CallWithSpanHandlingExceptions<T>(
+        source_span->span(),
+        [&](absl::Span<const T> span) { return func(message, span); });
+  });
+}
+
+template <typename T, typename Func>
+bool CallWithSpanImpl(RepeatedScalarContainer* self, PyObject* value,
+                      const FieldDescriptor* field_descriptor, Func&& func) {
+  std::optional<bool> result =
+      TryCallWithBorrowedContainerSpan<T>(self, value, field_descriptor, func);
+  if (result.has_value()) return *result;
+  return CallWithConvertedSpan<T>(self, value, field_descriptor, func);
 }
 
 template <typename F>
-bool CallWithSpan(const Message* message,
+bool CallWithSpan(RepeatedScalarContainer* self,
                   const FieldDescriptor* field_descriptor, PyObject* value,
                   F&& op) {
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
-      return CallWithSpanImpl<int32_t>(message, value, field_descriptor,
+      return CallWithSpanImpl<int32_t>(self, value, field_descriptor,
                                        std::forward<F>(op));
     case FieldDescriptor::CPPTYPE_ENUM:
       if (field_descriptor->legacy_enum_field_treated_as_closed()) {
         return CallWithSpanImpl<int32_t>(
-            message, value, field_descriptor,
-            [&](absl::Span<const int32_t> values) {
+            self, value, field_descriptor,
+            [&](Message* message, absl::Span<const int32_t> values) {
               const EnumDescriptor* enum_descriptor =
                   field_descriptor->enum_type();
               size_t failed_index = 0;
@@ -483,7 +540,7 @@ bool CallWithSpan(const Message* message,
               }
               if (failed_index != values.size()) {
                 auto valid_values = values.subspan(0, failed_index);
-                bool result = std::forward<F>(op)(valid_values);
+                bool result = std::forward<F>(op)(message, valid_values);
                 if (result) {
                   PyErr_Format(
                       PyExc_ValueError, "Unknown enum value: %d at index %d",
@@ -491,33 +548,33 @@ bool CallWithSpan(const Message* message,
                 }
                 return false;
               } else {
-                return std::forward<F>(op)(values);
+                return std::forward<F>(op)(message, values);
               }
             });
       }
-      return CallWithSpanImpl<int32_t>(message, value, field_descriptor,
+      return CallWithSpanImpl<int32_t>(self, value, field_descriptor,
                                        std::forward<F>(op));
     case FieldDescriptor::CPPTYPE_INT64:
-      return CallWithSpanImpl<int64_t>(message, value, field_descriptor,
+      return CallWithSpanImpl<int64_t>(self, value, field_descriptor,
                                        std::forward<F>(op));
     case FieldDescriptor::CPPTYPE_UINT32:
-      return CallWithSpanImpl<uint32_t>(message, value, field_descriptor,
+      return CallWithSpanImpl<uint32_t>(self, value, field_descriptor,
                                         std::forward<F>(op));
     case FieldDescriptor::CPPTYPE_UINT64:
-      return CallWithSpanImpl<uint64_t>(message, value, field_descriptor,
+      return CallWithSpanImpl<uint64_t>(self, value, field_descriptor,
                                         std::forward<F>(op));
     case FieldDescriptor::CPPTYPE_FLOAT:
-      return CallWithSpanImpl<float>(message, value, field_descriptor,
+      return CallWithSpanImpl<float>(self, value, field_descriptor,
                                      std::forward<F>(op));
     case FieldDescriptor::CPPTYPE_DOUBLE:
-      return CallWithSpanImpl<double>(message, value, field_descriptor,
+      return CallWithSpanImpl<double>(self, value, field_descriptor,
                                       std::forward<F>(op));
     case FieldDescriptor::CPPTYPE_BOOL:
-      return CallWithSpanImpl<Bool>(message, value, field_descriptor,
+      return CallWithSpanImpl<Bool>(self, value, field_descriptor,
                                     std::forward<F>(op));
     case FieldDescriptor::CPPTYPE_STRING:
-      return CallWithSpanImpl<absl::string_view>(
-          message, value, field_descriptor, std::forward<F>(op));
+      return CallWithSpanImpl<absl::string_view>(self, value, field_descriptor,
+                                                 std::forward<F>(op));
     default:
       PyErr_Format(PyExc_SystemError,
                    "CallWithSpan on a field of unknown type %d",
@@ -530,12 +587,15 @@ bool CallWithSpan(const Message* message,
 
 namespace repeated_scalar_container {
 
-
 static int InternalAssignRepeatedField(RepeatedScalarContainer* self,
                                        PyObject* list) {
-  Message* message = cmessage::AssureWritable(self->parent);
-  if (message == nullptr) return -1;
-  message->GetReflection()->ClearField(message, self->parent_field_descriptor);
+  int clear_status = self->WithWrite(-1, [&](const WriteAccess& w) {
+    Message* message = self->TargetMessage(w);
+    message->GetReflection()->ClearField(message,
+                                         self->parent_field_descriptor);
+    return 0;
+  });
+  if (clear_status < 0) return -1;
   for (Py_ssize_t i = 0; i < PyList_GET_SIZE(list); ++i) {
     PyObject* value = PyList_GET_ITEM(list, i);
     if (ScopedPyObjectPtr(Append(self, value)) == nullptr) {
@@ -545,125 +605,134 @@ static int InternalAssignRepeatedField(RepeatedScalarContainer* self,
   return 0;
 }
 
-static Py_ssize_t Len(PyObject* pself) {
+// Returns the number of elements, or std::nullopt with a Python exception set
+// if the message is being accessed concurrently (see AccessGuard).
+static std::optional<Py_ssize_t> Size(PyObject* pself) {
   RepeatedScalarContainer* self =
       reinterpret_cast<RepeatedScalarContainer*>(pself);
-  const Message* message = self->parent->DeprecatedUnguardedMessage();
-  return message->GetReflection()->FieldSize(*message,
-                                             self->parent_field_descriptor);
+  return self->WithRead(std::optional<Py_ssize_t>(),
+                        [&](const ReadAccess& r) -> std::optional<Py_ssize_t> {
+                          const Message* message = self->TargetMessage(r);
+                          return message->GetReflection()->FieldSize(
+                              *message, self->parent_field_descriptor);
+                        });
 }
+
+// The sq_length / mp_length slot: returns -1 with a Python exception set on
+// failure, as the slot requires.
+static Py_ssize_t Len(PyObject* pself) { return Size(pself).value_or(-1); }
 
 static int AssignItem(PyObject* pself, Py_ssize_t index_zd, PyObject* arg) {
   RepeatedScalarContainer* self =
       reinterpret_cast<RepeatedScalarContainer*>(pself);
 
-  Message* message = cmessage::AssureWritable(self->parent);
-  if (message == nullptr) return -1;
-  const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
+  return self->WithWrite(-1, [&](const WriteAccess& w) -> int {
+    Message* message = self->TargetMessage(w);
+    const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
 
-  const Reflection* reflection = message->GetReflection();
-  int field_size = reflection->FieldSize(*message, field_descriptor);
-  if (index_zd < 0) {
-    index_zd = field_size + index_zd;
-  }
-  if (index_zd < 0 || index_zd >= field_size) {
-    PyErr_Format(PyExc_IndexError, "list assignment index (%zd) out of range",
-                 index_zd);
-    return -1;
-  }
-  int index = static_cast<int>(index_zd);
+    const Reflection* reflection = message->GetReflection();
+    int field_size = reflection->FieldSize(*message, field_descriptor);
+    if (index_zd < 0) {
+      index_zd = field_size + index_zd;
+    }
+    if (index_zd < 0 || index_zd >= field_size) {
+      PyErr_Format(PyExc_IndexError, "list assignment index (%zd) out of range",
+                   index_zd);
+      return -1;
+    }
+    int index = static_cast<int>(index_zd);
 
-  if (arg == nullptr) {
-    ScopedPyObjectPtr py_index(PyLong_FromLong(index));
-    return cmessage::DeleteRepeatedField(self->parent, field_descriptor,
-                                         py_index.get());
-  }
+    if (arg == nullptr) {
+      ScopedPyObjectPtr py_index(PyLong_FromLong(index));
+      return cmessage::DeleteRepeatedField(self->parent.Get(w),
+                                           field_descriptor, py_index.get(), w);
+    }
 
-  if (PySequence_Check(arg) && !(PyBytes_Check(arg) || PyUnicode_Check(arg))) {
-    PyErr_SetString(PyExc_TypeError, "Value must be scalar");
-    return -1;
-  }
+    if (PySequence_Check(arg) &&
+        !(PyBytes_Check(arg) || PyUnicode_Check(arg))) {
+      PyErr_SetString(PyExc_TypeError, "Value must be scalar");
+      return -1;
+    }
 
-  switch (field_descriptor->cpp_type()) {
-    case FieldDescriptor::CPPTYPE_INT32: {
-      PROTOBUF_CHECK_GET_INT32(arg, value, -1);
-      reflection->SetRepeatedInt32(message, field_descriptor, index, value);
-      break;
-    }
-    case FieldDescriptor::CPPTYPE_INT64: {
-      PROTOBUF_CHECK_GET_INT64(arg, value, -1);
-      reflection->SetRepeatedInt64(message, field_descriptor, index, value);
-      break;
-    }
-    case FieldDescriptor::CPPTYPE_UINT32: {
-      PROTOBUF_CHECK_GET_UINT32(arg, value, -1);
-      reflection->SetRepeatedUInt32(message, field_descriptor, index, value);
-      break;
-    }
-    case FieldDescriptor::CPPTYPE_UINT64: {
-      PROTOBUF_CHECK_GET_UINT64(arg, value, -1);
-      reflection->SetRepeatedUInt64(message, field_descriptor, index, value);
-      break;
-    }
-    case FieldDescriptor::CPPTYPE_FLOAT: {
-      PROTOBUF_CHECK_GET_FLOAT(arg, value, -1);
-      reflection->SetRepeatedFloat(message, field_descriptor, index, value);
-      break;
-    }
-    case FieldDescriptor::CPPTYPE_DOUBLE: {
-      PROTOBUF_CHECK_GET_DOUBLE(arg, value, -1);
-      reflection->SetRepeatedDouble(message, field_descriptor, index, value);
-      break;
-    }
-    case FieldDescriptor::CPPTYPE_BOOL: {
-      PROTOBUF_CHECK_GET_BOOL(arg, value, -1);
-      reflection->SetRepeatedBool(message, field_descriptor, index, value);
-      break;
-    }
-    case FieldDescriptor::CPPTYPE_STRING: {
-      if (!CheckAndSetString(arg, message, field_descriptor, reflection, false,
-                             index)) {
-        return -1;
+    switch (field_descriptor->cpp_type()) {
+      case FieldDescriptor::CPPTYPE_INT32: {
+        PROTOBUF_CHECK_GET_INT32(arg, value, -1);
+        reflection->SetRepeatedInt32(message, field_descriptor, index, value);
+        break;
       }
-      break;
-    }
-    case FieldDescriptor::CPPTYPE_ENUM: {
-      PROTOBUF_CHECK_GET_INT32(arg, value, -1);
-      if (!field_descriptor->legacy_enum_field_treated_as_closed()) {
-        reflection->SetRepeatedEnumValue(message, field_descriptor, index,
-                                         value);
-      } else {
-        const EnumDescriptor* enum_descriptor = field_descriptor->enum_type();
-        const EnumValueDescriptor* enum_value =
-            enum_descriptor->FindValueByNumber(value);
-        if (enum_value != nullptr) {
-          reflection->SetRepeatedEnum(message, field_descriptor, index,
-                                      enum_value);
-        } else {
-          ScopedPyObjectPtr s(PyObject_Str(arg));
-          if (s != nullptr) {
-            PyErr_Format(PyExc_ValueError, "Unknown enum value: %s",
-                         PyString_AsString(s.get()));
-          }
+      case FieldDescriptor::CPPTYPE_INT64: {
+        PROTOBUF_CHECK_GET_INT64(arg, value, -1);
+        reflection->SetRepeatedInt64(message, field_descriptor, index, value);
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_UINT32: {
+        PROTOBUF_CHECK_GET_UINT32(arg, value, -1);
+        reflection->SetRepeatedUInt32(message, field_descriptor, index, value);
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_UINT64: {
+        PROTOBUF_CHECK_GET_UINT64(arg, value, -1);
+        reflection->SetRepeatedUInt64(message, field_descriptor, index, value);
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_FLOAT: {
+        PROTOBUF_CHECK_GET_FLOAT(arg, value, -1);
+        reflection->SetRepeatedFloat(message, field_descriptor, index, value);
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_DOUBLE: {
+        PROTOBUF_CHECK_GET_DOUBLE(arg, value, -1);
+        reflection->SetRepeatedDouble(message, field_descriptor, index, value);
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_BOOL: {
+        PROTOBUF_CHECK_GET_BOOL(arg, value, -1);
+        reflection->SetRepeatedBool(message, field_descriptor, index, value);
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_STRING: {
+        if (!CheckAndSetString(arg, message, field_descriptor, reflection,
+                               false, index)) {
           return -1;
         }
+        break;
       }
-      break;
+      case FieldDescriptor::CPPTYPE_ENUM: {
+        PROTOBUF_CHECK_GET_INT32(arg, value, -1);
+        if (!field_descriptor->legacy_enum_field_treated_as_closed()) {
+          reflection->SetRepeatedEnumValue(message, field_descriptor, index,
+                                           value);
+        } else {
+          const EnumDescriptor* enum_descriptor = field_descriptor->enum_type();
+          const EnumValueDescriptor* enum_value =
+              enum_descriptor->FindValueByNumber(value);
+          if (enum_value != nullptr) {
+            reflection->SetRepeatedEnum(message, field_descriptor, index,
+                                        enum_value);
+          } else {
+            ScopedPyObjectPtr s(PyObject_Str(arg));
+            if (s != nullptr) {
+              PyErr_Format(PyExc_ValueError, "Unknown enum value: %s",
+                           PyString_AsString(s.get()));
+            }
+            return -1;
+          }
+        }
+        break;
+      }
+      default:
+        PyErr_Format(PyExc_SystemError,
+                     "Adding value to a field of unknown type %d",
+                     field_descriptor->cpp_type());
+        return -1;
     }
-    default:
-      PyErr_Format(PyExc_SystemError,
-                   "Adding value to a field of unknown type %d",
-                   field_descriptor->cpp_type());
-      return -1;
-  }
-  return 0;
+    return 0;
+  });
 }
 
-static PyObject* Item(PyObject* pself, Py_ssize_t index) {
-  RepeatedScalarContainer* self =
-      reinterpret_cast<RepeatedScalarContainer*>(pself);
-
-  const Message* message = self->parent->DeprecatedUnguardedMessage();
+static PyObject* GetItem(RepeatedScalarContainer* self, Py_ssize_t index,
+                         const ReadAccess& r) {
+  const Message* message = self->TargetMessage(r);
   const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
   const Reflection* reflection = message->GetReflection();
 
@@ -742,7 +811,19 @@ static PyObject* Item(PyObject* pself, Py_ssize_t index) {
   return result;
 }
 
+static PyObject* Item(PyObject* pself, Py_ssize_t index) {
+  RepeatedScalarContainer* self =
+      reinterpret_cast<RepeatedScalarContainer*>(pself);
+
+  return self->WithRead(nullptr, [&](const ReadAccess& r) -> PyObject* {
+    return GetItem(self, index, r);
+  });
+}
+
 static PyObject* Subscript(PyObject* pself, PyObject* slice) {
+  RepeatedScalarContainer* self =
+      reinterpret_cast<RepeatedScalarContainer*>(pself);
+
   Py_ssize_t from;
   Py_ssize_t to;
   Py_ssize_t step;
@@ -760,129 +841,139 @@ static PyObject* Subscript(PyObject* pself, PyObject* slice) {
       return nullptr;
     }
   } else if (PySlice_Check(slice)) {
-    length = Len(pself);
-    if (PySlice_GetIndicesEx(slice, length, &from, &to, &step, &slicelength) ==
-        -1) {
-      return nullptr;
-    }
     return_list = true;
   } else {
     PyErr_SetString(PyExc_TypeError, "list indices must be integers");
     return nullptr;
   }
 
-  if (!return_list) {
-    return Item(pself, from);
-  }
+  return self->WithRead(nullptr, [&](const ReadAccess& r) -> PyObject* {
+    if (!return_list) {
+      return GetItem(self, from, r);
+    }
 
-  PyObject* list = PyList_New(0);
-  if (list == nullptr) {
-    return nullptr;
-  }
-  if (from <= to) {
-    if (step < 0) {
-      return list;
+    const Message* message = self->TargetMessage(r);
+    length = message->GetReflection()->FieldSize(*message,
+                                                 self->parent_field_descriptor);
+    if (PySlice_GetIndicesEx(slice, length, &from, &to, &step, &slicelength) ==
+        -1) {
+      return nullptr;
     }
-    for (Py_ssize_t index = from; index < to; index += step) {
-      if (index < 0 || index >= length) {
-        break;
-      }
-      ScopedPyObjectPtr s(Item(pself, index));
-      PyList_Append(list, s.get());
-    }
-  } else {
-    if (step > 0) {
-      return list;
-    }
-    for (Py_ssize_t index = from; index > to; index += step) {
-      if (index < 0 || index >= length) {
-        break;
-      }
-      ScopedPyObjectPtr s(Item(pself, index));
-      PyList_Append(list, s.get());
-    }
-  }
-  return list;
-}
 
-PyObject* Append(RepeatedScalarContainer* self, PyObject* item) {
-  Message* message = cmessage::AssureWritable(self->parent);
-  if (message == nullptr) return nullptr;
-  const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
-
-  const Reflection* reflection = message->GetReflection();
-  switch (field_descriptor->cpp_type()) {
-    case FieldDescriptor::CPPTYPE_INT32: {
-      PROTOBUF_CHECK_GET_INT32(item, value, nullptr);
-      reflection->AddInt32(message, field_descriptor, value);
-      break;
+    ScopedPyObjectPtr list(PyList_New(0));
+    if (list == nullptr) {
+      return nullptr;
     }
-    case FieldDescriptor::CPPTYPE_INT64: {
-      PROTOBUF_CHECK_GET_INT64(item, value, nullptr);
-      reflection->AddInt64(message, field_descriptor, value);
-      break;
-    }
-    case FieldDescriptor::CPPTYPE_UINT32: {
-      PROTOBUF_CHECK_GET_UINT32(item, value, nullptr);
-      reflection->AddUInt32(message, field_descriptor, value);
-      break;
-    }
-    case FieldDescriptor::CPPTYPE_UINT64: {
-      PROTOBUF_CHECK_GET_UINT64(item, value, nullptr);
-      reflection->AddUInt64(message, field_descriptor, value);
-      break;
-    }
-    case FieldDescriptor::CPPTYPE_FLOAT: {
-      PROTOBUF_CHECK_GET_FLOAT(item, value, nullptr);
-      reflection->AddFloat(message, field_descriptor, value);
-      break;
-    }
-    case FieldDescriptor::CPPTYPE_DOUBLE: {
-      PROTOBUF_CHECK_GET_DOUBLE(item, value, nullptr);
-      reflection->AddDouble(message, field_descriptor, value);
-      break;
-    }
-    case FieldDescriptor::CPPTYPE_BOOL: {
-      PROTOBUF_CHECK_GET_BOOL(item, value, nullptr);
-      reflection->AddBool(message, field_descriptor, value);
-      break;
-    }
-    case FieldDescriptor::CPPTYPE_STRING: {
-      if (!CheckAndSetString(item, message, field_descriptor, reflection, true,
-                             -1)) {
-        return nullptr;
+    if (from <= to) {
+      if (step < 0) {
+        return list.release();
       }
-      break;
-    }
-    case FieldDescriptor::CPPTYPE_ENUM: {
-      PROTOBUF_CHECK_GET_INT32(item, value, nullptr);
-      if (!field_descriptor->legacy_enum_field_treated_as_closed()) {
-        reflection->AddEnumValue(message, field_descriptor, value);
-      } else {
-        const EnumDescriptor* enum_descriptor = field_descriptor->enum_type();
-        const EnumValueDescriptor* enum_value =
-            enum_descriptor->FindValueByNumber(value);
-        if (enum_value != nullptr) {
-          reflection->AddEnum(message, field_descriptor, enum_value);
-        } else {
-          ScopedPyObjectPtr s(PyObject_Str(item));
-          if (s != nullptr) {
-            PyErr_Format(PyExc_ValueError, "Unknown enum value: %s",
-                         PyString_AsString(s.get()));
-          }
+      for (Py_ssize_t index = from; index < to; index += step) {
+        if (index < 0 || index >= length) {
+          break;
+        }
+        ScopedPyObjectPtr s(GetItem(self, index, r));
+        if (s == nullptr || PyList_Append(list.get(), s.get()) < 0) {
           return nullptr;
         }
       }
-      break;
+    } else {
+      if (step > 0) {
+        return list.release();
+      }
+      for (Py_ssize_t index = from; index > to; index += step) {
+        if (index < 0 || index >= length) {
+          break;
+        }
+        ScopedPyObjectPtr s(GetItem(self, index, r));
+        if (s == nullptr || PyList_Append(list.get(), s.get()) < 0) {
+          return nullptr;
+        }
+      }
     }
-    default:
-      PyErr_Format(PyExc_SystemError,
-                   "Adding value to a field of unknown type %d",
-                   field_descriptor->cpp_type());
-      return nullptr;
-  }
+    return list.release();
+  });
+}
 
-  Py_RETURN_NONE;
+PyObject* Append(RepeatedScalarContainer* self, PyObject* item) {
+  return self->WithWrite(nullptr, [&](const WriteAccess& w) -> PyObject* {
+    Message* message = self->TargetMessage(w);
+    const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
+
+    const Reflection* reflection = message->GetReflection();
+    switch (field_descriptor->cpp_type()) {
+      case FieldDescriptor::CPPTYPE_INT32: {
+        PROTOBUF_CHECK_GET_INT32(item, value, nullptr);
+        reflection->AddInt32(message, field_descriptor, value);
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_INT64: {
+        PROTOBUF_CHECK_GET_INT64(item, value, nullptr);
+        reflection->AddInt64(message, field_descriptor, value);
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_UINT32: {
+        PROTOBUF_CHECK_GET_UINT32(item, value, nullptr);
+        reflection->AddUInt32(message, field_descriptor, value);
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_UINT64: {
+        PROTOBUF_CHECK_GET_UINT64(item, value, nullptr);
+        reflection->AddUInt64(message, field_descriptor, value);
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_FLOAT: {
+        PROTOBUF_CHECK_GET_FLOAT(item, value, nullptr);
+        reflection->AddFloat(message, field_descriptor, value);
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_DOUBLE: {
+        PROTOBUF_CHECK_GET_DOUBLE(item, value, nullptr);
+        reflection->AddDouble(message, field_descriptor, value);
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_BOOL: {
+        PROTOBUF_CHECK_GET_BOOL(item, value, nullptr);
+        reflection->AddBool(message, field_descriptor, value);
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_STRING: {
+        if (!CheckAndSetString(item, message, field_descriptor, reflection,
+                               true, -1)) {
+          return nullptr;
+        }
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_ENUM: {
+        PROTOBUF_CHECK_GET_INT32(item, value, nullptr);
+        if (!field_descriptor->legacy_enum_field_treated_as_closed()) {
+          reflection->AddEnumValue(message, field_descriptor, value);
+        } else {
+          const EnumDescriptor* enum_descriptor = field_descriptor->enum_type();
+          const EnumValueDescriptor* enum_value =
+              enum_descriptor->FindValueByNumber(value);
+          if (enum_value != nullptr) {
+            reflection->AddEnum(message, field_descriptor, enum_value);
+          } else {
+            ScopedPyObjectPtr s(PyObject_Str(item));
+            if (s != nullptr) {
+              PyErr_Format(PyExc_ValueError, "Unknown enum value: %s",
+                           PyString_AsString(s.get()));
+            }
+            return nullptr;
+          }
+        }
+        break;
+      }
+      default:
+        PyErr_Format(PyExc_SystemError,
+                     "Adding value to a field of unknown type %d",
+                     field_descriptor->cpp_type());
+        return nullptr;
+    }
+
+    Py_RETURN_NONE;
+  });
 }
 
 static PyObject* AppendMethod(PyObject* self, PyObject* item) {
@@ -899,132 +990,143 @@ static int AssSubscript(PyObject* pself, PyObject* slice, PyObject* value) {
   Py_ssize_t slicelength;
   bool create_list = false;
 
-  Message* message = cmessage::AssureWritable(self->parent);
-  if (message == nullptr) return -1;
   const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
 
   if (value == nullptr) {
-    return cmessage::DeleteRepeatedField(self->parent, field_descriptor, slice);
+    return self->WithWrite(-1, [&](const WriteAccess& w) {
+      return cmessage::DeleteRepeatedField(self->parent.Get(w),
+                                           field_descriptor, slice, w);
+    });
   }
 
-  if (PyLong_Check(slice)) {
-    from = to = PyLong_AsLong(slice);
-    if (from == -1 && PyErr_Occurred()) {
-      return -1;
-    }
-  } else if (PySlice_Check(slice)) {
-    const Reflection* reflection = message->GetReflection();
-    length = reflection->FieldSize(*message, field_descriptor);
-    if (PySlice_GetIndicesEx(slice, length, &from, &to, &step, &slicelength) ==
-        -1) {
-      return -1;
-    }
-    create_list = true;
-  } else {
-    PyErr_SetString(PyExc_TypeError, "list indices must be integers");
-    return -1;
+  {
+    int status = self->WithWrite(-1, [&](const WriteAccess& w) {
+      const Message* message = self->TargetMessage(w);
+      if (PyLong_Check(slice)) {
+        from = to = PyLong_AsLong(slice);
+        if (from == -1 && PyErr_Occurred()) {
+          return -1;
+        }
+      } else if (PySlice_Check(slice)) {
+        const Reflection* reflection = message->GetReflection();
+        length = reflection->FieldSize(*message, field_descriptor);
+        if (PySlice_GetIndicesEx(slice, length, &from, &to, &step,
+                                 &slicelength) == -1) {
+          return -1;
+        }
+        create_list = true;
+      } else {
+        PyErr_SetString(PyExc_TypeError, "list indices must be integers");
+        return -1;
+      }
+      return 0;
+    });
+    if (status < 0) return -1;
   }
 
   if (!create_list) {
     return AssignItem(pself, from, value);
   }
-  const Reflection* reflection = message->GetReflection();
 
-  bool ok = CallWithSpan(message, field_descriptor, value, [&](auto values) {
-    int start_index;
-    int count;
-    int num_values;
-    int tail;
-    if (!SafeCast(from, &start_index) || !SafeCast(slicelength, &count) ||
-        !SafeCast(values.size(), &num_values) ||
-        !SafeCast(reflection->FieldSize(*message, field_descriptor) -
-                      (from + slicelength),
-                  &tail)) {
-      return false;
-    }
-    int old_size = reflection->FieldSize(*message, field_descriptor);
-    if (step == 1 && tail >= 0) {
-      if (start_index == 0 && count == old_size) {
-        reflection->ClearField(message, field_descriptor);
-        RepeatedScalarContainerFriend::MergeFrom(reflection, message,
-                                                 field_descriptor, values);
-      } else if (count == 0 && tail == 0) {
-        RepeatedScalarContainerFriend::MergeFrom(reflection, message,
-                                                 field_descriptor, values);
-      } else {
-        // This could be arena allocated strings, so swap the elements
-        // in place to avoid a full copy.
-        auto reverse_range = [&](int first, int last) {
-          int i = first;
-          int j = last - 1;
-          while (i < j) {
-            reflection->SwapElements(message, field_descriptor, i, j);
-            ++i;
-            --j;
+  bool ok = CallWithSpan(
+      self, field_descriptor, value, [&](Message* message, auto values) {
+        const Reflection* reflection = message->GetReflection();
+        int start_index;
+        int count;
+        int num_values;
+        int tail;
+        if (!SafeCast(from, &start_index) || !SafeCast(slicelength, &count) ||
+            !SafeCast(values.size(), &num_values) ||
+            !SafeCast(reflection->FieldSize(*message, field_descriptor) -
+                          (from + slicelength),
+                      &tail)) {
+          return false;
+        }
+        int old_size = reflection->FieldSize(*message, field_descriptor);
+        if (step == 1 && tail >= 0) {
+          if (start_index == 0 && count == old_size) {
+            reflection->ClearField(message, field_descriptor);
+            RepeatedScalarContainerFriend::MergeFrom(reflection, message,
+                                                     field_descriptor, values);
+          } else if (count == 0 && tail == 0) {
+            RepeatedScalarContainerFriend::MergeFrom(reflection, message,
+                                                     field_descriptor, values);
+          } else {
+            // This could be arena allocated strings, so swap the elements
+            // in place to avoid a full copy.
+            auto reverse_range = [&](int first, int last) {
+              int i = first;
+              int j = last - 1;
+              while (i < j) {
+                reflection->SwapElements(message, field_descriptor, i, j);
+                ++i;
+                --j;
+              }
+            };
+
+            auto rotate_range = [&](int first, int middle, int last) {
+              reverse_range(first, middle);
+              reverse_range(middle, last);
+              reverse_range(first, last);
+            };
+
+            // Move deleted elements to the end.
+            int b_start = start_index;
+            int c_start = b_start + count;
+            int c_end = old_size;
+            rotate_range(b_start, c_start, c_end);
+
+            for (Py_ssize_t i = 0; i < count; ++i) {
+              reflection->RemoveLast(message, field_descriptor);
+            }
+
+            RepeatedScalarContainerFriend::MergeFrom(reflection, message,
+                                                     field_descriptor, values);
+
+            int tail_start = b_start;
+            int tail_end;
+            int x_end;
+            if (!SafeCast(static_cast<int64_t>(tail_start) + tail, &tail_end) ||
+                !SafeCast(static_cast<int64_t>(tail_end) + num_values,
+                          &x_end)) {
+              return false;
+            }
+            rotate_range(tail_start, tail_end, x_end);
           }
-        };
-
-        auto rotate_range = [&](int first, int middle, int last) {
-          reverse_range(first, middle);
-          reverse_range(middle, last);
-          reverse_range(first, last);
-        };
-
-        // Move deleted elements to the end.
-        int b_start = start_index;
-        int c_start = b_start + count;
-        int c_end = old_size;
-        rotate_range(b_start, c_start, c_end);
-
-        for (Py_ssize_t i = 0; i < count; ++i) {
-          reflection->RemoveLast(message, field_descriptor);
+        } else {
+          if (count != num_values) {
+            PyErr_SetString(PyExc_ValueError,
+                            "Cannot assign to sub slice of a different length");
+            return false;
+          }
+          for (int i = 0; i < count; ++i) {
+            int next_idx;
+            if (!SafeCast(start_index + static_cast<int64_t>(i) * step,
+                          &next_idx)) {
+              return false;
+            }
+            RepeatedScalarContainerFriend::Set(reflection, message,
+                                               field_descriptor, next_idx,
+                                               values[static_cast<size_t>(i)]);
+          }
         }
-
-        RepeatedScalarContainerFriend::MergeFrom(reflection, message,
-                                                 field_descriptor, values);
-
-        int tail_start = b_start;
-        int tail_end;
-        int x_end;
-        if (!SafeCast(static_cast<int64_t>(tail_start) + tail, &tail_end) ||
-            !SafeCast(static_cast<int64_t>(tail_end) + num_values, &x_end)) {
-          return false;
-        }
-        rotate_range(tail_start, tail_end, x_end);
-      }
-    } else {
-      if (count != num_values) {
-        PyErr_SetString(PyExc_ValueError,
-                        "Cannot assign to sub slice of a different length");
-        return false;
-      }
-      for (int i = 0; i < count; ++i) {
-        int next_idx;
-        if (!SafeCast(start_index + static_cast<int64_t>(i) * step,
-                      &next_idx)) {
-          return false;
-        }
-        RepeatedScalarContainerFriend::Set(reflection, message,
-                                           field_descriptor, next_idx,
-                                           values[static_cast<size_t>(i)]);
-      }
-    }
-    return true;
-  });
+        return true;
+      });
   return ok ? 0 : -1;
 }
 
 PyObject* Extend(RepeatedScalarContainer* self, PyObject* value) {
-  cmessage::AssureWritable(self->parent);
-  Message* message = cmessage::AssureWritable(self->parent);
-  if (message == nullptr) return nullptr;
+  // Promotes the parent message to mutable.
+  int status = self->WithWrite(-1, [](const WriteAccess&) { return 0; });
+  if (status < 0) return nullptr;
   const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
-  const Reflection* reflection = message->GetReflection();
-  if (CallWithSpan(message, field_descriptor, value, [&](auto values) {
-        RepeatedScalarContainerFriend::MergeFrom(reflection, message,
-                                                 field_descriptor, values);
-        return true;
-      })) {
+  if (CallWithSpan(self, field_descriptor, value,
+                   [&](Message* message, auto values) {
+                     const Reflection* reflection = message->GetReflection();
+                     RepeatedScalarContainerFriend::MergeFrom(
+                         reflection, message, field_descriptor, values);
+                     return true;
+                   })) {
     Py_RETURN_NONE;
   }
   return nullptr;
@@ -1041,6 +1143,9 @@ static PyObject* Insert(PyObject* pself, PyObject* args) {
   }
   ScopedPyObjectPtr full_slice(PySlice_New(nullptr, nullptr, nullptr));
   ScopedPyObjectPtr new_list(Subscript(pself, full_slice.get()));
+  if (new_list == nullptr) {
+    return nullptr;
+  }
   if (PyList_Insert(new_list.get(), index, value) < 0) {
     return nullptr;
   }
@@ -1057,14 +1162,19 @@ static PyObject* Remove(PyObject* pself, PyObject* value) {
 
   // Even if the value doesn't exist in the container, raise immutability error
   // prior to value error if applicable.
-  if (CheckFrozen(self->parent, "Container is immutable") < 0) {
+  if (!self->CheckParentNotFrozen()) {
     return nullptr;
   }
 
   Py_ssize_t match_index = -1;
-  for (Py_ssize_t i = 0, len = Len(pself); i < len; ++i) {
+  std::optional<Py_ssize_t> size = Size(pself);
+  if (!size.has_value()) return nullptr;
+  for (Py_ssize_t i = 0; i < *size; ++i) {
     ScopedPyObjectPtr elem(Item(pself, i));
-    if (PyObject_RichCompareBool(elem.get(), value, Py_EQ)) {
+    if (elem == nullptr) return nullptr;
+    int cmp = PyObject_RichCompareBool(elem.get(), value, Py_EQ);
+    if (cmp < 0) return nullptr;
+    if (cmp > 0) {
       match_index = i;
       break;
     }
@@ -1152,13 +1262,17 @@ Py_ssize_t CalculateMaxLengthOfStrObjects(PyObject* pself) {
 
 // Note: Returns a new reference.
 PyObject* ConstructArrayByIteration(PyObject* pself, PyObject* np_module) {
-  Py_ssize_t array_length = Len(pself);
+  std::optional<Py_ssize_t> size = Size(pself);
+  if (!size.has_value()) return nullptr;
   ScopedPyObjectPtr nparray(
-      PyObject_CallMethod(np_module, "empty", "is", array_length, "O"));
+      PyObject_CallMethod(np_module, "empty", "is", *size, "O"));
 
-  for (Py_ssize_t i = 0; i != array_length; ++i) {
+  for (Py_ssize_t i = 0; i != *size; ++i) {
     ScopedPyObjectPtr item(Item(pself, i));
-    PySequence_SetItem(nparray.as_pyobject(), i, item.as_pyobject());
+    if (item == nullptr ||
+        PySequence_SetItem(nparray.as_pyobject(), i, item.as_pyobject()) < 0) {
+      return nullptr;
+    }
   }
 
   return nparray.release();
@@ -1189,10 +1303,12 @@ std::string GetDefaultDTypeStr(FieldDescriptor::CppType cpp_type) {
   return "";
 }
 
-PyObject* CreateArrayFromView(PyObject* pself, PyObject* np_module) {
+PyObject* CreateArrayFromView(PyObject* pself, PyObject* np_module,
+                              const ReadAccess& r) {
   RepeatedScalarContainer* self =
       reinterpret_cast<RepeatedScalarContainer*>(pself);
-  const Message* message = self->parent->DeprecatedUnguardedMessage();
+  const Message* message = self->TargetMessage(r);
+
   const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
   const Reflection* reflection = message->GetReflection();
   std::string out_dtype = GetDefaultDTypeStr(field_descriptor->cpp_type());
@@ -1279,7 +1395,9 @@ PyObject* AsNpArray(PyObject* pself, PyObject* args, PyObject* kwargs) {
   // For non string repeated scalar
   if (dtype_requested == nullptr) {
     std::string returned_dtype = GetDefaultDTypeStr(cpp_type);
-    if (Len(pself) == 0) {
+    std::optional<Py_ssize_t> size = Size(pself);
+    if (!size.has_value()) return nullptr;
+    if (*size == 0) {
       return PyObject_CallMethod(np_module.get(), "empty", "is", 0,
                                  returned_dtype.c_str());
     }
@@ -1289,13 +1407,16 @@ PyObject* AsNpArray(PyObject* pself, PyObject* args, PyObject* kwargs) {
     // For ref-counting.
     default_dtype.reset(dtype_requested);
   }
-  // Create an np array from a memoryview.
-  ScopedPyObjectPtr nparray_nocopy(CreateArrayFromView(pself, np_module.get()));
-  if (nparray_nocopy.get() == nullptr) {
-    return nullptr;
-  }
-  // Return using astype(). This will copy.
-  return NpArrayAsType(nparray_nocopy.as_pyobject(), dtype_requested, true);
+  // Hold the read lock while reading the view and copying into a new np array.
+  return self->WithRead(nullptr, [&](const ReadAccess& r) -> PyObject* {
+    ScopedPyObjectPtr nparray_nocopy(
+        CreateArrayFromView(pself, np_module.get(), r));
+    if (nparray_nocopy.get() == nullptr) {
+      return nullptr;
+    }
+    // Return using astype(). This will copy.
+    return NpArrayAsType(nparray_nocopy.as_pyobject(), dtype_requested, true);
+  });
 }
 
 PyObject* Reduce(PyObject* unused_self, PyObject* unused_other) {
@@ -1308,7 +1429,7 @@ static PyObject* Sort(PyObject* pself, PyObject* args, PyObject* kwds) {
   RepeatedScalarContainer* self =
       reinterpret_cast<RepeatedScalarContainer*>(pself);
 
-  if (CheckFrozen(self->parent, "Container is immutable") < 0) {
+  if (!self->CheckParentNotFrozen()) {
     return nullptr;
   }
 
@@ -1355,12 +1476,14 @@ static PyObject* Reverse(PyObject* pself) {
   RepeatedScalarContainer* self =
       reinterpret_cast<RepeatedScalarContainer*>(pself);
 
-  if (CheckFrozen(self->parent, "Container is immutable") < 0) {
+  if (!self->CheckParentNotFrozen()) {
     return nullptr;
   }
 
   // TODO: b/517235198 - Reify even for empty sequences.
-  if (Len(pself) == 0) {
+  std::optional<Py_ssize_t> size = Size(pself);
+  if (!size.has_value()) return nullptr;
+  if (*size == 0) {
     Py_RETURN_NONE;
   }
 
@@ -1389,16 +1512,18 @@ static PyObject* Clear(PyObject* pself) {
       reinterpret_cast<RepeatedScalarContainer*>(pself);
 
   // TODO: b/517235198 - Reify even for empty sequences.
-  if (Len(pself) == 0) {
+  std::optional<Py_ssize_t> size = Size(pself);
+  if (!size.has_value()) return nullptr;
+  if (*size == 0) {
     Py_RETURN_NONE;
   }
 
-  CMessage* cmessage = self->parent;
-  Message* message = cmessage::AssureWritable(cmessage);
-  if (message == nullptr) return nullptr;
-  const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
-  message->GetReflection()->ClearField(message, field_descriptor);
-  Py_RETURN_NONE;
+  return self->WithWrite(nullptr, [&](const WriteAccess& w) -> PyObject* {
+    Message* message = self->TargetMessage(w);
+    const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
+    message->GetReflection()->ClearField(message, field_descriptor);
+    Py_RETURN_NONE;
+  });
 }
 
 static PyObject* Pop(PyObject* pself, PyObject* args) {
@@ -1407,7 +1532,7 @@ static PyObject* Pop(PyObject* pself, PyObject* args) {
 
   // Even if the value doesn't exist in the container, raise immutability error
   // prior to value error.
-  if (CheckFrozen(self->parent, "Container is immutable") < 0) {
+  if (!self->CheckParentNotFrozen()) {
     return nullptr;
   }
 
@@ -1417,10 +1542,10 @@ static PyObject* Pop(PyObject* pself, PyObject* args) {
   }
   PyObject* item = Item(pself, index);
   if (item == nullptr) {
-    PyErr_Format(PyExc_IndexError, "list index (%zd) out of range", index);
     return nullptr;
   }
   if (AssignItem(pself, index, nullptr) < 0) {
+    Py_DECREF(item);
     return nullptr;
   }
   return item;
@@ -1441,7 +1566,7 @@ static PyObject* ToStr(PyObject* pself) {
 static PyObject* MergeFrom(PyObject* pself, PyObject* arg) {
   RepeatedScalarContainer* self =
       reinterpret_cast<RepeatedScalarContainer*>(pself);
-  if (cmessage::AssureWritable(self->parent) == nullptr) return nullptr;
+  if (!self->WithWrite([](const WriteAccess&) {})) return nullptr;
   if (arg == pself) {
     // Self-merge is not supported, as for messages and maps.
     PyErr_SetString(PyExc_AssertionError,
@@ -1464,10 +1589,11 @@ RepeatedScalarContainer* NewContainer(
     return nullptr;
   }
 
-  self->SetTree(parent->GetTree());
+  // The container is freshly allocated and not yet published to other threads.
   Py_INCREF(parent);
-  self->parent = parent;
+  self->parent.SetQuiescent(parent);
   self->parent_field_descriptor = parent_field_descriptor;
+  self->InitTreeQuiescent(parent->GetTree());
 
   return self;
 }

@@ -14,6 +14,7 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
+#include "google/protobuf/pyext/field_container.h"
 #include "google/protobuf/pyext/message.h"
 
 namespace google {
@@ -28,7 +29,7 @@ struct CMessageClass;
 
 // A RepeatedCompositeContainer always has a parent message.
 // The parent message also caches reference to items of the container.
-typedef struct RepeatedCompositeContainer : public ContainerBase {
+typedef struct RepeatedCompositeContainer : public FieldContainer {
   // The type used to create new child messages.
   CMessageClass* child_message_class;
 } RepeatedCompositeContainer;

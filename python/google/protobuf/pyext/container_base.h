@@ -21,6 +21,7 @@
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/pyext/free_threading/access_guard.h"
+#include "google/protobuf/pyext/free_threading/guarded.h"
 #include "google/protobuf/pyext/message_tree.h"
 
 namespace google {
@@ -42,7 +43,7 @@ struct ContainerBase {
   // clang-format off
   PyObject_HEAD
 
-  // Strong reference to a parent message object.
+  // Strong reference to a parent message object, protected by the tree guard.
   // For a CMessage there are three cases:
   // - For a top-level message, this pointer is NULL.
   // - For a sub-message, this points to the parent message.
@@ -50,12 +51,10 @@ struct ContainerBase {
   //
   // For all other types: repeated containers, maps, it always point to a
   // valid parent CMessage.
-  struct CMessage* parent;
+  Guarded<CMessage*> parent;
   // clang-format on
 
   MessageTree* GetTree() const { return tree.load(std::memory_order_acquire); }
-
-  void SetTree(MessageTree* t) { tree.store(t, std::memory_order_release); }
 
   // If this object belongs to a parent message, describes which field it comes
   // from.
@@ -65,12 +64,8 @@ struct ContainerBase {
 
   PyObject* AsPyObject() { return reinterpret_cast<PyObject*>(this); }
 
-  // The two methods below are only used by Repeated containers, and Maps.
-
-  // This implementation works for all containers which have a parent.
-  PyObject* DeepCopy();
-  // Delete this container object from its parent. Does not work for messages.
-  void RemoveFromParentCache();
+ protected:
+  void SetTree(MessageTree* t) { tree.store(t, std::memory_order_release); }
 
  private:
   // Shared pointer to the message tree containing the AccessGuard for the
@@ -318,6 +313,7 @@ template <typename Derived>
 void TreeLockable<Derived>::InitTreeQuiescent(MessageTree* t) {
   SetTree(t);
   if (t == nullptr) return;
+  parent.BindQuiescent(t->guard());
   derived()->BindDerivedFieldsQuiescent(t->guard());
 }
 
@@ -326,6 +322,7 @@ void TreeLockable<Derived>::MoveToTree(MessageTree* new_tree,
                                        const WriteAccess& old_access,
                                        const WriteAccess& new_access) {
   ABSL_DCHECK_EQ(new_access.guard(), &new_tree->guard());
+  parent.UpdateGuard(old_access, new_access);
   derived()->UpdateDerivedFieldsGuard(old_access, new_access);
   SetTree(new_tree);
   derived()->UpdateSubtreeChildrenTree(new_tree, old_access, new_access);

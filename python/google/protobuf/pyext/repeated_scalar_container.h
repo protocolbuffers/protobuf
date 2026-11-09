@@ -15,13 +15,14 @@
 #include <Python.h>
 
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/pyext/field_container.h"
 #include "google/protobuf/pyext/message.h"
 
 namespace google {
 namespace protobuf {
 namespace python {
 
-typedef struct RepeatedScalarContainer : public ContainerBase {
+typedef struct RepeatedScalarContainer : public FieldContainer {
 } RepeatedScalarContainer;
 
 extern PyTypeObject RepeatedScalarContainer_Type;

@@ -20,12 +20,11 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/pyext/child_wrapper_map.h"
 #include "google/protobuf/pyext/container_base.h"
 #include "google/protobuf/pyext/free_threading/access_guard.h"
 #include "google/protobuf/pyext/free_threading/guarded.h"
-#include "google/protobuf/pyext/lazy_unique_ptr.h"
 #include "google/protobuf/pyext/message_tree.h"
-#include "google/protobuf/pyext/weak_value_map.h"
 
 namespace google {
 namespace protobuf {
@@ -81,30 +80,13 @@ enum MessageMutabilityState : uint8_t {
 PyObject* PyMessage_NewMessageOwnedExternally(Message* message,
                                               PyObject* py_message_factory);
 
+struct FieldContainer;
+
 namespace cmessage {
 struct Impl;
 }  // namespace cmessage
 
 typedef struct CMessage : public TreeLockable<CMessage> {
-  // Allocates an incomplete Python Message: the caller must fill self->tree,
-  // self->message, and eventually self->parent.
-  static CMessage* NewEmpty(CMessageClass* type);
-
-  // A mapping indexed by field, containing weak references to contained objects
-  // which need to implement the "Release" mechanism:
-  // direct submessages, RepeatedCompositeContainer, RepeatedScalarContainer
-  // and MapContainer.
-  //   Maps: const FieldDescriptor* -> ContainerBase*
-  typedef PyWeakValueMap CompositeFieldsMap;
-  LazyUniquePtr<CompositeFieldsMap> composite_fields;
-
-  // A mapping containing weak references to indirect child messages, accessed
-  // through containers: repeated messages, and values of message maps.
-  // This avoid the creation of similar maps in each of those containers.
-  //   Maps: const Message* -> CMessage*
-  typedef PyWeakValueMap SubMessagesMap;
-  LazyUniquePtr<SubMessagesMap> child_submessages;
-
   // Implements the "weakref" protocol for this object.
   PyObject* weakreflist;
 
@@ -141,7 +123,7 @@ typedef struct CMessage : public TreeLockable<CMessage> {
 #else
     if (Py_REFCNT(this) != 1) return false;
 #endif
-    return parent == nullptr;
+    return parent.GetQuiescent() == nullptr;
   }
 
   // Returns the underlying mutable Message* without locking. Must ONLY be used
@@ -152,21 +134,11 @@ typedef struct CMessage : public TreeLockable<CMessage> {
     return message.GetQuiescent();
   }
 
-  // Transitional unguarded read for the container files migrated in the next
-  // CL; removed once repeated/map/extension containers use TreeLockable.
-  // TODO: b/512503059 - Remove once all callers pass an access token.
-  const Message* DeprecatedUnguardedMessage() const {
-    return message.GetQuiescent();
-  }
-
   // Attaches a newly constructed quiescent `child` message to `this` message's
   // repeated field `field_descriptor`, adopting `this` message's tree and
   // mutability state and registering `child` in `child_submessages`.
   void AttachQuiescentChild(const FieldDescriptor* field_descriptor,
                             CMessage* child, const WriteAccess& lock);
-  // TODO: b/512503059 - Remove once all callers pass an access token.
-  bool AttachQuiescentChild(const FieldDescriptor* field_descriptor,
-                            CMessage* child);
 
   // For container containing messages, return a Python object for the given
   // pointer to a message. Requires (at least) read access to this message's
@@ -177,11 +149,6 @@ typedef struct CMessage : public TreeLockable<CMessage> {
                                        CMessageClass* message_class,
                                        MessageMutabilityState state,
                                        const ReadAccess& access) const;
-  // TODO: b/512503059 - Remove once all callers pass an access token.
-  CMessage* BuildSubMessageFromPointer(const FieldDescriptor* field_descriptor,
-                                       const Message* sub_message,
-                                       CMessageClass* message_class,
-                                       MessageMutabilityState state);
 
   // If a Python wrapper exists for `sub_message`, detaches it into a new root
   // CMessage with its own MessageTree and removes it from `child_submessages`.
@@ -198,22 +165,28 @@ typedef struct CMessage : public TreeLockable<CMessage> {
   // Note that ClearField() cannot call this, because it also must handle
   // repeated and map fields, and their wrappers always need a parent message.
   void DetachSubMessage(Message* sub_message, const WriteAccess& lock);
-  // TODO: b/512503059 - Remove once all callers pass an access token.
-  void DetachSubMessage(Message* sub_message);
+
+  // Returns whether any repeated/map child submessage wrappers are currently
+  // tracked for this message.
+  bool HasSubmessages(const ReadAccess& access) const {
+    return !child_submessages.IsEmpty(access);
+  }
+
+  // Allocates an incomplete Python Message: the caller must fill self->tree,
+  // self->message, and eventually self->parent.
+  static CMessage* NewEmpty(CMessageClass* type);
 
   // Initializes a new CMessage instance for a submessage. Only called once per
   // submessage as the result is cached in composite_fields.
   CMessage* GetSubMessage(const FieldDescriptor* field_descriptor,
                           CMessageClass* message_class, const ReadAccess& r);
-  // TODO: b/512503059 - Remove once all callers pass an access token.
-  CMessage* GetSubMessage(const FieldDescriptor* field_descriptor);
 
   // After a Merge, visit every sub-message that was read-only, and
   // eventually update their pointer if the Merge operation modified them.
   void FixupAfterMerge(const WriteAccess& lock);
 
  private:
-  friend struct ContainerBase;
+  friend struct FieldContainer;
   template <typename>
   friend struct TreeLockable;
   friend cmessage::Impl;
@@ -222,16 +195,30 @@ typedef struct CMessage : public TreeLockable<CMessage> {
     message.BindQuiescent(guard);
     state.BindQuiescent(guard);
     has_mutable_map_ancestor.BindQuiescent(guard);
+    composite_fields.BindQuiescent(guard);
+    child_submessages.BindQuiescent(guard);
   }
   void UpdateDerivedFieldsGuard(const WriteAccess& old_access,
                                 const WriteAccess& new_access) {
     message.UpdateGuard(old_access, new_access);
     state.UpdateGuard(old_access, new_access);
     has_mutable_map_ancestor.UpdateGuard(old_access, new_access);
+    composite_fields.UpdateGuard(old_access, new_access);
+    child_submessages.UpdateGuard(old_access, new_access);
   }
   void UpdateSubtreeChildrenTree(MessageTree* new_tree,
                                  const WriteAccess& old_lock,
                                  const WriteAccess& new_lock);
+
+  // Composite fields (sub-messages, repeated fields, maps) that are currently
+  // alive in Python. The values in this map are weak references: children add
+  // and remove themselves during their lifetime.
+  ChildWrapperMap composite_fields;
+
+  // Sub-messages in repeated fields or maps that are currently alive in
+  // Python. Compare to `composite_fields`, which cannot store repeated
+  // sub-messages because there can be more than one per field descriptor.
+  ChildWrapperMap child_submessages;
 
   // Pointer to the C++ Message object for this CMessage.
   // - If this object has no parent, we own this pointer.
@@ -293,10 +280,6 @@ const FieldDescriptor* GetExtensionDescriptor(PyObject* extension);
 void DeleteLastRepeatedWithSize(CMessage* self,
                                 const FieldDescriptor* field_descriptor,
                                 Py_ssize_t n, const WriteAccess& lock);
-// TODO: b/512503059 - Remove once all callers pass an access token.
-void DeleteLastRepeatedWithSize(CMessage* self,
-                                const FieldDescriptor* field_descriptor,
-                                Py_ssize_t n);
 
 // Deletes a range of items in a repeated field (following a
 // removal in a RepeatedCompositeContainer).
@@ -304,17 +287,13 @@ void DeleteLastRepeatedWithSize(CMessage* self,
 // Corresponds to reflection api method RemoveLast.
 int DeleteRepeatedField(CMessage* self, const FieldDescriptor* field_descriptor,
                         PyObject* slice, const WriteAccess& lock);
-// TODO: b/512503059 - Remove once all callers pass an access token.
-int DeleteRepeatedField(CMessage* self, const FieldDescriptor* field_descriptor,
-                        PyObject* slice);
 
 // Check if a deletion operation on a repeated field is a no-op, valid or error.
 // Returns:
 //  1 if the deletion is a no-op (empty slice deletion).
 //  0 if the deletion is valid and requires mutating the container.
 // -1 if an error occurred.
-int CheckRepeatedFieldDeletion(CMessage* parent,
-                               const FieldDescriptor* field_descriptor,
+int CheckRepeatedFieldDeletion(const FieldContainer* container,
                                PyObject* slice);
 
 // Sets the specified scalar value to the message.
@@ -332,11 +311,15 @@ int InternalSetNonOneofScalar(Message* message,
 PyObject* InternalGetScalar(const Message* message,
                             const FieldDescriptor* field_descriptor);
 
-bool SetCompositeField(CMessage* self, const FieldDescriptor* field,
-                       ContainerBase* value);
+// Returns a new reference to the cached composite wrapper for
+// `field_descriptor`, or nullptr if none is present.
+PyObject* GetCompositeField(const CMessage* self,
+                            const FieldDescriptor* field_descriptor);
 
-bool SetSubmessage(CMessage* self, CMessage*& submessage,
-                   const ReadAccess& access);
+// Registers `value` for `field`, or replaces `value` with a new reference to
+// the existing live wrapper if another reader registered one first.
+void SetCompositeField(CMessage* self, const FieldDescriptor* field,
+                       PyObject*& value, const ReadAccess& access);
 
 // Clears the message, removing all contained data. Extension dictionary and
 // submessages are released first if there are remaining external references.
@@ -381,9 +364,6 @@ int SetFieldValue(CMessage* self, const FieldDescriptor* field_descriptor,
                   PyObject* value);
 
 PyObject* FindInitializationErrors(CMessage* self);
-
-// TODO: b/512503059 - Remove once all callers pass an access token.
-Message* AssureWritable(CMessage* self);
 
 // Returns the message factory for the given message.
 // This is equivalent to message.MESSAGE_FACTORY
@@ -485,8 +465,6 @@ PyObject* SetMessageFrozenError();
 // `error_msg`).
 int CheckFrozen(const CMessage* parent, const ReadAccess& access,
                 const char* error_msg);
-// TODO: b/512503059 - Remove once all callers pass an access token.
-int CheckFrozen(CMessage* parent, const char* error_msg);
 
 PyObject* PyMessage_New(const Descriptor* descriptor,
                         PyObject* py_message_factory);
