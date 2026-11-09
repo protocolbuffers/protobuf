@@ -31,6 +31,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/any.h"
 #include "google/protobuf/cpp_features.pb.h"
@@ -60,31 +61,184 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+// Pass-scoped state for a single pass over OptionsToInterpret. Separating pass
+// execution from OptionInterpreter ensures that DynamicMessageFactory and other
+// per-pass/per-option state cannot persist across feature resolution.
+class OptionInterpreter::PassInterpreter {
+ public:
+  PassInterpreter(DescriptorBuilder* builder,
+                  SourceCodeInfoState* source_code_info, bool skip_extensions)
+      : builder_(builder),
+        source_code_info_(source_code_info),
+        skip_extensions_(skip_extensions) {}
+
+  bool InterpretOptions(OptionsToInterpret& options_to_interpret);
+
+ private:
+  class SingleOptionInterpreter;
+
+  // Recursively traverses a parsed aggregate option message and its
+  // ParseInfoTree to collect relative locations for all populated sub-fields.
+  void CollectAggregateFieldLocations(const Message& message,
+                                      const TextFormat::ParseInfoTree& tree,
+                                      const SourceCodePath& uninterpreted_path,
+                                      SourceCodePath& dest_path);
+
+  // Checks if the given message is an Any message and, if so, collects the
+  // source locations for the type_url and value fields.
+  // Returns true if the message is an Any message, false otherwise.
+  bool MaybeCollectAnyFieldInAggregateOption(
+      const Message& message, const TextFormat::ParseInfoTree& tree,
+      const SourceCodePath& uninterpreted_path, SourceCodePath& dest_path);
+
+  // Determines the appropriate UninterpretedOption value field number (e.g.,
+  // kPositiveIntValueFieldNumber, kStringValueFieldNumber) for a given field.
+  static int GetValueMarker(const FieldDescriptor* field,
+                            const Message& message, int index);
+
+  DescriptorBuilder* builder_;
+  SourceCodeInfoState* source_code_info_;
+  bool skip_extensions_;
+
+  // Factory used to create the dynamic messages we need to parse any aggregate
+  // option values encountered within this pass.
+  DynamicMessageFactory dynamic_factory_;
+
+  // Maps the path to a repeated option field to the known number of elements
+  // the field contains, used to compute the index portion of the element path.
+  absl::flat_hash_map<SourceCodePath, int> repeated_option_counts_;
+};
+
+// Option-scoped state for interpreting a single UninterpretedOption entry.
+class OptionInterpreter::PassInterpreter::SingleOptionInterpreter {
+ public:
+  SingleOptionInterpreter(PassInterpreter& pass,
+                          const OptionsToInterpret& options_to_interpret,
+                          const UninterpretedOption& uninterpreted_option)
+      : pass_(pass),
+        options_to_interpret_(options_to_interpret),
+        uninterpreted_option_(uninterpreted_option),
+        options_(options_to_interpret.options) {}
+
+  // Interprets uninterpreted_option_ on options_. src_path is the source
+  // location path to the uninterpreted option.
+  bool Interpret(const SourceCodePath& src_path);
+
+ private:
+  // Adds the uninterpreted_option to the given options message verbatim.
+  // Used when AllowUnknownDependencies() is in effect and we can't find
+  // the option's definition.
+  static void AddWithoutInterpreting(
+      const UninterpretedOption& uninterpreted_option, Message* options);
+
+  // Recursively drills into the intermediate fields in unknown_fields to check
+  // if innermost_field is already set on the innermost message. Returns false
+  // and adds an error if so.
+  bool ExamineIfOptionIsSet(std::vector<const FieldDescriptor*>::const_iterator
+                                intermediate_fields_iter,
+                            std::vector<const FieldDescriptor*>::const_iterator
+                                intermediate_fields_end,
+                            const FieldDescriptor* innermost_field,
+                            const std::string& debug_msg_name,
+                            const UnknownFieldSet& unknown_fields);
+
+  // Validates the value for option_field and sets it on *unknown_fields.
+  bool SetOptionValue(const FieldDescriptor* option_field,
+                      UnknownFieldSet* unknown_fields,
+                      const SourceCodePath& src_path,
+                      const SourceCodePath& dest_path);
+
+  // Parses an aggregate value for a CPPTYPE_MESSAGE option and saves it into
+  // *unknown_fields.
+  bool SetAggregateOption(const FieldDescriptor* option_field,
+                          UnknownFieldSet* unknown_fields,
+                          const SourceCodePath& src_path,
+                          const SourceCodePath& dest_path);
+
+  // Convenience functions to set an int field the right way, depending on
+  // its wire type (a single int CppType can represent multiple wire types).
+  static void SetInt32(int number, int32_t value, FieldDescriptor::Type type,
+                       UnknownFieldSet* unknown_fields);
+  static void SetInt64(int number, int64_t value, FieldDescriptor::Type type,
+                       UnknownFieldSet* unknown_fields);
+  static void SetUInt32(int number, uint32_t value, FieldDescriptor::Type type,
+                        UnknownFieldSet* unknown_fields);
+  static void SetUInt64(int number, uint64_t value, FieldDescriptor::Type type,
+                        UnknownFieldSet* unknown_fields);
+
+  bool AddOptionError(DescriptorPool::ErrorCollector::ErrorLocation location,
+                      absl::FunctionRef<std::string()> make_error) {
+    pass_.builder_->AddError(options_to_interpret_.element_name,
+                             uninterpreted_option_, location, make_error);
+    return false;
+  }
+
+  bool AddNameError(absl::FunctionRef<std::string()> make_error) {
+#ifdef PROTOBUF_INTERNAL_IGNORE_FIELD_NAME_ERRORS_
+    return true;
+#else   // PROTOBUF_INTERNAL_IGNORE_FIELD_NAME_ERRORS_
+    return AddOptionError(DescriptorPool::ErrorCollector::OPTION_NAME,
+                          make_error);
+#endif  // PROTOBUF_INTERNAL_IGNORE_FIELD_NAME_ERRORS_
+  }
+
+  bool AddValueError(absl::FunctionRef<std::string()> make_error) {
+    return AddOptionError(DescriptorPool::ErrorCollector::OPTION_VALUE,
+                          make_error);
+  }
+
+  PassInterpreter& pass_;
+  const OptionsToInterpret& options_to_interpret_;
+  const UninterpretedOption& uninterpreted_option_;
+  Message* options_;
+};
+
 OptionInterpreter::OptionInterpreter(DescriptorBuilder* builder,
                                      bool update_source_code_info)
-    : builder_(builder), update_source_code_info_(update_source_code_info) {
+    : builder_(builder) {
   ABSL_CHECK(builder_);
+  if (update_source_code_info) {
+    source_code_info_.emplace();
+  }
 }
 
 OptionInterpreter::~OptionInterpreter() = default;
 
 bool OptionInterpreter::InterpretOptionExtensions(
-    OptionsToInterpret* options_to_interpret) {
-  return InterpretOptionsImpl(options_to_interpret, /*skip_extensions=*/false);
+    absl::Span<OptionsToInterpret> options_to_interpret) {
+  return InterpretOptionsPass(options_to_interpret, /*skip_extensions=*/false);
 }
+
 bool OptionInterpreter::InterpretNonExtensionOptions(
-    OptionsToInterpret* options_to_interpret) {
-  return InterpretOptionsImpl(options_to_interpret, /*skip_extensions=*/true);
+    absl::Span<OptionsToInterpret> options_to_interpret) {
+  return InterpretOptionsPass(options_to_interpret, /*skip_extensions=*/true);
 }
-bool OptionInterpreter::InterpretOptionsImpl(
-    OptionsToInterpret* options_to_interpret, bool skip_extensions) {
+
+bool OptionInterpreter::InterpretOptionsPass(
+    absl::Span<OptionsToInterpret> options_to_interpret, bool skip_extensions) {
+  if (options_to_interpret.empty()) {
+    return true;
+  }
+  PassInterpreter pass(
+      builder_, source_code_info_.has_value() ? &*source_code_info_ : nullptr,
+      skip_extensions);
+  bool success = true;
+  for (OptionsToInterpret& option : options_to_interpret) {
+    if (!pass.InterpretOptions(option)) {
+      success = false;
+    }
+  }
+  return success;
+}
+
+bool OptionInterpreter::PassInterpreter::InterpretOptions(
+    OptionsToInterpret& options_to_interpret) {
   // Note that these may be in different pools, so we can't use the same
   // descriptor and reflection objects on both.
-  Message* options = options_to_interpret->options;
-  const Message* original_options = options_to_interpret->original_options;
+  Message* options = options_to_interpret.options;
+  const Message* original_options = options_to_interpret.original_options;
 
   bool failed = false;
-  options_to_interpret_ = options_to_interpret;
 
   // Find the uninterpreted_option field in the mutable copy of the options
   // and clear them, since we're about to interpret them.
@@ -95,8 +249,8 @@ bool OptionInterpreter::InterpretOptionsImpl(
   options->GetReflection()->ClearField(options, uninterpreted_options_field);
 
   SourceCodePath src_path;
-  if (update_source_code_info_) {
-    src_path = options_to_interpret->element_path;
+  if (source_code_info_ != nullptr) {
+    src_path = options_to_interpret.element_path;
     src_path.push_back(uninterpreted_options_field->number());
   }
 
@@ -111,32 +265,30 @@ bool OptionInterpreter::InterpretOptionsImpl(
       original_options->GetReflection()->FieldSize(
           *original_options, original_uninterpreted_options_field);
   for (int i = 0; i < num_uninterpreted_options; ++i) {
-    if (update_source_code_info_) {
+    if (source_code_info_ != nullptr) {
       src_path.push_back(i);
     }
-    uninterpreted_option_ = DownCastMessage<UninterpretedOption>(
-        &original_options->GetReflection()->GetRepeatedMessage(
-            *original_options, original_uninterpreted_options_field, i));
-    if (!InterpretSingleOption(options, src_path,
-                               options_to_interpret->element_path,
-                               skip_extensions)) {
-      // Error already added by InterpretSingleOption().
+    const UninterpretedOption& uninterpreted_option =
+        DownCastMessage<UninterpretedOption>(
+            original_options->GetReflection()->GetRepeatedMessage(
+                *original_options, original_uninterpreted_options_field, i));
+    SingleOptionInterpreter single(*this, options_to_interpret,
+                                   uninterpreted_option);
+    if (!single.Interpret(src_path)) {
+      // Error already added by SingleOptionInterpreter::Interpret().
       failed = true;
       break;
     }
-    if (update_source_code_info_) {
+    if (source_code_info_ != nullptr) {
       src_path.pop_back();
     }
   }
-  // Reset these, so we don't have any dangling pointers.
-  uninterpreted_option_ = nullptr;
-  options_to_interpret_ = nullptr;
 
   if (failed) {
     return false;
   }
 
-  // InterpretSingleOption() added the interpreted options in the
+  // SingleOptionInterpreter::Interpret() added the interpreted options in the
   // UnknownFieldSet, in case the option isn't yet known to us.  Now we
   // serialize the options message and deserialize it back.  That way, any
   // option fields that we do happen to know about will get moved from the
@@ -153,7 +305,7 @@ bool OptionInterpreter::InterpretOptionsImpl(
   if (!unparsed_options->AppendToString(&buf) ||
       !options->ParseFromString(buf)) {
     builder_->AddError(
-        options_to_interpret->element_name, *original_options,
+        options_to_interpret.element_name, *original_options,
         DescriptorPool::ErrorCollector::OTHER, [&] {
           return absl::StrCat(
               "Some options could not be correctly parsed using the proto "
@@ -171,22 +323,21 @@ bool OptionInterpreter::InterpretOptionsImpl(
   return true;
 }
 
-bool OptionInterpreter::InterpretSingleOption(
-    Message* options, const SourceCodePath& src_path,
-    const SourceCodePath& options_path, bool skip_extensions) {
+bool OptionInterpreter::PassInterpreter::SingleOptionInterpreter::Interpret(
+    const SourceCodePath& src_path) {
   // First do some basic validation.
-  if (uninterpreted_option_->name_size() == 0) {
+  if (uninterpreted_option_.name_size() == 0) {
     // This should never happen unless the parser has gone seriously awry or
     // someone has manually created the uninterpreted option badly.
-    if (skip_extensions) {
+    if (pass_.skip_extensions_) {
       // Come back to it later.
       return true;
     }
     return AddNameError(
         []() -> std::string { return "Option must have a name."; });
   }
-  if (uninterpreted_option_->name(0).name_part() == "uninterpreted_option") {
-    if (skip_extensions) {
+  if (uninterpreted_option_.name(0).name_part() == "uninterpreted_option") {
+    if (pass_.skip_extensions_) {
       // Come back to it later.
       return true;
     }
@@ -195,7 +346,7 @@ bool OptionInterpreter::InterpretSingleOption(
     });
   }
 
-  if (skip_extensions == uninterpreted_option_->name(0).is_extension()) {
+  if (pass_.skip_extensions_ == uninterpreted_option_.name(0).is_extension()) {
     // Allow feature and option interpretation to occur in two phases.  This is
     // necessary because features *are* options and need to be interpreted
     // before resolving them.  However, options can also *have* features
@@ -214,14 +365,14 @@ bool OptionInterpreter::InterpretSingleOption(
   // the pool's mutex, and the latter method locks it again.  We don't use
   // FindSymbol() because files that use custom options only need to depend on
   // the file that defines the option, not descriptor.proto itself.
-  Symbol symbol = builder_->FindSymbolNotEnforcingDeps(
-      options->GetDescriptor()->full_name());
+  Symbol symbol = pass_.builder_->FindSymbolNotEnforcingDeps(
+      options_->GetDescriptor()->full_name());
   options_descriptor = symbol.descriptor();
   if (options_descriptor == nullptr) {
     // The options message's descriptor was not in the builder's pool, so use
     // the standard version from the generated pool. We're not holding the
     // generated pool's mutex, so we can search it the straightforward way.
-    options_descriptor = options->GetDescriptor();
+    options_descriptor = options_->GetDescriptor();
   }
   ABSL_CHECK(options_descriptor);
 
@@ -249,28 +400,28 @@ bool OptionInterpreter::InterpretSingleOption(
   // the leaf value (with -uninterpreted_field), and to derive the legacy path
   // (by stripping -8 markers).
   std::vector<SourceCodePath> part_dest_paths;
-  if (update_source_code_info_) {
-    dest_path = options_path;
-    if (uninterpreted_option_->name_size() > 1) {
-      part_dest_paths.reserve(uninterpreted_option_->name_size());
+  if (pass_.source_code_info_ != nullptr) {
+    dest_path = options_to_interpret_.element_path;
+    if (uninterpreted_option_.name_size() > 1) {
+      part_dest_paths.reserve(uninterpreted_option_.name_size());
     }
   }
 
-  for (int i = 0; i < uninterpreted_option_->name_size(); ++i) {
-    builder_->undefine_resolved_name_.clear();
-    const std::string& name_part = uninterpreted_option_->name(i).name_part();
+  for (int i = 0; i < uninterpreted_option_.name_size(); ++i) {
+    pass_.builder_->undefine_resolved_name_.clear();
+    const std::string& name_part = uninterpreted_option_.name(i).name_part();
     if (!debug_msg_name.empty()) {
       absl::StrAppend(&debug_msg_name, ".");
     }
-    if (uninterpreted_option_->name(i).is_extension()) {
+    if (uninterpreted_option_.name(i).is_extension()) {
       absl::StrAppend(&debug_msg_name, "(", name_part, ")");
       // Search for the extension's descriptor as an extension in the builder's
       // pool. Note that we use internal::DescriptorBuilder::LookupSymbol(), not
       // DescriptorPool::FindExtensionByName(), for two reasons: 1) It allows
       // relative lookups, and 2) because we're already holding the pool's
       // mutex, and the latter method locks it again.
-      symbol =
-          builder_->LookupSymbol(name_part, options_to_interpret_->name_scope);
+      symbol = pass_.builder_->LookupSymbol(name_part,
+                                            options_to_interpret_.name_scope);
       field = symbol.field_descriptor();
       // If we don't find the field then the field's descriptor was not in the
       // builder's pool, but there's no point in looking in the generated
@@ -283,18 +434,18 @@ bool OptionInterpreter::InterpretSingleOption(
     }
 
     if (field == nullptr) {
-      if (DescriptorBuilder::get_allow_unknown(builder_->pool_)) {
+      if (DescriptorBuilder::get_allow_unknown(pass_.builder_->pool_)) {
         // We can't find the option, but AllowUnknownDependencies() is enabled,
         // so we will just leave it as uninterpreted.
-        AddWithoutInterpreting(*uninterpreted_option_, options);
+        AddWithoutInterpreting(uninterpreted_option_, options_);
         return true;
       }
-      if (!(builder_->undefine_resolved_name_).empty()) {
+      if (!(pass_.builder_->undefine_resolved_name_).empty()) {
         // Option is resolved to a name which is not defined.
         return AddNameError([&] {
           return absl::StrCat(
               "Option \"", debug_msg_name, "\" is resolved to \"(",
-              builder_->undefine_resolved_name_,
+              pass_.builder_->undefine_resolved_name_,
               ")\", which is not defined. The innermost scope is searched "
               "first "
               "in name resolution. Consider using a leading '.'(i.e., \"(.",
@@ -318,7 +469,7 @@ bool OptionInterpreter::InterpretSingleOption(
         // we don't know if it is an extension of the correct *Options message,
         // or if it has a valid field number, etc.).  Just leave it as
         // uninterpreted instead.
-        AddWithoutInterpreting(*uninterpreted_option_, options);
+        AddWithoutInterpreting(uninterpreted_option_, options_);
         return true;
       }
       // This can only happen if, due to some insane misconfiguration of the
@@ -331,7 +482,7 @@ bool OptionInterpreter::InterpretSingleOption(
       });
     }
 
-    if (update_source_code_info_) {
+    if (pass_.source_code_info_ != nullptr) {
       if (i == 0) {
         dest_path.push_back(field->number());
       }
@@ -350,7 +501,7 @@ bool OptionInterpreter::InterpretSingleOption(
       // part_dest_paths.back()). Single-component options (`name_size() ==
       // 1`, e.g. `option (foo) = 123` or aggregate options) do not need
       // part_dest_paths.
-      if (uninterpreted_option_->name_size() > 1) {
+      if (uninterpreted_option_.name_size() > 1) {
         SourceCodePath part_path;
         if (i == 0) {
           part_path = dest_path;
@@ -366,9 +517,9 @@ bool OptionInterpreter::InterpretSingleOption(
     // Special handling to prevent feature use in the same file as the
     // definition.
     // TODO Add proper support for cases where this can work.
-    if (field->file() == builder_->file_ &&
-        uninterpreted_option_->name(0).name_part() == "features" &&
-        !uninterpreted_option_->name(0).is_extension()) {
+    if (field->file() == pass_.builder_->file_ &&
+        uninterpreted_option_.name(0).name_part() == "features" &&
+        !uninterpreted_option_.name(0).is_extension()) {
       return AddNameError([&] {
         return absl::StrCat(
             "Feature \"", debug_msg_name,
@@ -376,7 +527,7 @@ bool OptionInterpreter::InterpretSingleOption(
       });
     }
 
-    if (i < uninterpreted_option_->name_size() - 1) {
+    if (i < uninterpreted_option_.name_size() - 1) {
       if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
         return AddNameError([&] {
           return absl::StrCat("Option \"", debug_msg_name,
@@ -409,11 +560,11 @@ bool OptionInterpreter::InterpretSingleOption(
       !ExamineIfOptionIsSet(
           intermediate_fields.begin(), intermediate_fields.end(), field,
           debug_msg_name,
-          options->GetReflection()->GetUnknownFields(*options))) {
+          options_->GetReflection()->GetUnknownFields(*options_))) {
     return false;  // ExamineIfOptionIsSet() already added the error.
   }
 
-  if (update_source_code_info_ && field->is_repeated()) {
+  if (pass_.source_code_info_ != nullptr && field->is_repeated()) {
     // record the element path of the interpreted option
     // For dot-notation options where the leaf field is repeated (e.g.,
     // `(foo).repeated_bar = 100`), the top-level option `foo` is a message
@@ -423,7 +574,7 @@ bool OptionInterpreter::InterpretSingleOption(
     // `part_dest_paths` is empty and `dest_path` itself receives the index.
     SourceCodePath& leaf_path =
         part_dest_paths.empty() ? dest_path : part_dest_paths.back();
-    int index = repeated_option_counts_[leaf_path]++;
+    int index = pass_.repeated_option_counts_[leaf_path]++;
     leaf_path.push_back(index);
   }
 
@@ -431,8 +582,7 @@ bool OptionInterpreter::InterpretSingleOption(
   // innermost message.
   std::unique_ptr<UnknownFieldSet> unknown_fields =
       std::make_unique<UnknownFieldSet>();
-  if (!SetOptionValue(field, unknown_fields.get(), options, src_path,
-                      dest_path)) {
+  if (!SetOptionValue(field, unknown_fields.get(), src_path, dest_path)) {
     return false;  // SetOptionValue() already added the error.
   }
 
@@ -470,13 +620,14 @@ bool OptionInterpreter::InterpretSingleOption(
 
   // Now merge the UnknownFieldSet corresponding to the top-level message into
   // the options message.
-  options->GetReflection()->MutableUnknownFields(options)->MergeFrom(
+  options_->GetReflection()->MutableUnknownFields(options_)->MergeFrom(
       *unknown_fields);
 
-  if (update_source_code_info_) {
-    interpreted_paths_[src_path] = dest_path;
-    if (uninterpreted_option_->name_size() > 1) {
-      dot_notation_name_paths_[src_path] = std::move(part_dest_paths);
+  if (pass_.source_code_info_ != nullptr) {
+    pass_.source_code_info_->interpreted_paths[src_path] = dest_path;
+    if (uninterpreted_option_.name_size() > 1) {
+      pass_.source_code_info_->dot_notation_name_paths[src_path] =
+          std::move(part_dest_paths);
     }
   }
 
@@ -484,8 +635,8 @@ bool OptionInterpreter::InterpretSingleOption(
 }
 
 void OptionInterpreter::UpdateSourceCodeInfo(SourceCodeInfo* info) {
-  if (!update_source_code_info_ || info == nullptr ||
-      interpreted_paths_.empty()) {
+  if (!source_code_info_.has_value() || info == nullptr ||
+      source_code_info_->interpreted_paths.empty()) {
     // nothing to do!
     return;
   }
@@ -496,12 +647,13 @@ void OptionInterpreter::UpdateSourceCodeInfo(SourceCodeInfo* info) {
   absl::flat_hash_map<absl::Span<const int>,
                       std::vector<const AggregateFieldLocation*>>
       agg_loc_map;
-  for (const AggregateFieldLocation& afl : aggregate_field_locations_) {
+  for (const AggregateFieldLocation& afl :
+       source_code_info_->aggregate_field_locations) {
     agg_loc_map[afl.uninterpreted_path].push_back(&afl);
   }
 
-  // We find locations that match keys in interpreted_paths_ and
-  // 1) replace the path with the corresponding value in interpreted_paths_
+  // We find locations that match keys in interpreted_paths and
+  // 1) replace the path with the corresponding value in interpreted_paths
   // 2) remove any subsequent sub-locations (sub-location is one whose path
   //    has the parent path as a prefix), except for direct children (like
   //    option name and value) which are mapped to the interpreted path.
@@ -539,7 +691,7 @@ void OptionInterpreter::UpdateSourceCodeInfo(SourceCodeInfo* info) {
 
   // For dot-notation options (e.g., `(foo).bar = 123`), points to the sequence
   // of destination path prefixes for each name component in the current option
-  // (stored in dot_notation_name_paths_). When not null, child locations are
+  // (stored in dot_notation_name_paths). When not null, child locations are
   // remapped using these per-component paths (name parts at [src_path, 2, i]
   // and the leaf value at dot_name_paths->back()), and the legacy duplicate
   // path is emitted.
@@ -574,9 +726,9 @@ void OptionInterpreter::UpdateSourceCodeInfo(SourceCodeInfo* info) {
     }
 
     SourceCodePath curr_path(loc->path().begin(), loc->path().end());
-    auto entry = interpreted_paths_.find(curr_path);
+    auto entry = source_code_info_->interpreted_paths.find(curr_path);
 
-    if (entry == interpreted_paths_.end()) {
+    if (entry == source_code_info_->interpreted_paths.end()) {
       // not a match
       if (copying) {
         *new_locs.Add() = *loc;
@@ -587,9 +739,11 @@ void OptionInterpreter::UpdateSourceCodeInfo(SourceCodeInfo* info) {
     matched = true;
     match_src = std::move(curr_path);
     match_dest = entry->second;
-    auto dot_it = dot_notation_name_paths_.find(match_src);
+    auto dot_it = source_code_info_->dot_notation_name_paths.find(match_src);
     dot_name_paths =
-        (dot_it != dot_notation_name_paths_.end()) ? &dot_it->second : nullptr;
+        (dot_it != source_code_info_->dot_notation_name_paths.end())
+            ? &dot_it->second
+            : nullptr;
 
     if (!copying) {
       // initialize the copy we are building
@@ -625,8 +779,9 @@ void OptionInterpreter::UpdateSourceCodeInfo(SourceCodeInfo* info) {
   }
 }
 
-void OptionInterpreter::AddWithoutInterpreting(
-    const UninterpretedOption& uninterpreted_option, Message* options) {
+void OptionInterpreter::PassInterpreter::SingleOptionInterpreter::
+    AddWithoutInterpreting(const UninterpretedOption& uninterpreted_option,
+                           Message* options) {
   const FieldDescriptor* field =
       options->GetDescriptor()->FindFieldByName("uninterpreted_option");
   ABSL_CHECK(field != nullptr);
@@ -636,12 +791,14 @@ void OptionInterpreter::AddWithoutInterpreting(
       ->CopyFrom(uninterpreted_option);
 }
 
-bool OptionInterpreter::ExamineIfOptionIsSet(
-    std::vector<const FieldDescriptor*>::const_iterator
-        intermediate_fields_iter,
-    std::vector<const FieldDescriptor*>::const_iterator intermediate_fields_end,
-    const FieldDescriptor* innermost_field, const std::string& debug_msg_name,
-    const UnknownFieldSet& unknown_fields) {
+bool OptionInterpreter::PassInterpreter::SingleOptionInterpreter::
+    ExamineIfOptionIsSet(std::vector<const FieldDescriptor*>::const_iterator
+                             intermediate_fields_iter,
+                         std::vector<const FieldDescriptor*>::const_iterator
+                             intermediate_fields_end,
+                         const FieldDescriptor* innermost_field,
+                         const std::string& debug_msg_name,
+                         const UnknownFieldSet& unknown_fields) {
   // We do linear searches of the UnknownFieldSet and its sub-groups.  This
   // should be fine since it's unlikely that any one options structure will
   // contain more than a handful of options.
@@ -721,33 +878,33 @@ std::string ValueMustBeInt(absl::string_view type_name,
 
 }  // namespace
 
-bool OptionInterpreter::SetOptionValue(const FieldDescriptor* option_field,
-                                       UnknownFieldSet* unknown_fields,
-                                       Message* options,
-                                       const SourceCodePath& src_path,
-                                       const SourceCodePath& dest_path) {
+bool OptionInterpreter::PassInterpreter::SingleOptionInterpreter::
+    SetOptionValue(const FieldDescriptor* option_field,
+                   UnknownFieldSet* unknown_fields,
+                   const SourceCodePath& src_path,
+                   const SourceCodePath& dest_path) {
   // We switch on the CppType to validate.
   switch (option_field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
-      if (uninterpreted_option_->has_positive_int_value()) {
-        if (uninterpreted_option_->positive_int_value() >
+      if (uninterpreted_option_.has_positive_int_value()) {
+        if (uninterpreted_option_.positive_int_value() >
             static_cast<uint64_t>(std::numeric_limits<int32_t>::max())) {
           return AddValueError([&] {
             return ValueOutOfRange<int32_t>("int32", option_field->full_name());
           });
         }
         SetInt32(option_field->number(),
-                 uninterpreted_option_->positive_int_value(),
+                 uninterpreted_option_.positive_int_value(),
                  option_field->type(), unknown_fields);
-      } else if (uninterpreted_option_->has_negative_int_value()) {
-        if (uninterpreted_option_->negative_int_value() <
+      } else if (uninterpreted_option_.has_negative_int_value()) {
+        if (uninterpreted_option_.negative_int_value() <
             static_cast<int64_t>(std::numeric_limits<int32_t>::min())) {
           return AddValueError([&] {
             return ValueOutOfRange<int32_t>("int32", option_field->full_name());
           });
         }
         SetInt32(option_field->number(),
-                 uninterpreted_option_->negative_int_value(),
+                 uninterpreted_option_.negative_int_value(),
                  option_field->type(), unknown_fields);
       } else {
         return AddValueError([&] {
@@ -757,19 +914,19 @@ bool OptionInterpreter::SetOptionValue(const FieldDescriptor* option_field,
       break;
 
     case FieldDescriptor::CPPTYPE_INT64:
-      if (uninterpreted_option_->has_positive_int_value()) {
-        if (uninterpreted_option_->positive_int_value() >
+      if (uninterpreted_option_.has_positive_int_value()) {
+        if (uninterpreted_option_.positive_int_value() >
             static_cast<uint64_t>(std::numeric_limits<int64_t>::max())) {
           return AddValueError([&] {
             return ValueOutOfRange<int64_t>("int64", option_field->full_name());
           });
         }
         SetInt64(option_field->number(),
-                 uninterpreted_option_->positive_int_value(),
+                 uninterpreted_option_.positive_int_value(),
                  option_field->type(), unknown_fields);
-      } else if (uninterpreted_option_->has_negative_int_value()) {
+      } else if (uninterpreted_option_.has_negative_int_value()) {
         SetInt64(option_field->number(),
-                 uninterpreted_option_->negative_int_value(),
+                 uninterpreted_option_.negative_int_value(),
                  option_field->type(), unknown_fields);
       } else {
         return AddValueError([&] {
@@ -779,44 +936,44 @@ bool OptionInterpreter::SetOptionValue(const FieldDescriptor* option_field,
       break;
 
     case FieldDescriptor::CPPTYPE_UINT32:
-      if (!uninterpreted_option_->has_positive_int_value()) {
+      if (!uninterpreted_option_.has_positive_int_value()) {
         return AddValueError([&] {
           return ValueMustBeInt<uint32_t>("uint32", option_field->full_name());
         });
       }
-      if (uninterpreted_option_->positive_int_value() >
+      if (uninterpreted_option_.positive_int_value() >
           std::numeric_limits<uint32_t>::max()) {
         return AddValueError([&] {
           return ValueOutOfRange<uint32_t>("uint32", option_field->full_name());
         });
       }
       SetUInt32(option_field->number(),
-                uninterpreted_option_->positive_int_value(),
+                uninterpreted_option_.positive_int_value(),
                 option_field->type(), unknown_fields);
       break;
 
     case FieldDescriptor::CPPTYPE_UINT64:
-      if (!uninterpreted_option_->has_positive_int_value()) {
+      if (!uninterpreted_option_.has_positive_int_value()) {
         return AddValueError([&] {
           return ValueMustBeInt<uint64_t>("uint64", option_field->full_name());
         });
       }
       SetUInt64(option_field->number(),
-                uninterpreted_option_->positive_int_value(),
+                uninterpreted_option_.positive_int_value(),
                 option_field->type(), unknown_fields);
       break;
 
     case FieldDescriptor::CPPTYPE_FLOAT: {
       float value;
-      if (uninterpreted_option_->has_double_value()) {
-        value = uninterpreted_option_->double_value();
-      } else if (uninterpreted_option_->has_positive_int_value()) {
-        value = uninterpreted_option_->positive_int_value();
-      } else if (uninterpreted_option_->has_negative_int_value()) {
-        value = uninterpreted_option_->negative_int_value();
-      } else if (uninterpreted_option_->identifier_value() == "inf") {
+      if (uninterpreted_option_.has_double_value()) {
+        value = uninterpreted_option_.double_value();
+      } else if (uninterpreted_option_.has_positive_int_value()) {
+        value = uninterpreted_option_.positive_int_value();
+      } else if (uninterpreted_option_.has_negative_int_value()) {
+        value = uninterpreted_option_.negative_int_value();
+      } else if (uninterpreted_option_.identifier_value() == "inf") {
         value = std::numeric_limits<float>::infinity();
-      } else if (uninterpreted_option_->identifier_value() == "nan") {
+      } else if (uninterpreted_option_.identifier_value() == "nan") {
         value = std::numeric_limits<float>::quiet_NaN();
       } else {
         return AddValueError([&] {
@@ -831,15 +988,15 @@ bool OptionInterpreter::SetOptionValue(const FieldDescriptor* option_field,
 
     case FieldDescriptor::CPPTYPE_DOUBLE: {
       double value;
-      if (uninterpreted_option_->has_double_value()) {
-        value = uninterpreted_option_->double_value();
-      } else if (uninterpreted_option_->has_positive_int_value()) {
-        value = uninterpreted_option_->positive_int_value();
-      } else if (uninterpreted_option_->has_negative_int_value()) {
-        value = uninterpreted_option_->negative_int_value();
-      } else if (uninterpreted_option_->identifier_value() == "inf") {
+      if (uninterpreted_option_.has_double_value()) {
+        value = uninterpreted_option_.double_value();
+      } else if (uninterpreted_option_.has_positive_int_value()) {
+        value = uninterpreted_option_.positive_int_value();
+      } else if (uninterpreted_option_.has_negative_int_value()) {
+        value = uninterpreted_option_.negative_int_value();
+      } else if (uninterpreted_option_.identifier_value() == "inf") {
         value = std::numeric_limits<double>::infinity();
-      } else if (uninterpreted_option_->identifier_value() == "nan") {
+      } else if (uninterpreted_option_.identifier_value() == "nan") {
         value = std::numeric_limits<double>::quiet_NaN();
       } else {
         return AddValueError([&] {
@@ -854,15 +1011,15 @@ bool OptionInterpreter::SetOptionValue(const FieldDescriptor* option_field,
 
     case FieldDescriptor::CPPTYPE_BOOL:
       uint64_t value;
-      if (!uninterpreted_option_->has_identifier_value()) {
+      if (!uninterpreted_option_.has_identifier_value()) {
         return AddValueError([&] {
           return absl::StrCat("Value must be identifier for boolean option \"",
                               option_field->full_name(), "\".");
         });
       }
-      if (uninterpreted_option_->identifier_value() == "true") {
+      if (uninterpreted_option_.identifier_value() == "true") {
         value = 1;
-      } else if (uninterpreted_option_->identifier_value() == "false") {
+      } else if (uninterpreted_option_.identifier_value() == "false") {
         value = 0;
       } else {
         return AddValueError([&] {
@@ -875,7 +1032,7 @@ bool OptionInterpreter::SetOptionValue(const FieldDescriptor* option_field,
       break;
 
     case FieldDescriptor::CPPTYPE_ENUM: {
-      if (!uninterpreted_option_->has_identifier_value()) {
+      if (!uninterpreted_option_.has_identifier_value()) {
         return AddValueError([&] {
           return absl::StrCat(
               "Value must be identifier for enum-valued option \"",
@@ -883,7 +1040,7 @@ bool OptionInterpreter::SetOptionValue(const FieldDescriptor* option_field,
         });
       }
       const EnumDescriptor* enum_type = option_field->enum_type();
-      const std::string& value_name = uninterpreted_option_->identifier_value();
+      const std::string& value_name = uninterpreted_option_.identifier_value();
       const EnumValueDescriptor* enum_value = nullptr;
 
       if (enum_type->file()->pool() != DescriptorPool::generated_pool()) {
@@ -900,7 +1057,7 @@ bool OptionInterpreter::SetOptionValue(const FieldDescriptor* option_field,
         // DescriptorPool::FindEnumValueByName() because we're already holding
         // the pool's mutex, and the latter method locks it again.
         Symbol symbol =
-            builder_->FindSymbolNotEnforcingDeps(fully_qualified_name);
+            pass_.builder_->FindSymbolNotEnforcingDeps(fully_qualified_name);
         if (auto* candidate_descriptor = symbol.enum_value_descriptor()) {
           if (candidate_descriptor->type() != enum_type) {
             return AddValueError([&] {
@@ -936,7 +1093,7 @@ bool OptionInterpreter::SetOptionValue(const FieldDescriptor* option_field,
     }
 
     case FieldDescriptor::CPPTYPE_STRING:
-      if (!uninterpreted_option_->has_string_value()) {
+      if (!uninterpreted_option_.has_string_value()) {
         return AddValueError([&] {
           return absl::StrCat(
               "Value must be quoted string for string option \"",
@@ -945,10 +1102,10 @@ bool OptionInterpreter::SetOptionValue(const FieldDescriptor* option_field,
       }
       // The string has already been unquoted and unescaped by the parser.
       unknown_fields->AddLengthDelimited(option_field->number(),
-                                         uninterpreted_option_->string_value());
+                                         uninterpreted_option_.string_value());
       break;
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      return SetAggregateOption(option_field, unknown_fields, options, src_path,
+      return SetAggregateOption(option_field, unknown_fields, src_path,
                                 dest_path);
   }
 
@@ -1027,12 +1184,12 @@ class AggregateErrorCollector : public io::ErrorCollector {
 // We construct a dynamic message of the type corresponding to
 // option_field, parse the supplied text-format string into this
 // message, and serialize the resulting message to produce the value.
-bool OptionInterpreter::SetAggregateOption(const FieldDescriptor* option_field,
-                                           UnknownFieldSet* unknown_fields,
-                                           Message* options,
-                                           const SourceCodePath& src_path,
-                                           const SourceCodePath& dest_path) {
-  if (!uninterpreted_option_->has_aggregate_value()) {
+bool OptionInterpreter::PassInterpreter::SingleOptionInterpreter::
+    SetAggregateOption(const FieldDescriptor* option_field,
+                       UnknownFieldSet* unknown_fields,
+                       const SourceCodePath& src_path,
+                       const SourceCodePath& dest_path) {
+  if (!uninterpreted_option_.has_aggregate_value()) {
     return AddValueError([&] {
       return absl::StrCat("Option \"", option_field->full_name(),
                           "\" is a message. "
@@ -1045,26 +1202,27 @@ bool OptionInterpreter::SetAggregateOption(const FieldDescriptor* option_field,
   }
 
   const Descriptor* type = option_field->message_type();
-  std::unique_ptr<Message> dynamic(dynamic_factory_.GetPrototype(type)->New());
+  std::unique_ptr<Message> dynamic(
+      pass_.dynamic_factory_.GetPrototype(type)->New());
   ABSL_CHECK(dynamic.get() != nullptr)
       << "Could not create an instance of " << option_field->DebugString();
 
   AggregateErrorCollector collector;
   AggregateOptionFinder finder;
-  finder.builder_ = builder_;
+  finder.builder_ = pass_.builder_;
   TextFormat::Parser parser;
   parser.RecordErrorsTo(&collector);
   parser.SetFinder(&finder);
   TextFormat::ParseInfoTree info_tree;
-  if (update_source_code_info_) {
+  if (pass_.source_code_info_ != nullptr) {
     parser.WriteLocationsTo(&info_tree);
   }
-  if (!parser.ParseFromString(uninterpreted_option_->aggregate_value(),
+  if (!parser.ParseFromString(uninterpreted_option_.aggregate_value(),
                               dynamic.get())) {
-    if (DescriptorBuilder::get_allow_unknown(builder_->pool_)) {
+    if (DescriptorBuilder::get_allow_unknown(pass_.builder_->pool_)) {
       // We can't interpret the option, but AllowUnknownDependencies() is
       // enabled, so we will just leave it as uninterpreted.
-      AddWithoutInterpreting(*uninterpreted_option_, options);
+      AddWithoutInterpreting(uninterpreted_option_, options_);
       return true;
     }
     return AddValueError([&] {
@@ -1073,14 +1231,14 @@ bool OptionInterpreter::SetAggregateOption(const FieldDescriptor* option_field,
     });
   }
 
-  if (update_source_code_info_) {
+  if (pass_.source_code_info_ != nullptr) {
     SourceCodePath mutable_src_path = src_path;
     mutable_src_path.push_back(UninterpretedOption::kAggregateValueFieldNumber);
     SourceCodePath mutable_dest_path = dest_path;
     mutable_dest_path.push_back(
         -UninterpretedOption::kAggregateValueFieldNumber);
-    CollectAggregateFieldLocations(*dynamic, info_tree, mutable_src_path,
-                                   mutable_dest_path);
+    pass_.CollectAggregateFieldLocations(*dynamic, info_tree, mutable_src_path,
+                                         mutable_dest_path);
   }
 
   std::string serial;
@@ -1096,7 +1254,7 @@ bool OptionInterpreter::SetAggregateOption(const FieldDescriptor* option_field,
   return true;
 }
 
-void OptionInterpreter::CollectAggregateFieldLocations(
+void OptionInterpreter::PassInterpreter::CollectAggregateFieldLocations(
     const Message& message, const TextFormat::ParseInfoTree& tree,
     const SourceCodePath& uninterpreted_path, SourceCodePath& dest_path) {
   const Reflection* reflection = message.GetReflection();
@@ -1111,8 +1269,8 @@ void OptionInterpreter::CollectAggregateFieldLocations(
   reflection->ListFields(message, &fields);
 
   for (const FieldDescriptor* field : fields) {
-    auto record_field_location = [&](const TextFormat::FieldLocation& loc,
-                                     size_t v_idx, int curr_idx) {
+    const auto record_field_location = [&](const TextFormat::FieldLocation& loc,
+                                           size_t v_idx, int curr_idx) {
       int val_marker_idx = field->is_repeated() ? curr_idx : -1;
       dest_path.push_back(field->number());
       if (field->is_repeated()) {
@@ -1125,7 +1283,7 @@ void OptionInterpreter::CollectAggregateFieldLocations(
       afl.value_marker = GetValueMarker(field, message, val_marker_idx);
       afl.name_range = loc.name;
       afl.val_range = loc.values[v_idx];
-      aggregate_field_locations_.push_back(std::move(afl));
+      source_code_info_->aggregate_field_locations.push_back(std::move(afl));
 
       if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
         const Message& sub_message =
@@ -1181,7 +1339,7 @@ void OptionInterpreter::CollectAggregateFieldLocations(
   }
 }
 
-bool OptionInterpreter::MaybeCollectAnyFieldInAggregateOption(
+bool OptionInterpreter::PassInterpreter::MaybeCollectAnyFieldInAggregateOption(
     const Message& message, const TextFormat::ParseInfoTree& tree,
     const SourceCodePath& uninterpreted_path, SourceCodePath& dest_path) {
   const Reflection* reflection = message.GetReflection();
@@ -1216,7 +1374,7 @@ bool OptionInterpreter::MaybeCollectAnyFieldInAggregateOption(
   afl.field_dest_path = dest_path;
   afl.value_marker = UninterpretedOption::kStringValueFieldNumber;
   afl.val_range = location->name;
-  aggregate_field_locations_.push_back(std::move(afl));
+  source_code_info_->aggregate_field_locations.push_back(std::move(afl));
   dest_path.pop_back();
 
   DescriptorBuilder::assert_mutex_held(builder_->pool_);
@@ -1244,8 +1402,8 @@ bool OptionInterpreter::MaybeCollectAnyFieldInAggregateOption(
   return true;
 }
 
-int OptionInterpreter::GetValueMarker(const FieldDescriptor* field,
-                                      const Message& message, int index) {
+int OptionInterpreter::PassInterpreter::GetValueMarker(
+    const FieldDescriptor* field, const Message& message, int index) {
   const Reflection* reflection = message.GetReflection();
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
@@ -1298,9 +1456,9 @@ void OptionInterpreter::SetSpan(SourceCodeInfo_Location* loc,
   loc->add_span(end_col);
 }
 
-void OptionInterpreter::SetInt32(int number, int32_t value,
-                                 FieldDescriptor::Type type,
-                                 UnknownFieldSet* unknown_fields) {
+void OptionInterpreter::PassInterpreter::SingleOptionInterpreter::SetInt32(
+    int number, int32_t value, FieldDescriptor::Type type,
+    UnknownFieldSet* unknown_fields) {
   switch (type) {
     case FieldDescriptor::TYPE_INT32:
       unknown_fields->AddVarint(
@@ -1322,9 +1480,9 @@ void OptionInterpreter::SetInt32(int number, int32_t value,
   }
 }
 
-void OptionInterpreter::SetInt64(int number, int64_t value,
-                                 FieldDescriptor::Type type,
-                                 UnknownFieldSet* unknown_fields) {
+void OptionInterpreter::PassInterpreter::SingleOptionInterpreter::SetInt64(
+    int number, int64_t value, FieldDescriptor::Type type,
+    UnknownFieldSet* unknown_fields) {
   switch (type) {
     case FieldDescriptor::TYPE_INT64:
       unknown_fields->AddVarint(number, static_cast<uint64_t>(value));
@@ -1345,9 +1503,9 @@ void OptionInterpreter::SetInt64(int number, int64_t value,
   }
 }
 
-void OptionInterpreter::SetUInt32(int number, uint32_t value,
-                                  FieldDescriptor::Type type,
-                                  UnknownFieldSet* unknown_fields) {
+void OptionInterpreter::PassInterpreter::SingleOptionInterpreter::SetUInt32(
+    int number, uint32_t value, FieldDescriptor::Type type,
+    UnknownFieldSet* unknown_fields) {
   switch (type) {
     case FieldDescriptor::TYPE_UINT32:
       unknown_fields->AddVarint(number, static_cast<uint64_t>(value));
@@ -1363,9 +1521,9 @@ void OptionInterpreter::SetUInt32(int number, uint32_t value,
   }
 }
 
-void OptionInterpreter::SetUInt64(int number, uint64_t value,
-                                  FieldDescriptor::Type type,
-                                  UnknownFieldSet* unknown_fields) {
+void OptionInterpreter::PassInterpreter::SingleOptionInterpreter::SetUInt64(
+    int number, uint64_t value, FieldDescriptor::Type type,
+    UnknownFieldSet* unknown_fields) {
   switch (type) {
     case FieldDescriptor::TYPE_UINT64:
       unknown_fields->AddVarint(number, value);
