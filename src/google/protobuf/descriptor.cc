@@ -1700,7 +1700,7 @@ class DescriptorPool::Tables::ScopedBuildState {
   BuildState state_;
 };
 
-DescriptorPool::Tables::Tables() {}
+DescriptorPool::Tables::Tables() = default;
 
 DescriptorPool::Tables::~Tables() { ABSL_DCHECK(build_state_ == nullptr); }
 
