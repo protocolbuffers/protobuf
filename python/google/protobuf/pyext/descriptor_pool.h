@@ -70,6 +70,13 @@ typedef struct PyDescriptorPool {
 
   // Mutex protecting the caching maps above.
   FreeThreadingMutex* cache_mutex;
+
+  // Serializes access to `pool` when `is_mutable` is true. A mutable C++
+  // DescriptorPool has no internal locking, so building a file must not run
+  // concurrently with another build or a lookup. Builds hold it exclusively and
+  // lookups hold it shared. Pools that are not mutable are never built into
+  // from Python, so their lookups do not take it.
+  FreeThreadingMutex* pool_mutex;
 } PyDescriptorPool;
 
 extern PyTypeObject PyDescriptorPool_Type;
