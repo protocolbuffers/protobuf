@@ -44,6 +44,34 @@ class ProtoApiTest(unittest.TestCase):
     self.assertEqual(result.DESCRIPTOR.full_name, 'test_package.MyMessage')
     self.assertEqual(result.my_field, 42)
 
+  def test_externally_owned_message_copy_and_merge(self):
+    def check(ext1, ext2):
+      ext2.val = 10
+      ext2.child.val = 20
+      ext2.child_map['k'].val = 30
+
+      # Root, submessage, and map merges/copies traverse past ext1's Py_None
+      # parent sentinel without dereferencing it.
+      ext1.MergeFrom(ext2)
+      self.assertEqual(ext1.val, 10)
+      ext1.child.CopyFrom(ext2.child)
+      self.assertEqual(ext1.child.val, 20)
+      ext1.child_map.MergeFrom(ext2.child_map)
+      self.assertEqual(ext1.child_map['k'].val, 30)
+      ext1.child_map['k'].child_map.MergeFrom(ext2.child_map)
+      self.assertEqual(ext1.child_map['k'].child_map['k'].val, 30)
+
+      # Ancestor cycles into descendants of an externally owned root still
+      # raise AssertionError.
+      with self.assertRaises(AssertionError):
+        ext1.child.CopyFrom(ext1)
+      with self.assertRaises(AssertionError):
+        ext1.child.MergeFrom(ext1)
+      with self.assertRaises(AssertionError):
+        ext1.child_map['k'].child_map.MergeFrom(ext1.child_map)
+
+    proto_api_test_ext.call_with_externally_owned_messages(check)
+
 
 if __name__ == '__main__':
   unittest.main()

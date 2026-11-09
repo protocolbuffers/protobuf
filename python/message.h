@@ -98,6 +98,17 @@ int PyUpb_Message_GetVersion(PyObject* _self);
 // Returns true if the message or any of its parents is frozen.
 bool PyUpb_Message_IsFrozen(PyObject* self);
 
+// Returns the nearest reified ancestor's `upb_Message*` (walking stub parents
+// if `_self` is an unset stub).
+const upb_Message* PyUpb_Message_GetReifiedAncestor(PyObject* _self);
+
+// Returns true if `target` (a `upb_Message*` or `upb_Map*`) equals `msg` or is
+// reachable within `msg` (`m`).
+bool PyUpb_Message_ContainsSubobj(const upb_Message* msg,
+                                  const upb_MessageDef* m,
+                                  const upb_DefPool* symtab,
+                                  const void* target);
+
 // Module-level init.
 bool PyUpb_InitMessage(PyObject* m);
 

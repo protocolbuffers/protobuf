@@ -1483,6 +1483,10 @@ def _AddMergeFromMethod(cls):
       )
 
     assert msg is not self
+    if containers._IsDescendantOf(self, msg):  # pylint: disable=protected-access
+      raise AssertionError(
+          'Cannot merge a message into a submessage of itself.'
+      )
     self._Modified()
 
     fields = self._fields
@@ -1514,6 +1518,32 @@ def _AddMergeFromMethod(cls):
       self._unknown_fields.extend(msg._unknown_fields)
 
   cls.MergeFrom = MergeFrom
+
+
+def _AddCopyFromMethod(cls):
+  """Helper for _AddMessageMethods()."""
+
+  def CopyFrom(self, other_msg):
+    if self is other_msg:
+      return
+    # pylint: disable=protected-access
+    self._AssureWritable()
+    if not isinstance(other_msg, cls):
+      raise TypeError(
+          'Parameter to CopyFrom() must be instance of same class: '
+          'expected %s got %s.'
+          % (
+              _FullyQualifiedClassName(cls),
+              _FullyQualifiedClassName(other_msg.__class__),
+          )
+      )
+    if containers._IsDescendantOf(self, other_msg):
+      raise AssertionError('Cannot copy a message into a submessage of itself.')
+    # pylint: enable=protected-access
+    self.Clear()
+    self.MergeFrom(other_msg)
+
+  cls.CopyFrom = CopyFrom
 
 
 def _AddWhichOneofMethod(message_descriptor, cls):
@@ -1607,6 +1637,7 @@ def _AddMessageMethods(message_descriptor, cls):
   _AddMergeFromStringMethod(message_descriptor, cls)
   _AddIsInitializedMethod(message_descriptor, cls)
   _AddMergeFromMethod(cls)
+  _AddCopyFromMethod(cls)
   _AddWhichOneofMethod(message_descriptor, cls)
   # Adds methods which do not depend on cls.
   cls.Clear = _Clear

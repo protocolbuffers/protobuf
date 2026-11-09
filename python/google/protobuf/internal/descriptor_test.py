@@ -21,6 +21,7 @@ from google.protobuf import message_factory
 from google.protobuf import symbol_database
 from google.protobuf import text_format
 from google.protobuf.internal import api_implementation
+from google.protobuf.internal import encoder
 from google.protobuf.internal import test_proto2_pb2
 from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
@@ -514,6 +515,74 @@ class DescriptorTest(unittest.TestCase):
       )
     with self.assertRaises(message.FrozenInstanceError):
       complex_options_msg.Extensions[complex_opt1].ClearField('submsg_map')
+
+  def testFrozenAncestorCopyAndMergeRaisesFrozenError(self):
+    default_pool = descriptor_pool.Default()
+    try:
+      fdesc = default_pool.FindFileByName('frozen_ancestor_test.proto')
+    except KeyError:
+      file_proto = descriptor_pb2.FileDescriptorProto(
+          name='frozen_ancestor_test.proto',
+          package='frozen_ancestor_test',
+          syntax='proto2',
+          dependency=[descriptor_pb2.DESCRIPTOR.name],
+      )
+      node = file_proto.message_type.add(name='RecursiveOpt')
+      node.field.add(
+          name='child',
+          number=1,
+          label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+          type=descriptor_pb2.FieldDescriptorProto.TYPE_MESSAGE,
+          type_name='.frozen_ancestor_test.RecursiveOpt',
+      )
+      entry = node.nested_type.add(name='ChildMapEntry')
+      entry.options.map_entry = True
+      entry.field.add(
+          name='key',
+          number=1,
+          label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+          type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
+      )
+      entry.field.add(
+          name='value',
+          number=2,
+          label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+          type=descriptor_pb2.FieldDescriptorProto.TYPE_MESSAGE,
+          type_name='.frozen_ancestor_test.RecursiveOpt',
+      )
+      node.field.add(
+          name='child_map',
+          number=2,
+          label=descriptor_pb2.FieldDescriptorProto.LABEL_REPEATED,
+          type=descriptor_pb2.FieldDescriptorProto.TYPE_MESSAGE,
+          type_name='.frozen_ancestor_test.RecursiveOpt.ChildMapEntry',
+      )
+      file_proto.extension.add(
+          name='rec_opt',
+          number=50000,
+          label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+          type=descriptor_pb2.FieldDescriptorProto.TYPE_MESSAGE,
+          type_name='.frozen_ancestor_test.RecursiveOpt',
+          extendee='.' + descriptor_pb2.MessageOptions.DESCRIPTOR.full_name,
+      )
+      holder = file_proto.message_type.add(name='Holder')
+      # Tag 50000 wire-encoded as length-delimited message: (50000 << 3) | 2,
+      # with present `child` (0x0a, 0x00) and `child_map['a']` (0x12, 0x05...).
+      holder.options.MergeFromString(
+          encoder.TagBytes(50000, 2) + b'\x09\x0a\x00\x12\x05\x0a\x01a\x12\x00'
+      )
+      fdesc = default_pool.AddSerializedFile(file_proto.SerializeToString())
+    ext = fdesc.extensions_by_name['rec_opt']
+    frozen = fdesc.message_types_by_name['Holder'].GetOptions().Extensions[ext]
+
+    with self.assertRaises(message.FrozenInstanceError):
+      frozen.MergeFrom(frozen)
+    with self.assertRaises(message.FrozenInstanceError):
+      frozen.child.CopyFrom(frozen)
+    with self.assertRaises(message.FrozenInstanceError):
+      frozen.child.MergeFrom(frozen)
+    with self.assertRaises(message.FrozenInstanceError):
+      frozen.child_map['a'].child_map.MergeFrom(frozen.child_map)
 
   def testSimpleCustomOptions(self):
     file_descriptor = unittest_custom_options_pb2.DESCRIPTOR

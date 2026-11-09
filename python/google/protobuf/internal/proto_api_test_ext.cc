@@ -306,6 +306,75 @@ py::object CreateDynamicPoolMessage() {
   return py_msg;
 }
 
+void CallWithExternallyOwnedMessages(py::function callback) {
+  FileDescriptorProto file_descriptor;
+  file_descriptor.set_name("ext_owned_recursive.proto");
+  file_descriptor.set_package("ext_owned_pkg");
+  DescriptorProto* msg_desc = file_descriptor.add_message_type();
+  msg_desc->set_name("Node");
+
+  FieldDescriptorProto* val_field = msg_desc->add_field();
+  val_field->set_name("val");
+  val_field->set_number(1);
+  val_field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  val_field->set_type(FieldDescriptorProto::TYPE_INT32);
+
+  FieldDescriptorProto* child_field = msg_desc->add_field();
+  child_field->set_name("child");
+  child_field->set_number(2);
+  child_field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  child_field->set_type(FieldDescriptorProto::TYPE_MESSAGE);
+  child_field->set_type_name(".ext_owned_pkg.Node");
+
+  DescriptorProto* entry_desc = msg_desc->add_nested_type();
+  entry_desc->set_name("ChildMapEntry");
+  entry_desc->mutable_options()->set_map_entry(true);
+  FieldDescriptorProto* key_field = entry_desc->add_field();
+  key_field->set_name("key");
+  key_field->set_number(1);
+  key_field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  key_field->set_type(FieldDescriptorProto::TYPE_STRING);
+  FieldDescriptorProto* map_val = entry_desc->add_field();
+  map_val->set_name("value");
+  map_val->set_number(2);
+  map_val->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  map_val->set_type(FieldDescriptorProto::TYPE_MESSAGE);
+  map_val->set_type_name(".ext_owned_pkg.Node");
+
+  FieldDescriptorProto* map_field = msg_desc->add_field();
+  map_field->set_name("child_map");
+  map_field->set_number(3);
+  map_field->set_label(FieldDescriptorProto::LABEL_REPEATED);
+  map_field->set_type(FieldDescriptorProto::TYPE_MESSAGE);
+  map_field->set_type_name(".ext_owned_pkg.Node.ChildMapEntry");
+
+  auto owned_pool = std::make_unique<DescriptorPool>();
+  if (!owned_pool->BuildFile(file_descriptor)) {
+    throw std::runtime_error("Failed to build file descriptor");
+  }
+  const PyProto_API* api = GetProtoApi();
+  auto py_pool = py::reinterpret_steal<py::object>(
+      api->DescriptorPool_FromPool(std::move(owned_pool), nullptr));
+  if (!py_pool) {
+    throw py::error_already_set();
+  }
+  const DescriptorPool* pool = api->DescriptorPool_AsPool(py_pool.ptr());
+  const Descriptor* descriptor =
+      pool->FindMessageTypeByName("ext_owned_pkg.Node");
+  DynamicMessageFactory factory(pool);
+  const Message* prototype = factory.GetPrototype(descriptor);
+  std::unique_ptr<Message> msg1(prototype->New());
+  std::unique_ptr<Message> msg2(prototype->New());
+  auto py_msg1 = py::reinterpret_steal<py::object>(
+      api->NewMessageOwnedExternally(msg1.get(), nullptr));
+  auto py_msg2 = py::reinterpret_steal<py::object>(
+      api->NewMessageOwnedExternally(msg2.get(), nullptr));
+  if (!py_msg1 || !py_msg2) {
+    throw py::error_already_set();
+  }
+  callback(py_msg1, py_msg2);
+}
+
 PYBIND11_MODULE(proto_api_test_ext, m) {
   m.def("get_const_message", &GetConstMessage);
   m.def("set_message_field_with_mutator", &SetMessageFieldWithMutator);
@@ -314,6 +383,8 @@ PYBIND11_MODULE(proto_api_test_ext, m) {
   m.def("repr_dynamic_message_shared_pool_and_db",
         &ReprDynamicMessageSharedPoolAndDb);
   m.def("create_dynamic_pool_message", &CreateDynamicPoolMessage);
+  m.def("call_with_externally_owned_messages",
+        &CallWithExternallyOwnedMessages);
 }
 
 }  // namespace python

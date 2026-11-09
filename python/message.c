@@ -861,6 +861,74 @@ static bool PyUpb_Message_DoSyncSubobjs(upb_Message* msg,
                                         const upb_MessageDef* msgdef,
                                         PyObject* arena, PyUpb_Message* py_msg);
 
+const upb_Message* PyUpb_Message_GetReifiedAncestor(PyObject* _self) {
+  PyUpb_Message* curr = (PyUpb_Message*)_self;
+  while (PyUpb_Message_IsStub(curr)) {
+    curr = curr->ptr.parent;
+  }
+  return curr->ptr.msg;
+}
+
+bool PyUpb_Message_ContainsSubobj(const upb_Message* msg,
+                                  const upb_MessageDef* m,
+                                  const upb_DefPool* symtab,
+                                  const void* target) {
+  if (msg == target) return true;
+  size_t iter = kUpb_Message_Begin;
+  const upb_FieldDef* f;
+  upb_MessageValue val;
+  while (upb_Message_Next(msg, m, symtab, &f, &val, &iter)) {
+    if (upb_FieldDef_IsMap(f)) {
+      if (!val.map_val) continue;
+      if (val.map_val == target) return true;
+      const upb_FieldDef* val_f =
+          upb_MessageDef_Field(upb_FieldDef_MessageSubDef(f), 1);
+      if (!upb_FieldDef_IsSubMessage(val_f)) continue;
+      const upb_MessageDef* sub_m = upb_FieldDef_MessageSubDef(val_f);
+      size_t map_iter = kUpb_Map_Begin;
+      upb_MessageValue k, v;
+      while (upb_Map_Next(val.map_val, &k, &v, &map_iter)) {
+        if (v.msg_val &&
+            PyUpb_Message_ContainsSubobj(v.msg_val, sub_m, symtab, target)) {
+          return true;
+        }
+      }
+    } else if (upb_FieldDef_IsSubMessage(f)) {
+      const upb_MessageDef* sub_m = upb_FieldDef_MessageSubDef(f);
+      if (upb_FieldDef_IsRepeated(f)) {
+        if (!val.array_val) continue;
+        size_t n = upb_Array_Size(val.array_val);
+        for (size_t i = 0; i < n; i++) {
+          const upb_Message* elem = upb_Array_Get(val.array_val, i).msg_val;
+          if (elem &&
+              PyUpb_Message_ContainsSubobj(elem, sub_m, symtab, target)) {
+            return true;
+          }
+        }
+      } else if (val.msg_val && PyUpb_Message_ContainsSubobj(val.msg_val, sub_m,
+                                                             symtab, target)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+static bool PyUpb_Message_IsDescendantOf(PyUpb_Message* self,
+                                         PyUpb_Message* other) {
+  if (self == other || self->arena != other->arena) return false;
+  PyUpb_Message* curr = self;
+  while (PyUpb_Message_IsStub(curr)) {
+    curr = curr->ptr.parent;
+    if (curr == other) return true;
+  }
+  if (PyUpb_Message_IsStub(other)) return false;
+  const upb_MessageDef* other_m = _PyUpb_Message_GetMsgdef(other);
+  const upb_DefPool* symtab = upb_FileDef_Pool(upb_MessageDef_File(other_m));
+  return PyUpb_Message_ContainsSubobj(other->ptr.msg, other_m, symtab,
+                                      curr->ptr.msg);
+}
+
 static bool PyUpb_Message_SyncPresentSubobjs(upb_Message* msg,
                                              const upb_MessageDef* msgdef,
                                              PyObject* arena) {
@@ -1540,6 +1608,10 @@ PyObject* PyUpb_Message_MergeFrom(PyObject* self, PyObject* arg) {
                  Py_TYPE(self), Py_TYPE(arg));
     return NULL;
   }
+  if (!PyUpb_CheckFrozen(PyUpb_Message_IsFrozen(self),
+                         "Message is immutable.")) {
+    return NULL;
+  }
   if (self == arg) {
     // Self-merge is not supported, as in C++ and the other Python
     // implementations.
@@ -1551,6 +1623,20 @@ PyObject* PyUpb_Message_MergeFrom(PyObject* self, PyObject* arg) {
     if (PyErr_WarnEx(PyExc_FutureWarning,
                      "Merging a message into itself will raise AssertionError "
                      "in a future release.",
+                     1) < 0) {
+      return NULL;
+    }
+#endif  // PROTOBUF_PY_FUTURE_SELF_MERGE_RAISES
+  }
+  if (PyUpb_Message_IsDescendantOf((PyUpb_Message*)self, (PyUpb_Message*)arg)) {
+#if PROTOBUF_PY_FUTURE_SELF_MERGE_RAISES
+    PyErr_SetString(PyExc_AssertionError,
+                    "Cannot merge a message into a submessage of itself.");
+    return NULL;
+#else
+    if (PyErr_WarnEx(PyExc_FutureWarning,
+                     "Merging a message into a submessage of itself will raise "
+                     "AssertionError in a future release.",
                      1) < 0) {
       return NULL;
     }
@@ -1581,7 +1667,16 @@ static PyObject* PyUpb_Message_CopyFrom(PyObject* _self, PyObject* arg) {
   if (_self == arg) {
     Py_RETURN_NONE;
   }
+  if (!PyUpb_CheckFrozen(PyUpb_Message_IsFrozen(_self),
+                         "Message is immutable.")) {
+    return NULL;
+  }
   PyUpb_Message* other = (void*)arg;
+  if (PyUpb_Message_IsDescendantOf(self, other)) {
+    PyErr_SetString(PyExc_AssertionError,
+                    "Cannot copy a message into a submessage of itself.");
+    return NULL;
+  }
   if (!PyUpb_Message_AssureWritable(self)) return NULL;
 
   const upb_Message* other_msg = PyUpb_Message_GetIfReified((PyObject*)other);

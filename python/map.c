@@ -377,10 +377,41 @@ static Py_ssize_t PyUpb_MapContainer_Length(PyObject* _self) {
 int PyUpb_Message_InitMapAttributes(PyObject* map, PyObject* value,
                                     const upb_FieldDef* f);
 
+static bool PyUpb_MapContainer_IsDescendantOf(PyUpb_MapContainer* self,
+                                              PyUpb_MapContainer* other) {
+  if (self->arena != other->arena) return false;
+  upb_Map* other_map = PyUpb_MapContainer_GetIfReified(other);
+  if (!other_map || upb_Map_Size(other_map) == 0) return false;
+
+  const upb_FieldDef* val_f = upb_MessageDef_Field(
+      upb_FieldDef_MessageSubDef(PyUpb_MapContainer_GetField(self)), 1);
+  const upb_FieldDef* other_val_f = upb_MessageDef_Field(
+      upb_FieldDef_MessageSubDef(PyUpb_MapContainer_GetField(other)), 1);
+  const upb_MessageDef* val_m = upb_FieldDef_MessageSubDef(val_f);
+  if (!val_m || val_m != upb_FieldDef_MessageSubDef(other_val_f)) return false;
+
+  const upb_DefPool* symtab = upb_FileDef_Pool(upb_MessageDef_File(val_m));
+  const void* target =
+      PyUpb_MapContainer_IsStub(self)
+          ? (const void*)PyUpb_Message_GetReifiedAncestor(self->ptr.parent)
+          : (const void*)self->ptr.map;
+  size_t iter = kUpb_Map_Begin;
+  upb_MessageValue k, v;
+  while (upb_Map_Next(other_map, &k, &v, &iter)) {
+    if (v.msg_val &&
+        PyUpb_Message_ContainsSubobj(v.msg_val, val_m, symtab, target)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 static PyObject* PyUpb_MapContainer_MergeFrom(PyObject* _self, PyObject* _arg) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
-  upb_Map* map = PyUpb_MapContainer_AssureWritable(_self);
-  if (!map) return NULL;
+  if (!PyUpb_CheckFrozen(PyUpb_MapContainer_IsFrozen(self),
+                         "Map is immutable")) {
+    return NULL;
+  }
   const upb_FieldDef* f = PyUpb_MapContainer_GetField(self);
 
   if (PyDict_Check(_arg)) {
@@ -401,6 +432,18 @@ static PyObject* PyUpb_MapContainer_MergeFrom(PyObject* _self, PyObject* _arg) {
     }
 #endif  // PROTOBUF_PY_FUTURE_SELF_MERGE_RAISES
   }
+
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  if (state && Py_TYPE(_self) == state->message_map_container_type &&
+      Py_TYPE(_arg) == state->message_map_container_type &&
+      PyUpb_MapContainer_IsDescendantOf(self, (PyUpb_MapContainer*)_arg)) {
+    PyErr_SetString(PyExc_AssertionError,
+                    "Cannot merge a map into a submessage of itself.");
+    return NULL;
+  }
+
+  upb_Map* map = PyUpb_MapContainer_AssureWritable(_self);
+  if (!map) return NULL;
 
   if (PyUpb_Message_InitMapAttributes(_self, _arg, f) < 0) {
     return NULL;

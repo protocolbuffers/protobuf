@@ -40,6 +40,7 @@ from google.protobuf.internal import more_extensions_pb2
 from google.protobuf.internal import more_messages_pb2
 from google.protobuf.internal import packed_field_test_pb2
 from google.protobuf.internal import self_recursive_pb2
+from google.protobuf.internal import test_proto2_pb2
 from google.protobuf.internal import test_proto3_optional_pb2
 from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
@@ -4310,6 +4311,296 @@ class MessageMetaGetAttrTest(unittest.TestCase):
         del unittest_pb2.TestAllTypes.bomb
       except Exception:
         pass
+
+
+@testing_refleaks.TestCase
+class SameTreeCopyAndMergeTest(unittest.TestCase):
+
+  def testCopyFromOneofSibling(self):
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    msg.direct_leaf.value = 42
+    src = msg.direct_leaf
+    msg.other_leaf.CopyFrom(src)
+    self.assertEqual(msg.WhichOneof('choice'), 'other_leaf')
+    self.assertEqual(msg.other_leaf.value, 42)
+    self.assertEqual(src.value, 42)
+    msg.other_leaf.value = 99
+    self.assertEqual(src.value, 42)
+
+  def testCopyFromNestedSubmessageInOtherOneofArm(self):
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    msg.wrapped_leaf.leaf.value = 42
+    src = msg.wrapped_leaf.leaf
+    msg.direct_leaf.CopyFrom(src)
+    self.assertEqual(msg.WhichOneof('choice'), 'direct_leaf')
+    self.assertEqual(msg.direct_leaf.value, 42)
+    self.assertEqual(src.value, 42)
+    msg.direct_leaf.value = 99
+    self.assertEqual(src.value, 42)
+
+  def testCopyFromChildSubmessage(self):
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    msg.child.direct_leaf.value = 42
+    child = msg.child
+    msg.CopyFrom(child)
+    self.assertEqual(msg.direct_leaf.value, 42)
+    self.assertFalse(msg.HasField('child'))
+    self.assertEqual(child.direct_leaf.value, 42)
+    msg.direct_leaf.value = 99
+    self.assertEqual(child.direct_leaf.value, 42)
+
+  def testMergeFromOneofSibling(self):
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    msg.direct_leaf.value = 42
+    msg.direct_leaf.values.extend([1, 2])
+    src = msg.direct_leaf
+    msg.other_leaf.MergeFrom(src)
+    self.assertEqual(msg.WhichOneof('choice'), 'other_leaf')
+    self.assertEqual(msg.other_leaf.value, 42)
+    self.assertEqual(msg.other_leaf.values, [1, 2])
+    self.assertEqual(src.value, 42)
+    self.assertEqual(src.values, [1, 2])
+
+  def testMergeFromNestedSubmessageInOtherOneofArm(self):
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    msg.wrapped_leaf.leaf.value = 42
+    msg.wrapped_leaf.leaf.values.extend([1, 2])
+    src = msg.wrapped_leaf.leaf
+    msg.direct_leaf.MergeFrom(src)
+    self.assertEqual(msg.WhichOneof('choice'), 'direct_leaf')
+    self.assertEqual(msg.direct_leaf.value, 42)
+    self.assertEqual(msg.direct_leaf.values, [1, 2])
+    self.assertEqual(src.value, 42)
+    self.assertEqual(src.values, [1, 2])
+
+  def testMergeFromOneofChildReleasedDuringMerge(self):
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    src = msg.recursive_choice
+    src.wrapped_leaf.leaf.value = 42
+    msg.MergeFrom(src)
+    self.assertEqual(msg.WhichOneof('choice'), 'wrapped_leaf')
+    self.assertEqual(msg.wrapped_leaf.leaf.value, 42)
+    self.assertEqual(src.wrapped_leaf.leaf.value, 42)
+    msg.wrapped_leaf.leaf.value = 99
+    self.assertEqual(src.wrapped_leaf.leaf.value, 42)
+
+  def testExtendRepeatedScalarFromOtherOneofArm(self):
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    msg.wrapped_leaf.leaf.values.extend([1, 2, 3])
+    src = msg.wrapped_leaf.leaf.values
+    msg.direct_leaf.values.extend(src)
+    self.assertEqual(msg.WhichOneof('choice'), 'direct_leaf')
+    self.assertEqual(msg.direct_leaf.values, [1, 2, 3])
+    self.assertEqual(src, [1, 2, 3])
+
+  def testMergeScalarMapFromOtherOneofArm(self):
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    msg.wrapped_leaf.leaf.scalar_map['a'] = 1
+    src = msg.wrapped_leaf.leaf.scalar_map
+    msg.direct_leaf.scalar_map.MergeFrom(src)
+    self.assertEqual(msg.WhichOneof('choice'), 'direct_leaf')
+    self.assertEqual(dict(msg.direct_leaf.scalar_map), {'a': 1})
+    self.assertEqual(dict(src), {'a': 1})
+
+  def testMergeMessageMapFromChildEntry(self):
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    entry = msg.child_map['a']
+    entry.direct_leaf.value = 1
+    entry.child_map['a'].direct_leaf.value = 2
+    entry.child_map['b'].direct_leaf.value = 3
+    src = entry.child_map
+    msg.child_map.MergeFrom(src)
+    self.assertEqual(msg.child_map['a'].direct_leaf.value, 2)
+    self.assertEqual(msg.child_map['b'].direct_leaf.value, 3)
+
+
+@testing_refleaks.TestCase
+class AncestorCopyAndMergeTest(unittest.TestCase):
+
+  def assertCopyIntoDescendantRaises(self, ancestor, descendant):
+    with self.assertRaisesRegex(
+        AssertionError, 'Cannot copy a message into a submessage of itself'
+    ):
+      descendant.CopyFrom(ancestor)
+
+  def assertMergeIntoDescendantRaises(self, ancestor, descendant):
+    with self.assertRaisesRegex(
+        AssertionError, 'Cannot merge a message into a submessage of itself'
+    ):
+      descendant.MergeFrom(ancestor)
+
+  def testCopyFromAncestorRaisesAcrossAllFieldKinds(self):
+    # Present singular submessage: existing destination fields must survive.
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    msg.child.direct_leaf.value = 42
+    self.assertCopyIntoDescendantRaises(msg, msg.child)
+    self.assertEqual(msg.child.direct_leaf.value, 42)
+
+    # Unset singular submessage: must not promote `child`.
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    msg.direct_leaf.value = 10
+    unset_child = msg.child
+    self.assertCopyIntoDescendantRaises(msg, unset_child)
+    self.assertFalse(msg.HasField('child'))
+    self.assertEqual(msg.direct_leaf.value, 10)
+
+    # Nested unset submessage under an unset parent stub.
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    c1 = msg.child
+    c2 = c1.child
+    self.assertCopyIntoDescendantRaises(c1, c2)
+    self.assertFalse(msg.HasField('child'))
+    self.assertFalse(c1.HasField('child'))
+
+    # Inactive oneof submessage: must not switch the active oneof arm.
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    inactive = msg.recursive_choice
+    msg.direct_leaf.value = 7
+    self.assertCopyIntoDescendantRaises(msg, inactive)
+    self.assertEqual(msg.WhichOneof('choice'), 'direct_leaf')
+    self.assertEqual(msg.direct_leaf.value, 7)
+
+    # Deep chain, repeated element, map entry, and singular/repeated extensions.
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    msg.child.child.direct_leaf.value = 1
+    self.assertCopyIntoDescendantRaises(msg, msg.child.child)
+    self.assertEqual(msg.child.child.direct_leaf.value, 1)
+
+    elem = msg.children.add()
+    elem.direct_leaf.value = 2
+    self.assertCopyIntoDescendantRaises(msg, elem)
+    self.assertEqual(elem.direct_leaf.value, 2)
+
+    entry = msg.child_map['a']
+    entry.direct_leaf.value = 3
+    self.assertCopyIntoDescendantRaises(msg, entry)
+    self.assertEqual(entry.direct_leaf.value, 3)
+
+    ext_sub = msg.Extensions[test_proto2_pb2.ext_child]
+    ext_sub.direct_leaf.value = 4
+    self.assertCopyIntoDescendantRaises(msg, ext_sub)
+    self.assertEqual(ext_sub.direct_leaf.value, 4)
+
+    ext_elem = msg.Extensions[test_proto2_pb2.ext_children].add()
+    ext_elem.direct_leaf.value = 5
+    self.assertCopyIntoDescendantRaises(msg, ext_elem)
+    self.assertEqual(ext_elem.direct_leaf.value, 5)
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Currently broken in upb, will be fixed in the next breaking release',
+  )
+  def testMergeFromAncestorRaisesAcrossAllFieldKinds(self):
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    msg.child.direct_leaf.value = 42
+    self.assertMergeIntoDescendantRaises(msg, msg.child)
+    self.assertEqual(msg.child.direct_leaf.value, 42)
+
+    # Unset singular submessage: must not promote `child`.
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    msg.direct_leaf.value = 10
+    unset_child = msg.child
+    self.assertMergeIntoDescendantRaises(msg, unset_child)
+    self.assertFalse(msg.HasField('child'))
+
+    # Nested unset submessage under an unset parent stub.
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    c1 = msg.child
+    c2 = c1.child
+    self.assertMergeIntoDescendantRaises(c1, c2)
+    self.assertFalse(msg.HasField('child'))
+    self.assertFalse(c1.HasField('child'))
+
+    # Inactive oneof submessage: must not switch the active oneof arm.
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    inactive = msg.recursive_choice
+    msg.direct_leaf.value = 7
+    self.assertMergeIntoDescendantRaises(msg, inactive)
+    self.assertEqual(msg.WhichOneof('choice'), 'direct_leaf')
+    self.assertEqual(msg.direct_leaf.value, 7)
+
+    # Deep chain, repeated element, map entry, and singular/repeated extensions.
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    msg.child.child.direct_leaf.value = 1
+    self.assertMergeIntoDescendantRaises(msg, msg.child.child)
+
+    elem = msg.children.add()
+    self.assertMergeIntoDescendantRaises(msg, elem)
+
+    entry = msg.child_map['a']
+    self.assertMergeIntoDescendantRaises(msg, entry)
+
+    ext_sub = msg.Extensions[test_proto2_pb2.ext_child]
+    self.assertMergeIntoDescendantRaises(msg, ext_sub)
+
+    ext_elem = msg.Extensions[test_proto2_pb2.ext_children].add()
+    self.assertMergeIntoDescendantRaises(msg, ext_elem)
+
+  def testMapMergeFromAncestorMapRaises(self):
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    entry = msg.child_map['a']
+    with self.assertRaisesRegex(
+        AssertionError, 'Cannot merge a map into a submessage of itself'
+    ):
+      entry.child_map.MergeFrom(msg.child_map)
+    self.assertEqual(len(entry.child_map), 0)
+
+    # Deeper unset descendant map under `entry.child` must not promote `child`.
+    unset_sub = entry.child
+    with self.assertRaisesRegex(
+        AssertionError, 'Cannot merge a map into a submessage of itself'
+    ):
+      unset_sub.child_map.MergeFrom(msg.child_map)
+    self.assertFalse(entry.HasField('child'))
+
+    # Non-empty destination map keeps its existing contents.
+    entry.child_map['keep'].direct_leaf.value = 99
+    with self.assertRaisesRegex(
+        AssertionError, 'Cannot merge a map into a submessage of itself'
+    ):
+      entry.child_map.MergeFrom(msg.child_map)
+    self.assertEqual(list(entry.child_map.keys()), ['keep'])
+    self.assertEqual(entry.child_map['keep'].direct_leaf.value, 99)
+
+  def testDetachedAndSiblingTargetsSucceed(self):
+    # Cleared singular submessage is detached from `msg`.
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    detached_child = msg.child
+    detached_child.direct_leaf.value = 1
+    msg.ClearField('child')
+    msg.direct_leaf.value = 50
+    detached_child.CopyFrom(msg)
+    self.assertEqual(detached_child.direct_leaf.value, 50)
+    self.assertFalse(msg.HasField('child'))
+
+    # Replaced active oneof arm is detached from `msg`.
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    old_oneof = msg.recursive_choice
+    old_oneof.direct_leaf.value = 1
+    msg.direct_leaf.value = 60
+    old_oneof.CopyFrom(msg)
+    self.assertEqual(old_oneof.direct_leaf.value, 60)
+
+    # Deleted map entry and popped repeated element are detached from `msg`.
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    removed_entry = msg.child_map['a']
+    removed_entry.direct_leaf.value = 1
+    del msg.child_map['a']
+    msg.child_map['b'].direct_leaf.value = 70
+    removed_entry.CopyFrom(msg)
+    self.assertEqual(removed_entry.child_map['b'].direct_leaf.value, 70)
+    removed_entry.child_map.MergeFrom(msg.child_map)
+    self.assertEqual(removed_entry.child_map['b'].direct_leaf.value, 70)
+
+    popped = msg.children.add()
+    popped.direct_leaf.value = 1
+    msg.children.pop()
+    popped.CopyFrom(msg)
+    self.assertEqual(popped.child_map['b'].direct_leaf.value, 70)
+
+    # Sibling map merge (`msg.child.child_map` is not inside `msg.child_map`).
+    msg.child.child_map.MergeFrom(msg.child_map)
+    self.assertEqual(msg.child.child_map['b'].direct_leaf.value, 70)
 
 
 if __name__ == '__main__':

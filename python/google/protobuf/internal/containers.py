@@ -65,6 +65,87 @@ def _CheckNotRepeatedSelfMerge(container: Any, other: Any) -> None:
     raise AssertionError('Cannot merge a repeated field into itself.')
 
 
+def _HasLiveChild(parent: Any, child_listener: Any) -> bool:
+  """Returns whether `parent` currently holds a child with `child_listener`."""
+  # pylint: disable=protected-access
+  for field, val in parent._fields.items():
+    if field.cpp_type != FieldDescriptor.CPPTYPE_MESSAGE:
+      continue
+    if isinstance(val, MessageMap):
+      if any(
+          v._listener_for_children is child_listener
+          for v in val._values.values()
+      ):
+        return True
+    elif isinstance(val, RepeatedCompositeFieldContainer):
+      if any(v._listener_for_children is child_listener for v in val._values):
+        return True
+    elif val._listener_for_children is child_listener:
+      return True
+  return False
+
+
+def _IsDescendantOf(descendant: Any, ancestor: Any) -> bool:
+  """Returns whether `descendant` is a live submessage inside `ancestor`."""
+  # pylint: disable=protected-access
+  ancestor_listener = ancestor._listener_for_children
+  hops = []
+  curr = descendant
+  try:
+    while True:
+      parent = getattr(curr._listener, '_parent_message_weakref', None)
+      if parent is None:
+        return False
+      hops.append((parent, curr._listener_for_children))
+      if parent._listener_for_children is ancestor_listener:
+        return all(_HasLiveChild(p, c) for p, c in hops)
+      curr = parent
+  except ReferenceError:
+    return False
+
+
+def _CheckNotAncestorMapMerge(
+    container: 'MessageMap[Any, Any]', other: Any
+) -> None:
+  """Raises AssertionError if `container` is inside an entry of `other`."""
+  # pylint: disable=protected-access
+  if (
+      not isinstance(other, MessageMap)
+      or not other._values
+      or container._entry_descriptor.fields_by_name['value'].message_type
+      is not other._entry_descriptor.fields_by_name['value'].message_type
+  ):
+    return
+  other_listener = other._message_listener
+  hops = []
+  try:
+    curr = getattr(container._message_listener, '_parent_message_weakref', None)
+    owner = curr
+    while curr is not None:
+      if curr._listener_for_children is other_listener:
+        return
+      parent = getattr(curr._listener, '_parent_message_weakref', None)
+      if parent is None:
+        return
+      if parent._listener_for_children is other_listener:
+        if (
+            any(v is container for v in owner._fields.values())
+            and any(
+                v._listener_for_children is curr._listener_for_children
+                for v in other._values.values()
+            )
+            and all(_HasLiveChild(p, c) for p, c in hops)
+        ):
+          raise AssertionError(
+              'Cannot merge a map into a submessage of itself.'
+          )
+        return
+      hops.append((parent, curr._listener_for_children))
+      curr = parent
+  except ReferenceError:
+    return
+
+
 class BaseContainer(Sequence[_T]):
   """Base container class."""
 
@@ -687,6 +768,7 @@ class MessageMap(MutableMapping[_K, _V]):
   def MergeFrom(self, other: 'MessageMap[_K, _V]') -> None:
     self._AssureWritable()
     _CheckNotSelfMerge(self, other)
+    _CheckNotAncestorMapMerge(self, other)
     # pylint: disable=protected-access
     for key in other._values:
       # According to documentation: "When parsing from the wire or when merging,

@@ -299,7 +299,7 @@ static PyObject* GetOrBuildMessageInDefaultPool(
   CMessage* cmsg = reinterpret_cast<CMessage*>(value.get());
 
   const bool ok = cmsg->WithWrite(false, [&](const WriteAccess& w) {
-    Message* cmsg_message = cmessage::AssureWritable(cmsg, w);
+    Message* cmsg_message = cmsg->TargetMessage(w);
     const Reflection* reflection = message.GetReflection();
     const UnknownFieldSet& unknown_fields(
         reflection->GetUnknownFields(message));
@@ -370,29 +370,27 @@ static PyObject* CopyToPythonProto(const DescriptorClass* descriptor,
       DescriptorProtoClass::default_instance().GetDescriptor();
   CMessage* message = reinterpret_cast<CMessage*>(target);
   if (!PyObject_TypeCheck(target, CMessage_Type) ||
-      message->message->GetDescriptor() != self_descriptor) {
+      message->GetDescriptor() != self_descriptor) {
     PyErr_Format(PyExc_TypeError, "Not a %s message",
                  std::string(self_descriptor->full_name()).c_str());
     return nullptr;
   }
-  Message* mutable_message = cmessage::AssureWritable(message);
-  if (mutable_message == nullptr) {
-    return nullptr;
-  }
-  DescriptorProtoClass* descriptor_message =
-      static_cast<DescriptorProtoClass*>(mutable_message);
-  descriptor->CopyTo(descriptor_message);
-  // Custom options might in unknown extensions. Reparse
-  // the descriptor_message. Can't skip reparse when options unknown
-  // fields is empty, because they might in sub descriptors' options.
-  PyMessageFactory* message_factory =
-      GetDefaultDescriptorPool()->py_message_factory;
-  if (!Reparse(message_factory, *descriptor_message, descriptor_message)) {
-    PyErr_Format(PyExc_ValueError, "Error reparsing descriptor message");
-    return nullptr;
-  }
+  return message->WithWrite(nullptr, [&](const WriteAccess& w) -> PyObject* {
+    DescriptorProtoClass* descriptor_message =
+        static_cast<DescriptorProtoClass*>(message->TargetMessage(w));
+    descriptor->CopyTo(descriptor_message);
+    // Custom options might in unknown extensions. Reparse
+    // the descriptor_message. Can't skip reparse when options unknown
+    // fields is empty, because they might in sub descriptors' options.
+    PyMessageFactory* message_factory =
+        GetDefaultDescriptorPool()->py_message_factory;
+    if (!Reparse(message_factory, *descriptor_message, descriptor_message)) {
+      PyErr_Format(PyExc_ValueError, "Error reparsing descriptor message");
+      return nullptr;
+    }
 
-  Py_RETURN_NONE;
+    Py_RETURN_NONE;
+  });
 }
 
 // All Descriptors classes share the same memory layout.

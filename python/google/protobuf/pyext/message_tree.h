@@ -47,7 +47,9 @@
 
 #include <atomic>
 #include <cstddef>
+#include <utility>
 
+#include "absl/log/absl_check.h"
 #include "google/protobuf/pyext/free_threading/access_guard.h"
 
 namespace google {
@@ -77,9 +79,9 @@ namespace python {
 //
 // To prevent this without blocking locks on `GetTree()`, the newly allocated
 // `MessageTree` takes a reference to old_tree as its prev_tree
-// (`new MessageTree(old_tree)`). This guarantees that old_tree remains
-// alive in memory for at least as long as any detached node in new_tree is
-// alive.
+// (`MessageTree::WithSplit()`). This guarantees that old_tree
+// remains alive in memory for at least as long as any detached node in
+// new_tree is alive.
 //
 // Example (creating and sharing a `MessageTree`):
 //
@@ -97,18 +99,41 @@ namespace python {
 // Example (detaching a subtree into a new `MessageTree` while holding a write
 // lock on the old tree's guard):
 //
-//   MessageTree* old_tree = parent->GetTree();
-//   MessageTree* new_tree = new MessageTree(old_tree);  // Refs old_tree.
-//   // Points child and all of its descendants at new_tree:
-//   cmessage::UpdateSubtreeTree(child, new_tree);
+//   // See WithSplitTree() in container_base.h.
+//   WithSplitTree(parent->GetTree(), old_lock, /*src=*/nullptr,
+//                 [&](MessageTree* new_tree, const WriteAccess& new_w) {
+//                   // Points child and all of its descendants at new_tree.
+//                   // child is now a root, so it owns new_tree's initial
+//                   // reference:
+//                   child->MoveToTree(new_tree, old_lock, new_w);
+//                 });
 class MessageTree {
  public:
   // Creates a new tree with a reference count of 1, owned by the caller.
   MessageTree() = default;
 
-  // Creates the tree for a subtree being detached from `prev`. Takes a new
-  // reference to `prev`, keeping it alive for as long as this tree is alive.
-  explicit MessageTree(MessageTree* prev) : prev_tree_(prev->Ref()) {}
+  // MessageTree::WithSplit()
+  //
+  // The only way to create a tree for a subtree being detached from `prev` by
+  // the holder of `prev_lock`. The new tree has a reference count of 1 and
+  // takes a new reference to `prev`, keeping it alive for as long as the new
+  // tree is alive. Its guard is born write-locked as a split of `prev_lock`, so
+  // the subtree is never unlocked while it moves.
+  //
+  // Invokes f(MessageTree* new_tree, const WriteAccess& new_lock), then gives
+  // up new_lock as directed by follower(new_tree) (see
+  // AccessGuard::WithSplitWrite()), and returns f's result. f must hand the
+  // new tree's initial reference to the root of the detached subtree, which
+  // must stay alive until WithSplit() returns. Callers normally use
+  // WithSplitTree() (container_base.h), which supplies the follower.
+  template <typename F, typename Follower>
+  static auto WithSplit(MessageTree* prev, const WriteAccess& prev_lock, F&& f,
+                        Follower&& follower) {
+    MessageTree* tree = new MessageTree(prev, prev_lock);
+    return tree->guard_.WithSplitWrite(
+        [&](const WriteAccess& lock) { return std::forward<F>(f)(tree, lock); },
+        [&]() -> const ReadAccess* { return follower(tree); });
+  }
 
   MessageTree(const MessageTree&) = delete;
   MessageTree& operator=(const MessageTree&) = delete;
@@ -139,6 +164,12 @@ class MessageTree {
   }
 
  private:
+  // Only WithSplit() may create a born-locked tree.
+  MessageTree(MessageTree* prev, const WriteAccess& prev_lock)
+      : guard_(prev_lock), prev_tree_(prev->Ref()) {
+    ABSL_DCHECK_EQ(prev_lock.guard(), &prev->guard_);
+  }
+
   // Only Unref() may destroy a MessageTree.
   ~MessageTree() = default;
 

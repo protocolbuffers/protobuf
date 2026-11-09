@@ -16,12 +16,14 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/pyext/free_threading/access_guard.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/message_factory.h"
 #include "google/protobuf/pyext/repeated_composite_container.h"
@@ -86,7 +88,9 @@ struct MapIterator {
   uint64_t version;
 };
 
-const Message* MapContainer::GetReadOnlyMessage() { return parent->message; }
+const Message* MapContainer::GetReadOnlyMessage() {
+  return parent->DeprecatedUnguardedMessage();
+}
 
 Message* MapContainer::GetMutableMessage() {
   return cmessage::AssureWritable(parent);
@@ -299,7 +303,7 @@ static MapContainer* GetMap(PyObject* obj) {
 
 Py_ssize_t MapReflectionFriend::Length(PyObject* _self) {
   MapContainer* self = GetMap(_self);
-  const google::protobuf::Message* message = self->parent->message;
+  const google::protobuf::Message* message = self->parent->DeprecatedUnguardedMessage();
   auto map =
       message->GetReflection()->GetMap(*message, self->parent_field_descriptor);
   return map.ok() ? map->size() : 0;
@@ -337,15 +341,34 @@ PyObject* MapReflectionFriend::MergeFrom(PyObject* _self, PyObject* arg) {
     PyErr_SetString(PyExc_AttributeError, "Map fields have incompatible types");
     return nullptr;
   }
+  int ok = self->parent->WithRead(-1, [&](const ReadAccess& r) {
+    if (CheckFrozen(self->parent, r, "Message is immutable.") < 0) {
+      return -1;
+    }
+    // Externally owned root messages store Py_None as their parent sentinel.
+    for (const CMessage* curr = self->parent;
+         curr != nullptr && reinterpret_cast<const PyObject*>(curr) != Py_None;
+         curr = curr->parent) {
+      if (curr->parent == other_map->parent &&
+          curr->parent_field_descriptor == other_map->parent_field_descriptor) {
+        PyErr_SetString(PyExc_AssertionError,
+                        "Cannot merge a map into a submessage of itself.");
+        return -1;
+      }
+    }
+    return 0;
+  });
+  if (ok < 0) return nullptr;
   Message* message = self->GetMutableMessage();
   if (message == nullptr) return nullptr;
-  const Message* other_message = other_map->parent->message;
+  const Message* other_message =
+      other_map->parent->DeprecatedUnguardedMessage();
   const Reflection* reflection = message->GetReflection();
-  const Reflection* other_reflection = other_message->GetReflection();
   internal::MapFieldBase* field =
       reflection->MutableMapData(message, self->parent_field_descriptor);
-  const internal::MapFieldBase* other_field = other_reflection->GetMapData(
-      *other_message, other_map->parent_field_descriptor);
+  const internal::MapFieldBase* other_field =
+      other_message->GetReflection()->GetMapData(
+          *other_message, other_map->parent_field_descriptor);
   if (field == other_field) {
     // Self-merge is not supported (MapFieldBase::MergeFrom() would destroy
     // entries of the map that it is iterating over). Raise AssertionError, as
@@ -361,7 +384,7 @@ PyObject* MapReflectionFriend::MergeFrom(PyObject* _self, PyObject* arg) {
   if (CMessage::SubMessagesMap* subs = self->parent->child_submessages.TryGet();
       subs != nullptr && !subs->IsEmpty() &&
       self_entry->map_value()->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-    auto other_entries = other_reflection->GetMap(
+    auto other_entries = other_message->GetReflection()->GetMap(
         *other_message, other_map->parent_field_descriptor);
     if (!other_entries.ok()) {
       PyErr_SetString(PyExc_SystemError,
@@ -374,11 +397,21 @@ PyObject* MapReflectionFriend::MergeFrom(PyObject* _self, PyObject* arg) {
       PyErr_SetString(PyExc_SystemError, entries.status().ToString().c_str());
       return nullptr;
     }
+    std::vector<Message*> to_detach;
     for (auto entry : *other_entries) {
       if (auto it = entries->find(entry.key()); it != entries->end()) {
-        self->parent->DetachSubMessage(it->value().MutableMessageValue());
+        to_detach.push_back(it->value().MutableMessageValue());
       }
     }
+    for (Message* sub : to_detach) {
+      self->parent->DetachSubMessage(sub);
+    }
+    // DetachSubMessage swaps the overwritten entry's Message* when it has a
+    // live wrapper, which may rebind other_map->parent (e.g. merging a child
+    // entry's map into its parent map).
+    other_message = other_map->parent->DeprecatedUnguardedMessage();
+    other_field = other_message->GetReflection()->GetMapData(
+        *other_message, other_map->parent_field_descriptor);
   }
   field->MergeFrom(message->GetArena(), *other_field);
   self->version++;
@@ -388,7 +421,7 @@ PyObject* MapReflectionFriend::MergeFrom(PyObject* _self, PyObject* arg) {
 int MapReflectionFriend::Contains(PyObject* _self, PyObject* key) {
   MapContainer* self = GetMap(_self);
 
-  const Message* message = self->parent->message;
+  const Message* message = self->parent->DeprecatedUnguardedMessage();
   const Reflection* reflection = message->GetReflection();
   MapKey map_key;
 
@@ -408,7 +441,7 @@ int MapReflectionFriend::Contains(PyObject* _self, PyObject* key) {
 
 MapContainer* NewScalarMapContainer(
     CMessage* parent, const google::protobuf::FieldDescriptor* parent_field_descriptor) {
-  if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
+  if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent)) {
     return nullptr;
   }
 
@@ -661,7 +694,7 @@ static PyObject* GetCMessage(MessageMapContainer* self, const Message* message,
 MessageMapContainer* NewMessageMapContainer(
     CMessage* parent, const google::protobuf::FieldDescriptor* parent_field_descriptor,
     CMessageClass* message_class) {
-  if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
+  if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent)) {
     return nullptr;
   }
 
