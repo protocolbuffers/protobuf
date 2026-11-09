@@ -27,12 +27,27 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class LargeEnumTest {
   @Test
-  public void enumWithAliases_noStaticInitProblem() {
+  public void enumWithAliases_noStaticInitProblem() throws Exception {
     // If there is a cyclical static init problem, this will fail with TEST_ENUM_X_ALIAS being null.
     // Note that the test may happen to pass if another test happens to touch LargeOpenAliasingEnum
     // first, but it should be caught by the order-dependent test checker if that regresses.
     assertThat(LargeOpenAliasingEnum.LARGE_ENUM2).isNotNull();
     assertThat(LargeOpenAliasingEnum.LARGE_ENUM2_ALIAS).isNotNull();
+    assertThat(LargeOpenAliasingEnum.LARGE_ENUM1_ALIAS)
+        .isSameInstanceAs(LargeOpenAliasingEnum.LARGE_ENUM1);
+    assertThat(LargeOpenAliasingEnum.class.getField("LARGE_ENUM1_ALIAS").getDeclaringClass())
+        .isEqualTo(LargeOpenAliasingEnum.class.getField("LARGE_ENUM1").getDeclaringClass());
+    assertThat(LargeOpenAliasingEnum.class.getField("LARGE_ENUM1_ALIAS_VALUE").getDeclaringClass())
+        .isEqualTo(LargeOpenAliasingEnum.class.getField("LARGE_ENUM1_VALUE").getDeclaringClass());
+    assertThat(LargeOpenAliasingEnum.LARGE_ENUM997_ALIAS)
+        .isSameInstanceAs(LargeOpenAliasingEnum.LARGE_ENUM997);
+    assertThat(LargeOpenAliasingEnum.class.getField("LARGE_ENUM997_ALIAS").getDeclaringClass())
+        .isEqualTo(LargeOpenAliasingEnum.class.getField("LARGE_ENUM997").getDeclaringClass());
+    assertThat(
+            LargeOpenAliasingEnum.class.getField("LARGE_ENUM997_ALIAS_VALUE").getDeclaringClass())
+        .isEqualTo(LargeOpenAliasingEnum.class.getField("LARGE_ENUM997_VALUE").getDeclaringClass());
+    assertThat(LargeOpenAliasingEnum.class.getField("LARGE_ENUM997").getDeclaringClass())
+        .isNotEqualTo(LargeOpenAliasingEnum.class.getField("LARGE_ENUM996").getDeclaringClass());
   }
 
   @Test
