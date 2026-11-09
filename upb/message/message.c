@@ -229,8 +229,7 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
   // TODO: b/376969853 - use iterator API
   uint32_t size = in ? in->size : 0;
   for (size_t i = 0; i < size; i++) {
-    const upb_Extension* ext =
-        upb_TaggedAuxPtr_TryGetExtension(in->aux_data[i]);
+    const upb_AuxField* ext = upb_TaggedAuxPtr_TryGetAuxField(in->aux_data[i]);
     if (!ext) continue;
     const upb_MiniTableField* f = upb_Extension_MiniTableField(ext);
     const upb_MiniTable* m2 = upb_MiniTable_SubMessage(f);

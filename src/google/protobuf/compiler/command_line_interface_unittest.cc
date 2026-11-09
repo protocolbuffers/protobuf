@@ -3436,6 +3436,69 @@ TEST_F(CommandLineInterfaceTest, OptionDependencies_CustomErrorMessage) {
   ExpectErrorText("foo.proto: Bla \"bar.proto\" Bla\n");
 }
 
+TEST_F(CommandLineInterfaceTest,
+       AllowedPublicImports_EmptyListDisallowsPublicImport) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "import public \"bar.proto\";\n");
+  CreateTempFile("bar.proto", "syntax = \"proto2\";\n");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--allowed_public_imports= foo.proto");
+
+  ExpectErrorText(
+      "The BUILD file does not export the proto_library() associated with the "
+      "public import of \"bar.proto\". Please remove the public import from "
+      "the .proto file or add the associated proto_library() to the exports "
+      "declaration in the BUILD file.\n");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       AllowedPublicImports_NonEmptyListDisallowsUnlistedPublicImport) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "import public \"bar.proto\";\n"
+                 "import public \"baz.proto\";\n");
+  CreateTempFile("bar.proto", "syntax = \"proto2\";\n");
+  CreateTempFile("baz.proto", "syntax = \"proto2\";\n");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--allowed_public_imports=bar.proto foo.proto");
+
+  ExpectErrorText(
+      "The BUILD file does not export the proto_library() associated with the "
+      "public import of \"baz.proto\". Please remove the public import from "
+      "the .proto file or add the associated proto_library() to the exports "
+      "declaration in the BUILD file.\n");
+}
+
+TEST_F(CommandLineInterfaceTest, AllowedPublicImports_AllowsListedImports) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "import public \"bar.proto\";\n"
+                 "import public \"baz.proto\";\n");
+  CreateTempFile("bar.proto", "syntax = \"proto2\";\n");
+  CreateTempFile("baz.proto", "syntax = \"proto2\";\n");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--allowed_public_imports bar.proto:baz.proto foo.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest,
+       AllowedPublicImports_AllowsInputFilesInSameCompilation) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "import public \"bar.proto\";\n");
+  CreateTempFile("bar.proto", "syntax = \"proto2\";\n");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--allowed_public_imports= foo.proto bar.proto");
+
+  ExpectNoErrors();
+}
+
 TEST_F(CommandLineInterfaceTest, CwdRelativeInputs) {
   // Test that we can accept working-directory-relative input files.
 
@@ -4829,6 +4892,51 @@ TEST_F(CommandLineInterfaceTest, PluginReceivesJsonName) {
 
   Run("protocol_compiler --plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
 
+  ExpectErrorSubstring("Saw json_name: true");
+}
+
+TEST_F(CommandLineInterfaceTest, DescriptorSetInStripsDefaultJsonName) {
+  CreateTempFile("default_json.proto",
+                 "syntax = \"proto2\";\n"
+                 "package default_pkg;\n"
+                 "message MockCodeGenerator_HasJsonName {\n"
+                 "  optional int32 value = 1;\n"
+                 "}\n");
+  CreateTempFile("custom_json.proto",
+                 "syntax = \"proto2\";\n"
+                 "package custom_pkg;\n"
+                 "message MockCodeGenerator_HasJsonName {\n"
+                 "  optional int32 value = 1 [json_name = \"custom\"];\n"
+                 "}\n");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptors.bin "
+      "--proto_path=$tmpdir default_json.proto custom_json.proto");
+  ExpectNoErrors();
+
+  // Generators opting into StripDefaultJsonName() see has_json_name == false
+  // for default json_name and has_json_name == true for custom json_name.
+  SetMockGeneratorTestCase("strip_default_json_name");
+  Run("protocol_compiler --plug_out=$tmpdir --proto_path=$tmpdir "
+      "default_json.proto");
+  ExpectErrorSubstring("Saw json_name: false");
+  Run("protocol_compiler --plug_out=$tmpdir "
+      "--descriptor_set_in=$tmpdir/descriptors.bin default_json.proto");
+  ExpectErrorSubstring("Saw json_name: false");
+  Run("protocol_compiler --plug_out=$tmpdir --proto_path=$tmpdir "
+      "custom_json.proto");
+  ExpectErrorSubstring("Saw json_name: true");
+  Run("protocol_compiler --plug_out=$tmpdir "
+      "--descriptor_set_in=$tmpdir/descriptors.bin custom_json.proto");
+  ExpectErrorSubstring("Saw json_name: true");
+
+  // Other C++ plugins (StripDefaultJsonName() == false) continue to receive
+  // json_name on all fields.
+  SetMockGeneratorTestCase("");
+  Run("protocol_compiler --plug_out=$tmpdir --proto_path=$tmpdir "
+      "default_json.proto");
+  ExpectErrorSubstring("Saw json_name: true");
+  Run("protocol_compiler --plug_out=$tmpdir "
+      "--descriptor_set_in=$tmpdir/descriptors.bin default_json.proto");
   ExpectErrorSubstring("Saw json_name: true");
 }
 

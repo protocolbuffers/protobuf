@@ -212,6 +212,7 @@ void upb_DecodeFast_ClosedEnum(upb_Decoder* d, const char** ptr,
     }
     bool next_tag_matches;
     do {
+      upb_DecodeFast_AssumeArrayIsSeparate(d, &arr);
       uint64_t val;
       p = upb_WireReader_ReadVarint(p, &val, &d->input);
       if (UPB_UNLIKELY(!p)) {

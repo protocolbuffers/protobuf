@@ -24,10 +24,10 @@
 #include "absl/log/absl_log.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/types/span.h"
-#include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arenaz_sampler.h"
+#include "google/protobuf/memory_align.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/serial_arena.h"
 #include "google/protobuf/string_block.h"
@@ -64,7 +64,7 @@ MemoryAllocationFailure() noexcept {
   ABSL_LOG(FATAL) << "Failed to allocate memory.";
 }
 
-static_assert(__STDCPP_DEFAULT_NEW_ALIGNMENT__ >= ArenaAlignDefault::align,
+static_assert(__STDCPP_DEFAULT_NEW_ALIGNMENT__ >= ArenaAlignDefault{}.align,
               "operator new does not guarantee the arena's block alignment");
 
 SizedPtr AllocateMemory(const AllocationPolicy& policy, size_t size) {
@@ -74,7 +74,7 @@ SizedPtr AllocateMemory(const AllocationPolicy& policy, size_t size) {
   if (ABSL_PREDICT_FALSE(result.p == nullptr)) {
     MemoryAllocationFailure();
   }
-  ABSL_DCHECK(ArenaAlignDefault::IsAligned(result.p));
+  ABSL_DCHECK(ArenaAlignDefault{}.IsAligned(result.p));
   return result;
 }
 
@@ -228,7 +228,7 @@ SerialArena::SerialArena(FirstSerialArena, SizedPtr mem,
                          const AllocationPolicy& policy,
                          ThreadSafeArena& parent)
     : parent_(parent) {
-  ABSL_DCHECK(mem.p == nullptr || ArenaAlignDefault::IsAligned(mem.p));
+  ABSL_DCHECK(mem.p == nullptr || ArenaAlignDefault{}.IsAligned(mem.p));
 
   // If the user-provided block is no larger than the header, it is not suitable
   // for use as an arena block. Throw it away and allocate a block below.
@@ -639,8 +639,7 @@ void ThreadSafeArena::InitializeWithPolicy(const AllocationPolicy& policy) {
     return;
   }
   new (p) AllocationPolicy{policy};
-  ABSL_DCHECK_EQ(0u,
-                 reinterpret_cast<uintptr_t>(p) % alignof(AllocationPolicy));
+  ABSL_DCHECK(MemoryAlign{alignof(AllocationPolicy)}.IsAligned(p));
   alloc_policy_.set_policy(reinterpret_cast<AllocationPolicy*>(p));
   ABSL_DCHECK_POLICY_FLAGS_();
 

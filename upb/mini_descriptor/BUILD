@@ -95,6 +95,23 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "build_enum_test",
+    srcs = ["build_enum_test.cc"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
+    deps = [
+        ":internal",
+        ":mini_descriptor",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/mini_table",
+        "//upb/port",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 filegroup(
     name = "source_files",
     srcs = glob(

@@ -137,6 +137,9 @@ class MessageGenerator {
   void GenerateMapEntryClassDefinition(io::Printer* p);
   void GenerateAnyMethodDefinition(io::Printer* p);
   void GenerateImplDefinition(io::Printer* p);
+  void GenerateSplitMembers(io::Printer* p);
+  void GenerateSplitMethods(io::Printer* p);
+  void GenerateSplitHelpers(io::Printer* p);
   void GenerateClassSpecificMergeImpl(io::Printer* p);
   void GenerateMergeImplForField(io::Printer* p, const FieldDescriptor* field,
                                  bool is_split, int cached_has_word_index);

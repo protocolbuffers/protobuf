@@ -77,6 +77,7 @@
 #include "google/protobuf/descriptor_lite.h"
 #include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/extension_set.h"
 #include "google/protobuf/feature_resolver.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/generated_message_util.h"
@@ -86,6 +87,7 @@
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/json_enumvalue_options.pb.h"
+#include "google/protobuf/memory_align.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/naming_style.h"
@@ -93,6 +95,7 @@
 #include "google/protobuf/option_interpreter.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/private_access.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/symbol.h"
 #include "google/protobuf/symbol_checker.h"
@@ -137,7 +140,7 @@ bool IsLegacyJsonFieldConflictEnabled(const OptionsT& options) {
 template <int R>
 constexpr size_t RoundUpTo(size_t n) {
   static_assert((R & (R - 1)) == 0, "Must be power of two");
-  return (n + (R - 1)) & ~(R - 1);
+  return internal::MemoryAlign{R}.Ceil(n);
 }
 
 constexpr size_t Max(size_t a, size_t b) { return a > b ? a : b; }
@@ -1579,6 +1582,14 @@ class DescriptorPool::Tables {
 
 
  private:
+  friend class DescriptorPool;
+  // The mutex is placed here rather than directly in DescriptorPool to avoid
+  // false sharing: atomic lock operations do not invalidate the cache line of
+  // DescriptorPool containing read-only fields (e.g. tables_).
+  //
+  // It should be accessed via DescriptorPool::mutex().
+  mutable absl::Mutex mutex_dont_use_directly_;
+
   // All memory allocated in the pool.  Must be first as other objects can
   // point into these.
   struct MiscDeleter {
@@ -1689,9 +1700,26 @@ class DescriptorPool::Tables::ScopedBuildState {
   BuildState state_;
 };
 
-DescriptorPool::Tables::Tables() {}
+DescriptorPool::Tables::Tables() = default;
 
 DescriptorPool::Tables::~Tables() { ABSL_DCHECK(build_state_ == nullptr); }
+
+absl::Mutex* DescriptorPool::mutex() const {
+  return fallback_database_ != nullptr ? &tables_->mutex_dont_use_directly_
+                                       : nullptr;
+}
+
+void DescriptorPool::AssertHeld() const {
+  if (absl::Mutex* mu = mutex()) {
+    mu->AssertHeld();
+  }
+}
+
+void DescriptorPool::AssertReaderHeld() const {
+  if (absl::Mutex* mu = mutex()) {
+    mu->AssertReaderHeld();
+  }
+}
 
 FileDescriptorTables::FileDescriptorTables() = default;
 
@@ -1775,6 +1803,24 @@ inline auto FileDescriptorTables::FindNestedSymbol(
                                         : K::IterToSymbol(it, flat_buffer_);
 }
 
+namespace {
+class ABSL_SCOPED_LOCKABLE ReaderMutexLockMaybe {
+ public:
+  explicit ReaderMutexLockMaybe(absl::Mutex* mu) ABSL_SHARED_LOCK_FUNCTION(mu)
+      : mu_(mu) {
+    if (mu_ != nullptr) mu_->lock_shared();
+  }
+  ReaderMutexLockMaybe(const ReaderMutexLockMaybe&) = delete;
+  ReaderMutexLockMaybe& operator=(const ReaderMutexLockMaybe&) = delete;
+  ~ReaderMutexLockMaybe() ABSL_UNLOCK_FUNCTION() {
+    if (mu_ != nullptr) mu_->unlock_shared();
+  }
+
+ private:
+  absl::Mutex* const mu_;
+};
+}  // namespace
+
 template <typename FindInTable, typename FindInUnderlay,
           typename TryFindInFallbackDb>
 auto DescriptorPool::LookupWithFallback(
@@ -1783,8 +1829,8 @@ auto DescriptorPool::LookupWithFallback(
   using ResultT = decltype(find_in_table(*tables_));
 
   // 1. Fast path: reader lock on cached tables.
-  if (mutex_ != nullptr) {
-    absl::ReaderMutexLock lock(*mutex_);
+  if (absl::Mutex* mu = mutex()) {
+    absl::ReaderMutexLock lock(*mu);
     ResultT result = find_in_table(*tables_);
     if (result != nullptr) return result;
   }
@@ -1793,7 +1839,7 @@ auto DescriptorPool::LookupWithFallback(
   DeferredValidation deferred_validation(this);
   ResultT result{};
   {
-    absl::MutexLockMaybe lock(mutex_);
+    absl::MutexLockMaybe lock(mutex());
     result = find_in_table(*tables_);
     if (result == nullptr && underlay_ != nullptr) {
       result = find_in_underlay(*underlay_);
@@ -1972,7 +2018,7 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
 
     {
       // Must lock the pool because we will do allocations in the shared arena.
-      absl::MutexLockMaybe l2(pool->mutex_);
+      absl::MutexLockMaybe l2(pool->mutex());
       ABSL_CHECK(alloc.FinalizePlanning(tables));
     }
     EnumValueDescriptor* result = alloc.AllocateArray<EnumValueDescriptor>(1);
@@ -2197,8 +2243,7 @@ absl::string_view DescriptorPool::ErrorCollector::ErrorLocationName(
 }
 
 DescriptorPool::DescriptorPool()
-    : mutex_(nullptr),
-      fallback_database_(nullptr),
+    : fallback_database_(nullptr),
       default_error_collector_(nullptr),
       underlay_(nullptr),
       tables_(new Tables),
@@ -2213,8 +2258,7 @@ DescriptorPool::DescriptorPool()
 
 DescriptorPool::DescriptorPool(DescriptorDatabase* fallback_database,
                                ErrorCollector* error_collector)
-    : mutex_(new absl::Mutex),
-      fallback_database_(fallback_database),
+    : fallback_database_(fallback_database),
       default_error_collector_(error_collector),
       underlay_(nullptr),
       tables_(new Tables),
@@ -2228,8 +2272,7 @@ DescriptorPool::DescriptorPool(DescriptorDatabase* fallback_database,
       enforce_naming_style_(false) {}
 
 DescriptorPool::DescriptorPool(const DescriptorPool* underlay)
-    : mutex_(nullptr),
-      fallback_database_(nullptr),
+    : fallback_database_(nullptr),
       default_error_collector_(nullptr),
       underlay_(underlay),
       tables_(new Tables),
@@ -2242,9 +2285,7 @@ DescriptorPool::DescriptorPool(const DescriptorPool* underlay)
       deprecated_legacy_json_field_conflicts_(false),
       enforce_naming_style_(false) {}
 
-DescriptorPool::~DescriptorPool() {
-  if (mutex_ != nullptr) delete mutex_;
-}
+DescriptorPool::~DescriptorPool() = default;
 
 // DescriptorPool::BuildFile() defined later.
 // DescriptorPool::BuildFileCollectingErrors() defined later.
@@ -2278,7 +2319,7 @@ bool DescriptorPool::IsReadyForCheckingDescriptorExtDecl(
 void DescriptorPool::ClearDirectInputFiles() { direct_input_files_.clear(); }
 
 bool DescriptorPool::InternalIsFileLoaded(absl::string_view filename) const {
-  absl::MutexLockMaybe lock(mutex_);
+  absl::MutexLockMaybe lock(mutex());
   return tables_->FindFile(filename) != nullptr;
 }
 
@@ -2350,7 +2391,7 @@ void DescriptorPool::InternalAddGeneratedFile(
   // Therefore, when we parse one, we have to be very careful to avoid using
   // any descriptor-based operations, since this might cause infinite recursion
   // or deadlock.
-  absl::MutexLockMaybe lock(internal_generated_pool()->mutex_);
+  absl::MutexLockMaybe lock(internal_generated_pool()->mutex());
   ABSL_CHECK(GeneratedDatabase()->Add(encoded_file_descriptor, size));
 }
 
@@ -2443,6 +2484,7 @@ const FieldDescriptor* DescriptorPool::FindExtensionByNumber(
 
 const FieldDescriptor* DescriptorPool::InternalFindExtensionByNumberNoLock(
     const Descriptor* extendee, int number) const {
+  AssertReaderHeld();
   if (extendee->extension_range_count() == 0) return nullptr;
 
   const FieldDescriptor* result = tables_->FindExtension(extendee, number);
@@ -2451,6 +2493,7 @@ const FieldDescriptor* DescriptorPool::InternalFindExtensionByNumberNoLock(
   }
 
   if (underlay_ != nullptr) {
+    ReaderMutexLockMaybe lock(underlay_->mutex());
     result = underlay_->InternalFindExtensionByNumberNoLock(extendee, number);
     if (result != nullptr) return result;
   }
@@ -2492,7 +2535,7 @@ void DescriptorPool::FindAllExtensions(
   DeferredValidation deferred_validation(this);
   std::vector<const FieldDescriptor*> extensions;
   {
-    absl::MutexLockMaybe lock(mutex_);
+    absl::MutexLockMaybe lock(mutex());
 
     // Initialize tables_->extensions_ from the fallback database first
     // (but do this only once per descriptor).
@@ -2777,6 +2820,7 @@ bool DescriptorPool::TryFindFileInFallbackDatabase(
 }
 
 bool DescriptorPool::IsSubSymbolOfBuiltType(absl::string_view name) const {
+  AssertReaderHeld();
   for (size_t pos = name.find('.'); pos != name.npos;
        pos = name.find('.', pos + 1)) {
     auto prefix = name.substr(0, pos);
@@ -2792,6 +2836,7 @@ bool DescriptorPool::IsSubSymbolOfBuiltType(absl::string_view name) const {
   }
   if (underlay_ != nullptr) {
     // Check to see if any prefix of this symbol exists in the underlay.
+    ReaderMutexLockMaybe lock(underlay_->mutex());
     return underlay_->IsSubSymbolOfBuiltType(name);
   }
   return false;
@@ -4263,7 +4308,7 @@ const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
       << "Cannot call BuildFile on a DescriptorPool that uses a "
          "DescriptorDatabase.  You must instead find a way to get your file "
          "into the underlying database.";
-  ABSL_CHECK(mutex_ == nullptr);  // Implied by the above ABSL_CHECK.
+  ABSL_CHECK(mutex() == nullptr);  // Implied by the above ABSL_CHECK.
   build_started_ = true;
   DeferredValidation deferred_validation(this, error_collector);
   const FileDescriptor* file;
@@ -4281,7 +4326,7 @@ const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
 
 const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
     const FileDescriptorProto& proto) const {
-  mutex_->AssertHeld();
+  AssertHeld();
   build_started_ = true;
   if (tables_->IsKnownBadFile(proto.name())) {
     return nullptr;
@@ -4365,13 +4410,12 @@ const FeatureSetDefaults& DescriptorPool::GetFeatureSetDefaults() const {
 
 bool DescriptorPool::ResolvesFeaturesForImpl(int extension_number) const {
   for (const auto& edition_default : GetFeatureSetDefaults().defaults()) {
-    std::vector<const FieldDescriptor*> fields;
-    auto features = edition_default.fixed_features();
-    features.MergeFrom(edition_default.overridable_features());
-    features.GetReflection()->ListFields(features, &fields);
-    if (absl::c_find_if(fields, [&](const FieldDescriptor* field) {
-          return field->number() == extension_number;
-        }) == fields.end()) {
+    if (!internal::PrivateAccess::GetExtensionSet(
+             edition_default.fixed_features())
+             .Has(extension_number) &&
+        !internal::PrivateAccess::GetExtensionSet(
+             edition_default.overridable_features())
+             .Has(extension_number)) {
       return false;
     }
   }
@@ -4509,9 +4553,9 @@ void internal::DescriptorBuilder::RecordPublicOptionDependencies(
 
 Symbol internal::DescriptorBuilder::FindSymbolNotEnforcingDepsHelper(
     const DescriptorPool* pool, const absl::string_view name, bool build_it) {
-  // If we are looking at an underlay, we must lock its mutex_, since we are
+  // If we are looking at an underlay, we must lock its mutex, since we are
   // accessing the underlay's tables_ directly.
-  absl::MutexLockMaybe lock((pool == pool_) ? nullptr : pool->mutex_);
+  absl::MutexLockMaybe lock((pool == pool_) ? nullptr : pool->mutex());
 
   Symbol result = pool->tables_->FindSymbol(name);
   if (result.IsNull() && pool->underlay_ != nullptr) {
@@ -4712,15 +4756,13 @@ static bool ValidateQualifiedName(absl::string_view name) {
 
 Symbol DescriptorPool::NewPlaceholder(absl::string_view name,
                                       PlaceholderType placeholder_type) const {
-  absl::MutexLockMaybe lock(mutex_);
+  absl::MutexLockMaybe lock(mutex());
   return NewPlaceholderWithMutexHeld(name, placeholder_type);
 }
 
 Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
     absl::string_view name, PlaceholderType placeholder_type) const {
-  if (mutex_) {
-    mutex_->AssertHeld();
-  }
+  AssertHeld();
   // Compute names.
   absl::string_view placeholder_full_name;
   absl::string_view placeholder_name;
@@ -4845,7 +4887,7 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
 
 FileDescriptor* DescriptorPool::NewPlaceholderFile(
     const absl::string_view name) const {
-  absl::MutexLockMaybe lock(mutex_);
+  absl::MutexLockMaybe lock(mutex());
   internal::FlatAllocator alloc;
   alloc.PlanArray<FileDescriptor>(1);
   alloc.PlanArray<std::string>(1);
@@ -4856,9 +4898,7 @@ FileDescriptor* DescriptorPool::NewPlaceholderFile(
 
 FileDescriptor* DescriptorPool::NewPlaceholderFileWithMutexHeld(
     const absl::string_view name, internal::FlatAllocator& alloc) const {
-  if (mutex_) {
-    mutex_->AssertHeld();
-  }
+  AssertHeld();
   FileDescriptor* placeholder = alloc.AllocateArray<FileDescriptor>(1);
   memset(static_cast<void*>(placeholder), 0, sizeof(*placeholder));
 

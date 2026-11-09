@@ -15466,6 +15466,33 @@ TEST_F(DescriptorPoolFeaturesTest, ResolvesFeaturesFor) {
   EXPECT_FALSE(pool_.ResolvesFeaturesFor(pb::cpp));
 }
 
+TEST_F(DescriptorPoolFeaturesTest, ResolvesFeaturesForPartialDefaults) {
+  FeatureSetDefaults defaults = ParseTextOrDie(R"pb(
+    defaults {
+      edition: EDITION_PROTO2
+      fixed_features {
+        [pb.test] {}
+      }
+      overridable_features {
+        [pb.cpp] {}
+      }
+    }
+    defaults {
+      edition: EDITION_PROTO3
+      overridable_features {
+        [pb.test] {}
+      }
+    }
+    minimum_edition: EDITION_PROTO2
+    maximum_edition: EDITION_PROTO3
+  )pb");
+  ASSERT_OK(pool_.SetFeatureSetDefaults(std::move(defaults)));
+
+  EXPECT_TRUE(pool_.ResolvesFeaturesFor(pb::test));
+  EXPECT_FALSE(pool_.ResolvesFeaturesFor(pb::cpp));
+  EXPECT_FALSE(pool_.ResolvesFeaturesFor(pb::TestMessage::test_message));
+}
+
 class DescriptorPoolMemoizationTest : public ::testing::Test {
  protected:
   template <typename Desc, typename Func>

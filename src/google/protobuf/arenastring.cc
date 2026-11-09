@@ -22,6 +22,7 @@
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/memory_align.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"

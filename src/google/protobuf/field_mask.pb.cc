@@ -155,8 +155,9 @@ static_assert(alignof(FieldMaskGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FieldMaskGlobalsTypeInternal FieldMask_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FieldMaskGlobalsTypeInternal
+        PROTOBUF_ALIGNAS(
+            ::_pbi::kClassDataAlignment) FieldMask_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 }  // namespace protobuf
 }  // namespace google
 static constexpr const ::_pb::EnumDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
@@ -268,12 +269,12 @@ FieldMask::~FieldMask() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FieldMask::SharedDtor(
     MessageLite& self) {
   FieldMask& this_ = static_cast<FieldMask&>(self);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL

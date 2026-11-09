@@ -14,7 +14,7 @@ permissions:
 jobs:
   validate-yaml:
     name: Validate YAML
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v7

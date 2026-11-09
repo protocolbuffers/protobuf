@@ -14,9 +14,11 @@
 
 #ifdef PROTOBUF_PY_FUTURE_BREAKING_CHANGES
 
-// Raise AssertionError on message and map self-merge (msg.MergeFrom(msg) and
-// msg.map_field.MergeFrom(msg.map_field)) in upb, like the C++ implementation,
-// instead of merging from a copy (messages) or doing nothing (maps).
+// Raise AssertionError on message, map and repeated scalar field self-merge
+// (msg.MergeFrom(msg), msg.map_field.MergeFrom(msg.map_field) and
+// msg.repeated_field.MergeFrom(msg.repeated_field)) in upb, like the C++
+// implementation, instead of merging from a copy (messages and repeated
+// fields) or doing nothing (maps).
 // Owner: haberman@
 #define PROTOBUF_PY_FUTURE_SELF_MERGE_RAISES 1
 

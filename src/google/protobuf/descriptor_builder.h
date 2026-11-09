@@ -446,9 +446,7 @@ class DescriptorBuilder {
     return descriptor != nullptr && descriptor->is_placeholder_;
   }
   static void assert_mutex_held(const DescriptorPool* pool) {
-    if (pool->mutex_ != nullptr) {
-      pool->mutex_->AssertHeld();
-    }
+    pool->AssertHeld();
   }
 
   // Must be run only after options have been interpreted.

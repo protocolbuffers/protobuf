@@ -20,9 +20,34 @@
 #define kUpb_MtDataEncoder_MinSize 16
 
 typedef struct {
+  uint64_t present_values_mask;
+  uint32_t last_written_value;
+} upb_MtDataEncoderInternal_EnumState;
+
+typedef struct {
+  uint64_t msg_modifiers;
+  uint32_t last_field_num;
+  enum {
+    kUpb_OneofState_NotStarted,
+    kUpb_OneofState_StartedOneof,
+    kUpb_OneofState_EmittedOneofField,
+  } oneof_state;
+} upb_MtDataEncoderInternal_MsgState;
+
+typedef struct {
+  char* buf_start;  // Only for checking kUpb_MtDataEncoder_MinSize.
+  union {
+    upb_MtDataEncoderInternal_EnumState enum_state;
+    upb_MtDataEncoderInternal_MsgState msg_state;
+  } state;
+} upb_MtDataEncoderInternal;
+
+typedef struct {
   char* end;  // Limit of the buffer passed as a parameter.
-  // Aliased to internal-only members in .cc.
-  char internal[32];
+  // Internal-only state, only accessed from encode.c. This is a typed member
+  // rather than a char buffer that encode.c casts to its own type, because
+  // accessing a char array through a struct lvalue violates strict aliasing.
+  upb_MtDataEncoderInternal internal;
 } upb_MtDataEncoder;
 
 #ifdef __cplusplus

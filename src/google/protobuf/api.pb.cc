@@ -167,8 +167,9 @@ static_assert(alignof(MixinGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const MixinGlobalsTypeInternal Mixin_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const MixinGlobalsTypeInternal
+        PROTOBUF_ALIGNAS(
+            ::_pbi::kClassDataAlignment) Mixin_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class Method::_Internal {
  public:
   using HasBits = decltype(::std::declval<Method>()._impl_._has_bits_);
@@ -343,8 +344,9 @@ static_assert(alignof(MethodGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const MethodGlobalsTypeInternal Method_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const MethodGlobalsTypeInternal
+        PROTOBUF_ALIGNAS(
+            ::_pbi::kClassDataAlignment) Method_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class Api::_Internal {
  public:
   using HasBits = decltype(::std::declval<Api>()._impl_._has_bits_);
@@ -527,8 +529,9 @@ static_assert(alignof(ApiGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ApiGlobalsTypeInternal Api_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ApiGlobalsTypeInternal
+        PROTOBUF_ALIGNAS(
+            ::_pbi::kClassDataAlignment) Api_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 }  // namespace protobuf
 }  // namespace google
 static constexpr const ::_pb::EnumDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
@@ -754,16 +757,16 @@ Api::~Api() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Api::SharedDtor(
     MessageLite& self) {
   Api& this_ = static_cast<Api&>(self);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.name_.Destroy();
   this_._impl_.version_.Destroy();
   this_._impl_.edition_.Destroy();
   delete this_._impl_.source_context_;
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -1188,16 +1191,16 @@ Method::~Method() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Method::SharedDtor(
     MessageLite& self) {
   Method& this_ = static_cast<Method&>(self);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.name_.Destroy();
   this_._impl_.request_type_url_.Destroy();
   this_._impl_.response_type_url_.Destroy();
   this_._impl_.edition_.Destroy();
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -1576,14 +1579,14 @@ Mixin::~Mixin() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Mixin::SharedDtor(
     MessageLite& self) {
   Mixin& this_ = static_cast<Mixin&>(self);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.name_.Destroy();
   this_._impl_.root_.Destroy();
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL

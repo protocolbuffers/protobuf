@@ -165,8 +165,9 @@ static_assert(alignof(UInt64ValueGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const UInt64ValueGlobalsTypeInternal UInt64Value_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const UInt64ValueGlobalsTypeInternal
+        PROTOBUF_ALIGNAS(
+            ::_pbi::kClassDataAlignment) UInt64Value_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class UInt32Value::_Internal {
  public:
   using HasBits = decltype(::std::declval<UInt32Value>()._impl_._has_bits_);
@@ -275,8 +276,9 @@ static_assert(alignof(UInt32ValueGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const UInt32ValueGlobalsTypeInternal UInt32Value_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const UInt32ValueGlobalsTypeInternal
+        PROTOBUF_ALIGNAS(
+            ::_pbi::kClassDataAlignment) UInt32Value_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class StringValue::_Internal {
  public:
   using HasBits = decltype(::std::declval<StringValue>()._impl_._has_bits_);
@@ -389,8 +391,9 @@ static_assert(alignof(StringValueGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const StringValueGlobalsTypeInternal StringValue_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const StringValueGlobalsTypeInternal
+        PROTOBUF_ALIGNAS(
+            ::_pbi::kClassDataAlignment) StringValue_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class Int64Value::_Internal {
  public:
   using HasBits = decltype(::std::declval<Int64Value>()._impl_._has_bits_);
@@ -499,8 +502,9 @@ static_assert(alignof(Int64ValueGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Int64ValueGlobalsTypeInternal Int64Value_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Int64ValueGlobalsTypeInternal
+        PROTOBUF_ALIGNAS(
+            ::_pbi::kClassDataAlignment) Int64Value_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class Int32Value::_Internal {
  public:
   using HasBits = decltype(::std::declval<Int32Value>()._impl_._has_bits_);
@@ -609,8 +613,9 @@ static_assert(alignof(Int32ValueGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Int32ValueGlobalsTypeInternal Int32Value_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Int32ValueGlobalsTypeInternal
+        PROTOBUF_ALIGNAS(
+            ::_pbi::kClassDataAlignment) Int32Value_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class FloatValue::_Internal {
  public:
   using HasBits = decltype(::std::declval<FloatValue>()._impl_._has_bits_);
@@ -719,8 +724,9 @@ static_assert(alignof(FloatValueGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FloatValueGlobalsTypeInternal FloatValue_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FloatValueGlobalsTypeInternal
+        PROTOBUF_ALIGNAS(
+            ::_pbi::kClassDataAlignment) FloatValue_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class DoubleValue::_Internal {
  public:
   using HasBits = decltype(::std::declval<DoubleValue>()._impl_._has_bits_);
@@ -829,8 +835,9 @@ static_assert(alignof(DoubleValueGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const DoubleValueGlobalsTypeInternal DoubleValue_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const DoubleValueGlobalsTypeInternal
+        PROTOBUF_ALIGNAS(
+            ::_pbi::kClassDataAlignment) DoubleValue_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class BytesValue::_Internal {
  public:
   using HasBits = decltype(::std::declval<BytesValue>()._impl_._has_bits_);
@@ -941,8 +948,9 @@ static_assert(alignof(BytesValueGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const BytesValueGlobalsTypeInternal BytesValue_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const BytesValueGlobalsTypeInternal
+        PROTOBUF_ALIGNAS(
+            ::_pbi::kClassDataAlignment) BytesValue_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class BoolValue::_Internal {
  public:
   using HasBits = decltype(::std::declval<BoolValue>()._impl_._has_bits_);
@@ -1051,8 +1059,9 @@ static_assert(alignof(BoolValueGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const BoolValueGlobalsTypeInternal BoolValue_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const BoolValueGlobalsTypeInternal
+        PROTOBUF_ALIGNAS(
+            ::_pbi::kClassDataAlignment) BoolValue_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 }  // namespace protobuf
 }  // namespace google
 static constexpr const ::_pb::EnumDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
@@ -1205,12 +1214,12 @@ DoubleValue::~DoubleValue() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void DoubleValue::SharedDtor(
     MessageLite& self) {
   DoubleValue& this_ = static_cast<DoubleValue&>(self);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -1377,12 +1386,12 @@ FloatValue::~FloatValue() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FloatValue::SharedDtor(
     MessageLite& self) {
   FloatValue& this_ = static_cast<FloatValue&>(self);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -1549,12 +1558,12 @@ Int64Value::~Int64Value() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Int64Value::SharedDtor(
     MessageLite& self) {
   Int64Value& this_ = static_cast<Int64Value&>(self);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -1722,12 +1731,12 @@ UInt64Value::~UInt64Value() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void UInt64Value::SharedDtor(
     MessageLite& self) {
   UInt64Value& this_ = static_cast<UInt64Value&>(self);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -1895,12 +1904,12 @@ Int32Value::~Int32Value() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Int32Value::SharedDtor(
     MessageLite& self) {
   Int32Value& this_ = static_cast<Int32Value&>(self);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -2068,12 +2077,12 @@ UInt32Value::~UInt32Value() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void UInt32Value::SharedDtor(
     MessageLite& self) {
   UInt32Value& this_ = static_cast<UInt32Value&>(self);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -2241,12 +2250,12 @@ BoolValue::~BoolValue() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void BoolValue::SharedDtor(
     MessageLite& self) {
   BoolValue& this_ = static_cast<BoolValue&>(self);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -2424,13 +2433,13 @@ StringValue::~StringValue() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void StringValue::SharedDtor(
     MessageLite& self) {
   StringValue& this_ = static_cast<StringValue&>(self);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.value_.Destroy();
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -2617,13 +2626,13 @@ BytesValue::~BytesValue() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void BytesValue::SharedDtor(
     MessageLite& self) {
   BytesValue& this_ = static_cast<BytesValue&>(self);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.value_.Destroy();
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL

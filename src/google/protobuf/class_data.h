@@ -44,6 +44,9 @@ struct DescriptorTable;
 class LazyField;
 struct TcParseTableBase;
 struct DescriptorMethods;
+class SerialArena;
+
+inline constexpr size_t kClassDataAlignment = 64;
 
 class MessageCreator {
  public:
@@ -91,15 +94,10 @@ class MessageCreator {
       const MessageLite* PROTOBUF_NONNULL prototype_for_copy,
       void* PROTOBUF_NONNULL mem, Arena* PROTOBUF_NULLABLE arena) const;
 
-  // Make this a template to avoid depending on arena.h.
-  template <typename Arena>
-  void* PROTOBUF_NONNULL AllocateMessage(Arena* PROTOBUF_NULLABLE arena) const {
-    if (arena != nullptr) {
-      return arena->AllocateAligned(allocation_size_);
-    } else {
-      return Allocate(allocation_size_);
-    }
-  }
+  // Defined in arena.h
+  void* PROTOBUF_NONNULL AllocateMessage(Arena* PROTOBUF_NULLABLE arena) const;
+  void* PROTOBUF_NONNULL
+  AllocateMessage(SerialArena* PROTOBUF_NULLABLE arena) const;
 
   Tag tag() const { return tag_; }
 
@@ -229,6 +227,13 @@ struct PROTOBUF_EXPORT ClassData {
 
   // Defined in message_lite.h.
   MessageLite* PROTOBUF_NONNULL New(Arena* PROTOBUF_NULLABLE arena) const;
+
+  // Defined in message_lite.h.
+  MessageLite* PROTOBUF_NONNULL New(SerialArena* PROTOBUF_NULLABLE arena) const;
+
+  MessageLite* PROTOBUF_NONNULL New(std::nullptr_t) const {
+    return New(static_cast<Arena*>(nullptr));
+  }
 
   // Defined in message_lite.h.
   MessageLite* PROTOBUF_NONNULL PlacementNew(

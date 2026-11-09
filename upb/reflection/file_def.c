@@ -322,8 +322,10 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
     // We are building ext layouts from scratch.
     file->ext_layouts = _upb_DefBuilder_Alloc(
         ctx, sizeof(*file->ext_layouts) * file->ext_count);
-    memset((void*)file->ext_layouts, 0,
-           sizeof(*file->ext_layouts) * file->ext_count);
+    if (file->ext_count != 0) {
+      memset((void*)file->ext_layouts, 0,
+             sizeof(*file->ext_layouts) * file->ext_count);
+    }
   }
 
   upb_StringView name = google_protobuf_FileDescriptorProto_name(file_proto);

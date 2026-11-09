@@ -75,9 +75,9 @@ UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s,
 
 UPB_INLINE bool _upb_sortedmap_nextext(_upb_mapsorter* s,
                                        _upb_sortedmap* sorted,
-                                       const upb_Extension** ext) {
+                                       const upb_AuxField** ext) {
   if (sorted->pos == sorted->end) return false;
-  *ext = (const upb_Extension*)s->entries[sorted->pos++];
+  *ext = (const upb_AuxField*)s->entries[sorted->pos++];
   return true;
 }
 

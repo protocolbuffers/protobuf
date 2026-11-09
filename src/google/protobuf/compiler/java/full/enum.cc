@@ -107,10 +107,14 @@ void EnumNonLiteGenerator::Generate(io::Printer* printer) {
   }
 
   if (!descriptor_->is_closed()) {
+    std::string unrecognized_value =
+        absl::StrCat(GetUnrecognizedValue(descriptor_));
     if (ordinal_is_index) {
-      printer->Print("${$UNRECOGNIZED$}$(-1),\n", "{", "", "}", "");
+      printer->Print("${$UNRECOGNIZED$}$($unrecognized_value$),\n", "{", "",
+                     "}", "", "unrecognized_value", unrecognized_value);
     } else {
-      printer->Print("${$UNRECOGNIZED$}$(-1, -1),\n", "{", "", "}", "");
+      printer->Print("${$UNRECOGNIZED$}$(-1, $unrecognized_value$),\n", "{", "",
+                     "}", "", "unrecognized_value", unrecognized_value);
     }
     printer->Annotate("{", "}", descriptor_);
   }

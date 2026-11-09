@@ -49,7 +49,8 @@ namespace pb {
 namespace file {
 class CppFileOptions;
 struct CppFileOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern const CppFileOptionsGlobalsTypeInternal CppFileOptions_globals_;
+PROTOBUF_EXPORT extern const CppFileOptionsGlobalsTypeInternal
+    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) CppFileOptions_globals_;
 }  // namespace file
 }  // namespace pb
 namespace google {

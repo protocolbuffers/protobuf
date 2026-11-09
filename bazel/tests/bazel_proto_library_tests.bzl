@@ -292,7 +292,10 @@ def _test_strict_public_imports_enabled(name):
         name = name,
         target = name + "_foo",
         impl = _test_strict_public_imports_enabled_impl,
-        config_settings = {"//command_line_option:strict_public_imports": "ERROR"},
+        config_settings = {
+            "//command_line_option:strict_public_imports": "ERROR",
+            "@@//bazel/flags:strict_public_imports": "ERROR",
+        },
     )
 
 def _test_strict_public_imports_enabled_impl(env, target):
@@ -308,7 +311,10 @@ def _test_strict_public_imports_disabled(name):
         name = name,
         target = name + "_foo",
         impl = _test_strict_public_imports_disabled_impl,
-        config_settings = {"//command_line_option:strict_public_imports": "OFF"},
+        config_settings = {
+            "//command_line_option:strict_public_imports": "OFF",
+            "@@//bazel/flags:strict_public_imports": "OFF",
+        },
     )
 
 def _test_strict_public_imports_disabled_impl(env, target):
@@ -330,8 +336,7 @@ def _test_strict_public_imports_default_impl(env, target):
     action = env.expect.that_target(target).action_generating(
         "{package}/{name}-descriptor-set.proto.bin",
     )
-
-    action.argv().not_contains("--allowed_public_imports=")
+    action.argv().contains("--allowed_public_imports=")
 
 def _test_strict_public_imports_transitive_exports(name):
     util.helper_target(
@@ -353,7 +358,10 @@ def _test_strict_public_imports_transitive_exports(name):
         name = name,
         target = name + "_top",
         impl = _test_strict_public_imports_transitive_exports_impl,
-        config_settings = {"//command_line_option:strict_public_imports": "ERROR"},
+        config_settings = {
+            "//command_line_option:strict_public_imports": "ERROR",
+            "@@//bazel/flags:strict_public_imports": "ERROR",
+        },
     )
 
 def _test_strict_public_imports_transitive_exports_impl(env, target):

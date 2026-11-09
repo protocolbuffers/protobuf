@@ -112,7 +112,7 @@ PyObject* PyUpb_DescriptorPool_Get(const upb_DefPool* symtab) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
   PyObject* pool = PyUpb_WeakMap_Get(state->obj_cache, symtab);
   assert(pool
-#if PY_VERSION_HEX >= 0x030D0000  // >= 3.13
+#if PYUPB_MIN_PY_VERSION_HEX >= 0x030D0000  // >= 3.13
          || Py_IsFinalizing()
 #endif
   );
@@ -120,7 +120,7 @@ PyObject* PyUpb_DescriptorPool_Get(const upb_DefPool* symtab) {
 }
 
 static void PyUpb_DescriptorPool_Dealloc(PyUpb_DescriptorPool* self) {
-#if PY_VERSION_HEX >= 0x030C0000
+#if PYUPB_MIN_PY_VERSION_HEX >= 0x030C0000
   PyObject_ClearWeakRefs((PyObject*)self);
 #endif
   PyObject_GC_UnTrack(self);
@@ -822,7 +822,7 @@ static PyType_Spec PyUpb_DescriptorPool_Spec = {
     PYUPB_MODULE_NAME ".DescriptorPool",
     sizeof(PyUpb_DescriptorPool),
     0,  // tp_itemsize
-#if PY_VERSION_HEX >= 0x030C0000
+#if PYUPB_MIN_PY_VERSION_HEX >= 0x030C0000
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC | Py_TPFLAGS_MANAGED_WEAKREF,
 #else
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,

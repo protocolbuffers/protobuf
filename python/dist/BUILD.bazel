@@ -250,6 +250,40 @@ selects.config_setting_group(
     visibility = ["//python:__subpackages__"],
 )
 
+# Limited API wheels are built with the newest Python headers (see
+# limited_api_python_headers_version below), so the rules_python version alone
+# does not determine the python_tag of the wheel. These settings only match when
+# we are not building for the limited API.
+#
+# The corresponding limited API settings (limited_api_3.11 etc.) live in
+# //python:BUILD.bazel, because the `_message` extension in that package selects
+# on them, and that BUILD file is shared with google3, where these
+# @rules_python settings do not exist.
+config_setting(
+    name = "python_version_system",
+    flag_values = {
+        "//python:python_version": "system",
+    },
+)
+
+# LINT.IfChange(full_api_python_versions)
+[
+    selects.config_setting_group(
+        name = "full_api_python_" + version,
+        match_all = [
+            ":python_version_system",
+            "@rules_python//python/config_settings:is_python_" + version,
+        ],
+    )
+    for version in [
+        "3.11",
+        "3.12",
+        "3.13",
+        "3.14",
+    ]
+]
+# LINT.ThenChange(:python_tag)
+
 pkg_files(
     name = "generated_bootstrap",
     srcs = [
@@ -387,15 +421,16 @@ py_wheel(
     }),
     python_requires = ">=3.11",
     # LINT.IfChange(python_tag)
-    python_tag = selects.with_or({
+    python_tag = select({
         "//python:limited_api_3.11": "cp311",
-        "@rules_python//python/config_settings:is_python_3.11": "cp311",
-        "@rules_python//python/config_settings:is_python_3.12": "cp312",
-        "@rules_python//python/config_settings:is_python_3.13": "cp313",
-        "@rules_python//python/config_settings:is_python_3.14": "cp314",
+        ":full_api_python_3.11": "cp311",
+        ":full_api_python_3.12": "cp312",
+        ":full_api_python_3.13": "cp313",
+        ":full_api_python_3.14": "cp314",
         "//conditions:default": "cp311",
     }),
     # LINT.ThenChange(
+    #    :full_api_python_versions,
     #    :limited_api_wheels,
     # )
     strip_path_prefixes = [
@@ -489,6 +524,14 @@ py_dist(
         "//build_defs:osx-universal2": "311",
     },
     # LINT.ThenChange(:python_tag)
+    # The limited API wheels are compiled against the headers of this (newer)
+    # Python version, but are compatible with any Python version >= the one
+    # given in limited_api_platforms. CPython supports building for an older
+    # limited API with newer headers, and newer headers contain important fixes,
+    # such as Py_INCREF() and Py_DECREF() being aware of immortal objects
+    # (https://github.com/protocolbuffers/protobuf/issues/30861). This should
+    # generally be the newest Python version we support.
+    limited_api_python_headers_version = "3.14",
     pure_python_wheel = ":pure_python_wheel",
     tags = ["manual"],
 )

@@ -24,6 +24,7 @@
 #include "absl/base/macros.h"
 #include "absl/base/nullability.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/private_access.h"
 #if defined(_MSC_VER) && !defined(_LIBCPP_STD_VER) && !_HAS_EXCEPTIONS
@@ -40,8 +41,8 @@ using type_info = ::type_info;
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_format.h"
-#include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_allocation_policy.h"
+#include "google/protobuf/memory_align.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/serial_arena.h"
 #include "google/protobuf/thread_safe_arena.h"
@@ -417,8 +418,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   // Allocates memory with the specific size and alignment.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD void* PROTOBUF_NONNULL
   AllocateAligned(size_t size, size_t align = 8) {
-    if (align <= internal::ArenaAlignDefault::align) {
-      return Allocate(internal::ArenaAlignDefault::Ceil(size));
+    if (align <= internal::ArenaAlignDefault{}.align) {
+      return Allocate(internal::ArenaAlignDefault{}.Ceil(size));
     } else {
       // We are wasting space by over allocating align - 8 bytes. Compared
       // to a dedicated function that takes current alignment in consideration.
@@ -446,7 +447,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
                   "CreateArray requires a trivially destructible type");
     ABSL_CHECK_LE(num_elements,
                   // Max rounded down to the 8 byte alignment.
-                  (std::numeric_limits<size_t>::max() & ~7) / sizeof(T))
+                  internal::ArenaAlignDefault{}.Floor(
+                      std::numeric_limits<size_t>::max()) /
+                      sizeof(T))
         << "Requested size is too large to fit into size_t.";
     if (ABSL_PREDICT_FALSE(arena == nullptr)) {
       return new T[num_elements];
@@ -675,6 +678,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
  private:
   internal::ThreadSafeArena impl_;
 
+  static constexpr void StaticAssertArenaLayout();
+
   enum class ConstructType { kUnknown, kDefault, kCopy, kMove };
   // Overload set to detect which kind of construction is going to happen for a
   // specific set of input arguments. This is used to dispatch to different
@@ -811,8 +816,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   }
 
   void* PROTOBUF_NONNULL AllocateAlignedForArray(size_t n, size_t align) {
-    if (align <= internal::ArenaAlignDefault::align) {
-      return AllocateForArray(internal::ArenaAlignDefault::Ceil(n));
+    if (align <= internal::ArenaAlignDefault{}.align) {
+      return AllocateForArray(internal::ArenaAlignDefault{}.Ceil(n));
     } else {
       // We are wasting space by over allocating align - 8 bytes. Compared
       // to a dedicated function that takes current alignment in consideration.
@@ -856,6 +861,13 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
   friend struct internal::ArenaTestPeer;
 };
+
+constexpr void Arena::StaticAssertArenaLayout() {
+  static_assert(
+      PROTOBUF_FIELD_OFFSET(Arena, impl_) == 0,
+      "ThreadSafeArena and Arena must have the same start address. Elsewhere, "
+      "we assume this and reinterpret_cast up from ThreadSafeArena to Arena.");
+}
 
 namespace internal {
 // Comparison base to inject relational operators in UniquePtr and Ptr.
@@ -1225,6 +1237,24 @@ GetArena(const MessageLite* PROTOBUF_NONNULL elem) {
 
 constexpr ThreadSafeArena& PrivateAccess::GetThreadSafeArena(Arena& arena) {
   return arena.impl_;
+}
+
+inline void* PROTOBUF_NONNULL
+MessageCreator::AllocateMessage(Arena* PROTOBUF_NULLABLE arena) const {
+  if (arena != nullptr) {
+    return arena->AllocateAligned(allocation_size_);
+  } else {
+    return Allocate(allocation_size_);
+  }
+}
+
+inline void* PROTOBUF_NONNULL
+MessageCreator::AllocateMessage(SerialArena* PROTOBUF_NULLABLE arena) const {
+  if (arena != nullptr) {
+    return arena->AllocateAligned(ArenaAlignDefault{}.Ceil(allocation_size_));
+  } else {
+    return Allocate(allocation_size_);
+  }
 }
 
 // This class is used to define `DestructorSkippable_` for some containing type

@@ -14,6 +14,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
 #include <memory>
 #include <thread>
 #include <type_traits>
@@ -37,6 +38,10 @@
 
 // Must be last.
 #include "upb/port/def.inc"
+
+#if UPB_ASAN
+#include <sanitizer/asan_interface.h>
+#endif
 
 namespace {
 
@@ -393,6 +398,68 @@ TEST(ArenaTest, FixedInitialBlockNoAlloc) {
   EXPECT_EQ(upb_Arena_Malloc(arena, 1024), nullptr);
 
   upb_Arena_Free(arena);
+}
+
+TEST(ArenaTest, InitialBlockIsTreatedAsFreshMemory) {
+  // upb takes ownership of the initial block, so whatever the caller left in it
+  // must not count as initialized, and unallocated space must be poisoned.
+  char buf[1024];
+  memset(buf, 0x42, sizeof(buf));
+  upb_Arena* arena = upb_Arena_Init(buf, sizeof(buf), nullptr);
+  char* p = static_cast<char*>(upb_Arena_Malloc(arena, 64));
+  ASSERT_NE(p, nullptr);
+#if UPB_MSAN
+  // __msan_test_shadow() returns the offset of the first uninitialized byte.
+  EXPECT_EQ(__msan_test_shadow(p, 64), 0);
+#endif
+#if UPB_HWASAN
+  // The arena state is allocated like any other region, so it has its own tag.
+  // (Not compared with `buf`, whose stack tag is random and could collide.)
+  EXPECT_NE(UPB_PRIVATE(_upb_Xsan_GetTag)(arena),
+            UPB_PRIVATE(_upb_Xsan_GetTag)(p));
+#endif
+#if UPB_ASAN
+  EXPECT_FALSE(__asan_address_is_poisoned(p));
+  EXPECT_FALSE(__asan_address_is_poisoned(p + 63));
+  // The guard after the allocation, like the rest of the free space.
+  EXPECT_TRUE(__asan_address_is_poisoned(p + 64));
+#endif
+  upb_Arena_Free(arena);
+}
+
+TEST(ArenaTest, OverflowAllocationRejected) {
+  // Each size below is rejected by an overflow check before the block
+  // allocator is called, so the result does not depend on how the system or
+  // sanitizer allocator handles a huge request. The second size is the
+  // smallest whose alignment rounding wraps to zero, and the third is the
+  // largest that rounds without wrapping.
+  const size_t kOverflowSizes[] = {SIZE_MAX, SIZE_MAX - (UPB_MALLOC_ALIGN - 2),
+                                   SIZE_MAX - (UPB_MALLOC_ALIGN - 1)};
+  CustomAlloc alloc = {{&CustomAllocFunc, &CustomAllocCleanup}, 0, false};
+  upb_alloc* block_alloc = reinterpret_cast<upb_alloc*>(&alloc);
+  upb_Arena* arena = upb_Arena_Init(nullptr, 0, block_alloc);
+  ASSERT_NE(arena, nullptr);
+
+  char* small = static_cast<char*>(upb_Arena_Malloc(arena, 64));
+  ASSERT_NE(small, nullptr);
+  memset(small, 0x5a, 64);
+  const int allocs_before = alloc.counter;
+  const uintptr_t space_before = upb_Arena_SpaceAllocated(arena, nullptr);
+
+  for (size_t size : kOverflowSizes) {
+    EXPECT_EQ(upb_Arena_Malloc(arena, size), nullptr) << size;
+    EXPECT_FALSE(upb_Arena_TryExtend(arena, small, 64, size)) << size;
+    EXPECT_EQ(upb_Arena_Realloc(arena, small, 64, size), nullptr) << size;
+    EXPECT_EQ(upb_Arena_Init(nullptr, size, block_alloc), nullptr) << size;
+  }
+  EXPECT_EQ(alloc.counter, allocs_before);
+  EXPECT_EQ(upb_Arena_SpaceAllocated(arena, nullptr), space_before);
+  for (int i = 0; i < 64; ++i) {
+    EXPECT_EQ(small[i], 0x5a);
+  }
+
+  upb_Arena_Free(arena);
+  EXPECT_TRUE(alloc.ran_cleanup);
 }
 
 class Environment {

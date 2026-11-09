@@ -24,6 +24,7 @@ import json
 import math
 from operator import methodcaller
 import re
+import warnings
 
 from google.protobuf import descriptor
 from google.protobuf import descriptor_pool
@@ -1070,6 +1071,12 @@ def _ConvertScalarFieldValue(
           raise ParseError('Unpaired surrogate')
         return value
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_ENUM:
+      if isinstance(value, bool):
+        warnings.warn(
+            'Bool value {0} will not be acceptable for enum field {1} in a'
+            ' future release.'.format(value, field.full_name),
+            FutureWarning,
+        )
       # Convert an enum value.
       enum_value = field.enum_type.values_by_name.get(value, None)
       # First check to see if we have a custom enum string.
@@ -1154,6 +1161,12 @@ def _ConvertInteger(value):
 
 def _ConvertFloat(value, field):
   """Convert an floating point number."""
+  if isinstance(value, bool):
+    warnings.warn(
+        'Bool value {0} will not be acceptable for float field {1} in a'
+        ' future release.'.format(value, field.full_name),
+        FutureWarning,
+    )
   if isinstance(value, float):
     if math.isnan(value):
       raise ParseError('Couldn\'t parse NaN, use quoted "NaN" instead')

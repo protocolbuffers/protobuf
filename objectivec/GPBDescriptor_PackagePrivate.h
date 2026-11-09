@@ -341,8 +341,9 @@ GPB_INLINE BOOL GPBExtensionIsPacked(GPBExtensionDescription *description) {
 //   entire object file—including its GPBExtensionSectionEntry—is omitted.
 // - When an object file IS pulled into the binary, __attribute__((used))
 //   retains the GPBExtensionSectionEntry within that translation unit, and
-//   pointer-sized alignment ensures the linker packs all surviving entries into
-//   a contiguous array in the section with zero inter-element padding.
+//   pointer-sized alignment (with `no_sanitize("address")` to suppress ASan
+//   global redzones) ensures the linker packs all surviving entries into a
+//   contiguous array in the section with zero inter-element padding.
 //
 // Lazy indexing & descriptor resolution:
 // - Calling +[GPBExtensionRegistry globalExtensionRegistry] only allocates the
@@ -387,8 +388,8 @@ GPB_INLINE BOOL GPBExtensionIsPacked(GPBExtensionDescription *description) {
 #define GPB_EXTENSION_SECTION_NAME "__gpb_objc_ext"
 #endif
 
-#define GPB_EXTENSION_REGISTRY_SECTION_ATTR     \
-  __attribute__((used, aligned(sizeof(void *)), \
+#define GPB_EXTENSION_REGISTRY_SECTION_ATTR                             \
+  __attribute__((used, aligned(sizeof(void *)), no_sanitize("address"), \
                  section(GPB_EXTENSION_SECTION_SEGMENT "," GPB_EXTENSION_SECTION_NAME)))
 
 // A single entry in the extension registration Mach-O section.

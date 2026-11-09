@@ -600,6 +600,28 @@ class MessageTest(unittest.TestCase):
     with self.assertRaises(TypeError):
       msg.repeated_nested_message[:] = []
 
+  def testRepeatedCompositeFieldMergeFromSelfRaises(self, message_module):
+    msg = message_module.TestAllTypes()
+    msg.repeated_nested_message.add(bb=1)
+    with self.assertRaisesRegex(
+        AssertionError, 'Cannot merge a repeated field into itself'
+    ):
+      msg.repeated_nested_message.MergeFrom(msg.repeated_nested_message)
+    self.assertEqual([1], [m.bb for m in msg.repeated_nested_message])
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Currently allowed in upb, will raise in the next breaking release',
+  )
+  def testRepeatedScalarFieldMergeFromSelfRaises(self, message_module):
+    msg = message_module.TestAllTypes()
+    msg.repeated_int32.append(1)
+    with self.assertRaisesRegex(
+        AssertionError, 'Cannot merge a repeated field into itself'
+    ):
+      msg.repeated_int32.MergeFrom(msg.repeated_int32)
+    self.assertEqual([1], msg.repeated_int32)
+
   def testInsertRepeatedCompositeField(self, message_module):
     msg = message_module.TestAllTypes()
     msg.repeated_nested_message.insert(
@@ -732,6 +754,14 @@ class MessageTest(unittest.TestCase):
     msg.payload.repeated_int32[:] = [1, 2, 3, 4]
     msg.payload.repeated_int32.extend(msg.payload.repeated_int32)
     self.assertEqual([1, 2, 3, 4] * 2, msg.payload.repeated_int32)
+    msg.payload.repeated_nested_message.add(bb=1)
+    msg.payload.repeated_nested_message.add(bb=2)
+    msg.payload.repeated_nested_message.extend(
+        msg.payload.repeated_nested_message
+    )
+    self.assertEqual(
+        [1, 2, 1, 2], [m.bb for m in msg.payload.repeated_nested_message]
+    )
 
   def testAssignOutOfRange(self, message_module):
     msg = message_module.NestedTestAllTypes()
@@ -1777,6 +1807,16 @@ class MessageTest(unittest.TestCase):
     self.assertSequenceEqual([0, 1, 2, 3, 4], m.repeated_int32)
     with self.assertRaises(TypeError):
       m.repeated_int32.extend([5, 6, 'hi', 7])
+
+  def testRepeatedFieldSliceWithZeroStepRaises(self, message_module):
+    m = message_module.TestAllTypes(repeated_int32=[1, 2, 3])
+    m.repeated_nested_message.add(bb=1)
+    with self.assertRaises(ValueError):
+      m.repeated_int32[::0]  # pylint: disable=pointless-statement
+    with self.assertRaises(ValueError):
+      m.repeated_nested_message[::0]  # pylint: disable=pointless-statement
+    with self.assertRaises(ValueError):
+      del m.repeated_nested_message[::0]
 
   def testExtendFloatWithPythonList(self, message_module):
     """Test extending repeated float fields with python lists."""
@@ -3402,6 +3442,17 @@ class Proto3Test(unittest.TestCase):
     self.assertEqual(0, len(msg.map_int32_int32))
     self.assertEqual(0, len(msg.map_int32_foreign_message))
     self.assertEqual(0, len(msg.map_int32_all_types))
+
+  def testMapClearLeavesHeldValuesIntact(self):
+    msg = map_unittest_pb2.TestMap()
+    msg.map_int32_foreign_message[1].c = 5
+    held = msg.map_int32_foreign_message[1]
+    msg.map_int32_foreign_message.clear()
+    self.assertEqual(0, len(msg.map_int32_foreign_message))
+    self.assertEqual(5, held.c)
+    # The held value is no longer part of the map.
+    held.c = 6
+    self.assertEqual(0, len(msg.map_int32_foreign_message))
 
   def testMapMergeFromLeavesSourceValuesIntact(self):
     src = map_unittest_pb2.TestMap()

@@ -237,6 +237,29 @@ class OptionInterpreter {
   // source code info to account for option interpretation.
   absl::flat_hash_map<SourceCodePath, SourceCodePath> interpreted_paths_;
 
+  // Maps the source code path of an uninterpreted dot-notation option to the
+  // sequence of destination path prefixes for each component in the
+  // dot-separated name, using -UninterpretedOption::kAggregateValueFieldNumber
+  // (-8) to separate nested message levels.
+  //
+  // For example, given `option (foo).bar.baz = "123"` on a message (where `foo`
+  // has field number 10101, `bar` has field number 2, and `baz` has field
+  // number 3, and `options_path` is `[4, 0, 7]`):
+  //   Key (src_path): `[4, 0, 7, 999, 0]` (path to the UninterpretedOption)
+  //   Value:
+  //     - `[0]` (for `(foo)`): `[4, 0, 7, 10101]`
+  //     - `[1]` (for `bar`):   `[4, 0, 7, 10101, -8, 2]`
+  //     - `[2]` (for `baz`):   `[4, 0, 7, 10101, -8, 2, -8, 3]`
+  //
+  // In UpdateSourceCodeInfo(), each prefix `i` is appended with
+  // `-UninterpretedOption::kNameFieldNumber` (-2) to record the location of
+  // the `i`-th name part, the last prefix (`back()`) is appended with
+  // `-uninterpreted_field` (e.g., -7 for string_value) to record the location
+  // of the option's value, and the legacy full-option path (`[4, 0, 7, 10101,
+  // 2, 3]`) is derived from `back()` by stripping the `-8` markers.
+  absl::flat_hash_map<SourceCodePath, std::vector<SourceCodePath>>
+      dot_notation_name_paths_;
+
   // This maps the path to a repeated option field to the known number of
   // elements the field contains. This is used to track the compute the
   // index portion of the element path when interpreting a single option.

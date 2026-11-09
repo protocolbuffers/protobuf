@@ -68,6 +68,24 @@ static GPBExtensionDescriptor *ResolveHandWrittenEntry(GPBExtensionSectionEntry 
                                          &GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40311);
 }
 
+// The extensions of the test protos used by the global registry tests below, in
+// either extension generation mode.
+static GPBExtensionDescriptor *OptionalInt32Extension(void) {
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  return Objc_Protobuf_Tests_extension_OptionalInt32Extension();
+#else
+  return [UnittestRoot optionalInt32Extension];
+#endif
+}
+
+static GPBExtensionDescriptor *OptionalInt64Extension(void) {
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  return Objc_Protobuf_Tests_extension_OptionalInt64Extension();
+#else
+  return [UnittestRoot optionalInt64Extension];
+#endif
+}
+
 @interface GPBExtensionRegistryTest : GPBTestCase
 @end
 
@@ -244,13 +262,94 @@ static GPBExtensionDescriptor *ResolveHandWrittenEntry(GPBExtensionSectionEntry 
 
 #pragma mark - +globalExtensionRegistry
 
+- (void)testAddExtensionsOfGlobalExtensionRegistry {
+  GPBExtensionRegistry *globalRegistry = [GPBExtensionRegistry globalExtensionRegistry];
+  GPBDescriptor *extendedDescriptor = [TestAllExtensions descriptor];
+  GPBExtensionDescriptor *fromGlobal =
+      [globalRegistry extensionForDescriptor:extendedDescriptor
+                                 fieldNumber:kGPBTestExtensionLinkShardReferencedFieldNumber];
+  XCTAssertNotNil(fromGlobal);
+
+  GPBExtensionRegistry *registry = [[[GPBExtensionRegistry alloc] init] autorelease];
+  [registry addExtension:OptionalInt32Extension()];
+  XCTAssertNil([registry extensionForDescriptor:extendedDescriptor
+                                    fieldNumber:kGPBTestExtensionLinkShardReferencedFieldNumber]);
+  [registry addExtensions:globalRegistry];
+  // Finds what the global registry finds...
+  XCTAssertTrue([registry extensionForDescriptor:extendedDescriptor
+                                     fieldNumber:kGPBTestExtensionLinkShardReferencedFieldNumber] ==
+                fromGlobal);  // ptr equality
+  // ...and keeps its own extensions.
+  XCTAssertTrue([registry extensionForDescriptor:extendedDescriptor
+                                     fieldNumber:1] == OptionalInt32Extension());  // ptr equality
+  XCTAssertNil([registry extensionForDescriptor:extendedDescriptor
+                                    fieldNumber:kUnusedExtensionFieldNumber]);
+  // The registry stays mutable.
+  [registry addExtension:OptionalInt64Extension()];
+  XCTAssertTrue([registry extensionForDescriptor:extendedDescriptor
+                                     fieldNumber:2] == OptionalInt64Extension());  // ptr equality
+  // A registry that got the global one through another registry finds them too.
+  GPBExtensionRegistry *otherRegistry = [[[GPBExtensionRegistry alloc] init] autorelease];
+  [otherRegistry addExtensions:registry];
+  XCTAssertTrue([otherRegistry
+                    extensionForDescriptor:extendedDescriptor
+                               fieldNumber:kGPBTestExtensionLinkShardReferencedFieldNumber] ==
+                fromGlobal);  // ptr equality
+  XCTAssertTrue([otherRegistry extensionForDescriptor:extendedDescriptor fieldNumber:2] ==
+                OptionalInt64Extension());  // ptr equality
+}
+
+- (void)testCopyOfGlobalExtensionRegistry {
+  GPBExtensionRegistry *globalRegistry = [GPBExtensionRegistry globalExtensionRegistry];
+  GPBDescriptor *extendedDescriptor = [TestAllExtensions descriptor];
+  GPBExtensionRegistry *copied = [[globalRegistry copy] autorelease];
+  XCTAssertNotNil(copied);
+  XCTAssertTrue(copied != globalRegistry);  // ptr inequality
+  XCTAssertTrue([copied isKindOfClass:[GPBExtensionRegistry class]]);
+  XCTAssertTrue([copied extensionForDescriptor:extendedDescriptor
+                                   fieldNumber:kGPBTestExtensionLinkShardReferencedFieldNumber] ==
+                GPBTestExtensionLinkShardReferencedExtension());  // ptr equality
+  // The copy is mutable, and mutating it doesn't change the global registry.
+  XCTAssertNil([copied extensionForDescriptor:extendedDescriptor fieldNumber:1]);
+  [copied addExtension:OptionalInt32Extension()];
+  XCTAssertTrue([copied extensionForDescriptor:extendedDescriptor
+                                   fieldNumber:1] == OptionalInt32Extension());  // ptr equality
+  XCTAssertNil([globalRegistry extensionForDescriptor:extendedDescriptor fieldNumber:1]);
+  // A copy of the copy still finds the global registry's extensions.
+  GPBExtensionRegistry *copyOfCopy = [[copied copy] autorelease];
+  XCTAssertTrue([copyOfCopy
+                    extensionForDescriptor:extendedDescriptor
+                               fieldNumber:kGPBTestExtensionLinkShardReferencedFieldNumber] ==
+                GPBTestExtensionLinkShardReferencedExtension());  // ptr equality
+  XCTAssertTrue([copyOfCopy extensionForDescriptor:extendedDescriptor
+                                       fieldNumber:1] == OptionalInt32Extension());  // ptr equality
+}
+
+- (void)testGlobalExtensionRegistryIsImmutable {
+  GPBExtensionRegistry *globalRegistry = [GPBExtensionRegistry globalExtensionRegistry];
+  GPBDescriptor *extendedDescriptor = [TestAllExtensions descriptor];
+  GPBExtensionRegistry *otherRegistry = [[[GPBExtensionRegistry alloc] init] autorelease];
+  [otherRegistry addExtension:OptionalInt64Extension()];
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
+  // Asserts in debug builds.
+  XCTAssertThrows([globalRegistry addExtension:OptionalInt32Extension()]);
+  XCTAssertThrows([globalRegistry addExtensions:otherRegistry]);
+#else
+  // Does nothing otherwise.
+  [globalRegistry addExtension:OptionalInt32Extension()];
+  [globalRegistry addExtensions:otherRegistry];
+#endif
+  XCTAssertNil([globalRegistry extensionForDescriptor:extendedDescriptor fieldNumber:1]);
+  XCTAssertNil([globalRegistry extensionForDescriptor:extendedDescriptor fieldNumber:2]);
+}
+
 - (void)testGlobalExtensionRegistryIsSingleton {
   id<GPBExtensionRegistry> globalRegistry = [GPBExtensionRegistry globalExtensionRegistry];
   XCTAssertNotNil(globalRegistry);
   XCTAssertTrue([GPBExtensionRegistry globalExtensionRegistry] == globalRegistry);  // ptr equality
   XCTAssertTrue([globalRegistry conformsToProtocol:@protocol(GPBExtensionRegistry)]);
-  // Immutable, so it is not a (mutable) GPBExtensionRegistry.
-  XCTAssertFalse([(NSObject *)globalRegistry isKindOfClass:[GPBExtensionRegistry class]]);
+  // A real GPBExtensionRegistry, so it can be passed to APIs that take one.
+  XCTAssertTrue([(NSObject *)globalRegistry isKindOfClass:[GPBExtensionRegistry class]]);
 
   const size_t kIterationCount = 256;
   id<GPBExtensionRegistry> *concurrentResults =

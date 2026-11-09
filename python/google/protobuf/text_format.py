@@ -940,7 +940,9 @@ class _Parser(object):
           line if isinstance(line, str) else line.decode('utf-8')
           for line in lines
       )
-      tokenizer = Tokenizer(str_lines)
+      tokenizer = Tokenizer(
+          str_lines,
+      )
     except UnicodeDecodeError as e:
       raise ParseError from e
     if message:
@@ -1494,7 +1496,11 @@ class Tokenizer(object):
   # Accepted URL characters (excluding "/")
   _URL_CHARS = re.compile(r'^[0-9a-zA-Z-.~_ !$&()*+,;=%]+$')
 
-  def __init__(self, lines, skip_comments=True):
+  def __init__(
+      self,
+      lines,
+      skip_comments=True,
+  ):
     self._position = 0
     self._line = -1
     self._column = 0

@@ -634,6 +634,10 @@ bool upb_strtable_insert(upb_strtable* t, const char* k, size_t len,
 
 bool upb_strtable_insert_or_replace(upb_strtable* t, const char* k, size_t len,
                                     upb_value v, bool* replaced, upb_Arena* a) {
+  // Store to `*replaced` before reading the table: the compiler cannot prove
+  // that `replaced` does not point into `*t`, so storing it after the lookup
+  // would force it to reload the table fields.
+  *replaced = false;
   uint32_t hash = _upb_Hash_NoSeed(k, len);
   upb_tabent* e = findentry_mutable(&t->t, strkey2(k, len), hash, &streql);
   if (e) {
@@ -641,7 +645,6 @@ bool upb_strtable_insert_or_replace(upb_strtable* t, const char* k, size_t len,
     *replaced = true;
     return true;
   }
-  *replaced = false;
   if (UPB_UNLIKELY(t->t.entries == NULL) && !init(&t->t, 3, a)) return false;
   return strtable_insert(t, k, len, v, hash, a);
 }
@@ -895,27 +898,30 @@ static bool upb_inttable_trygrow(upb_inttable* t, size_t size_lg2,
   size_t old_bytes = old_size * sizeof(upb_tabent);
   size_t new_size = (size_t)1 << size_lg2;
   size_t new_bytes = new_size * sizeof(upb_tabent);
-  if (new_bytes <= old_bytes || !t->t.entries) {
+  // The entries never overlap `*t`, but the compiler cannot prove that, so
+  // without this local every store to an entry would force `t->t.entries` to
+  // be reloaded.
+  upb_tabent* entries = t->t.entries;
+  if (new_bytes <= old_bytes || !entries) {
     return false;
   }
 
-  if (!upb_Arena_TryExtend(a, t->t.entries, old_bytes, new_bytes)) {
+  if (!upb_Arena_TryExtend(a, entries, old_bytes, new_bytes)) {
     return false;
   }
 
   // Zero out the newly extended region of the table buffer.
-  memset(t->t.entries + old_size, 0,
-         (new_size - old_size) * sizeof(upb_tabent));
+  memset(entries + old_size, 0, (new_size - old_size) * sizeof(upb_tabent));
 
   // This one-past-the-end pointer is guaranteed to be distinct from NULL and
   // any valid internal collision chain pointer in the entire table.
-  upb_tabent* unhashed_marker = t->t.entries + new_size;
+  upb_tabent* unhashed_marker = entries + new_size;
 
   // Mark all existing occupied entries as UNHASHED using the distinct
   // marker. Because e->next != NULL, these pending slots are fully protected
   // from being claimed by emptyent() during collision chain formation.
   for (size_t i = 0; i < old_size; i++) {
-    upb_tabent* e = &t->t.entries[i];
+    upb_tabent* e = &entries[i];
     if (!upb_tabent_isempty(e)) {
       upb_tabent_setnext(e, unhashed_marker);
     }
@@ -927,7 +933,7 @@ static bool upb_inttable_trygrow(upb_inttable* t, size_t size_lg2,
 
   // Trace and resolve all destinations.
   for (size_t i = 0; i < old_size; i++) {
-    upb_tabent* current = &t->t.entries[i];
+    upb_tabent* current = &entries[i];
     if (!upb_tabent_hasnext(current) ||
         upb_tabent_next(current) != unhashed_marker) {
       continue;  // Slot is already hashed or empty.
@@ -942,7 +948,7 @@ static bool upb_inttable_trygrow(upb_inttable* t, size_t size_lg2,
     // total O(n) time across the whole rehash.
     while (true) {
       uint32_t hash = inthash(tabkey, val);
-      upb_tabent* target_bucket = &t->t.entries[hash & mask];
+      upb_tabent* target_bucket = &entries[hash & mask];
 
       if (upb_tabent_hasnext(target_bucket) &&
           upb_tabent_next(target_bucket) == unhashed_marker) {
@@ -1012,6 +1018,8 @@ bool upb_inttable_insert(upb_inttable* t, uintptr_t key, upb_value val,
 bool upb_inttable_insert_or_replace_slow(upb_inttable* t, uintptr_t key,
                                          upb_value val, bool* replaced,
                                          upb_Arena* a) {
+  // See upb_strtable_insert_or_replace() for why this is stored first.
+  *replaced = false;
   upb_tabent* e =
       findentry_mutable(&t->t, intkey(key), upb_inthash(key), &inteql);
   if (e) {
@@ -1019,7 +1027,6 @@ bool upb_inttable_insert_or_replace_slow(upb_inttable* t, uintptr_t key,
     *replaced = true;
     return true;
   }
-  *replaced = false;
   if (UPB_UNLIKELY(t->t.entries == NULL) && !upb_inttable_init(t, a)) {
     return false;
   }

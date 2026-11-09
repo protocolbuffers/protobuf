@@ -437,7 +437,8 @@ struct InternalMetadata::Container<UnknownFieldSet>
   UnknownFieldSet unknown_fields;
 
   explicit Container(Arena* input_arena)
-      : unknown_fields(InternalVisibility{}, input_arena) {}
+      : ContainerBase(input_arena),
+        unknown_fields(InternalVisibility{}, input_arena) {}
 
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;

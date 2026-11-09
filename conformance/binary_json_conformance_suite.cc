@@ -18,6 +18,7 @@
 #include <utility>
 #include <vector>
 
+#include "google/protobuf/descriptor.pb.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/log/die_if_null.h"
@@ -3119,6 +3120,39 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson("FloatFieldNegativeInfinityNotQuoted", RECOMMENDED,
                             R"({"optionalFloat": -Infinity})");
 
+  // Special float values must use exact canonical spellings ("NaN", "Infinity",
+  // "-Infinity").
+  ExpectParseFailureForJson("FloatFieldNanLowercase", RECOMMENDED,
+                            R"({"optionalFloat": "nan"})");
+  ExpectParseFailureForJson("FloatFieldNanAllCapital", RECOMMENDED,
+                            R"({"optionalFloat": "NAN"})");
+  ExpectParseFailureForJson("FloatFieldNanSignedPositive", RECOMMENDED,
+                            R"({"optionalFloat": "+nan"})");
+  ExpectParseFailureForJson("FloatFieldNanSignedNegative", RECOMMENDED,
+                            R"({"optionalFloat": "-nan"})");
+  ExpectParseFailureForJson("FloatFieldNanLeadingWhitespace", RECOMMENDED,
+                            R"({"optionalFloat": " NaN"})");
+  ExpectParseFailureForJson("FloatFieldNanTrailingWhitespace", RECOMMENDED,
+                            R"({"optionalFloat": "NaN "})");
+  ExpectParseFailureForJson("FloatFieldInfinityShort", RECOMMENDED,
+                            R"({"optionalFloat": "inf"})");
+  ExpectParseFailureForJson("FloatFieldInfinityShortAllCapital", RECOMMENDED,
+                            R"({"optionalFloat": "INF"})");
+  ExpectParseFailureForJson("FloatFieldInfinityExplicitPlus", RECOMMENDED,
+                            R"({"optionalFloat": "+Infinity"})");
+  ExpectParseFailureForJson("FloatFieldInfinityLeadingWhitespace", RECOMMENDED,
+                            R"({"optionalFloat": " Infinity"})");
+  ExpectParseFailureForJson("FloatFieldInfinityTrailingWhitespace", RECOMMENDED,
+                            R"({"optionalFloat": "Infinity "})");
+  ExpectParseFailureForJson("FloatFieldNegativeInfinityShort", RECOMMENDED,
+                            R"({"optionalFloat": "-inf"})");
+  ExpectParseFailureForJson("FloatFieldNegativeInfinityShortAllCapital",
+                            RECOMMENDED, R"({"optionalFloat": "-INF"})");
+  ExpectParseFailureForJson("FloatFieldNegativeInfinityLeadingWhitespace",
+                            RECOMMENDED, R"({"optionalFloat": " -Infinity"})");
+  ExpectParseFailureForJson("FloatFieldNegativeInfinityTrailingWhitespace",
+                            RECOMMENDED, R"({"optionalFloat": "-Infinity "})");
+
   // Parsers should reject out-of-bound values.
   ExpectParseFailureForJson("FloatFieldTooSmall", REQUIRED,
                             R"({"optionalFloat": -3.502823e+38})");
@@ -3207,6 +3241,39 @@ void BinaryAndJsonConformanceSuiteImpl<
                             R"({"optionalDouble": Infinity})");
   ExpectParseFailureForJson("DoubleFieldNegativeInfinityNotQuoted", RECOMMENDED,
                             R"({"optionalDouble": -Infinity})");
+
+  // Special double values must use exact canonical spellings ("NaN",
+  // "Infinity", "-Infinity").
+  ExpectParseFailureForJson("DoubleFieldNanLowercase", RECOMMENDED,
+                            R"({"optionalDouble": "nan"})");
+  ExpectParseFailureForJson("DoubleFieldNanAllCapital", RECOMMENDED,
+                            R"({"optionalDouble": "NAN"})");
+  ExpectParseFailureForJson("DoubleFieldNanSignedPositive", RECOMMENDED,
+                            R"({"optionalDouble": "+nan"})");
+  ExpectParseFailureForJson("DoubleFieldNanSignedNegative", RECOMMENDED,
+                            R"({"optionalDouble": "-nan"})");
+  ExpectParseFailureForJson("DoubleFieldNanLeadingWhitespace", RECOMMENDED,
+                            R"({"optionalDouble": " NaN"})");
+  ExpectParseFailureForJson("DoubleFieldNanTrailingWhitespace", RECOMMENDED,
+                            R"({"optionalDouble": "NaN "})");
+  ExpectParseFailureForJson("DoubleFieldInfinityShort", RECOMMENDED,
+                            R"({"optionalDouble": "inf"})");
+  ExpectParseFailureForJson("DoubleFieldInfinityShortAllCapital", RECOMMENDED,
+                            R"({"optionalDouble": "INF"})");
+  ExpectParseFailureForJson("DoubleFieldInfinityExplicitPlus", RECOMMENDED,
+                            R"({"optionalDouble": "+Infinity"})");
+  ExpectParseFailureForJson("DoubleFieldInfinityLeadingWhitespace", RECOMMENDED,
+                            R"({"optionalDouble": " Infinity"})");
+  ExpectParseFailureForJson("DoubleFieldInfinityTrailingWhitespace",
+                            RECOMMENDED, R"({"optionalDouble": "Infinity "})");
+  ExpectParseFailureForJson("DoubleFieldNegativeInfinityShort", RECOMMENDED,
+                            R"({"optionalDouble": "-inf"})");
+  ExpectParseFailureForJson("DoubleFieldNegativeInfinityShortAllCapital",
+                            RECOMMENDED, R"({"optionalDouble": "-INF"})");
+  ExpectParseFailureForJson("DoubleFieldNegativeInfinityLeadingWhitespace",
+                            RECOMMENDED, R"({"optionalDouble": " -Infinity"})");
+  ExpectParseFailureForJson("DoubleFieldNegativeInfinityTrailingWhitespace",
+                            RECOMMENDED, R"({"optionalDouble": "-Infinity "})");
 
   // Parsers should reject out-of-bound values.
   ExpectParseFailureForJson("DoubleFieldTooSmall", REQUIRED,

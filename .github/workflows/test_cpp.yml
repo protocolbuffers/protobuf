@@ -57,7 +57,7 @@ jobs:
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test //third_party/utf8_range/..."
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:8.7.0-aarch64-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7 "
     name: ${{ matrix.config.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.config.name }}
-    runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.config.runner || 'ubuntu-24.04' }}
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
@@ -89,7 +89,7 @@ jobs:
       matrix:
         version: ['10.5', '13.4']
     name: ${{ matrix.config.continuous-only && inputs.continuous-prefix || '' }} Linux GCC ${{ matrix.version }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v7
@@ -201,7 +201,7 @@ jobs:
             flags: -DCMAKE_CXX_STANDARD=17 -Dprotobuf_FORCE_FETCH_DEPENDENCIES=ON
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux CMake ${{ matrix.name}}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
@@ -244,7 +244,7 @@ jobs:
             flags: -Dprotobuf_FORCE_FETCH_DEPENDENCIES=ON -Dprotobuf_BUILD_SHARED_LIBS=ON
             continuous-only: true
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }}Linux CMake ${{ matrix.name }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v7
@@ -311,7 +311,7 @@ jobs:
               golden: 'lib_shared'
     name: Check Installed Files
     needs: linux-cmake-install
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v7
@@ -342,7 +342,7 @@ jobs:
   # This test should always be skipped on presubmit
   linux-cmake-examples:
     name: ${{ inputs.continuous-prefix }} Linux CMake Examples
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout pending changes
         if: ${{ inputs.continuous-run }}
@@ -384,7 +384,7 @@ jobs:
             flags: -DCMAKE_CXX_STANDARD=20
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux CMake GCC ${{ matrix.name }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}

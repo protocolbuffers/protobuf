@@ -12,8 +12,8 @@ name: Tests
 on:
   # continuous
   schedule:
-    # Run every hour
-    - cron: "0 * * * *"
+    # Run every 2 hours
+    - cron: "0 */2 * * *"
 
   # postsubmit
   push:
@@ -66,7 +66,7 @@ jobs:
       (github.event_name == 'pull_request_target' &&
        github.event.pull_request.head.repo.full_name != 'protocolbuffers/protobuf')
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     outputs:
       # Store the sha for checkout so we can easily use it later.  For safe
       # events, this will be blank and use the defaults.
@@ -111,7 +111,7 @@ jobs:
     name: Remove safety tag
     needs: [set-vars]
     if: github.event.action == 'labeled'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       pull-requests: write
     steps:
@@ -249,7 +249,7 @@ jobs:
   all-blocking-tests:
     name: All Blocking Tests${{ github.event_name == 'pull_request_target' && ' (fork)' || ''}}
     needs: [set-vars, validate-yaml, bazel, cpp, java, python, ruby, php, php-ext, csharp, rust, upb, hpb, staleness]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: Check test results
         run: "${{ !contains(join(needs.*.result, ' '), 'failure') && !contains(join(needs.*.result, ' '), 'cancelled') }}"

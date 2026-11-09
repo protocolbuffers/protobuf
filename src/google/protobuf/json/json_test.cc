@@ -36,6 +36,7 @@
 #include "google/protobuf/util/type_resolver_util.h"
 #include "google/protobuf/stubs/status_macros.h"
 
+
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
@@ -1820,6 +1821,7 @@ TEST(JsonTest, MapsThroughCodegenWorksProperly) {
                 }
               )pb")));
 }
+
 
 }  // namespace
 }  // namespace json

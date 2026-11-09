@@ -717,7 +717,7 @@ TEST(DecodeTest, DecodeNonCanonicalExtensionAsUnknown) {
   uintptr_t iter = kUpb_Message_UnknownBegin;
   upb_MessageUnknown data;
   while (upb_Message_NextUnknown2(UPB_UPCAST(msg), &data, &iter)) {
-    if (data.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+    if (data.type == kUpb_MessageUnknownType_AuxField) {
       non_canonical_count++;
     } else if (data.type == kUpb_MessageUnknownType_StringView) {
       unknown_bytes_count++;
@@ -788,7 +788,7 @@ TEST(DecodeTest, DecodeExtensionAsUnknownWithPreexistingUnknown) {
   uintptr_t iter = kUpb_Message_UnknownBegin;
   upb_MessageUnknown data;
   while (upb_Message_NextUnknown2(UPB_UPCAST(msg), &data, &iter)) {
-    if (data.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+    if (data.type == kUpb_MessageUnknownType_AuxField) {
       non_canonical_count++;
     } else if (data.type == kUpb_MessageUnknownType_StringView) {
       unknown_bytes_count++;

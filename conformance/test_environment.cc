@@ -233,6 +233,12 @@ void ConformanceEnvironment::SetUp() {
 
 void ConformanceEnvironment::TearDown() {
   Statistics::From(ledger_).RecordProperties();
+  for (const std::string& entry : ledger_.OverexpandedWildcards()) {
+    ADD_FAILURE() << "The failure list entry " << entry << " matched more than "
+                  << kMaximumWildcardExpansions
+                  << " tests, which hides too much.  List the failing tests "
+                     "individually, or narrow the wildcard.";
+  }
   const bool partial_run = partial_run_override_.value_or(IsPartialRun());
 
   // The path the failure list was rewritten to, if --fix succeeded.

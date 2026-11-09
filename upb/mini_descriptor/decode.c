@@ -90,7 +90,7 @@ typedef struct {
   upb_Arena* arena;
   // Initially tracks the count of each field rep type; then, during assignment,
   // tracks the base offset for the next processed field of the given rep.
-  uint16_t rep_counts_offsets[kUpb_FieldRep_Max + 1];
+  uint32_t rep_counts_offsets[kUpb_FieldRep_Max + 1];
   uint32_t sub_count;
   bool is_extension;
 
@@ -384,6 +384,10 @@ static const char* upb_MtDecoder_DecodeOneofField(upb_MtDecoder* d,
   } else {
     UPB_ASSERT(current_align >= new_align);
   }
+  if ((size_t)(f - d->fields) + kOneofBase >=
+      kUpb_OneOfLayoutItem_IndexSentinel) {
+    upb_MdDecoder_ErrorJmp(&d->base, "Too many fields for oneof layout");
+  }
   // Prepend this field to the linked list.
   f->UPB_PRIVATE(offset) = item->field_index;
   item->field_index = (f - d->fields) + kOneofBase;
@@ -601,7 +605,7 @@ static void upb_MtDecoder_CalculateAlignments(upb_MtDecoder* d) {
   //    to trailing padding doesn't save us anything.
   for (upb_FieldRep rep = kUpb_FieldRep_1Byte; rep <= kUpb_FieldRep_Max;
        rep++) {
-    uint16_t count = d->rep_counts_offsets[rep];
+    uint32_t count = d->rep_counts_offsets[rep];
     if (count) {
       base = UPB_ALIGN_UP(base, upb_MtDecoder_AlignOfRep(rep, d->platform));
       // This entry now tracks the base offset for this field representation

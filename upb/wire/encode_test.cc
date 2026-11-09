@@ -57,8 +57,8 @@ static void DoEncodeExtensionMaxDepthExceeded(jmp_buf err, upb_encstate& e,
                                               upb_MessageValue ext_val,
                                               char*& buf, size_t& size) {
   if (UPB_SETJMP(err) == 0) {
-    UPB_PRIVATE(_upb_Encode_Extension)(&e, ext, ext_val, false, &buf, &size,
-                                       e.options);
+    UPB_PRIVATE(_upb_Encode_Extension)(&e, upb_MiniTableExtension_ToField(ext),
+                                       ext_val, false, &buf, &size, e.options);
     FAIL() << "Should have jumped";
   } else {
     upb_BackAlloc_Abort(&e.alloc);
@@ -222,7 +222,8 @@ TEST(EncodeTest, EncodeExtensionSuccess) {
   char* buf = e.alloc.limit;
   size_t size;
   upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Extension)(
-      &e, ext, ext_val, false, &buf, &size, e.options);
+      &e, upb_MiniTableExtension_ToField(ext), ext_val, false, &buf, &size,
+      e.options);
   EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
   EXPECT_GT(size, 0u);
 
@@ -259,7 +260,8 @@ TEST(EncodeTest, EncodeExtensionSuccessEmptyMessage) {
   char* buf = e.alloc.limit;
   size_t size;
   upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Extension)(
-      &e, ext, ext_val, false, &buf, &size, e.options);
+      &e, upb_MiniTableExtension_ToField(ext), ext_val, false, &buf, &size,
+      e.options);
   EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
   EXPECT_GT(size, 0u);
 
@@ -331,7 +333,7 @@ TEST(EncodeTest, SkipUnknownNonCanonicalExtensionSuccess) {
   upb_wire_test_TestExtensions* msg = upb_wire_test_TestExtensions_new(arena);
 
   // 1. Add a canonical extension (ext_i32, tag 100) to msg
-  upb_Extension* canonical_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+  upb_AuxField* canonical_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
       (upb_Message*)msg, upb_wire_test_ext_i32_ext, arena);
   upb_Extension_SetInt32(canonical_ext, 1000);
 
@@ -459,7 +461,7 @@ TEST(EncodeTest, SkipUnknownNonCanonicalExtensionDeterministicSuccess) {
   upb_wire_test_TestExtensions* msg = upb_wire_test_TestExtensions_new(arena);
 
   // 1. Add a canonical extension (ext_i32, tag 100) to msg
-  upb_Extension* canonical_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+  upb_AuxField* canonical_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
       (upb_Message*)msg, upb_wire_test_ext_i32_ext, arena);
   upb_Extension_SetInt32(canonical_ext, 1000);
 
@@ -538,7 +540,7 @@ TEST(EncodeTest, MixedExtensionAndUnknownOrderSuccess) {
 
   // 4. Add Canonical Extension 1 (Tag 101, ext_recursive)
   upb_wire_test_TestRecursive* sub_msg = upb_wire_test_TestRecursive_new(arena);
-  upb_Extension* canonical_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+  upb_AuxField* canonical_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
       (upb_Message*)msg, upb_wire_test_ext_recursive_ext, arena);
   upb_Extension_SetMessage(canonical_ext, (upb_Message*)sub_msg);
 

@@ -631,11 +631,13 @@ void FileGenerator::GenerateInternalForwardDeclarations(
               &::_pbi::implicit_weak_message_globals;
         )cc");
       } else {
-        p->Emit({{"type", MsgGlobalsInstanceType(instance, options_)},
-                 {"name", MsgGlobalsInstanceName(instance, options_)}},
-                R"cc(
-                  extern __attribute__((weak)) const $type$ $name$;
-                )cc");
+        p->Emit(
+            {{"type", MsgGlobalsInstanceType(instance, options_)},
+             {"name", MsgGlobalsInstanceName(instance, options_)}},
+            R"cc(
+              extern __attribute__((weak))
+              const $type$ PROTOBUF_ALIGNAS($pbi$::kClassDataAlignment) $name$;
+            )cc");
       }
     }
   }
@@ -1368,7 +1370,8 @@ class FileGenerator::ForwardDeclarations {
           R"cc(
             class $class$;
             struct $globals_type$;
-            $dllexport_decl $extern $const $$globals_type$ $globals_name$;
+            $dllexport_decl $extern $const $$globals_type$
+                PROTOBUF_ALIGNAS($pbi$::kClassDataAlignment) $globals_name$;
           )cc");
     }
 

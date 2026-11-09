@@ -53,7 +53,8 @@ enum CppFeatures_StringType : int;
 PROTOBUF_EXPORT extern const uint32_t CppFeatures_StringType_internal_data_[];
 class CppFeatures;
 struct CppFeaturesGlobalsTypeInternal;
-PROTOBUF_EXPORT extern const CppFeaturesGlobalsTypeInternal CppFeatures_globals_;
+PROTOBUF_EXPORT extern const CppFeaturesGlobalsTypeInternal
+    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) CppFeatures_globals_;
 }  // namespace pb
 namespace google {
 namespace protobuf {

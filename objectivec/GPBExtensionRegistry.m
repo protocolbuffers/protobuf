@@ -369,7 +369,9 @@ static GPBExtensionSectionEntry *GPBFindExtensionSectionEntryInLoadedImages(Clas
   return NULL;
 }
 
-// The immutable registry returned by +[GPBExtensionRegistry globalExtensionRegistry].
+// Looks up an extension in the extension sections of the loaded images. Used by
+// the registry returned by +[GPBExtensionRegistry globalExtensionRegistry] and
+// by every registry that it was added to (or copied from).
 //
 // Synchronization: lookups take no lock and never wait for another thread. The
 // thread that does the first lookup indexes the already loaded images; lookups
@@ -380,14 +382,8 @@ static GPBExtensionSectionEntry *GPBFindExtensionSectionEntryInLoadedImages(Clas
 // load may not see that image's extensions yet. Descriptor creation goes
 // through GPBResolveExtensionSectionEntry() (atomic compare-and-swap), which
 // the generated extension functions also use.
-__attribute__((objc_subclassing_restricted))
-@interface GPBGlobalSectionExtensionRegistry : NSObject<GPBExtensionRegistry>
-@end
-
-@implementation GPBGlobalSectionExtensionRegistry
-
-- (GPBExtensionDescriptor *)extensionForDescriptor:(GPBDescriptor *)descriptor
-                                       fieldNumber:(NSInteger)fieldNumber {
+static GPBExtensionDescriptor *GPBGlobalSectionExtensionForDescriptor(GPBDescriptor *descriptor,
+                                                                      NSInteger fieldNumber) {
   GPBExtensionSectionIndexingState state = GPBStartIndexingExtensionSections();
   Class messageClass = descriptor.messageClass;
   ssize_t key = fieldNumber;
@@ -401,12 +397,19 @@ __attribute__((objc_subclassing_restricted))
   return GPBResolveExtensionSectionEntryForGlobalRegistry(entry);
 }
 
-@end
-
 #pragma mark - GPBExtensionRegistry
 
 @implementation GPBExtensionRegistry {
   CFMutableDictionaryRef mutableClassMap_;
+  // YES if lookups that miss mutableClassMap_ fall back to the extension
+  // sections of the loaded images (GPBGlobalSectionExtensionForDescriptor()).
+  // Set on the +globalExtensionRegistry instance, and on any registry it is
+  // added to with -addExtensions: or copied to with -copy, so merging the
+  // global registry is O(1) and creates no descriptors.
+  BOOL includesGlobalSectionExtensions_;
+  // YES only for the +globalExtensionRegistry instance, which is shared by the
+  // whole process and therefore must not be mutated.
+  BOOL isGlobalExtensionRegistry_;
 }
 
 - (instancetype)init {
@@ -439,7 +442,30 @@ __attribute__((objc_subclassing_restricted))
   return result;
 }
 
+// Returns YES (after asserting in debug builds) if `registry` is the
+// +globalExtensionRegistry instance, which must not be mutated.
+static BOOL GPBIsImmutableGlobalExtensionRegistry(GPBExtensionRegistry *registry, SEL selector) {
+  if (!registry->isGlobalExtensionRegistry_) {
+    return NO;
+  }
+  // `selector` is only used by the assert, which NS_BLOCK_ASSERTIONS can remove
+  // even when DEBUG is set.
+  (void)selector;
+#if defined(DEBUG) && DEBUG
+  NSCAssert(
+      NO,
+      @"-[GPBExtensionRegistry %@] called on +[GPBExtensionRegistry globalExtensionRegistry], "
+      @"which is immutable; -copy it (or add it to another registry with -addExtensions:) "
+      @"and mutate that.",
+      NSStringFromSelector(selector));
+#endif
+  return YES;
+}
+
 - (void)addExtension:(GPBExtensionDescriptor *)extension {
+  if (GPBIsImmutableGlobalExtensionRegistry(self, _cmd)) {
+    return;
+  }
   if (extension == nil) {
     return;
   }
@@ -468,6 +494,9 @@ __attribute__((objc_subclassing_restricted))
   ssize_t key = fieldNumber;
   GPBExtensionDescriptor *result =
       (extensionMap ? CFDictionaryGetValue(extensionMap, (const void *)key) : nil);
+  if (result == nil && includesGlobalSectionExtensions_) {
+    result = GPBGlobalSectionExtensionForDescriptor(descriptor, fieldNumber);
+  }
   return result;
 }
 
@@ -493,19 +522,34 @@ static void CopySubDictionary(const void *key, const void *value, void *context)
 }
 
 - (void)addExtensions:(GPBExtensionRegistry *)registry {
+  if (GPBIsImmutableGlobalExtensionRegistry(self, _cmd)) {
+    return;
+  }
   if (registry == nil) {
     // In the case where there are no extensions just ignore.
     return;
   }
-  CFDictionaryApplyFunction(registry->mutableClassMap_, CopySubDictionary, mutableClassMap_);
+  if (registry->includesGlobalSectionExtensions_) {
+    // O(1): lookups that miss this registry's own extensions fall back to the
+    // extension sections, instead of copying every linked extension.
+    includesGlobalSectionExtensions_ = YES;
+  }
+  if (CFDictionaryGetCount(registry->mutableClassMap_) != 0) {
+    CFDictionaryApplyFunction(registry->mutableClassMap_, CopySubDictionary, mutableClassMap_);
+  }
 }
 
-+ (id<GPBExtensionRegistry>)globalExtensionRegistry {
-  static GPBGlobalSectionExtensionRegistry *globalRegistry = nil;
++ (GPBExtensionRegistry *)globalExtensionRegistry {
+  static GPBExtensionRegistry *globalRegistry = nil;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    // Only creates the object; the sections are read on the first lookup.
-    globalRegistry = [[GPBGlobalSectionExtensionRegistry alloc] init];
+    // Only creates the object; the sections are read on the first lookup. The
+    // flags are set before dispatch_once publishes the instance and never
+    // change after that, so reading them needs no synchronization.
+    GPBExtensionRegistry *registry = [[GPBExtensionRegistry alloc] init];
+    registry->includesGlobalSectionExtensions_ = YES;
+    registry->isGlobalExtensionRegistry_ = YES;
+    globalRegistry = registry;
   });
   return globalRegistry;
 }

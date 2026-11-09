@@ -198,7 +198,7 @@ static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
   size_t count1 = 0;
   size_t iter2 = kUpb_Message_ExtensionBegin;
   while (upb_Message_NextExtensionField(msg2, &f, &val2, &iter2)) {
-    const upb_Extension* ext1 = UPB_PRIVATE(_upb_Message_GetExtension)(msg1, f);
+    const upb_AuxField* ext1 = UPB_PRIVATE(_upb_Message_GetExtension)(msg1, f);
     if (!ext1) return false;
 
     count1++;

@@ -159,8 +159,9 @@ static_assert(alignof(ListValueGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ListValueGlobalsTypeInternal ListValue_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ListValueGlobalsTypeInternal
+        PROTOBUF_ALIGNAS(
+            ::_pbi::kClassDataAlignment) ListValue_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class Struct::_Internal {
  public:
   using HasBits = decltype(::std::declval<Struct>()._impl_._has_bits_);
@@ -279,8 +280,9 @@ static_assert(alignof(StructGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const StructGlobalsTypeInternal Struct_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const StructGlobalsTypeInternal
+        PROTOBUF_ALIGNAS(
+            ::_pbi::kClassDataAlignment) Struct_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct_FieldsEntry_DoNotUse final
     : public ::google::protobuf::internal::MapEntry<::std::string, ::google::protobuf::Message,
                              ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
@@ -424,8 +426,9 @@ static_assert(alignof(Struct_FieldsEntry_DoNotUseGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Struct_FieldsEntry_DoNotUseGlobalsTypeInternal Struct_FieldsEntry_DoNotUse_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Struct_FieldsEntry_DoNotUseGlobalsTypeInternal
+        PROTOBUF_ALIGNAS(
+            ::_pbi::kClassDataAlignment) Struct_FieldsEntry_DoNotUse_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class Value::_Internal {
  public:
   static constexpr ::int32_t kOneofCaseOffset =
@@ -550,8 +553,9 @@ static_assert(alignof(ValueGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ValueGlobalsTypeInternal Value_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ValueGlobalsTypeInternal
+        PROTOBUF_ALIGNAS(
+            ::_pbi::kClassDataAlignment) Value_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 }  // namespace protobuf
 }  // namespace google
 static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
@@ -724,12 +728,12 @@ Struct::~Struct() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Struct::SharedDtor(
     MessageLite& self) {
   Struct& this_ = static_cast<Struct&>(self);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -982,15 +986,15 @@ Value::~Value() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Value::SharedDtor(
     MessageLite& self) {
   Value& this_ = static_cast<Value&>(self);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if (this_.has_kind()) {
     this_.clear_kind();
   }
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 void Value::clear_kind() {
@@ -1331,12 +1335,12 @@ ListValue::~ListValue() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void ListValue::SharedDtor(
     MessageLite& self) {
   ListValue& this_ = static_cast<ListValue&>(self);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL

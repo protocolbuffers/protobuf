@@ -72,13 +72,18 @@ def _py_proto_aspect_impl(target, ctx):
     else:
         proto_lang_toolchain_info = getattr(ctx.attr, "_aspect_proto_toolchain")[proto_common.ProtoLangToolchainInfo]
 
-    api_deps = [proto_lang_toolchain_info.runtime]
+    api_deps = [proto_lang_toolchain_info.runtime] if proto_lang_toolchain_info.runtime else []
 
     generated_sources = []
     generated_stubs = []
     proto_info = target[ProtoInfo]
     proto_root = proto_info.proto_source_root
-    if proto_info.direct_sources:
+    if proto_info.direct_sources and proto_common.experimental_should_generate_code(
+        proto_info,
+        proto_lang_toolchain_info,
+        "py_proto_library",
+        target.label,
+    ):
         # Generate py files
         generated_sources = proto_common.declare_generated_files(
             actions = ctx.actions,

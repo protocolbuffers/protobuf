@@ -206,6 +206,24 @@ void upb_DecodeFastField_SetArraySize(upb_DecodeFastArray* field,
       upb_DecodeFast_ValueBytes(type);
 }
 
+// Tells the compiler that the array being appended to (both the upb_Array and
+// its elements) is not part of the decoder. Without this, every element store
+// (an untyped memcpy()) and the final size store force the compiler to reload
+// decoder state such as `d->input.limit_ptr`.
+//
+// This is true because arrays are always allocated from an arena, while every
+// upb_Decoder is a local variable (in decode.c and convert.c) and never
+// arena-allocated. If that ever changes, this must be removed.
+//
+// Call this at the top of each loop iteration, so that it names the current
+// write cursor rather than only the initial one.
+UPB_FORCEINLINE
+void upb_DecodeFast_AssumeArrayIsSeparate(const upb_Decoder* d,
+                                          const upb_DecodeFastArray* field) {
+  UPB_ASSUME_SEPARATE(field->dst, d);
+  UPB_ASSUME_SEPARATE(field->arr, d);
+}
+
 UPB_FORCEINLINE
 bool upb_DecodeFast_TagMatches(uint16_t expected, uint16_t tag,
                                upb_DecodeFast_TagSize tagsize) {
@@ -441,6 +459,7 @@ bool upb_DecodeFast_Unpacked(upb_Decoder* d, const char** ptr, upb_Message* msg,
 
   bool next_tag_matches;
   do {
+    upb_DecodeFast_AssumeArrayIsSeparate(d, &arr);
     if (!single(d, &p, arr.dst, type, ret, ctx)) {
       upb_DecodeFastField_SetArraySize(&arr, type);
       return false;

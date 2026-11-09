@@ -6,7 +6,9 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@bazel_skylib//lib:versions.bzl", "versions")
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_cc//cc:defs.bzl", "objc_library")
+load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
@@ -75,15 +77,37 @@ def _CsharpOuts(srcs):
         for src in srcs
     ]
 
-_PROTOC_ATTRS = {}
+_PROTOC_ATTRS = toolchains.if_legacy_toolchain({
+    "_proto_compiler": attr.label(
+        cfg = "exec",
+        executable = True,
+        allow_files = True,
+        default = "//bazel/flags:proto_compiler",
+    ),
+    "_protocopt": attr.label(
+        default = "//bazel/flags:protocopt",
+    ),
+})
 _PROTOC_FRAGMENTS = ["proto"]
-_PROTOC_TOOLCHAINS = [config_common.toolchain_type(toolchains.PROTO_TOOLCHAIN, mandatory = False)]
+_PROTOC_TOOLCHAINS = toolchains.use_toolchain(toolchains.PROTO_TOOLCHAIN)
 
 def _protoc_files_to_run(ctx):
-    toolchain = ctx.toolchains[toolchains.PROTO_TOOLCHAIN]
-    if not toolchain:
-        fail("Protocol compiler toolchain could not be resolved.")
-    return toolchain.proto.proto_compiler
+    if toolchains.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION:
+        toolchain = ctx.toolchains[toolchains.PROTO_TOOLCHAIN]
+        if not toolchain:
+            fail("Protocol compiler toolchain could not be resolved.")
+        return toolchain.proto.proto_compiler
+    else:
+        return ctx.attr._proto_compiler.files_to_run
+
+def _protoc_opts(ctx):
+    if toolchains.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION:
+        toolchain = ctx.toolchains[toolchains.PROTO_TOOLCHAIN]
+        if not toolchain:
+            fail("Protocol compiler toolchain could not be resolved.")
+        return toolchain.proto.protoc_opts
+    else:
+        return ctx.attr._protocopt[BuildSettingInfo].value
 
 ProtoGenInfo = provider(
     fields = ["srcs", "import_flags", "deps"],
@@ -348,6 +372,50 @@ internal_gen_well_known_protos_java = rule(
         ),
         "javalite": attr.bool(
             default = False,
+        ),
+    } | _PROTOC_ATTRS,
+    fragments = _PROTOC_FRAGMENTS,
+    toolchains = _PROTOC_TOOLCHAINS,
+)
+
+def _internal_gen_well_known_protos_py_impl(ctx):
+    proto_info = ctx.attr.dep[ProtoInfo]
+    generated_sources = proto_common.declare_generated_files(
+        actions = ctx.actions,
+        proto_info = proto_info,
+        extension = "_pb2.py",
+        name_mapper = lambda name: name.replace("-", "_").replace(".", "/"),
+    )
+    proto_root = proto_info.proto_source_root
+    if proto_root.startswith(ctx.bin_dir.path):
+        proto_root = proto_root[len(ctx.bin_dir.path) + 1:]
+    plugin_output = ctx.bin_dir.path + "/" + proto_root
+
+    proto_lang_toolchain_info = proto_common.ProtoLangToolchainInfo(
+        out_replacement_format_flag = "--python_out=%s",
+        output_files = "legacy",
+        mnemonic = "GenProto",
+        progress_message = "Generating Python proto_library %{label}",
+        proto_compiler = _protoc_files_to_run(ctx),
+        protoc_opts = _protoc_opts(ctx),
+        plugin = None,
+        toolchain_type = toolchains.PROTO_TOOLCHAIN if toolchains.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION else None,
+    )
+    proto_common.compile(
+        actions = ctx.actions,
+        proto_info = proto_info,
+        proto_lang_toolchain_info = proto_lang_toolchain_info,
+        generated_files = generated_sources,
+        plugin_output = plugin_output,
+    )
+    return [DefaultInfo(files = depset(generated_sources))]
+
+internal_gen_well_known_protos_py = rule(
+    implementation = _internal_gen_well_known_protos_py_impl,
+    attrs = {
+        "dep": attr.label(
+            mandatory = True,
+            providers = [ProtoInfo],
         ),
     } | _PROTOC_ATTRS,
     fragments = _PROTOC_FRAGMENTS,

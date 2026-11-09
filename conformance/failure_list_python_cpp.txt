@@ -9,6 +9,34 @@
 
 Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing1                                                         # Should have failed to parse or matched expected output but did not.
 Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing2                                                         # Should have failed to parse or matched expected output but did not.
+Recommended.*.JsonInput.DoubleFieldInfinityExplicitPlus                                                            # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldInfinityLeadingWhitespace                                                       # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldInfinityShort                                                                   # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldInfinityShortAllCapital                                                         # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldInfinityTrailingWhitespace                                                      # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldNanAllCapital                                                                   # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldNanLeadingWhitespace                                                            # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldNanSignedNegative                                                               # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldNanSignedPositive                                                               # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldNanTrailingWhitespace                                                           # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldNegativeInfinityLeadingWhitespace                                               # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldNegativeInfinityShort                                                           # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldNegativeInfinityShortAllCapital                                                 # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldNegativeInfinityTrailingWhitespace                                              # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldInfinityExplicitPlus                                                             # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldInfinityLeadingWhitespace                                                        # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldInfinityShort                                                                    # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldInfinityShortAllCapital                                                          # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldInfinityTrailingWhitespace                                                       # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNanAllCapital                                                                    # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNanLeadingWhitespace                                                             # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNanSignedNegative                                                                # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNanSignedPositive                                                                # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNanTrailingWhitespace                                                            # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNegativeInfinityLeadingWhitespace                                                # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNegativeInfinityShort                                                            # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNegativeInfinityShortAllCapital                                                  # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNegativeInfinityTrailingWhitespace                                               # Should have failed to parse, but didn't.
 Required.*.JsonInput.DoubleFieldFalseValue                                                                         # Should have failed to parse, but didn't.
 Required.*.JsonInput.DoubleFieldStringValueArabicIndicDigits                                                       # Should have failed to parse, but didn't.
 Required.*.JsonInput.DoubleFieldStringValueFullwidthDigits                                                         # Should have failed to parse, but didn't.

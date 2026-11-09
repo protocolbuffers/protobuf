@@ -70,8 +70,8 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
    *
    * <p>TODO: mark this private and final (breaking change)
    */
-  protected
-  UnknownFieldSet unknownFields;
+  // Marking transient to exclude unknown fields from output of incorrectly applied GSON.
+  protected transient UnknownFieldSet unknownFields;
 
   protected GeneratedMessage() {
     unknownFields = UnknownFieldSet.getDefaultInstance();

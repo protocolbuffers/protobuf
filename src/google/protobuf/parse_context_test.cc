@@ -12,23 +12,34 @@
 #include <cstdint>
 #include <limits>
 #include <string>
+#include <type_traits>
 #include <vector>
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/test_zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/message_lite.h"
+#include "google/protobuf/port.h"
+#include "google/protobuf/repeated_field.h"
+#include "google/protobuf/testing/protobuf_test.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/wire_format_lite.h"
 #include "utf8_validity.h"
 
 namespace google {
 namespace protobuf {
 namespace internal {
 namespace {
+
+using ::testing::ElementsAreArray;
 
 constexpr int kTooLargeSize =
     static_cast<int>(std::numeric_limits<uint32_t>::max());
@@ -393,6 +404,120 @@ TEST(VerifyUTF8AndFlush, InvalidSeparatelyButValidTogether) {
   VerifyUTF8AndCopy({std::string("\xf0"), std::string("\x9f\x98\x80")});
 }
 
+
+template <typename T>
+RepeatedField<T>& PackedFixedField(proto2_unittest::TestPackedTypes& msg) {
+  if constexpr (std::is_same_v<T, uint32_t>) {
+    return *msg.mutable_packed_fixed32();
+  } else {
+    static_assert(std::is_same_v<T, uint64_t>);
+    return *msg.mutable_packed_fixed64();
+  }
+}
+
+template <typename T>
+std::string SerializePackedFixed(int count) {
+  proto2_unittest::TestPackedTypes msg;
+  for (int i = 0; i < count; ++i) {
+    PackedFixedField<T>(msg).Add(static_cast<T>(i));
+  }
+  return msg.SerializeAsString();
+}
+
+// Returns a packed fixed field of type T whose length prefix claims `length`
+// bytes but which is followed by only 64 bytes of payload.
+template <typename T>
+std::string TruncatedPackedFixed(uint32_t length) {
+  constexpr int kFieldNumber =
+      std::is_same_v<T, uint32_t>
+          ? proto2_unittest::TestPackedTypes::kPackedFixed32FieldNumber
+          : proto2_unittest::TestPackedTypes::kPackedFixed64FieldNumber;
+  std::string wire;
+  {
+    io::StringOutputStream output(&wire);
+    io::CodedOutputStream coded(&output);
+    coded.WriteTag(WireFormatLite::MakeTag(
+        kFieldNumber, WireFormatLite::WIRETYPE_LENGTH_DELIMITED));
+    coded.WriteVarint32(length);
+  }
+  wire.append(64, '\x01');
+  return wire;
+}
+
+// Parses `wire` into `msg` from chunks of `block_size` bytes, or from a single
+// chunk if `block_size` is -1.
+bool ParseInChunks(absl::string_view wire, int block_size, MessageLite& msg) {
+  io::ArrayInputStream input(wire.data(), static_cast<int>(wire.size()),
+                             block_size);
+  return msg.ParseFromZeroCopyStream(&input);
+}
+
+// A packed fixed field split across many chunks must be reserved once rather
+// than grown chunk by chunk. On an arena, each growth step would leave the old
+// array behind, so the arena usage must match parsing from a single chunk.
+PB_TEST(ReadPackedFixedTest, ChunkedInputAllocatesOnce) {
+  constexpr bool kIs64Bit =
+      PB_TEST_CHOOSE_CONSTEXPR((false, true), {"fixed32", "fixed64"});
+  using T = std::conditional_t<kIs64Bit, uint64_t, uint32_t>;
+  const int block_size = PB_TEST_CHOOSE_VALUE((7, 64), "block_size");
+  const int existing = PB_TEST_CHOOSE_VALUE((0, 37), "existing");
+  const std::string wire =
+      SerializePackedFixed<T>(existing) + SerializePackedFixed<T>(1000);
+
+  Arena flat_arena;
+  auto* flat = Arena::Create<proto2_unittest::TestPackedTypes>(&flat_arena);
+  ASSERT_TRUE(ParseInChunks(wire, -1, *flat));
+  Arena chunked_arena;
+  auto* chunked =
+      Arena::Create<proto2_unittest::TestPackedTypes>(&chunked_arena);
+  ASSERT_TRUE(ParseInChunks(wire, block_size, *chunked));
+
+  EXPECT_THAT(PackedFixedField<T>(*chunked),
+              ElementsAreArray(PackedFixedField<T>(*flat)));
+  EXPECT_EQ(chunked_arena.SpaceUsed(), flat_arena.SpaceUsed());
+}
+
+// The tests below check SpaceAllocated() rather than SpaceUsed() because a
+// failed parse trims the unused reservation off the arena's current block.
+PB_TEST(ReadPackedFixedTest, LengthPastLimitIsNotReserved) {
+  constexpr bool kIs64Bit =
+      PB_TEST_CHOOSE_CONSTEXPR((false, true), {"fixed32", "fixed64"});
+  using T = std::conditional_t<kIs64Bit, uint64_t, uint32_t>;
+  const std::string wire = TruncatedPackedFixed<T>(uint32_t{kSafeStringSize});
+  Arena arena;
+  auto* msg = Arena::Create<proto2_unittest::TestPackedTypes>(&arena);
+  io::ArrayInputStream input(wire.data(), static_cast<int>(wire.size()),
+                             /*block_size=*/16);
+  EXPECT_FALSE(msg->ParseFromBoundedZeroCopyStream(
+      &input, static_cast<int>(wire.size())));
+  // Without the HasEnoughTillLimit() check, ReadPackedFixed would reserve
+  // kSafeStringSize bytes upfront and SpaceAllocated() would be at least
+  // kSafeStringSize (as verified on an unbounded stream in
+  // HugeLengthReserveIsCapped below). With the stream bounded to wire.size(),
+  // the parser only allocates space for the message and the 64-byte truncated
+  // payload before failing at EOF.
+  EXPECT_LT(arena.SpaceAllocated(), uint64_t{kSafeStringSize});
+}
+
+PB_TEST(ReadPackedFixedTest, HugeLengthReserveIsCapped) {
+  constexpr bool kIs64Bit =
+      PB_TEST_CHOOSE_CONSTEXPR((false, true), {"fixed32", "fixed64"});
+  using T = std::conditional_t<kIs64Bit, uint64_t, uint32_t>;
+  // Returns the arena space allocated by a failed parse of a field whose length
+  // prefix claims `length` bytes on an unbounded stream.
+  auto space_allocated = [](uint32_t length) {
+    Arena arena;
+    auto* msg = Arena::Create<proto2_unittest::TestPackedTypes>(&arena);
+    EXPECT_FALSE(ParseInChunks(TruncatedPackedFixed<T>(length),
+                               /*block_size=*/16, *msg));
+    return arena.SpaceAllocated();
+  };
+  // A claimed length of kSafeStringSize is reserved in full, and any larger
+  // claimed length is capped at kSafeStringSize.
+  const uint64_t at_cap = space_allocated(uint32_t{kSafeStringSize});
+  EXPECT_GE(at_cap, uint64_t{kSafeStringSize});
+  EXPECT_EQ(space_allocated(2 * uint32_t{kSafeStringSize}), at_cap);
+}
 
 }  // namespace
 }  // namespace internal

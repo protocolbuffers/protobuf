@@ -620,7 +620,7 @@ static void upb_Message_ConvertExtension(upb_Converter* c, upb_Message* dst,
   if (dst_f == NULL) {
     // Since this extension is not known in the destination schema, convert it
     // to a non-canonical extension.
-    upb_Extension* msg_ext = UPB_PRIVATE(
+    upb_AuxField* msg_ext = UPB_PRIVATE(
         _upb_Message_CreateNonCanonicalExtension)(dst, ext, c->arena);
     if (!msg_ext) {
       upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
@@ -852,11 +852,11 @@ static void upb_Message_ConvertInternal(upb_Converter* c, upb_Message* dst,
       _upb_Decoder_DecodeMessage(d, ptr, dst, dst_mt);
       UPB_ASSERT(d->end_group == DECODE_NOGROUP);
     } else {
-      UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension);
-      const upb_Extension* ext = unknown.value.extension;
-      upb_Message_ConvertExtension(c, dst, dst_mt,
-                                   upb_Extension_MiniTableExtension(ext),
-                                   upb_Extension_GetValue(ext), extreg, depth);
+      UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_AuxField);
+      const upb_AuxField* ext = unknown.value.aux_field;
+      upb_Message_ConvertExtension(
+          c, dst, dst_mt, UPB_PRIVATE(_upb_Extension_MiniTableExtension)(ext),
+          upb_Extension_GetValue(ext), extreg, depth);
     }
   }
 }

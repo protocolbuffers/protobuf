@@ -688,7 +688,8 @@ MessageLite* ExtensionSet::AddMessage(const MessageLite& parent, int number,
 
   return reinterpret_cast<internal::RepeatedPtrFieldBase*>(
              extension->ptr.repeated_message_value)
-      ->AddFromClassData<GenericTypeHandler<MessageLite>>(arena, class_data);
+      ->AddFromClassData<GenericTypeHandler<MessageLite>>(GetSerialArena(arena),
+                                                          class_data);
 }
 
 // Defined in extension_set_heavy.cc.

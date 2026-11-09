@@ -1030,6 +1030,12 @@ static void resolve_default(upb_DefBuilder* ctx, upb_FieldDef* f,
                            f->full_name);
     }
 
+    if (upb_FieldDef_IsRepeated(f)) {
+      _upb_DefBuilder_Errf(ctx,
+                           "repeated fields cannot have explicit defaults (%s)",
+                           f->full_name);
+    }
+
     parse_default(ctx, defaultval.data, defaultval.size, f);
     f->has_default = true;
   } else {

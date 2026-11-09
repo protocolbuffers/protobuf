@@ -2038,15 +2038,39 @@ class JsonFormatTest(JsonFormatBase):
     with self.assertRaises(json_format.ParseError):
       json_format.Parse('{"armor": ["gr8 helm"]}', msg)
 
-  def testParseBooleanInputForEnum(self):
-    # In Python, bool is a subclass of int (int(True) == 1). We document that
-    # JSON boolean literals like 'true' are accepted for enum fields and coerced
-    # to integer enum values.
+  def testParseBooleanInputForEnumWarns(self):
+    # In Python, bool is a subclass of int (int(True) == 1), so JSON boolean
+    # literals like 'true' are currently coerced to integer enum values. This
+    # is non-conformant and will become a ParseError in a future release, so a
+    # FutureWarning is emitted in the meantime.
     msg = json_enumval_custom_string_pb2.Knight()
-    json_format.Parse('{"armor": true}', msg)
+    with self.assertWarns(FutureWarning):
+      json_format.Parse('{"armor": true}', msg)
     self.assertEqual(
         msg.armor, json_enumval_custom_string_pb2.Armor.ARMOR_GREAT_HELM
     )
+    with self.assertWarns(FutureWarning):
+      json_format.Parse('{"armor": false}', msg)
+    self.assertEqual(
+        msg.armor, json_enumval_custom_string_pb2.Armor.ARMOR_UNKNOWN
+    )
+
+  @parameterized.named_parameters(
+      ('Float', 'float_value'),
+      ('Double', 'double_value'),
+  )
+  def testParseBooleanInputForFloatWarns(self, field_name):
+    # In Python, bool is a subclass of int (float(True) == 1.0), so JSON
+    # boolean literals are currently coerced to float/double values. This is
+    # non-conformant and will become a ParseError in a future release, so a
+    # FutureWarning is emitted in the meantime.
+    msg = json_format_proto3_pb2.TestMessage()
+    with self.assertWarns(FutureWarning):
+      json_format.Parse('{"%s": true}' % field_name, msg)
+    self.assertEqual(getattr(msg, field_name), 1.0)
+    with self.assertWarns(FutureWarning):
+      json_format.Parse('{"%s": false}' % field_name, msg)
+    self.assertEqual(getattr(msg, field_name), 0.0)
 
   def testParseCustomStringCaseMismatchFails(self):
     msg = json_enumval_custom_string_pb2.Knight()

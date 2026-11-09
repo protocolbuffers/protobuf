@@ -209,7 +209,7 @@ TEST(CompareTest, MessageIsEqualWithDifferentNonCanonicalExtensions) {
   upb_MessageUnknown udata;
   uintptr_t uiter = kUpb_Message_UnknownBegin;
   ASSERT_TRUE(upb_Message_NextUnknown2(UPB_UPCAST(msg1), &udata, &uiter));
-  EXPECT_EQ(udata.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  EXPECT_EQ(udata.type, kUpb_MessageUnknownType_AuxField);
 
   // 5. Verify upb_Message_IsEqual yields false because they are different!
   bool is_equal = upb_Message_IsEqual(UPB_UPCAST(msg1), UPB_UPCAST(msg2),

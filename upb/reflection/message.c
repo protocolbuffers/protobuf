@@ -180,11 +180,11 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
     for (; (i - n) < in->size; i++) {
       upb_TaggedAuxPtr tagged_ptr = in->aux_data[i - n];
       if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
-        const upb_Extension* ext =
+        const upb_AuxField* ext =
             upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
         *out_val = upb_Extension_GetValue(ext);
         *out_f = upb_DefPool_FindExtensionByMiniTable(
-            ext_pool, upb_Extension_MiniTableExtension(ext));
+            ext_pool, UPB_PRIVATE(_upb_Extension_MiniTableExtension)(ext));
         *iter = i;
         return true;
       }

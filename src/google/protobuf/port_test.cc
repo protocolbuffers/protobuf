@@ -139,6 +139,16 @@ TEST(PortTest, PrefetchWorksWithValidOffsets) {
 
 #endif  // ABSL_HAVE_BUILTIN(__builtin_prefetch) && defined(__clang__)
 
+TEST(PortTest, HasAnySanitizer) {
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER) ||   \
+    defined(ABSL_HAVE_HWADDRESS_SANITIZER) || \
+    defined(ABSL_HAVE_MEMORY_SANITIZER) || defined(ABSL_HAVE_THREAD_SANITIZER)
+  EXPECT_TRUE(HasAnySanitizer());
+#else
+  EXPECT_FALSE(HasAnySanitizer());
+#endif
+}
+
 TEST(PortTest, CheckedAdd) {
   int n = (std::numeric_limits<int>::max)();
   EXPECT_EQ(n, CheckedAdd(n - 1, 1));

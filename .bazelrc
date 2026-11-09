@@ -36,6 +36,10 @@ common --enable_platform_specific_config
 
 common --incompatible_check_testonly_for_output_files
 
+# Mirror of module source archives on BCR to avoid upstream download flakes
+# (e.g. www.lua.org timeouts in b/582757297).
+common --module_mirrors=https://bcr.cloudflaremirrors.com
+
 # Import Bazel 9 specific flags (such as --repo_contents_cache)
 # TODO: Remove it when --repo_contents_cache issue
 # has been resolved in bazel

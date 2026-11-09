@@ -97,6 +97,8 @@ MockCodeGenerator::MockCodeGenerator(absl::string_view name) : name_(name) {
     maximum_edition_ = Edition::EDITION_99997_TEST_ONLY;
   } else if (key == "low_minimum") {
     maximum_edition_ = Edition::EDITION_1_TEST_ONLY;
+  } else if (key == "strip_default_json_name") {
+    strip_default_json_name_ = true;
   }
 }
 

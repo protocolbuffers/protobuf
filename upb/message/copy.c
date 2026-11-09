@@ -231,8 +231,8 @@ static bool upb_Message_Array_DeepClone(const upb_Array* array,
 }
 
 static bool upb_Clone_ExtensionValue(const upb_MiniTableField* field,
-                                     const upb_Extension* source,
-                                     upb_Extension* dest, upb_Arena* arena) {
+                                     const upb_AuxField* source,
+                                     upb_AuxField* dest, upb_Arena* arena) {
   upb_MessageValue val = upb_Extension_GetValue(source);
   if (!upb_Clone_MessageValue(&val, upb_MiniTableField_CType(field),
                               upb_MiniTable_SubMessage(field), arena)) {
@@ -325,15 +325,15 @@ static upb_Message* _upb_Message_Copy_Depth(upb_Message* dst,
 
   for (size_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    if (upb_TaggedAuxPtr_IsNonCanonicalExtension(tagged_ptr)) {
+    if (upb_TaggedAuxPtr_IsUnknownAuxField(tagged_ptr)) {
       // A non-canonical extension references a `upb_MiniTableExtension` (and
       // possibly its extendee and sub-message/enum tables) that belongs to a
       // foreign schema, e.g. the source schema of a `upb_Message_Convert()`.
       // That schema is not guaranteed to outlive the clone, so we must not
       // copy the pointer. Instead, serialize the extension into the
       // destination arena and store it as unknown bytes, preserving order.
-      const upb_Extension* msg_ext =
-          upb_TaggedAuxPtr_NonCanonicalExtension(tagged_ptr);
+      const upb_AuxField* msg_ext =
+          upb_TaggedAuxPtr_UnknownAuxField(tagged_ptr);
       upb_StringView encoded;
       if (upb_EncodeExtension(msg_ext, arena, &encoded, /*encode_options=*/0) !=
           kUpb_EncodeStatus_Ok) {
@@ -345,11 +345,11 @@ static upb_Message* _upb_Message_Copy_Depth(upb_Message* dst,
         goto err;
       }
     } else if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
-      const upb_Extension* msg_ext =
+      const upb_AuxField* msg_ext =
           upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
       const upb_MiniTableField* field = upb_Extension_MiniTableField(msg_ext);
-      upb_Extension* dst_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
-          dst, upb_Extension_MiniTableExtension(msg_ext), arena);
+      upb_AuxField* dst_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+          dst, UPB_PRIVATE(_upb_Extension_MiniTableExtension)(msg_ext), arena);
       if (!dst_ext) goto err;
 
       if (upb_MiniTableField_IsScalar(field)) {

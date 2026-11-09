@@ -71,9 +71,12 @@ __attribute__((objc_subclassing_restricted))
  * `experimental_global_extension_registry` generator option (C function
  * extensions only).
  *
- * The returned object is immutable and can be used from any thread. It is not
- * a `GPBExtensionRegistry` instance, but it can be passed to any API that takes
- * an `id<GPBExtensionRegistry>`.
+ * The returned registry is shared by the whole process and is immutable: it can
+ * be used from any thread, and calling `-addExtension:` or `-addExtensions:` on
+ * it asserts in debug builds and does nothing otherwise. To combine it with
+ * other extensions, `-copy` it, or add it to another registry with
+ * `-addExtensions:`; either is O(1), and the resulting registry also finds every
+ * extension the global registry finds.
  *
  * Extensions in an image that is loaded with dlopen() after data was parsed
  * are not applied to that already parsed data (the fields stay unknown fields).
@@ -82,7 +85,7 @@ __attribute__((objc_subclassing_restricted))
  * return the descriptor of the image that was loaded first. The descriptors of
  * the different images are distinct instances that are not interchangeable.
  **/
-+ (id<GPBExtensionRegistry>)globalExtensionRegistry;
++ (GPBExtensionRegistry *)globalExtensionRegistry;
 
 @end
 

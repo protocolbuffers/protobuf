@@ -23,7 +23,7 @@ permissions:
 jobs:
   test:
     name: Test staleness
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     if: ${{ github.event.repository.full_name == 'protocolbuffers/protobuf' }}
     steps:
       - name: Checkout

@@ -222,6 +222,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_MSAN 0
 #endif
 
+#if UPB_HAS_FEATURE(type_sanitizer)
+#define UPB_TYSAN 1
+#else
+#define UPB_TYSAN 0
+#endif
+
 // An unfortunate concession to C++17 and MSVC, which don't support zero-sized
 // structs.
 #if UPB_ASAN || UPB_HWASAN || UPB_TSAN
@@ -368,6 +374,18 @@ Error, UINTPTR_MAX is undefined
 #else
 #define UPB_MAYBE_ASSUME(pred, x)
 #define UPB_ATTR_CONST
+#endif
+
+// UPB_ASSUME_SEPARATE(a, b): tells the optimizer that pointers `a` and `b`
+// point into different allocations, so a store through one cannot modify
+// memory reached through the other. This lets it keep values loaded through
+// one pointer in registers across untyped (eg. memcpy()) stores through the
+// other, which strict aliasing cannot help with. The behavior is undefined if
+// both point into the same allocation.
+#if UPB_HAS_BUILTIN(__builtin_assume_separate_storage)
+#define UPB_ASSUME_SEPARATE(a, b) __builtin_assume_separate_storage((a), (b))
+#else
+#define UPB_ASSUME_SEPARATE(a, b) ((void)(a), (void)(b))
 #endif
 
 /* UPB_ASSERT(): in release mode, we use the expression without letting it be

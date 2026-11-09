@@ -183,3 +183,5 @@ Required.*.JsonInput.TimestampJsonInputYearTooShort                             
 Recommended.Proto2.ProtobufInput.ValidMessageSetEncoding.DuplicateDifferentTypeId.ProtobufOutput                      # Output was not equivalent to reference message
 Recommended.Proto2.ProtobufInput.ValidMessageSetEncoding.DuplicateValue.ProtobufOutput                                # Output was not equivalent to reference message
 Recommended.Proto2.ProtobufInput.ValidMessageSetEncoding.DuplicateValueOutOfOrder.ProtobufOutput                      # Output was not equivalent to reference message
+Recommended.*.JsonInput.FloatFieldNanLeadingWhitespace      # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNanTrailingWhitespace     # Should have failed to parse, but didn't.

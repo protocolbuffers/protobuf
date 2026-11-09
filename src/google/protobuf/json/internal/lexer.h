@@ -265,7 +265,7 @@ class JsonLexer {
 };
 
 template <typename F>
-absl::Status JsonLexer::VisitArray(F f) {
+PROTOBUF_ALWAYS_INLINE absl::Status JsonLexer::VisitArray(F f) {
   RETURN_IF_ERROR(Expect("["));
   RETURN_IF_ERROR(Push());
 

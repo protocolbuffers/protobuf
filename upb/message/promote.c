@@ -64,8 +64,8 @@ static upb_UnknownToMessageRet upb_MiniTable_ParseUnknownMessage(
     // extensions, this can be optimized via converting the
     // non-canonical extension via calling `upb_Message_Convert`, instead of
     // always going through the encoding-and-decoding path.
-    UPB_ASSERT(unknown->type == kUpb_MessageUnknownType_NonCanonicalExtension);
-    const upb_Extension* ext = (const upb_Extension*)unknown->value.extension;
+    UPB_ASSERT(unknown->type == kUpb_MessageUnknownType_AuxField);
+    const upb_AuxField* ext = (const upb_AuxField*)unknown->value.aux_field;
     const upb_MiniTableField* f = upb_Extension_MiniTableField(ext);
     // Extension promotion `upb_Message_GetOrPromoteExtension` currently only
     // supports Message types. If we find a primitive type, fail gracefully to
@@ -121,7 +121,7 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
     int decode_options, upb_Arena* arena, upb_MessageValue* value) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   UPB_ASSERT(upb_MiniTableExtension_CType(ext_table) == kUpb_CType_Message);
-  const upb_Extension* extension =
+  const upb_AuxField* extension =
       UPB_PRIVATE(_upb_Message_Getext)(msg, ext_table);
   if (extension) {
     *value = upb_Extension_GetValue(extension);
@@ -139,8 +139,8 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
   uintptr_t iter = kUpb_Message_UnknownBegin;
   upb_MessageUnknown data;
   while (upb_Message_NextUnknown2(msg, &data, &iter)) {
-    if (data.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
-      const upb_Extension* ext = (const upb_Extension*)data.value.extension;
+    if (data.type == kUpb_MessageUnknownType_AuxField) {
+      const upb_AuxField* ext = (const upb_AuxField*)data.value.aux_field;
       if (upb_MiniTableField_Number(upb_Extension_MiniTableField(ext)) ==
           field_number) {
         found_count++;
@@ -197,7 +197,7 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
     return kUpb_GetExtension_NotPresent;
   }
 
-  upb_Extension* ext =
+  upb_AuxField* ext =
       UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(msg, ext_table, arena);
   if (!ext) {
     return kUpb_GetExtension_OutOfMemory;

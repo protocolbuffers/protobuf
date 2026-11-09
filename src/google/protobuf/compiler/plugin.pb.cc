@@ -179,8 +179,9 @@ static_assert(alignof(VersionGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const VersionGlobalsTypeInternal Version_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const VersionGlobalsTypeInternal
+        PROTOBUF_ALIGNAS(
+            ::_pbi::kClassDataAlignment) Version_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class CodeGeneratorResponse_File::_Internal {
  public:
   using HasBits = decltype(::std::declval<CodeGeneratorResponse_File>()._impl_._has_bits_);
@@ -316,8 +317,9 @@ static_assert(alignof(CodeGeneratorResponse_FileGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CodeGeneratorResponse_FileGlobalsTypeInternal CodeGeneratorResponse_File_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CodeGeneratorResponse_FileGlobalsTypeInternal
+        PROTOBUF_ALIGNAS(
+            ::_pbi::kClassDataAlignment) CodeGeneratorResponse_File_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class CodeGeneratorResponse::_Internal {
  public:
   using HasBits = decltype(::std::declval<CodeGeneratorResponse>()._impl_._has_bits_);
@@ -463,8 +465,9 @@ static_assert(alignof(CodeGeneratorResponseGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CodeGeneratorResponseGlobalsTypeInternal CodeGeneratorResponse_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CodeGeneratorResponseGlobalsTypeInternal
+        PROTOBUF_ALIGNAS(
+            ::_pbi::kClassDataAlignment) CodeGeneratorResponse_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class CodeGeneratorRequest::_Internal {
  public:
   using HasBits = decltype(::std::declval<CodeGeneratorRequest>()._impl_._has_bits_);
@@ -617,8 +620,9 @@ static_assert(alignof(CodeGeneratorRequestGlobalsTypeInternal) ==
               ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CodeGeneratorRequestGlobalsTypeInternal CodeGeneratorRequest_globals_
-        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CodeGeneratorRequestGlobalsTypeInternal
+        PROTOBUF_ALIGNAS(
+            ::_pbi::kClassDataAlignment) CodeGeneratorRequest_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
@@ -813,13 +817,13 @@ Version::~Version() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Version::SharedDtor(
     MessageLite& self) {
   Version& this_ = static_cast<Version&>(self);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.suffix_.Destroy();
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -1107,14 +1111,14 @@ CodeGeneratorRequest::~CodeGeneratorRequest() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void CodeGeneratorRequest::SharedDtor(
     MessageLite& self) {
   CodeGeneratorRequest& this_ = static_cast<CodeGeneratorRequest&>(self);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.parameter_.Destroy();
   delete this_._impl_.compiler_version_;
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -1433,16 +1437,16 @@ CodeGeneratorResponse_File::~CodeGeneratorResponse_File() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void CodeGeneratorResponse_File::SharedDtor(
     MessageLite& self) {
   CodeGeneratorResponse_File& this_ = static_cast<CodeGeneratorResponse_File&>(self);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.name_.Destroy();
   this_._impl_.insertion_point_.Destroy();
   this_._impl_.content_.Destroy();
   delete this_._impl_.generated_code_info_;
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -1718,13 +1722,13 @@ CodeGeneratorResponse::~CodeGeneratorResponse() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void CodeGeneratorResponse::SharedDtor(
     MessageLite& self) {
   CodeGeneratorResponse& this_ = static_cast<CodeGeneratorResponse&>(self);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.error_.Destroy();
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL

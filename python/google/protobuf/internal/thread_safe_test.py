@@ -7,7 +7,6 @@
 
 """Unittest for thread safe"""
 
-from concurrent import futures
 import sys
 import threading
 import time
@@ -34,6 +33,32 @@ class ThreadSafeTest(unittest.TestCase):
 
   def setUp(self):
     self.success = 0
+
+  def RunConcurrently(self, targets):
+    """Runs each target on its own thread and re-raises the first exception.
+
+    Uses plain threads joined before returning, rather than
+    concurrent.futures.ThreadPoolExecutor, so that every object created by the
+    workers is released before the refleak checker counts references.
+
+    Args:
+      targets: Callables to run, one per thread.
+    """
+    errors = []
+
+    def Run(target):
+      try:
+        target()
+      except Exception as e:  # pylint: disable=broad-except
+        errors.append(e)
+
+    threads = [threading.Thread(target=Run, args=(t,)) for t in targets]
+    for thread in threads:
+      thread.start()
+    for thread in threads:
+      thread.join()
+    if errors:
+      raise errors[0]
 
   def testConcurrentMessageObjectIdentity(self):
     msg = unittest_pb2.TestAllTypes()
@@ -283,11 +308,7 @@ class ThreadSafeTest(unittest.TestCase):
           self.assertTrue(same)
         self.assertEqual(val, 42)
 
-    # Future.result() re-raises any exception from the worker thread.
-    with futures.ThreadPoolExecutor(max_workers=8) as executor:
-      results = [executor.submit(Worker) for _ in range(8)]
-    for result in results:
-      result.result()
+    self.RunConcurrently([Worker] * 8)
 
   def testExtensionWrapperOwnsMessage(self):
     msg = unittest_pb2.TestAllExtensions()
@@ -323,13 +344,7 @@ class ThreadSafeTest(unittest.TestCase):
               unittest_pb2.TestAllTypes.DESCRIPTOR,
           )
 
-      # Future.result() re-raises any exception from the worker thread.
-      with futures.ThreadPoolExecutor(max_workers=4) as executor:
-        results = [executor.submit(Mutator)] + [
-            executor.submit(Inspector) for _ in range(3)
-        ]
-      for result in results:
-        result.result()
+      self.RunConcurrently([Mutator] + [Inspector] * 3)
       self.assertEqual(stub.bb, 7)
 
     for _ in range(50):
@@ -367,13 +382,7 @@ class ThreadSafeTest(unittest.TestCase):
         self.assertIs(nested_desc.containing_type, top_desc)
         self.assertIsNone(top_desc.containing_type)
 
-    # Future.result() re-raises any exception from the worker thread.
-    with futures.ThreadPoolExecutor(max_workers=5) as executor:
-      results = [executor.submit(Adder)] + [
-          executor.submit(Worker) for _ in range(4)
-      ]
-    for result in results:
-      result.result()
+    self.RunConcurrently([Adder] + [Worker] * 4)
 
 
 class FreeThreadingTest(unittest.TestCase):

@@ -41,6 +41,14 @@ public class LargeEnumLiteTest {
   }
 
   @Test
+  public void testUnrecognizedValueDoesNotCollideWithNegativeOne() throws Exception {
+    assertThat(LargeOpenEnum.UNRECOGNIZED.value()).isEqualTo(-1);
+
+    assertThat(LargeOpenAliasingEnum.LARGE_ENUM_NEGATIVE_ONE.value()).isEqualTo(-1);
+    assertThat(LargeOpenAliasingEnum.UNRECOGNIZED.value()).isEqualTo(-2);
+  }
+
+  @Test
   public void testValuesHasAllCanonicals() throws Exception {
     // The values() method returns only the canonical values, sorted in index order.
     assertThat(LargeOpenEnum.values())

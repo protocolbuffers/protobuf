@@ -48,7 +48,8 @@ PROTOC_EXPORT extern const ::google::protobuf::internal::DescriptorTable descrip
 namespace pb {
 class CSharpFeatures;
 struct CSharpFeaturesGlobalsTypeInternal;
-PROTOC_EXPORT extern const CSharpFeaturesGlobalsTypeInternal CSharpFeatures_globals_;
+PROTOC_EXPORT extern const CSharpFeaturesGlobalsTypeInternal
+    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) CSharpFeatures_globals_;
 }  // namespace pb
 namespace google {
 namespace protobuf {

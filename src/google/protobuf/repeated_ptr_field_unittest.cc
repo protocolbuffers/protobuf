@@ -384,7 +384,7 @@ void CheckAllocationSizes() {
 
   for (int i = 0; i < 100; ++i) {
     field->Add(Elem{});
-    if (sizeof(void*) == 8) {
+    if constexpr (sizeof(void*) == 8) {
       // For `RepeatedPtrField`, we also allocate the T on the arena.
       // Subtract those from the count.
       size_t new_used = arena.SpaceUsed() - (sizeof(Elem) * (i + 1));
@@ -398,12 +398,6 @@ void CheckAllocationSizes() {
         // Must be of a power of two.
         size_t log2 = absl::bit_width(last_alloc) - 1;
         ASSERT_EQ((1 << log2), last_alloc);
-      }
-
-      // The byte size must be a multiple of 8 when not SOO.
-      const int capacity_bytes = field->Capacity() * sizeof(Elem);
-      if (capacity_bytes > internal::kSooCapacityBytes) {
-        ASSERT_EQ(capacity_bytes % 8, 0);
       }
     }
   }

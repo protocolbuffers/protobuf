@@ -15179,6 +15179,10 @@ namespace Google.Protobuf.Reflection {
          *  compatible with pre-existing undocumented behavior where options using
          *  dot-notation (e.g. `(my_opt).a = 100`) also produce a path like
          *  [ 4, 3, 7, 10101, 1] that spans the entire option.
+         * 
+         *  Dot-notation options have the same path. For example the option
+         *  from the example above can be written as `(my_opt).a = 100`, and
+         *  paths will be the same.
          * </summary>
          */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

@@ -80,7 +80,7 @@ TEST(GeneratedCode, FindUnknown2) {
       UPB_UPCAST(base_msg),
       upb_MiniTableExtension_Number(upb_test_ModelExtension2_model_ext_ext), 0);
   EXPECT_EQ(kUpb_FindUnknown_Ok, result.status);
-  EXPECT_EQ(kUpb_MessageUnknownType_NonCanonicalExtension, result.unknown.type);
+  EXPECT_EQ(kUpb_MessageUnknownType_AuxField, result.unknown.type);
 
   // Case 3: Not Present
   result = upb_Message_FindUnknown2(UPB_UPCAST(base_msg), 12345, 0);
@@ -154,7 +154,7 @@ TEST(GeneratedCode, FindUnknown2_MultipleMatchingValues) {
 
   result = upb_Message_FindUnknown2(UPB_UPCAST(base_msg2), field_number, 0);
   EXPECT_EQ(kUpb_FindUnknown_Ok, result.status);
-  EXPECT_EQ(kUpb_MessageUnknownType_NonCanonicalExtension, result.unknown.type);
+  EXPECT_EQ(kUpb_MessageUnknownType_AuxField, result.unknown.type);
 
   upb_Arena_Free(arena);
 }
@@ -263,11 +263,11 @@ TEST(GeneratedCode, MessageUnknown_Encode_NonCanonicalExtension) {
       UPB_UPCAST(msg),
       upb_MiniTableExtension_Number(upb_test_ModelExtension2_model_ext_ext), 0);
   EXPECT_EQ(kUpb_FindUnknown_Ok, result.status);
-  EXPECT_EQ(kUpb_MessageUnknownType_NonCanonicalExtension, result.unknown.type);
+  EXPECT_EQ(kUpb_MessageUnknownType_AuxField, result.unknown.type);
 
   upb_StringView view;
   upb_EncodeStatus status =
-      upb_EncodeExtension(result.unknown.value.extension, arena, &view,
+      upb_EncodeExtension(result.unknown.value.aux_field, arena, &view,
                           /*encode_options=*/0);
   EXPECT_EQ(kUpb_EncodeStatus_Ok, status);
   EXPECT_GT(view.size, 0);
@@ -293,11 +293,11 @@ TEST(GeneratedCode, MessageUnknown_Encode_NonCanonicalMessageSetExtension) {
           upb_test_MessageSetMember_message_set_extension_ext),
       0);
   EXPECT_EQ(kUpb_FindUnknown_Ok, result.status);
-  EXPECT_EQ(kUpb_MessageUnknownType_NonCanonicalExtension, result.unknown.type);
+  EXPECT_EQ(kUpb_MessageUnknownType_AuxField, result.unknown.type);
 
   upb_StringView view;
   upb_EncodeStatus status =
-      upb_EncodeExtension(result.unknown.value.extension, arena, &view,
+      upb_EncodeExtension(result.unknown.value.aux_field, arena, &view,
                           /*encode_options=*/0);
   EXPECT_EQ(kUpb_EncodeStatus_Ok, status);
   EXPECT_GT(view.size, 0);

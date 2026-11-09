@@ -38,7 +38,7 @@ static Py_ssize_t Length(PyObject* pself) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
 
-  const Message* message = self->parent->message;
+  const Message* message = self->parent->DeprecatedUnguardedMessage();
   return message->GetReflection()->FieldSize(*message,
                                              self->parent_field_descriptor);
 }
@@ -48,21 +48,11 @@ static Py_ssize_t Length(PyObject* pself) {
 
 static PyObject* AttachQuiescentMessage(RepeatedCompositeContainer* self,
                                         ScopedPyObjectPtr child) {
-  Message* parent_msg = cmessage::AssureWritable(self->parent);
-  if (parent_msg == nullptr) return nullptr;
-
   CMessage* cmsg = reinterpret_cast<CMessage*>(child.get());
-  parent_msg->GetReflection()->UnsafeArenaAddAllocatedMessage(
-      parent_msg, self->parent_field_descriptor, cmsg->GetQuiescent());
-  MessageTree* old_tree = cmsg->GetTree();
-  MessageTree* new_tree = self->GetTree();
-  cmessage::UpdateSubtreeTree(cmsg, new_tree);
-  old_tree->Unref();
-  Py_INCREF(self->parent);
-  cmsg->parent = self->parent;
-  cmsg->parent_field_descriptor = self->parent_field_descriptor;
-  cmsg->has_mutable_map_ancestor = self->parent->has_mutable_map_ancestor;
-  cmessage::SetSubmessage(self->parent, cmsg);
+  if (!self->parent->AttachQuiescentChild(self->parent_field_descriptor,
+                                          cmsg)) {
+    return nullptr;
+  }
   return child.release();
 }
 
@@ -142,7 +132,23 @@ static PyObject* Insert(PyObject* pself, PyObject* args) {
 // extend()
 
 PyObject* Extend(RepeatedCompositeContainer* self, PyObject* value) {
-  if (cmessage::AssureWritable(self->parent) == nullptr) return nullptr;
+  Message* message = cmessage::AssureWritable(self->parent);
+  if (message == nullptr) return nullptr;
+  if (value == reinterpret_cast<PyObject*>(self)) {
+    // Append copies of the elements that were there to begin with, so that the
+    // new elements are not visited.
+    const Reflection* reflection = message->GetReflection();
+    const FieldDescriptor* field = self->parent_field_descriptor;
+    MessageFactory* factory =
+        cmessage::GetFactoryForMessage(self->parent)->message_factory;
+    const int size = reflection->FieldSize(*message, field);
+    for (int i = 0; i < size; ++i) {
+      const Message& element =
+          reflection->GetRepeatedMessage(*message, field, i);
+      reflection->AddMessage(message, field, factory)->CopyFrom(element);
+    }
+    Py_RETURN_NONE;
+  }
   ScopedPyObjectPtr iter(PyObject_GetIter(value));
   if (iter == nullptr) {
     PyErr_SetString(PyExc_TypeError, "Value must be iterable");
@@ -170,6 +176,13 @@ static PyObject* ExtendMethod(PyObject* self, PyObject* value) {
 }
 
 PyObject* MergeFrom(RepeatedCompositeContainer* self, PyObject* other) {
+  if (cmessage::AssureWritable(self->parent) == nullptr) return nullptr;
+  if (other == reinterpret_cast<PyObject*>(self)) {
+    // Self-merge is not supported, as for messages and maps.
+    PyErr_SetString(PyExc_AssertionError,
+                    "Cannot merge a repeated field into itself.");
+    return nullptr;
+  }
   return Extend(self, other);
 }
 
@@ -180,7 +193,7 @@ static PyObject* MergeFromMethod(PyObject* self, PyObject* other) {
 // This function does not check the bounds.
 static PyObject* GetItem(RepeatedCompositeContainer* self, Py_ssize_t index,
                          Py_ssize_t length = -1) {
-  const Message* message = self->parent->message;
+  const Message* message = self->parent->DeprecatedUnguardedMessage();
   const Reflection* reflection = message->GetReflection();
   if (length == -1) {
     length = reflection->FieldSize(*message, self->parent_field_descriptor);
@@ -198,17 +211,15 @@ static PyObject* GetItem(RepeatedCompositeContainer* self, Py_ssize_t index,
   // 2. Any subsequent write on the child triggers AssureWritable, which
   //    promotes the entire parent hierarchy (e.g., marking LazyField ancestors
   //    dirty).
-  MessageMutabilityState state = self->parent->state == MESSAGE_FROZEN
-                                     ? MESSAGE_FROZEN
-                                     : MESSAGE_UNPROMOTED;
   return self->parent
       ->BuildSubMessageFromPointer(self->parent_field_descriptor, sub_message,
-                                   self->child_message_class, state)
+                                   self->child_message_class,
+                                   MESSAGE_UNPROMOTED)
       ->AsPyObject();
 }
 
 PyObject* Subscript(RepeatedCompositeContainer* self, PyObject* item) {
-  const Message* message = self->parent->message;
+  const Message* message = self->parent->DeprecatedUnguardedMessage();
   const Reflection* reflection = message->GetReflection();
   Py_ssize_t length =
       reflection->FieldSize(*message, self->parent_field_descriptor);
@@ -377,7 +388,8 @@ static void ReorderAttached(RepeatedCompositeContainer* self,
     // parent's repeated field (released above) and is already an allocated,
     // mutable Message object in memory.
     reflection->UnsafeArenaAddAllocatedMessage(
-        message, descriptor, const_cast<Message*>(child_cmsg->message));
+        message, descriptor,
+        const_cast<Message*>(child_cmsg->DeprecatedUnguardedMessage()));
   }
 }
 
@@ -514,7 +526,7 @@ PyObject* DeepCopy(PyObject* pself, PyObject* arg) {
 RepeatedCompositeContainer* NewContainer(
     CMessage* parent, const FieldDescriptor* parent_field_descriptor,
     CMessageClass* child_message_class) {
-  if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
+  if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent)) {
     return nullptr;
   }
 

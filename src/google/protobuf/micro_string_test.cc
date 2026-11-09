@@ -26,8 +26,8 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
-#include "google/protobuf/arena_align.h"
 #include "google/protobuf/arenastring.h"
+#include "google/protobuf/memory_align.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/message_traits.h"
 #include "google/protobuf/port.h"
@@ -138,14 +138,14 @@ class MicroStringPrevTest
 
     if (has_arena()) {
       const size_t expected_arena_increment =
-          allocated_on_arena ? ArenaAlignDefault::Ceil(expected_string_used)
+          allocated_on_arena ? ArenaAlignDefault{}.Ceil(expected_string_used)
                              : 0;
       EXPECT_EQ(expected_arena_increment, arena_space_used() - prev_arena_used);
     }
 
     const size_t actual = str->SpaceUsedExcludingSelfLong();
     if (has_arena() && !MicroStringTestPeer::IsStringRep(*str)) {
-      EXPECT_EQ(actual, ArenaAlignDefault::Ceil(expected_string_used));
+      EXPECT_EQ(actual, ArenaAlignDefault{}.Ceil(expected_string_used));
     } else {
       // When on heap we don't know how much we round up during allocation.
       // The actual must be at least what we expect.
@@ -578,7 +578,7 @@ TEST_P(MicroStringPrevTest, SetAliasLarge) {
   // because it expects it.
   EXPECT_EQ(prev_state() == kAlias || !has_arena()
                 ? 0
-                : ArenaAlignDefault::Ceil(kLargeRepSize),
+                : ArenaAlignDefault{}.Ceil(kLargeRepSize),
             arena_space_used() - used);
   EXPECT_EQ(kLargeRepSize, str_.SpaceUsedExcludingSelfLong());
 }
@@ -644,7 +644,7 @@ TEST_P(MicroStringPrevTest, SetStringLarge) {
   // alignment because sizeof(StringRep) might not be a multiple of 8. Avoid
   // using `ExpectMemoryUsed` because it expects it.
   if (prev_state() != kString && has_arena()) {
-    EXPECT_EQ(ArenaAlignDefault::Ceil(kLargeRepSize + sizeof(std::string)),
+    EXPECT_EQ(ArenaAlignDefault{}.Ceil(kLargeRepSize + sizeof(std::string)),
               arena_space_used() - used);
   }
   EXPECT_EQ(kLargeRepSize + sizeof(std::string) + input.capacity() + /* \0 */ 1,
@@ -1076,7 +1076,7 @@ TEST_F(MicroStringExtraTest, ExtraRequestedInlineSpace) {
 
 TEST_F(MicroStringExtraTest, SettersWithinInline) {
   size_t used = arena()->SpaceUsed();
-  size_t expected_use = ArenaAlignDefault::Ceil(kMicroRepSize + 16);
+  size_t expected_use = ArenaAlignDefault{}.Ceil(kMicroRepSize + 16);
   MicroStringExtra<15> str15;
   // Setting 15 chars should work fine.
   str15.Set("123456789012345", arena_message());
@@ -1090,7 +1090,7 @@ TEST_F(MicroStringExtraTest, SettersWithinInline) {
   EXPECT_EQ(expected_use, str15.SpaceUsedExcludingSelfLong());
 
   used = arena()->SpaceUsed();
-  expected_use = ArenaAlignDefault::Ceil(kMicroRepSize + 24);
+  expected_use = ArenaAlignDefault{}.Ceil(kMicroRepSize + 24);
   // Same but a larger buffer.
   MicroStringExtra<23> str23;
   // Setting 15 chars should work fine.
@@ -1131,7 +1131,7 @@ TEST_F(MicroStringExtraTest, SetStringUsesInlineSpace) {
   const size_t used_in_string = StringSpaceUsedExcludingSelfLong(large);
   str.Set(std::move(large), arena_message());
   // This one is too big, so we move the whole std::string.
-  EXPECT_EQ(ArenaAlignDefault::Ceil(kLargeRepSize + sizeof(std::string)),
+  EXPECT_EQ(ArenaAlignDefault{}.Ceil(kLargeRepSize + sizeof(std::string)),
             arena()->SpaceUsed() - used);
   EXPECT_EQ(kLargeRepSize + sizeof(std::string) + used_in_string,
             str.SpaceUsedExcludingSelfLong());
@@ -1152,7 +1152,7 @@ TEST_F(MicroStringExtraTest, SetCordUsesInlineSpace) {
   spills.Append("x");
   str.Set(spills, arena_message());
   EXPECT_EQ(str.Get(), spills);
-  const size_t expected_use = ArenaAlignDefault::Ceil(kMicroRepSize + 24);
+  const size_t expected_use = ArenaAlignDefault{}.Ceil(kMicroRepSize + 24);
   EXPECT_EQ(used + expected_use, arena()->SpaceUsed());
   EXPECT_EQ(expected_use, str.SpaceUsedExcludingSelfLong());
 }
@@ -1228,7 +1228,7 @@ TEST_F(MicroStringTest, MemoryUsageComparison) {
       // arena alignment is always 8. Take that fact into account by rounding up
       // the ArenaStringPtr use.
       EXPECT_LE(this_micro_str_used,
-                ArenaAlignDefault::Ceil(this_arena_str_used));
+                ArenaAlignDefault{}.Ceil(this_arena_str_used));
     }
 
     int64_t diff = micro_str_used - arena_str_used;

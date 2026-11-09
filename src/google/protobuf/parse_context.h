@@ -783,25 +783,6 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
                                               uint32_t start_tag,
                                               const Func& func);
 
-  // Use a template to avoid the strong dep into TcParser. All callers will have
-  // the dep.
-  template <typename Parser = TcParser>
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_ALWAYS_INLINE const char*
-  ParseMessage(MessageLite* msg, const TcParseTableBase* tc_table,
-               const char* ptr) {
-    return ParseLengthDelimitedInlined(ptr, [&](const char* ptr) {
-      return Parser::ParseLoop(msg, ptr, this, tc_table);
-    });
-  }
-  template <typename Parser = TcParser>
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_ALWAYS_INLINE const char*
-  ParseGroup(MessageLite* msg, const TcParseTableBase* tc_table,
-             const char* ptr, uint32_t start_tag) {
-    return ParseGroupInlined(ptr, start_tag, [&](const char* ptr) {
-      return Parser::ParseLoop(msg, ptr, this, tc_table);
-    });
-  }
-
   [[nodiscard]] PROTOBUF_NDEBUG_INLINE const char* ParseGroup(MessageLite* msg,
                                                               const char* ptr,
                                                               uint32_t tag) {
@@ -1535,6 +1516,17 @@ const char* EpsCopyInputStream::ReadPackedFixed(const MessageLite& parent,
   ABSL_DCHECK_EQ(parent.GetArena(), out->GetArena());
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
   int nbytes = BytesAvailable(ptr);
+  // If the field extends past the current buffer, reserve all of it now so that
+  // the loop below allocates once instead of growing the field chunk by chunk.
+  // `size` comes from the wire, so it is only reserved if it is within the
+  // current limit, and then only up to kSafeStringSize or the bytes available
+  // in the current buffer, whichever is larger.
+  if (size > nbytes && ABSL_PREDICT_TRUE(HasEnoughTillLimit(size, ptr))) {
+    int reserve_bytes = std::min(size, std::max(int{kSafeStringSize}, nbytes));
+    out->ReserveWithArena(
+        arena,
+        internal::CheckedAdd(out->size(), reserve_bytes / int{sizeof(T)}));
+  }
   while (size > nbytes) {
     int num = nbytes / sizeof(T);
     int old_entries = out->size();

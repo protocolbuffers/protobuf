@@ -29,12 +29,10 @@ def _prebuilt_protoc_repo_impl(rctx):
         RELEASE_VERSION,
         rctx.attr.platform,
     )
+    artifact = RELEASED_BINARY_INTEGRITY[filename]
     rctx.download_and_extract(
-        url = "https://github.com/protocolbuffers/protobuf/releases/download/{}/{}".format(
-            RELEASE_VERSION,
-            filename,
-        ),
-        sha256 = RELEASED_BINARY_INTEGRITY[filename],
+        url = artifact["url"],
+        sha256 = artifact["sha256"],
     )
 
     rctx.file("BUILD.bazel", """\

@@ -19,6 +19,7 @@
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/field_with_arena.h"
+#include "google/protobuf/memory_align.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 
@@ -219,7 +220,7 @@ size_t UntypedMapBase::SpaceUsedExcludingSelfLong() const {
 
 static size_t AlignTo(size_t v, size_t alignment, size_t& max_align) {
   max_align = std::max<size_t>(max_align, alignment);
-  return (v + alignment - 1) / alignment * alignment;
+  return MemoryAlign{alignment}.Ceil(v);
 }
 
 struct Offsets {

@@ -62,6 +62,14 @@ absl::StatusOr<upb::DefPool> LoadDescriptorProto(absl::string_view proto_text) {
   return LoadDescriptorSetFromProto(set);
 }
 
+TEST(ReflectionTest, EmptyFileWithoutExtensionsLoads) {
+  absl::StatusOr<upb::DefPool> pool = LoadDescriptorProto(
+      R"pb(
+        syntax: "proto3" name: "empty.proto"
+      )pb");
+  ASSERT_TRUE(pool.ok()) << pool.status();
+}
+
 TEST(ReflectionTest, OpenEnumWithNonZeroDefault) {
   absl::Status status = LoadDescriptorProto(
                             R"pb(
@@ -158,6 +166,28 @@ TEST(ReflectionTest, ImplicitPresenceWithDefault) {
   EXPECT_EQ(std::string_view(status.message()),
             "fields with implicit presence cannot have explicit defaults "
             "(FooMessage.f1)");
+}
+
+TEST(ReflectionTest, RepeatedFieldWithDefault) {
+  absl::Status status =
+      LoadDescriptorProto(
+          R"pb(
+            syntax: "proto2"
+            name: "F"
+            message_type {
+              name: "FooMessage"
+              field {
+                name: "f1"
+                number: 1
+                label: LABEL_REPEATED
+                type: TYPE_STRING
+                default_value: "abc"
+              }
+            }
+          )pb")
+          .status();
+  EXPECT_EQ(std::string_view(status.message()),
+            "repeated fields cannot have explicit defaults (FooMessage.f1)");
 }
 
 TEST(ReflectionTest, ImplicitPresenceWithNonZeroDefaultEnum) {

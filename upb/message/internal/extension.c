@@ -20,7 +20,7 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-const upb_Extension* UPB_PRIVATE(_upb_Message_GetExtension)(
+const upb_AuxField* UPB_PRIVATE(_upb_Message_GetExtension)(
     const struct upb_Message* msg, const upb_MiniTableField* f) {
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return NULL;
@@ -28,8 +28,7 @@ const upb_Extension* UPB_PRIVATE(_upb_Message_GetExtension)(
   for (size_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
     if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
-      const upb_Extension* ext =
-          upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
+      const upb_AuxField* ext = upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
       if (upb_Extension_MiniTableField(ext) == f) {
         return ext;
       }
@@ -39,13 +38,13 @@ const upb_Extension* UPB_PRIVATE(_upb_Message_GetExtension)(
   return NULL;
 }
 
-const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
+const upb_AuxField* UPB_PRIVATE(_upb_Message_Getext)(
     const struct upb_Message* msg, const upb_MiniTableExtension* e) {
   return UPB_PRIVATE(_upb_Message_GetExtension)(
       msg, upb_MiniTableExtension_ToField(e));
 }
 
-upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
+upb_AuxField* UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
     struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a,
     upb_TaggedAuxType tag) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
@@ -58,26 +57,25 @@ upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
   // of adding a unknown StringView (through `_upb_Message_AddUnknown`) which
   // accumulates.
   if (tag == kUpb_TaggedAuxType_CanonicalExtension) {
-    upb_Extension* ext =
-        (upb_Extension*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
+    upb_AuxField* ext = (upb_AuxField*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
     if (ext) return ext;
   }
   if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, a)) return NULL;
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  upb_Extension* ext = UPB_PRIVATE(_upb_Extension_New)(e, a);
+  upb_AuxField* ext = UPB_PRIVATE(_upb_Extension_New)(e, a);
   if (!ext) return NULL;
-  in->aux_data[in->size++] = upb_TaggedAuxPtr_MakeExtension(ext, tag);
+  in->aux_data[in->size++] = upb_TaggedAuxPtr_MakeAuxField(ext, tag);
   return ext;
 }
 
-upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+upb_AuxField* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a) {
   return UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
       msg, e, a, kUpb_TaggedAuxType_CanonicalExtension);
 }
 
-upb_Extension* UPB_PRIVATE(_upb_Message_CreateNonCanonicalExtension)(
+upb_AuxField* UPB_PRIVATE(_upb_Message_CreateNonCanonicalExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a) {
   return UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
-      msg, e, a, kUpb_TaggedAuxType_NonCanonicalExtension);
+      msg, e, a, kUpb_TaggedAuxType_UnknownAuxField);
 }

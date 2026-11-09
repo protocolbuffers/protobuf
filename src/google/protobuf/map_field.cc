@@ -12,7 +12,6 @@
 #include <cstdint>
 #include <string>
 #include <type_traits>
-#include <utility>
 
 #include "absl/functional/overload.h"
 #include "absl/log/absl_check.h"
@@ -26,6 +25,7 @@
 #include "google/protobuf/port.h"
 #include "google/protobuf/raw_ptr.h"
 #include "google/protobuf/repeated_ptr_field.h"
+#include "google/protobuf/serial_arena.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -243,11 +243,11 @@ void MapFieldBase::SyncRepeatedFieldWithMapNoLock() {
   GenericConstMapRef::iterator end;
   end.iter_ = UntypedMapBase::EndIterator();
 
-  Arena* arena = this->arena();
+  SerialArena* arena = GetSerialArena(this->arena());
   for (; it != end; ++it) {
     Message* new_entry = reinterpret_cast<Message*>(
-        rep.AddInternal(arena, [prototype](Arena* arena, void*& ptr) {
-          ptr = prototype->New(arena);
+        rep.AddInternal(arena, [prototype](SerialArena* arena, void*& ptr) {
+          ptr = NewMessage(*prototype, arena);
         }));
 
     MapKey map_key = it->key();

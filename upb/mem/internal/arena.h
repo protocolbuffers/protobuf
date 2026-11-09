@@ -14,6 +14,7 @@
 
 #include "upb/base/internal/log2.h"
 #include "upb/mem/internal/alloc.h"
+#include "upb/port/overflow.h"
 #include "upb/port/sanitizers.h"
 
 // Must be last.
@@ -70,6 +71,16 @@ UPB_PRIVATE(_upb_ArenaHas)(const struct upb_Arena* a) {
   return (size_t)(a->UPB_ONLYBITS(end) - a->UPB_ONLYBITS(ptr));
 }
 
+#define _UPB_ARENA_MAX_ALLOC_SIZE               \
+  ((size_t)(SIZE_MAX - (UPB_MALLOC_ALIGN - 1) - \
+            UPB_PRIVATE(kUpb_Asan_GuardSize)))
+
+UPB_NODISCARD UPB_INLINE bool UPB_PRIVATE(_upb_Arena_CheckedAdd)(size_t a,
+                                                                 size_t b,
+                                                                 size_t* out) {
+  return !upb_AddOverflow(a, b, out);
+}
+
 UPB_NODISCARD UPB_INLINE size_t UPB_PRIVATE(_upb_Arena_AllocSpan)(size_t size) {
   return UPB_ALIGN_MALLOC(size) + UPB_PRIVATE(kUpb_Asan_GuardSize);
 }
@@ -90,6 +101,7 @@ UPB_NODISCARD UPB_INLINE bool UPB_PRIVATE(_upb_Arena_IsAligned)(
 UPB_NODISCARD UPB_API_INLINE void* _upb_Arena_Malloc_Unchecked(
     struct upb_Arena* a, size_t size) {
   UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(a));
+  if (UPB_UNLIKELY(size > _UPB_ARENA_MAX_ALLOC_SIZE)) return NULL;
 
   size_t span = UPB_PRIVATE(_upb_Arena_AllocSpan)(size);
 
@@ -144,6 +156,7 @@ UPB_NODISCARD UPB_API_INLINE bool upb_Arena_TryExtend(struct upb_Arena* a,
   UPB_ASSERT(size > oldsize);
 
   UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(a));
+  if (UPB_UNLIKELY(size > _UPB_ARENA_MAX_ALLOC_SIZE)) return false;
   size_t extend = UPB_ALIGN_MALLOC(size) - UPB_ALIGN_MALLOC(oldsize);
 
   if (UPB_PRIVATE(_upb_Arena_WasLastAllocFromCurrentBlock)(a, ptr, oldsize) &&
@@ -164,10 +177,18 @@ UPB_NODISCARD UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a,
   void* ret;
 
   if (ptr && (size <= oldsize || upb_Arena_TryExtend(a, ptr, oldsize, size))) {
-    // We can extend or shrink in place.
-    if (size <= oldsize &&
-        UPB_PRIVATE(_upb_Arena_WasLastAllocFromCurrentBlock)(a, ptr, oldsize)) {
-      upb_Arena_ShrinkLast(a, ptr, oldsize, size);
+    // We can extend or shrink in place. (upb_Arena_TryExtend() already
+    // resized the region if it succeeded.)
+    if (size <= oldsize) {
+      if (UPB_PRIVATE(_upb_Arena_WasLastAllocFromCurrentBlock)(a, ptr,
+                                                               oldsize)) {
+        upb_Arena_ShrinkLast(a, ptr, oldsize, size);
+      } else {
+        // We can't reclaim the tail, but it is freed. The kept part is retagged
+        // below.
+        UPB_PRIVATE(upb_Xsan_PoisonRegion)(UPB_PTR_AT(ptr, size, char),
+                                           oldsize - size);
+      }
     }
     ret = ptr;
   } else {
@@ -179,10 +200,10 @@ UPB_NODISCARD UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a,
   }
 
   if (ret) {
-    // We want to invalidate pointers to the old region if hwasan is enabled, so
-    // we poison and unpoison even if ptr == ret. However, if reallocation fails
-    // we do not want to poison the old memory, or attempt to poison null.
-    UPB_PRIVATE(upb_Xsan_PoisonRegion)(ptr, oldsize);
+    // If we moved, the old region is freed. If we resized in place, the
+    // contents are kept and the region was already resized above. If
+    // reallocation fails we do not want to poison the old memory.
+    if (ret != ptr) UPB_PRIVATE(upb_Xsan_PoisonRegion)(ptr, oldsize);
     return UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(UPB_XSAN(a), ret, size);
   }
   return ret;
@@ -248,6 +269,8 @@ UPB_NODISCARD UPB_API_INLINE void* upb_Arena_TryAllocPool(struct upb_Arena* a,
     UPB_PRIVATE(_upb_ArenaFreeBlock)* block = pool->UPB_PRIVATE(bins)[bin];
     if (UPB_LIKELY(block != NULL)) {
       pool->UPB_PRIVATE(bins)[bin] = block->UPB_PRIVATE(next);
+      // The free-list link is dead now that the block is being reused.
+      UPB_PRIVATE(upb_Xsan_PoisonRegion)(block, sizeof(*block));
       return UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(UPB_XSAN(a), block,
                                                        pool_size);
     }

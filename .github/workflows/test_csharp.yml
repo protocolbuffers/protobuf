@@ -83,7 +83,7 @@ jobs:
 
   linux-aarch64:
     name: Linux aarch64
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v7

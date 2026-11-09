@@ -20,7 +20,7 @@ permissions: read-all
 jobs:
   analysis:
     name: Scorecard analysis
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       security-events: write # to upload the results to code-scanning dashboard
       id-token: write # to publish results and get a badge

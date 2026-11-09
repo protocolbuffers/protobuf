@@ -32,6 +32,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/naming_style.h"
 
 
 namespace google {
@@ -96,6 +97,38 @@ class GeneratorResponseContext : public GeneratorContext {
   const std::vector<const FileDescriptor*>& parsed_files_;
 };
 
+namespace {
+
+void StripDefaultJsonName(FieldDescriptorProto& field) {
+  if (field.has_json_name() &&
+      field.json_name() == google::protobuf::internal::ToJsonName(field.name())) {
+    field.clear_json_name();
+  }
+}
+
+void StripDefaultJsonName(DescriptorProto& message) {
+  for (FieldDescriptorProto& field : *message.mutable_field()) {
+    StripDefaultJsonName(field);
+  }
+  for (FieldDescriptorProto& extension : *message.mutable_extension()) {
+    StripDefaultJsonName(extension);
+  }
+  for (DescriptorProto& nested : *message.mutable_nested_type()) {
+    StripDefaultJsonName(nested);
+  }
+}
+
+void StripDefaultJsonName(FileDescriptorProto& file) {
+  for (FieldDescriptorProto& extension : *file.mutable_extension()) {
+    StripDefaultJsonName(extension);
+  }
+  for (DescriptorProto& message : *file.mutable_message_type()) {
+    StripDefaultJsonName(message);
+  }
+}
+
+}  // namespace
+
 bool GenerateCode(const CodeGeneratorRequest& request,
                   const CodeGenerator& generator,
                   CodeGeneratorResponse* response, std::string* error_msg) {
@@ -113,7 +146,11 @@ bool GenerateCode(const CodeGeneratorRequest& request,
   ABSL_CHECK(status.ok()) << status.message();
 
   for (int i = 0; i < request.proto_file_size(); i++) {
-    const FileDescriptor* file = pool.BuildFile(request.proto_file(i));
+    FileDescriptorProto file_proto = request.proto_file(i);
+    if (generator.StripDefaultJsonName()) {
+      StripDefaultJsonName(file_proto);
+    }
+    const FileDescriptor* file = pool.BuildFile(file_proto);
     if (file == nullptr) {
       // BuildFile() already wrote an error message.
       return false;

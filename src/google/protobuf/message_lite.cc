@@ -38,11 +38,9 @@
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_traits.h"
-#include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/type_id.h"
-#include "google/protobuf/unknown_field_set.h"
 
 
 // Must be included last.

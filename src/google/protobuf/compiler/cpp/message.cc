@@ -1328,6 +1328,27 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
       )cc");
 }
 
+void MessageGenerator::GenerateSplitMembers(io::Printer* p) {
+  if (!ShouldSplit(descriptor_, options_)) return;
+  p->Emit({{"split_field",
+            [&] {
+              for (auto field : field_layout_.optimized_order()) {
+                if (!ShouldSplit(field, options_)) continue;
+                field_generators_.get(field).GeneratePrivateMembers(p);
+              }
+            }}},
+          R"cc(
+            struct Split {
+              $split_field$;
+              using InternalArenaConstructable_ = void;
+              using DestructorSkippable_ = void;
+            };
+            static_assert(::std::is_trivially_copy_constructible<Split>::value);
+            static_assert(::std::is_trivially_destructible<Split>::value);
+            Split* $nonnull$ _split_;
+          )cc");
+}
+
 void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
   // Prepare decls for _cached_size_ and _has_bits_.  Their position in the
@@ -1394,27 +1415,7 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
             }
           }
         }},
-       {"decl_split",
-        [&] {
-          if (!ShouldSplit(descriptor_, options_)) return;
-          p->Emit({{"split_field",
-                    [&] {
-                      for (auto field : field_layout_.optimized_order()) {
-                        if (!ShouldSplit(field, options_)) continue;
-                        field_generators_.get(field).GeneratePrivateMembers(p);
-                      }
-                    }}},
-                  R"cc(
-                    struct Split {
-                      $split_field$;
-                      using InternalArenaConstructable_ = void;
-                      using DestructorSkippable_ = void;
-                    };
-                    static_assert(::std::is_trivially_copy_constructible<Split>::value);
-                    static_assert(::std::is_trivially_destructible<Split>::value);
-                    Split* $nonnull$ _split_;
-                  )cc");
-        }},
+       {"decl_split", [&] { GenerateSplitMembers(p); }},
        {"oneof_members",
         [&] {
           // For each oneof generate a union
@@ -1605,6 +1606,34 @@ void MessageGenerator::GenerateAnyMethodDefinition(io::Printer* p) {
       )cc");
 }
 
+void MessageGenerator::GenerateSplitMethods(io::Printer* p) {
+  if (!ShouldSplit(descriptor_, options_)) return;
+  p->Emit({{"split_default", SplitDefaultInstanceName(descriptor_, options_)}},
+          R"cc(
+            inline bool IsSplitMessageDefault() const {
+              return $split$ == reinterpret_cast<const Impl_::Split*>(&$split_default$);
+            }
+            PROTOBUF_NOINLINE void PrepareSplitMessageForWrite();
+
+            template <typename Address>
+            PROTOBUF_ALWAYS_INLINE decltype(auto) GetSplitField_(
+                Address address) const {
+              return Super_::GetSplitField(*this, address);
+            }
+
+            template <typename Address>
+            PROTOBUF_ALWAYS_INLINE auto* PROTOBUF_NULLABLE
+            TryMutableSplitField_(Address address) {
+              return Super_::TryMutableSplitField(*this, address);
+            }
+
+            template <typename Address>
+            PROTOBUF_ALWAYS_INLINE auto& MutableSplitField_(Address address) {
+              return Super_::MutableSplitField(*this, address);
+            }
+          )cc");
+}
+
 void MessageGenerator::GeneratePrivateHelpers(io::Printer* p) {
   p->Emit(
       {
@@ -1662,36 +1691,7 @@ void MessageGenerator::GeneratePrivateHelpers(io::Printer* p) {
                void InternalSwap($Msg$* $nonnull$ other);
              )cc");
            }},
-          {"decl_split_methods",
-           [&] {
-             if (!ShouldSplit(descriptor_, options_)) return;
-             p->Emit({{"split_default",
-                       SplitDefaultInstanceName(descriptor_, options_)}},
-                     R"cc(
-                       inline bool IsSplitMessageDefault() const {
-                         return $split$ == reinterpret_cast<const Impl_::Split*>(&$split_default$);
-                       }
-                       PROTOBUF_NOINLINE void PrepareSplitMessageForWrite();
-
-                       template <typename Address>
-                       PROTOBUF_ALWAYS_INLINE decltype(auto) GetSplitField_(
-                           Address address) const {
-                         return Super_::GetSplitField(*this, address);
-                       }
-
-                       template <typename Address>
-                       PROTOBUF_ALWAYS_INLINE auto* PROTOBUF_NULLABLE
-                       TryMutableSplitField_(Address address) {
-                         return Super_::TryMutableSplitField(*this, address);
-                       }
-
-                       template <typename Address>
-                       PROTOBUF_ALWAYS_INLINE auto& MutableSplitField_(
-                           Address address) {
-                         return Super_::MutableSplitField(*this, address);
-                       }
-                     )cc");
-           }},
+          {"decl_split_methods", [&] { GenerateSplitMethods(p); }},
           {"decl_field_accessors_private_helpers",
            [&] {
              // Generate private helper methods for all fields.
@@ -2747,14 +2747,14 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
         PROTOBUF_NO_CUSTOM_VTABLE_INLINE void $Msg$::SharedDtor(
             MessageLite& self) {
           $Msg$& this_ = static_cast<$Msg$&>(self);
-          $has_bit_consistency$;
-          this_._internal_metadata_.Delete<$unknown_fields_type$>();
           $DCHK$(!::_pbi::HasArena(this_));
+          $has_bit_consistency$;
           $WeakDescriptorSelfPin$;
           $field_dtors$;
           $split_field_dtors$;
           $oneof_field_dtors$;
           $impl_dtor$;
+          this_._internal_metadata_.Delete<$unknown_fields_type$>();
         }
       )cc");
 }
@@ -5144,6 +5144,58 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
 }
 
 
+void MessageGenerator::GenerateSplitHelpers(io::Printer* p) {
+  if (!ShouldSplit(descriptor_, options_)) return;
+
+  const auto get_arena_merge = [&] {
+    if (RequiresArena(GeneratorFunction::kMergeFrom,
+                      /* is_split= */ true)) {
+      p->Emit(R"cc(
+        $pb$::Arena* arena = this_.GetArena();
+      )cc");
+    }
+  };
+
+  p->Emit({{"destroy_fields",
+            [&] {
+              for (const auto* field : field_layout_.optimized_order()) {
+                if (!ShouldSplit(field, options_)) continue;
+                field_generators_.get(field).GenerateDestructorCode(p);
+              }
+            }},
+           {"get_arena_merge", get_arena_merge},
+           {"merge_fields", [&] { EmitMergeChunks(p, /* is_split= */ true); }},
+           {"clear_fields", [&] { EmitClearChunks(p, /* is_split= */ true); }},
+           {"byte_size_fields",
+            [&] { EmitByteSizeChunks(p, /* is_split= */ true); }}},
+          R"cc(
+            PROTOBUF_NOINLINE static void DestroySplit($Msg$& this_) {
+              auto* const $cached_split_ptr$ = this_._impl_._split_;
+              $destroy_fields$;
+              delete $cached_split_ptr$;
+            }
+            PROTOBUF_NOINLINE static void MergeSplit($Msg$& this_, const $Msg$& from) {
+              auto* const from_cached_split_ptr = from._impl_._split_;
+              $get_arena_merge$;
+              ::uint32_t cached_has_bits [[maybe_unused]] = 0;
+              $merge_fields$;
+            }
+            PROTOBUF_NOINLINE static void ClearSplit($Msg$& this_) {
+              auto* const $cached_split_ptr$ = this_._impl_._split_;
+              ::uint32_t cached_has_bits [[maybe_unused]] = 0;
+              $clear_fields$;
+            }
+
+            PROTOBUF_NOINLINE static ::size_t ByteSizeSplit(const $Msg$& this_) {
+              auto* const $cached_split_ptr$ [[maybe_unused]] = this_._impl_._split_;
+              ::size_t total_size = 0;
+              ::uint32_t cached_has_bits [[maybe_unused]] = 0;
+              $byte_size_fields$;
+              return total_size;
+            }
+          )cc");
+}
+
 void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
   if (!ShouldGenerateClass(descriptor_, options_)) return;
 
@@ -5188,60 +5240,7 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                   }
                 )cc");
           }},
-         {"split",
-          [&] {
-            if (!ShouldSplit(descriptor_, options_)) return;
-
-            p->Emit(
-                {{"destroy_fields",
-                  [&] {
-                    for (const auto* field : field_layout_.optimized_order()) {
-                      if (!ShouldSplit(field, options_)) continue;
-                      field_generators_.get(field).GenerateDestructorCode(p);
-                    }
-                  }},
-                 {"get_arena_merge",
-                  [&] {
-                    if (RequiresArena(GeneratorFunction::kMergeFrom,
-                                      /* is_split= */ true)) {
-                      p->Emit(R"cc(
-                        $pb$::Arena* arena = this_.GetArena();
-                      )cc");
-                    }
-                  }},
-                 {"merge_fields",
-                  [&] { EmitMergeChunks(p, /* is_split= */ true); }},
-                 {"clear_fields",
-                  [&] { EmitClearChunks(p, /* is_split= */ true); }},
-                 {"byte_size_fields",
-                  [&] { EmitByteSizeChunks(p, /* is_split= */ true); }}},
-                R"cc(
-                  PROTOBUF_NOINLINE static void DestroySplit($Msg$& this_) {
-                    auto* const $cached_split_ptr$ = this_._impl_._split_;
-                    $destroy_fields$;
-                    delete $cached_split_ptr$;
-                  }
-                  PROTOBUF_NOINLINE static void MergeSplit($Msg$& this_, const $Msg$& from) {
-                    auto* const from_cached_split_ptr = from._impl_._split_;
-                    $get_arena_merge$;
-                    ::uint32_t cached_has_bits [[maybe_unused]] = 0;
-                    $merge_fields$;
-                  }
-                  PROTOBUF_NOINLINE static void ClearSplit($Msg$& this_) {
-                    auto* const $cached_split_ptr$ = this_._impl_._split_;
-                    ::uint32_t cached_has_bits [[maybe_unused]] = 0;
-                    $clear_fields$;
-                  }
-
-                  PROTOBUF_NOINLINE static ::size_t ByteSizeSplit(const $Msg$& this_) {
-                    auto* const $cached_split_ptr$ [[maybe_unused]] = this_._impl_._split_;
-                    ::size_t total_size = 0;
-                    ::uint32_t cached_has_bits [[maybe_unused]] = 0;
-                    $byte_size_fields$;
-                    return total_size;
-                  }
-                )cc");
-          }}},
+         {"split", [&] { GenerateSplitHelpers(p); }}},
         R"cc(
           class $Msg$::_Internal {
            public:
@@ -5423,8 +5422,9 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                       ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
         PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
-            PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $const $$globals_type$ $globals$
-                $SECTION$;
+            PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $const $$globals_type$
+                PROTOBUF_ALIGNAS(
+                    ::_pbi::kClassDataAlignment) $globals$ $SECTION$;
       )cc");
 
   if (options_.lite_implicit_weak_fields) {

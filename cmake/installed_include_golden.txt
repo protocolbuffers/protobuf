@@ -105,6 +105,7 @@ google/protobuf/map_entry.h
 google/protobuf/map_field.h
 google/protobuf/map_field_lite.h
 google/protobuf/map_type_handler.h
+google/protobuf/memory_align.h
 google/protobuf/message.h
 google/protobuf/message_lite.h
 google/protobuf/message_traits.h

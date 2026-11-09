@@ -100,8 +100,9 @@ public abstract class AbstractMessage
     MessageReflection.writeMessageTo(this, getAllFields(), output, false);
   }
 
-  protected
-  int memoizedSize = -1;
+  // This is a transient field that is used to optimize the getSerializedSize() method.
+  // Marking transient to exclude it from output of incorrectly applied GSON.
+  protected transient int memoizedSize = -1;
 
   @Override
   int getMemoizedSerializedSize() {

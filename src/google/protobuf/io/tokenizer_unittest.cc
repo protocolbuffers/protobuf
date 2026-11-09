@@ -1234,6 +1234,18 @@ TEST_F(TokenizerTest, ParseStringAppend) {
   EXPECT_EQ("hello", output);
 }
 
+TEST_F(TokenizerTest, Trigraph) {
+  std::string output;
+  Tokenizer::ParseString("\"?\"", &output);
+  EXPECT_EQ(output, "?");
+  Tokenizer::ParseString("\"\\?\"", &output);
+  EXPECT_EQ(output, "?");
+  Tokenizer::ParseString("\"\\\\?\"", &output);
+  EXPECT_EQ(output, "\\?");
+  Tokenizer::ParseString("\"\\\\\\?\"", &output);
+  EXPECT_EQ(output, "\\?");
+}
+
 // -------------------------------------------------------------------
 
 // Each case parses some input text, ignoring the tokens produced, and

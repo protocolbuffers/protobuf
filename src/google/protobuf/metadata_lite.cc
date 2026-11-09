@@ -7,8 +7,10 @@
 
 #include "google/protobuf/metadata_lite.h"
 
+#include <cstdint>
 #include <string>
 
+#include "google/protobuf/arena.h"
 #include "google/protobuf/unknown_field_set.h"
 
 namespace google {
@@ -30,6 +32,21 @@ void InternalMetadata::DoSwap<std::string>(std::string* other) {
   mutable_unknown_fields<std::string>()->swap(*other);
 }
 
+template <>
+void InternalMetadata::DeleteOutOfLineHelper<std::string>() {
+  delete PtrValue<Container<std::string>>();
+}
+
+template <typename T>
+T* InternalMetadata::mutable_unknown_fields_slow() {
+  Container<T>* container = Arena::Create<Container<T>>(arena());
+  ptr_ = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(container) |
+                                 kUnknownFieldsTagMask);
+  return &(container->unknown_fields);
+}
+
+template std::string*
+InternalMetadata::mutable_unknown_fields_slow<std::string>();
 template UnknownFieldSet*
 InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>();
 

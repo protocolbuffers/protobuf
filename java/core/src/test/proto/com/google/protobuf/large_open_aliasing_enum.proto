@@ -2026,4 +2026,5 @@ enum LargeOpenAliasingEnum {
   LARGE_ENUM1999 = 1999;
   LARGE_ENUM2000 = 2000;
   LARGE_ENUM1_ALIAS = 1;  // Aliased value that is far away from the original.
+  LARGE_ENUM_NEGATIVE_ONE = -1;
 }

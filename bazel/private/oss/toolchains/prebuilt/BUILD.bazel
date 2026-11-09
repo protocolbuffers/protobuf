@@ -5,8 +5,9 @@ In particular, see comment below on the toolchain#toolchain attribute.
 """
 
 load("//toolchain:platforms.bzl", "PROTOBUF_PLATFORMS")
-load(":protoc_authenticity.bzl", "protoc_authenticity")
-load(":tool_integrity.bzl", "RELEASE_VERSION")
+load(":protoc_authenticity.bzl", "fail_if_analyzed", "protoc_authenticity")
+load(":protoc_toolchain.bzl", "release_version_to_artifact_name")
+load(":tool_integrity.bzl", "RELEASED_BINARY_INTEGRITY", "RELEASE_VERSION")
 
 [
     toolchain(
@@ -20,7 +21,7 @@ load(":tool_integrity.bzl", "RELEASE_VERSION")
         toolchain_type = "@com_google_protobuf//bazel/private:proto_toolchain_type",
     )
     for platform, meta in PROTOBUF_PLATFORMS.items()
-    if not RELEASE_VERSION.endswith("-dev")
+    if release_version_to_artifact_name(RELEASE_VERSION, platform) in RELEASED_BINARY_INTEGRITY
 ]
 
 # Support verification of user-registered toolchains
@@ -31,4 +32,11 @@ protoc_authenticity(
         "//conditions:default": True,
     }),
     visibility = ["//visibility:public"],
+)
+
+fail_if_analyzed(
+    name = "building_protoc_from_source_is_disallowed",
+    message = "Building protoc from source is disallowed because //bazel/flags:internal_do_not_use_require_prebuilt_protoc is enabled.",
+    tags = ["manual"],
+    visibility = ["//src/google/protobuf/compiler:__pkg__"],
 )

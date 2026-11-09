@@ -597,7 +597,8 @@ PROTOBUF_ALWAYS_INLINE MessageLite* TcParser::NewMessage(
 }
 
 MessageLite* TcParser::AddMessage(const ClassData* class_data,
-                                  RepeatedPtrFieldBase& field, Arena* arena) {
+                                  RepeatedPtrFieldBase& field,
+                                  SerialArena* arena) {
   return field.AddFromClassData<GenericTypeHandler<MessageLite>>(arena,
                                                                  class_data);
 }
@@ -689,11 +690,11 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
   }
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 256);
   SetCachedHasBit(hasbits, data.hasbit_idx());
-  Arena* arena = msg->GetArena();
+  SerialArena* arena = GetSerialArena(msg);
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
   const auto aux = *table->field_aux(data.aux_idx());
   auto& field = RefAt<RepeatedPtrFieldBase>(msg, data.offset());
-  ABSL_DCHECK_EQ(field.GetArena(), arena);
+  ABSL_DCHECK_EQ(GetSerialArena(field.GetArena()), arena);
   const auto* class_data = aux.class_data();
   const TcParseTableBase* inner_table = class_data->GetTcParseTable();
   do {
@@ -2691,20 +2692,18 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
 
   const uint16_t rep = type_card & field_layout::kRepMask;
   const uint16_t xform_val = type_card & field_layout::kTvMask;
-  auto* arena = msg->GetArena();
+  auto* arena = GetSerialArena(msg);
   switch (rep) {
     case field_layout::kRepSString: {
       auto& field =
           MutableRepeatedPtrField<std::string, is_split>(msg, table, entry);
       const char* ptr2 = ptr;
       uint32_t next_tag;
-      SerialArena* serial_arena = GetSerialArena(arena);
-      absl::Cleanup trim = [&] { field.TryShrinkToFit(serial_arena); };
+      absl::Cleanup trim = [&] { field.TryShrinkToFit(arena); };
 
       do {
         ptr = ptr2;
-        std::string* str =
-            ParseRepeatedStringOnce(ptr, serial_arena, ctx, field);
+        std::string* str = ParseRepeatedStringOnce(ptr, arena, ctx, field);
         if (ABSL_PREDICT_FALSE(ptr == nullptr ||
                                !MpVerifyUtf8(*str, table, entry, xform_val))) {
           goto error;
@@ -2838,7 +2837,7 @@ const char* TcParser::MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL) {
 
   const char* ptr2 = ptr;
   uint32_t next_tag;
-  Arena* arena = msg->GetArena();
+  SerialArena* arena = GetSerialArena(msg);
   do {
     MessageLite* value = AddMessage(class_data, field, arena);
     const auto inner_loop = [&](const char* ptr) {

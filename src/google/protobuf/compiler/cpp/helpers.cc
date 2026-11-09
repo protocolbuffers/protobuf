@@ -238,6 +238,32 @@ std::string IntTypeName(const Options& options, absl::string_view type) {
   return absl::StrCat("::", type, "_t");
 }
 
+// Returns the estimated size in bytes of a single field element.
+// For repeated fields, the size of one element/pointer rather than the
+// container.
+// The estimates below assume 64-bit pointers.
+int EstimateElementSize(const FieldDescriptor* field) {
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return 1;
+
+    case FieldDescriptor::CPPTYPE_INT32:
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_ENUM:
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return 4;
+
+    case FieldDescriptor::CPPTYPE_INT64:
+    case FieldDescriptor::CPPTYPE_UINT64:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+    case FieldDescriptor::CPPTYPE_STRING:
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return 8;
+  }
+  ABSL_LOG(FATAL) << "Can't get here.";
+  return -1;  // Make compiler happy.
+}
+
 
 
 }  // namespace
@@ -693,25 +719,7 @@ std::string EnumValueName(const EnumValueDescriptor* enum_value) {
 int EstimateAlignmentSize(const FieldDescriptor* field) {
   if (field == nullptr) return 0;
   if (field->is_repeated()) return 8;
-  switch (field->cpp_type()) {
-    case FieldDescriptor::CPPTYPE_BOOL:
-      return 1;
-
-    case FieldDescriptor::CPPTYPE_INT32:
-    case FieldDescriptor::CPPTYPE_UINT32:
-    case FieldDescriptor::CPPTYPE_ENUM:
-    case FieldDescriptor::CPPTYPE_FLOAT:
-      return 4;
-
-    case FieldDescriptor::CPPTYPE_INT64:
-    case FieldDescriptor::CPPTYPE_UINT64:
-    case FieldDescriptor::CPPTYPE_DOUBLE:
-    case FieldDescriptor::CPPTYPE_STRING:
-    case FieldDescriptor::CPPTYPE_MESSAGE:
-      return 8;
-  }
-  ABSL_LOG(FATAL) << "Can't get here.";
-  return -1;  // Make compiler happy.
+  return EstimateElementSize(field);
 }
 
 int EstimateSize(const FieldDescriptor* field) {
@@ -724,28 +732,11 @@ int EstimateSize(const FieldDescriptor* field) {
                ? sizeof(RepeatedField<int32_t>)
                : sizeof(internal::RepeatedPtrFieldBase);
   }
-  switch (field->cpp_type()) {
-    case FieldDescriptor::CPPTYPE_BOOL:
-      return 1;
-
-    case FieldDescriptor::CPPTYPE_INT32:
-    case FieldDescriptor::CPPTYPE_UINT32:
-    case FieldDescriptor::CPPTYPE_ENUM:
-    case FieldDescriptor::CPPTYPE_FLOAT:
-      return 4;
-
-    case FieldDescriptor::CPPTYPE_INT64:
-    case FieldDescriptor::CPPTYPE_UINT64:
-    case FieldDescriptor::CPPTYPE_DOUBLE:
-    case FieldDescriptor::CPPTYPE_MESSAGE:
-      return 8;
-
-    case FieldDescriptor::CPPTYPE_STRING:
-      if (IsCord(field)) return sizeof(absl::Cord);
-      return sizeof(internal::ArenaStringPtr);
+  if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
+    if (IsCord(field)) return sizeof(absl::Cord);
+    return sizeof(internal::ArenaStringPtr);
   }
-  ABSL_LOG(FATAL) << "Can't get here.";
-  return -1;  // Make compiler happy.
+  return EstimateElementSize(field);
 }
 
 std::string FieldConstantName(const FieldDescriptor* field) {

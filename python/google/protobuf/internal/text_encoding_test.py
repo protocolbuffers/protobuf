@@ -45,6 +45,33 @@ class TextEncodingTestCase(unittest.TestCase):
       self.assertEqual(unescaped, text_encoding.CUnescape(escaped))
       self.assertEqual(unescaped, text_encoding.CUnescape(escaped_utf8))
 
+  def testCUnescapeTrigraph(self):
+    self.assertEqual(b"?", text_encoding.CUnescape("?"))
+    self.assertEqual(b"?", text_encoding.CUnescape("\\?"))
+    self.assertEqual(b"\\?", text_encoding.CUnescape("\\\\?"))
+    self.assertEqual(b"\\?", text_encoding.CUnescape("\\\\\\?"))
+
+  def testCUnescapeHex(self):
+    self.assertEqual(b"\x0fb", text_encoding.CUnescape(r"\xf\x62"))
+    self.assertEqual(b"\\xf\\x62", text_encoding.CUnescape(r"\\xf\\x62"))
+    self.assertEqual(b"\\\x0f\\b", text_encoding.CUnescape(r"\\\xf\\\x62"))
+    self.assertEqual(
+        b"\\\\xf\\\\x62", text_encoding.CUnescape(r"\\\\xf\\\\x62")
+    )
+    self.assertEqual(
+        b"\\\\\x0f\\\\b", text_encoding.CUnescape(r"\\\\\xf\\\\\x62")
+    )
+
+  def testCUnescapeLongBackslashRun(self):
+    n = 100000
+    self.assertEqual(b"\\" * n, text_encoding.CUnescape("\\\\" * n))
+    self.assertEqual(
+        b"\\" * n + b"\x0f", text_encoding.CUnescape("\\\\" * n + r"\xf")
+    )
+    self.assertEqual(
+        b"\\" * n + b"?", text_encoding.CUnescape("\\\\" * n + r"\?")
+    )
+
 
 if __name__ == "__main__":
   unittest.main()

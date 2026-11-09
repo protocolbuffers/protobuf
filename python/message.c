@@ -22,6 +22,7 @@
 #include "python/free_threading/weak_map.h"
 #include "python/map.h"
 #include "python/protobuf.h"
+#include "python/python_api.h"
 #include "python/repeated.h"
 #include "upb/base/status.h"
 #include "upb/mem/alloc.h"
@@ -1617,7 +1618,7 @@ static PyObject* PyUpb_Message_UnknownFields(PyObject* _self, PyObject* arg) {
 
 static bool PyUpb_AsReadBuffer(PyObject* arg, const char** buf,
                                Py_ssize_t* size) {
-#if PY_VERSION_HEX >= 0x030B0000
+#if PYUPB_MIN_PY_VERSION_HEX >= 0x030B0000
   // PyObject_AsReadBuffer is deprecated and may be removed in later versions
   // of Python.
   Py_buffer buffer;

@@ -170,6 +170,8 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
   // If the style guide is followed (underscores cannot be followed directly
   // by a number), then using an underscore separator cannot create conflicts.
   absl::string_view count_sep = has_conflict ? "_" : "";
+  const bool has_descriptor_methods =
+      HasDescriptorMethods(descriptor, context->EnforceLite());
 
   printer->Emit(
 
@@ -178,7 +180,50 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
        {"static", IsOwnFile(descriptor, immutable_api) ? " " : " static "},
        {"deprecation",
         descriptor->options().deprecated() ? "@java.lang.Deprecated" : ""},
-       {"unrecognized_index", descriptor->value_count()},
+       {"unrecognized_value", GetUnrecognizedValue(descriptor)},
+       {"unrecognized_constant",
+        [&] {
+          if (has_descriptor_methods) {
+            printer->Emit({{"unrecognized_index", descriptor->value_count()}},
+                          R"(
+              public static final $classname$ UNRECOGNIZED = new $classname$($unrecognized_value$, $unrecognized_index$, "UNRECOGNIZED");
+            )");
+          } else {
+            printer->Emit(R"(
+              public static final $classname$ UNRECOGNIZED = new $classname$($unrecognized_value$, "UNRECOGNIZED");
+            )");
+          }
+        }},
+       {"fields_and_constructor",
+        [&] {
+          if (has_descriptor_methods) {
+            printer->Emit(R"(
+              private final int value;
+              private final String name;
+              private final int index;
+
+              $classname$(int v, int i, String n) {
+                this.value = v;
+                this.index = i;
+                this.name = n;
+              }
+
+              public int index() {
+                return index;
+              }
+            )");
+          } else {
+            printer->Emit(R"(
+              private final int value;
+              private final String name;
+
+              $classname$(int v, String n) {
+                this.value = v;
+                this.name = n;
+              }
+            )");
+          }
+        }},
        {"proto_enum_class", context->EnforceLite()
                                 ? "com.google.protobuf.Internal.EnumLite"
                                 : "com.google.protobuf.ProtocolMessageEnum"},
@@ -230,6 +275,36 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
           printer->Emit(R"(
             return value;
           )");
+        }},
+       {"to_string_func",
+        [&] {
+          if (context->EnforceLite() && !google::protobuf::internal::IsOss()) {
+            printer->Emit(R"(
+              StringBuilder result = new StringBuilder("<");
+              result.append(getClass().getName()).append('@')
+                  .append(java.lang.Integer.toHexString(
+                    java.lang.System.identityHashCode(this)));
+            )");
+            if (!descriptor->is_closed()) {
+              printer->Emit(R"(
+                if (this != UNRECOGNIZED) {
+                  result.append(" number=").append(getNumber());
+                }
+              )");
+            } else {
+              printer->Emit(R"(
+                result.append(" number=").append(getNumber());
+              )");
+            }
+            printer->Emit(R"(
+              return result.append(" name=")
+                  .append(name()).append('>').toString();
+            )");
+          } else {
+            printer->Emit(R"(
+              return name;
+            )");
+          }
         }},
        {"deprecated_value_of_func",
         [&] {
@@ -305,6 +380,28 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
               return values;
           )");
         }},
+       {"read_resolve_func",
+        [&] {
+          if (!context->EnforceLite()) {
+            // Only emit readResolve for full runtime enums. Even though large
+            // lite enums also implement Serializable for consistency with
+            // regular lite enums (which must be Serializable because they
+            // inherit from java.lang.Enum), Java serialization should be
+            // avoided for lite enums. AppReduce will retain the readResolve
+            // method due to common proguard rules. Retaining readResolve will
+            // prevent large lite enums from being optimized by AppReduce (which
+            // is particularly important for large enum).
+            printer->Emit(R"(
+              private java.lang.Object readResolve() throws java.io.ObjectStreamException {
+                if ("UNRECOGNIZED".equals(name)) {
+                  return UNRECOGNIZED;
+                }
+                $classname$ result = forNumber(value);
+                return result != null ? result : UNRECOGNIZED;
+              }
+            )");
+          }
+        }},
        {"enum_verifier_func",
         [&] {
           if (context->EnforceLite()) {
@@ -331,7 +428,7 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
           // -----------------------------------------------------------------
           // Reflection
 
-          if (HasDescriptorMethods(descriptor, context->EnforceLite())) {
+          if (has_descriptor_methods) {
             printer->Print(
                 "public final "
                 "com.google.protobuf.Descriptors.EnumValueDescriptor\n"
@@ -428,7 +525,7 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
             $gen_code_version_validator$
           }
 
-          public static final $classname$ UNRECOGNIZED = new $classname$(-1, $unrecognized_index$, "UNRECOGNIZED");
+          $unrecognized_constant$
 
           $deprecated_value_of_func$
 
@@ -459,19 +556,7 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
             $canonical_values_func$
           }
 
-          private final int value;
-          private final String name;
-          private final int index;
-
-          $classname$(int v, int i, String n) {
-            this.value = v;
-            this.index = i;
-            this.name = n;
-          }
-
-          public int index() {
-            return index;
-          }
+          $fields_and_constructor$
 
           public int value() {
             return value;
@@ -488,8 +573,10 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
 
           @java.lang.Override
           public String toString() {
-            return name;
+            $to_string_func$
           }
+
+          $read_resolve_func$
 
           public static com.google.protobuf.Internal.EnumLiteMap<$classname$> internalGetValueMap() {
             return internalValueMap;
@@ -563,7 +650,7 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
                     public static final $classname$ $name$ = $classname$$count_sep$$canonical_interface_index$.$canonical_name$;
 
                   )");
-              } else {
+              } else if (has_descriptor_methods) {
                 printer->Emit(
                     {io::Printer::Sub("name", value->name()).AnnotatedAs(value),
                      {"number", value->number()},
@@ -572,6 +659,16 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
                     R"(
                     $deprecation$
                     public static final $classname$ $name$ = new $classname$($number$, $index$, "$name$");
+
+                )");
+              } else {
+                printer->Emit(
+                    {io::Printer::Sub("name", value->name()).AnnotatedAs(value),
+                     {"number", value->number()},
+                     {"deprecation", deprecation}},
+                    R"(
+                    $deprecation$
+                    public static final $classname$ $name$ = new $classname$($number$, "$name$");
 
                 )");
               }

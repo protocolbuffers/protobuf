@@ -17,7 +17,7 @@
 
 #include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
-#include "google/protobuf/arena_align.h"
+#include "google/protobuf/memory_align.h"
 #include "google/protobuf/port.h"
 
 // Must be included last.
@@ -85,7 +85,7 @@ class alignas(std::string) StringBlock {
   using size_type = uint16_t;
 
   static_assert(alignof(std::string) <= sizeof(void*), "");
-  static_assert(alignof(std::string) <= ArenaAlignDefault::align, "");
+  static_assert(alignof(std::string) <= ArenaAlignDefault{}.align, "");
 
   ~StringBlock() = default;
 

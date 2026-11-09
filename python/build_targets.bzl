@@ -20,6 +20,7 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:defs.bzl", "py_library")
 load("@rules_python//python/cc:py_extension.bzl", "py_extension")
+load("//:protobuf.bzl", "internal_gen_well_known_protos_py")
 load("//bazel:proto_library.bzl", "proto_library")
 load("//bazel:py_proto_library.bzl", "py_proto_library")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
@@ -65,35 +66,20 @@ def build_targets(name):
         strip_import_prefix = "/python",
     )
 
-    _WELL_KNOWN_TYPES = [
-        "any",
-        "api",
-        "compiler/plugin",
-        "descriptor",
-        "duration",
-        "empty",
-        "field_mask",
-        "json_enumvalue_options",
-        "json_options",
-        "source_context",
-        "struct",
-        "timestamp",
-        "type",
-        "wrappers",
-    ]
-
-    native.genrule(
+    internal_gen_well_known_protos_py(
         name = "gen_well_known_protos_py",
-        srcs = [":copied_wkt_proto_files"],
-        outs = ["google/protobuf/" + w + "_pb2.py" for w in _WELL_KNOWN_TYPES],
-        cmd = "$(execpath //:protoc) --python_out=$(RULEDIR) --proto_path=$(RULEDIR) $(SRCS)",
-        tools = ["//:protoc"],
-        visibility = ["//visibility:private"],
+        dep = ":well_known_types_proto",
+    )
+
+    internal_copy_files(
+        name = "copied_wkt_py_pb2",
+        srcs = [":gen_well_known_protos_py"],
+        strip_prefix = "python/_virtual_imports/well_known_types_proto",
     )
 
     py_library(
         name = "well_known_types_py_pb2",
-        srcs = [":gen_well_known_protos_py"],
+        srcs = [":copied_wkt_py_pb2"],
         imports = ["."],
         srcs_version = "PY2AND3",
         visibility = [
@@ -624,6 +610,7 @@ def build_targets(name):
 
     proto_lang_toolchain(
         name = "python_toolchain",
+        blacklisted_protos = [":well_known_types_proto"],
         command_line = "--python_out=%s",
         progress_message = "Generating Python proto_library %{label}",
         runtime = ":protobuf_python",

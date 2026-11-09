@@ -71,9 +71,9 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount,
       new_capacity = static_cast<int>((alloc.n - kRepHeaderSize) / kPtrSize);
       new_rep = reinterpret_cast<Rep*>(alloc.p);
     } else {
-      if constexpr (internal::ArenaAlignDefault::Ceil(kPtrSize) != kPtrSize) {
+      if constexpr (internal::ArenaAlignDefault{}.Ceil(kPtrSize) != kPtrSize) {
         // We need to manually align the allocation.
-        bytes = internal::ArenaAlignDefault::Ceil(bytes);
+        bytes = internal::ArenaAlignDefault{}.Ceil(bytes);
         new_capacity = (bytes - kRepHeaderSize) / kPtrSize;
       }
 

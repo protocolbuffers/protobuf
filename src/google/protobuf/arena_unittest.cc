@@ -39,7 +39,6 @@
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/barrier.h"
 #include "absl/types/optional.h"
-#include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arena_test_util.h"
@@ -47,6 +46,7 @@
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/memory_align.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
@@ -2723,7 +2723,7 @@ TEST(ArenaPtrTest, ClassIsABIEfficient) {
   // using clang.
 #if ABSL_HAVE_BUILTIN(__is_trivially_relocatable)
   struct ABSL_ATTRIBUTE_TRIVIAL_ABI Probe {
-    ~Probe() {}
+    ~Probe() = default;
     std::unique_ptr<int> p1;
     void* p2;
   };

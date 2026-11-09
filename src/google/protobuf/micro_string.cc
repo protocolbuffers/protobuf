@@ -16,7 +16,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
-#include "google/protobuf/arena_align.h"
+#include "google/protobuf/memory_align.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 
@@ -116,7 +116,7 @@ MicroString::MicroRep* MicroString::AllocateMicroRep(size_t size,
   MicroRep* h;
   size_t capacity = size;
   if (arena == nullptr) {
-    size_t requested_size = ArenaAlignDefault::Ceil(MicroRepSize(capacity));
+    size_t requested_size = ArenaAlignDefault{}.Ceil(MicroRepSize(capacity));
     const internal::SizedPtr alloc = internal::AllocateAtLeast(requested_size);
     // Maybe we rounded up too much.
     capacity = std::min(kMaxMicroRepCapacity, alloc.n - sizeof(MicroRep));
@@ -125,8 +125,8 @@ MicroString::MicroRep* MicroString::AllocateMicroRep(size_t size,
     ABSL_DCHECK_LE(requested_size, MicroRepSize(capacity));
     h = reinterpret_cast<MicroRep*>(alloc.p);
   } else {
-    capacity =
-        ArenaAlignDefault::Ceil(capacity + sizeof(MicroRep)) - sizeof(MicroRep);
+    capacity = ArenaAlignDefault{}.Ceil(capacity + sizeof(MicroRep)) -
+               sizeof(MicroRep);
     capacity = std::min(kMaxMicroRepCapacity, capacity);
     auto* alloc = arena->AllocateAligned(MicroRepSize(capacity));
     h = reinterpret_cast<MicroRep*>(alloc);
@@ -148,11 +148,11 @@ MicroString::LargeRep* MicroString::AllocateOwnedRep(size_t size,
   ABSL_DCHECK_GE(capacity, kOwned);
   if (arena == nullptr) {
     const internal::SizedPtr alloc = internal::AllocateAtLeast(
-        ArenaAlignDefault::Ceil(OwnedRepSize(capacity)));
+        ArenaAlignDefault{}.Ceil(OwnedRepSize(capacity)));
     capacity = alloc.n - sizeof(LargeRep);
     h = reinterpret_cast<LargeRep*>(alloc.p);
   } else {
-    size_t alloc_size = ArenaAlignDefault::Ceil(OwnedRepSize(capacity));
+    size_t alloc_size = ArenaAlignDefault{}.Ceil(OwnedRepSize(capacity));
     capacity = alloc_size - sizeof(LargeRep);
     auto* alloc = arena->AllocateAligned(alloc_size);
     h = reinterpret_cast<LargeRep*>(alloc);

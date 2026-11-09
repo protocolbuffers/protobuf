@@ -19,6 +19,7 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/memory_align.h"
 #include "google/protobuf/port.h"
 
 // must be last:
@@ -605,7 +606,7 @@ void MicroString::SetInChunks(size_t size, const MessageLite& parent, F setter,
 template <size_t RequestedSpace>
 class MicroStringExtraImpl : private MicroString {
   static constexpr size_t RoundUp(size_t n) {
-    return (n + (alignof(MicroString) - 1)) & ~(alignof(MicroString) - 1);
+    return MemoryAlign{alignof(MicroString)}.Ceil(n);
   }
 
  public:

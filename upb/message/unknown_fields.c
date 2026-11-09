@@ -38,7 +38,7 @@ bool upb_Message_NextWireFormatUnknown(const struct upb_Message* msg,
     *data = unknown.value.bytes;
     return true;
   }
-  UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension);
+  UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_AuxField);
   if (!*arena) {
     *arena = upb_Arena_New();
     if (!*arena) {
@@ -46,7 +46,7 @@ bool upb_Message_NextWireFormatUnknown(const struct upb_Message* msg,
     }
   }
   upb_EncodeStatus status =
-      upb_EncodeExtension(unknown.value.extension, *arena, data,
+      upb_EncodeExtension(unknown.value.aux_field, *arena, data,
                           /*encode_options=*/0);
   if (status != kUpb_EncodeStatus_Ok) {
     return false;
@@ -91,10 +91,9 @@ upb_FindUnknownRet2 upb_Message_FindUnknown2(const struct upb_Message* msg,
         ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
         if (!ptr) return upb_FindUnknownRet2_ParseError();
       }
-    } else if (ret.unknown.type ==
-               kUpb_MessageUnknownType_NonCanonicalExtension) {
+    } else if (ret.unknown.type == kUpb_MessageUnknownType_AuxField) {
       uint32_t ext_field_number = upb_MiniTableField_Number(
-          upb_Extension_MiniTableField(ret.unknown.value.extension));
+          upb_Extension_MiniTableField(ret.unknown.value.aux_field));
       if (ext_field_number == field_number) {
         ret.status = kUpb_FindUnknown_Ok;
         return ret;
@@ -119,8 +118,8 @@ upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown2(
   UPB_ASSERT(*iter <= in->size);
   upb_TaggedAuxPtr unknown_ptr = in->aux_data[*iter - 1];
 
-  if (data->type == kUpb_MessageUnknownType_NonCanonicalExtension) {
-    UPB_ASSERT(upb_TaggedAuxPtr_IsNonCanonicalExtension(unknown_ptr));
+  if (data->type == kUpb_MessageUnknownType_AuxField) {
+    UPB_ASSERT(upb_TaggedAuxPtr_IsUnknownAuxField(unknown_ptr));
     // When the unknown is a non-canonical extension, we just remove it from the
     // aux data array.
     in->aux_data[*iter - 1] = upb_TaggedAuxPtr_Null();

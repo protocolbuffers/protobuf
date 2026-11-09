@@ -15,8 +15,10 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/java/java_features.pb.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 
@@ -58,6 +60,7 @@ class JavaGeneratorTest : public CommandLineInterfaceTester {
     }
     return contents.find(substring) != std::string::npos;
   }
+
 };
 
 TEST_F(JavaGeneratorTest, Basic) {
@@ -334,6 +337,102 @@ TEST_F(JavaGeneratorTest, LargeOpenEnumAllowedEdition2024) {
 
   ExpectNoErrors();
 }
+
+struct OpenEnumUnrecognizedTestCase {
+  absl::string_view test_name;
+  bool lite;
+  absl::string_view enum_options;
+  absl::string_view enum_values;
+  absl::string_view expected_unrecognized;
+};
+
+class OpenEnumUnrecognizedTest
+    : public JavaGeneratorTest,
+      public testing::WithParamInterface<OpenEnumUnrecognizedTestCase> {};
+
+TEST_P(OpenEnumUnrecognizedTest, AvoidsNegativeValueCollision) {
+  const OpenEnumUnrecognizedTestCase& test_case = GetParam();
+  absl::string_view imports =
+      absl::StrContains(test_case.enum_options, "pb.java")
+          ? "import \"third_party/java/protobuf/java_features.proto\";"
+          : "";
+  CreateTempFile("foo.proto",
+                 absl::Substitute(
+                     R"schema(
+    edition = "2024";
+    package proto2_unittest;
+
+    $0
+
+    enum TestEnum {
+      $1
+      $2
+    }
+  )schema",
+                     imports, test_case.enum_options, test_case.enum_values));
+
+  RunProtoc(absl::StrCat("protocol_compiler --proto_path=$tmpdir --java_out=",
+                         test_case.lite ? "lite:" : "",
+                         "$tmpdir foo.proto --experimental_editions"));
+
+  ExpectNoErrors();
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX
+                                    "proto2_unittest/TestEnum.java",
+                                    test_case.expected_unrecognized));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    OpenEnumUnrecognizedTests, OpenEnumUnrecognizedTest,
+    testing::Values(
+        OpenEnumUnrecognizedTestCase{
+            /*test_name=*/"StandardFull",
+            /*lite=*/false,
+            /*enum_options=*/"",
+            /*enum_values=*/"ZERO = 0;\nNEG_ONE = -1;",
+            /*expected_unrecognized=*/"UNRECOGNIZED(-2),",
+        },
+        OpenEnumUnrecognizedTestCase{
+            /*test_name=*/"StandardLite",
+            /*lite=*/true,
+            /*enum_options=*/"",
+            /*enum_values=*/"ZERO = 0;\nNEG_ONE = -1;",
+            /*expected_unrecognized=*/"UNRECOGNIZED(-2),",
+        },
+        OpenEnumUnrecognizedTestCase{
+            /*test_name=*/"AliasingFull",
+            /*lite=*/false,
+            /*enum_options=*/"option allow_alias = true;",
+            /*enum_values=*/
+            "ZERO = 0;\nZERO_ALIAS = 0;\nONE = 1;\nNEG_ONE = -1;",
+            /*expected_unrecognized=*/"UNRECOGNIZED(-1, -2),",
+        },
+        OpenEnumUnrecognizedTestCase{
+            /*test_name=*/"AliasingLite",
+            /*lite=*/true,
+            /*enum_options=*/"option allow_alias = true;",
+            /*enum_values=*/
+            "ZERO = 0;\nZERO_ALIAS = 0;\nONE = 1;\nNEG_ONE = -1;",
+            /*expected_unrecognized=*/"UNRECOGNIZED(-2),",
+        },
+        OpenEnumUnrecognizedTestCase{
+            /*test_name=*/"LargeFull",
+            /*lite=*/false,
+            /*enum_options=*/"option features.(pb.java).large_enum = true;",
+            /*enum_values=*/"ZERO = 0;\nNEG_ONE = -1;\nNEG_TWO = -2;",
+            /*expected_unrecognized=*/
+            "UNRECOGNIZED = new TestEnum(-3, 3, \"UNRECOGNIZED\");",
+        },
+        OpenEnumUnrecognizedTestCase{
+            /*test_name=*/"LargeLite",
+            /*lite=*/true,
+            /*enum_options=*/"option features.(pb.java).large_enum = true;",
+            /*enum_values=*/"ZERO = 0;\nNEG_ONE = -1;\nNEG_TWO = -2;",
+            /*expected_unrecognized=*/
+            "UNRECOGNIZED = new TestEnum(-3, \"UNRECOGNIZED\");",
+        }),
+    [](const testing::TestParamInfo<OpenEnumUnrecognizedTestCase>& info) {
+      return std::string(info.param.test_name);
+    });
 TEST_F(JavaGeneratorTest, LargeEnumDisallowedEdition2023) {
   CreateTempFile("foo.proto",
                  R"schema(
@@ -529,6 +628,74 @@ TEST_F(JavaGeneratorTest, ExtensionsPublicImportsAreKnown) {
                                          "foo.FooProto.fileOpt);")));
 }
 
+
+TEST_F(JavaGeneratorTest, BitFieldsAreTransient) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2024";
+    package proto2_unittest;
+    message Foo {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "proto2_unittest/Foo.java"));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX "proto2_unittest/Foo.java",
+                                    "private transient int bitField0_;"));
+}
+
+TEST_F(JavaGeneratorTest, MultipleBitFieldsAreTransient) {
+  std::string schema = R"schema(
+    edition = "2024";
+    package proto2_unittest;
+    message MultiBitField {
+  )schema";
+  for (int i = 1; i <= 33; ++i) {
+    absl::StrAppend(&schema, "  int32 f", i, " = ", i, ";\n");
+  }
+  absl::StrAppend(&schema, "}\n");
+  CreateTempFile("multi.proto", schema);
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir multi.proto");
+
+  ExpectNoErrors();
+  EXPECT_TRUE(
+      FileGenerated(PACKAGE_PREFIX "proto2_unittest/MultiBitField.java"));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX
+                                    "proto2_unittest/MultiBitField.java",
+                                    "private transient int bitField0_;"));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX
+                                    "proto2_unittest/MultiBitField.java",
+                                    "private transient int bitField1_;"));
+}
+
+TEST_F(JavaGeneratorTest, AllowlistedBitFieldsAreNotTransient) {
+  CreateTempFile("allowlisted.proto",
+                 R"schema(
+    edition = "2024";
+    package com.google.gson.protobuf;
+    message TestAllTypes {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir "
+      "allowlisted.proto");
+
+  ExpectNoErrors();
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX
+                            "com/google/gson/protobuf/TestAllTypes.java"));
+  EXPECT_TRUE(FileContainsSubstring(
+      PACKAGE_PREFIX "com/google/gson/protobuf/TestAllTypes.java",
+      "private int bitField0_;"));
+  EXPECT_FALSE(FileContainsSubstring(
+      PACKAGE_PREFIX "com/google/gson/protobuf/TestAllTypes.java",
+      "private transient int bitField0_;"));
+}
 
 TEST_F(JavaGeneratorTest, OneofHasBitsBuildPartial) {
   CreateTempFile("oneof_has_bits.proto",

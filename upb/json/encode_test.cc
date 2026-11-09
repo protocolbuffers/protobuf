@@ -50,6 +50,12 @@ static std::string JsonEncode(const upb_test_Box* msg, int options) {
   return JsonEncodeGeneric(UPB_UPCAST(msg), upb_test_Box_getmsgdef, options);
 }
 
+static std::string JsonEncodeJsonNameEscape(const upb_test_JsonNameEscape* msg,
+                                            int options) {
+  return JsonEncodeGeneric(UPB_UPCAST(msg), upb_test_JsonNameEscape_getmsgdef,
+                           options);
+}
+
 static std::string JsonEncodeKnight(
     const json_enumval_custom_string_Knight* msg, int options) {
   return JsonEncodeGeneric(
@@ -251,6 +257,50 @@ TEST(JsonTest, EncodeFieldMaskEscapedPaths) {
   EXPECT_EQ(expected, JsonEncode(foo, 0));
 }
 
+// A field whose json_name needs no escaping encodes as it always has, both with
+// json_name and with the proto field name.
+TEST(JsonTest, EncodeJsonNamePositiveControl) {
+  upb::Arena a;
+  upb_test_JsonNameEscape* msg = upb_test_JsonNameEscape_new(a.ptr());
+  upb_test_JsonNameEscape_set_plain(msg, 3);
+
+  EXPECT_EQ(R"({"plain":3})", JsonEncodeJsonNameEscape(msg, 0));
+  EXPECT_EQ(R"({"plain":3})",
+            JsonEncodeJsonNameEscape(msg, upb_JsonEncode_UseProtoNames));
+}
+
+// json_name is copied from the descriptor as-is. A quote or a backslash in it
+// must not end the object key early.
+TEST(JsonTest, EncodeJsonNameWithQuotesAndBackslashesIsEscaped) {
+  upb::Arena a;
+  upb_test_JsonNameEscape* msg = upb_test_JsonNameEscape_new(a.ptr());
+  upb_test_JsonNameEscape_set_quoted(msg, 1);
+
+  const std::string json = JsonEncodeJsonNameEscape(msg, 0);
+  EXPECT_EQ("{\"a\\\":1,\\\"b\":1}", json);
+
+  // The output is a single-key object that decodes back to the same message.
+  upb::DefPool defpool;
+  upb::Status status;
+  const upb_MessageDef* m = upb_test_JsonNameEscape_getmsgdef(defpool.ptr());
+  upb_test_JsonNameEscape* decoded = upb_test_JsonNameEscape_new(a.ptr());
+  ASSERT_TRUE(upb_JsonDecode(json.data(), json.size(), UPB_UPCAST(decoded), m,
+                             defpool.ptr(), 0, a.ptr(), status.ptr()))
+      << status.error_message();
+  EXPECT_TRUE(upb_test_JsonNameEscape_has_quoted(decoded));
+  EXPECT_EQ(1, upb_test_JsonNameEscape_quoted(decoded));
+  EXPECT_FALSE(upb_test_JsonNameEscape_has_control(decoded));
+  EXPECT_FALSE(upb_test_JsonNameEscape_has_plain(decoded));
+}
+
+TEST(JsonTest, EncodeJsonNameWithControlCharactersIsEscaped) {
+  upb::Arena a;
+  upb_test_JsonNameEscape* msg = upb_test_JsonNameEscape_new(a.ptr());
+  upb_test_JsonNameEscape_set_control(msg, 2);
+
+  EXPECT_EQ(R"({"x\ny\\z\tq":2})", JsonEncodeJsonNameEscape(msg, 0));
+}
+
 static upb_test_Box* NewBoxWithData(upb_Arena* arena, const char* data,
                                     size_t size) {
   upb_test_Box* box = upb_test_Box_new(arena);
@@ -301,4 +351,112 @@ TEST(JsonTest, EncodeBytesWebSafeBase64RoundTripsThroughDecoder) {
       << status.error_message();
   const upb_StringView data = upb_test_Box_data(decoded);
   EXPECT_EQ(std::string(kData, kSize), std::string(data.data, data.size));
+}
+
+TEST(JsonTest, EncodeAnyPreservesExtensions) {
+  upb::Arena a;
+  upb::DefPool defpool;
+  upb::Status status;
+  const upb_MessageDef* m = upb_test_Box_getmsgdef(defpool.ptr());
+  ASSERT_NE(m, nullptr);
+
+  const std::string json_in =
+      R"({"anyVal":{"@type":"type.googleapis.com/upb_test.Box","[upb_test.ext_tag]":42}})";
+  upb_test_Box* decoded = upb_test_Box_new(a.ptr());
+  ASSERT_TRUE(upb_JsonDecode(json_in.data(), json_in.size(),
+                             UPB_UPCAST(decoded), m, defpool.ptr(), 0, a.ptr(),
+                             status.ptr()))
+      << status.error_message();
+
+  EXPECT_EQ(json_in, JsonEncode(decoded, 0));
+}
+
+TEST(JsonTest, EncodeMaxDepthExceeded) {
+  upb::Arena a;
+  upb::DefPool defpool;
+  const upb_MessageDef* m = upb_test_Box_getmsgdef(defpool.ptr());
+  ASSERT_NE(m, nullptr);
+
+  // Depth 3: root -> child -> grandchild.
+  upb_test_Box* root = upb_test_Box_new(a.ptr());
+  upb_test_Box* child = upb_test_Box_mutable_sub(root, a.ptr());
+  upb_test_Box* grandchild = upb_test_Box_mutable_sub(child, a.ptr());
+  upb_test_Box_set_first_tag(grandchild, upb_test_Z_BAR);
+
+  EXPECT_EQ(R"({"sub":{"sub":{"firstTag":"Z_BAR"}}})",
+            JsonEncode(root, upb_JsonEncodeOptions_MaxDepth(3)));
+
+  {
+    upb::Status status;
+    EXPECT_EQ(static_cast<size_t>(-1),
+              upb_JsonEncode(UPB_UPCAST(root), m, defpool.ptr(),
+                             upb_JsonEncode_LimitDepth(0, 2), nullptr, 0,
+                             status.ptr()));
+    EXPECT_FALSE(status.ok());
+  }
+
+  // Cycle: root -> sub = root.
+  upb_test_Box_set_sub(root, root);
+  {
+    upb::Status status;
+    EXPECT_EQ(static_cast<size_t>(-1),
+              upb_JsonEncode(UPB_UPCAST(root), m, defpool.ptr(), 0, nullptr, 0,
+                             status.ptr()));
+    EXPECT_FALSE(status.ok());
+  }
+}
+
+TEST(JsonTest, EncodeAnyMaxDepthExceeded) {
+  upb::Arena a;
+  upb::DefPool defpool;
+  upb::Status status;
+  const upb_MessageDef* m = upb_test_Box_getmsgdef(defpool.ptr());
+  ASSERT_NE(m, nullptr);
+
+  // Depth 3 via Any: Box -> Any(Box) -> Any(Box).
+  const std::string json_in =
+      R"({"anyVal":{"@type":"type.googleapis.com/upb_test.Box","anyVal":{"@type":"type.googleapis.com/upb_test.Box","firstTag":"Z_BAR"}}})";
+  upb_test_Box* decoded = upb_test_Box_new(a.ptr());
+  ASSERT_TRUE(upb_JsonDecode(json_in.data(), json_in.size(),
+                             UPB_UPCAST(decoded), m, defpool.ptr(), 0, a.ptr(),
+                             status.ptr()))
+      << status.error_message();
+
+  EXPECT_EQ(json_in, JsonEncode(decoded, upb_JsonEncodeOptions_MaxDepth(3)));
+
+  for (int limit : {1, 2}) {
+    upb::Status err_status;
+    EXPECT_EQ(static_cast<size_t>(-1),
+              upb_JsonEncode(UPB_UPCAST(decoded), m, defpool.ptr(),
+                             upb_JsonEncodeOptions_MaxDepth(limit), nullptr, 0,
+                             err_status.ptr()));
+    EXPECT_FALSE(err_status.ok());
+  }
+}
+
+TEST(JsonTest, EncodeStructAndListValueMaxDepthExceeded) {
+  upb::Arena a;
+  upb::DefPool defpool;
+  upb::Status status;
+  const upb_MessageDef* m = upb_test_Box_getmsgdef(defpool.ptr());
+  ASSERT_NE(m, nullptr);
+
+  // Depth 3 via Struct/ListValue: Box -> Struct -> ListValue.
+  const std::string json_in = R"({"val":{"a":[1]}})";
+  upb_test_Box* decoded = upb_test_Box_new(a.ptr());
+  ASSERT_TRUE(upb_JsonDecode(json_in.data(), json_in.size(),
+                             UPB_UPCAST(decoded), m, defpool.ptr(), 0, a.ptr(),
+                             status.ptr()))
+      << status.error_message();
+
+  EXPECT_EQ(json_in, JsonEncode(decoded, upb_JsonEncodeOptions_MaxDepth(3)));
+
+  {
+    upb::Status err_status;
+    EXPECT_EQ(static_cast<size_t>(-1),
+              upb_JsonEncode(UPB_UPCAST(decoded), m, defpool.ptr(),
+                             upb_JsonEncodeOptions_MaxDepth(2), nullptr, 0,
+                             err_status.ptr()));
+    EXPECT_FALSE(err_status.ok());
+  }
 }

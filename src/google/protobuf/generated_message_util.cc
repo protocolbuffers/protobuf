@@ -11,10 +11,8 @@
 
 #include "google/protobuf/generated_message_util.h"
 
-#include <algorithm>
 #include <atomic>
 #include <climits>
-#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -24,9 +22,9 @@
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/class_data.h"
 #include "google/protobuf/extension_set.h"
-#include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/memory_align.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/message_traits.h"
 #include "google/protobuf/metadata_lite.h"
@@ -57,10 +55,10 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT const EmptyCord empty_cord_;
 #if defined(PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED)
 
 // We add a single dummy entry to guarantee the section is never empty.
-struct alignas(MessageGlobalsBase::kMessageGlobalsAlignment) DummyWeakDefault {
+struct DummyWeakDefault {
   [[maybe_unused]] uint64_t dummy;
 };
-DummyWeakDefault dummy_weak_default
+DummyWeakDefault dummy_weak_default alignas(kClassDataAlignment)
     __attribute__((section("pb_defaults"))) = {0};
 
 extern "C" {
@@ -75,6 +73,7 @@ extern const char __stop_pb_defaults;
 static void InitWeakDefaults() {
   static_assert(alignof(WeakDescriptorDefaultTail) ==
                 MessageGlobalsBase::kMessageGlobalsAlignment);
+  constexpr auto kClassDataAlign = ArenaAlignAs(kClassDataAlignment);
 
   // force link the dummy entry.
   StrongPointer<DummyWeakDefault*, &dummy_weak_default>();
@@ -94,6 +93,7 @@ static void InitWeakDefaults() {
     start += instance->SizeOfSelf();
     auto* tail = reinterpret_cast<const WeakDescriptorDefaultTail*>(start);
     start += sizeof(WeakDescriptorDefaultTail);
+    start = kClassDataAlign.Ceil(start);
 
     *tail->target = instance;
   }

@@ -20,6 +20,18 @@
 
 #include "Python.h"
 
+// The oldest Python version that this build must be able to run on.
+//
+// Limited API builds can be compiled against headers that are newer than the
+// oldest Python version they support (and we do this for our release wheels,
+// see python/dist/BUILD.bazel). So version checks for Python features must use
+// this macro instead of PY_VERSION_HEX, which is the version of the headers.
+#ifdef Py_LIMITED_API
+#define PYUPB_MIN_PY_VERSION_HEX Py_LIMITED_API
+#else
+#define PYUPB_MIN_PY_VERSION_HEX PY_VERSION_HEX
+#endif
+
 // Ideally we could restrict ourselves to the limited API of 3.7, but this is
 // a very important function that was not officially added to the limited API
 // until 3.10.  Without this function, there is no way of getting data from a

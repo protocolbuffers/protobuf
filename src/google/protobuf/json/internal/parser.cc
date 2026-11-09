@@ -391,8 +391,9 @@ absl::Status ParseField(JsonLexer& lex, const Desc<Traits>& desc,
                         absl::string_view name, Msg<Traits>& msg);
 
 template <typename Traits>
-absl::Status ParseSingular(JsonLexer& lex, Field<Traits> field,
-                           Msg<Traits>& msg) {
+PROTOBUF_NOINLINE absl::Status ParseSingular(JsonLexer& lex,
+                                             Field<Traits> field,
+                                             Msg<Traits>& msg) {
   auto field_type = Traits::FieldType(field);
   if (lex.Peek(JsonLexer::kNull)) {
     auto message_type = ClassifyMessage(Traits::FieldTypeName(field));
@@ -823,8 +824,9 @@ absl::optional<int32_t> TakeNanosAndAdvance(absl::string_view& data) {
 }
 
 template <typename Traits>
-absl::Status ParseTimestamp(JsonLexer& lex, const Desc<Traits>& desc,
-                            Msg<Traits>& msg) {
+PROTOBUF_NOINLINE absl::Status ParseTimestamp(JsonLexer& lex,
+                                              const Desc<Traits>& desc,
+                                              Msg<Traits>& msg) {
   if (lex.Peek(JsonLexer::kNull)) {
     return lex.Expect("null");
   }
@@ -946,8 +948,9 @@ absl::Status ParseTimestamp(JsonLexer& lex, const Desc<Traits>& desc,
 }
 
 template <typename Traits>
-absl::Status ParseDuration(JsonLexer& lex, const Desc<Traits>& desc,
-                           Msg<Traits>& msg) {
+PROTOBUF_NOINLINE absl::Status ParseDuration(JsonLexer& lex,
+                                             const Desc<Traits>& desc,
+                                             Msg<Traits>& msg) {
   if (lex.Peek(JsonLexer::kNull)) {
     return lex.Expect("null");
   }
@@ -1000,8 +1003,9 @@ absl::Status ParseDuration(JsonLexer& lex, const Desc<Traits>& desc,
 }
 
 template <typename Traits>
-absl::Status ParseFieldMask(JsonLexer& lex, const Desc<Traits>& desc,
-                            Msg<Traits>& msg) {
+PROTOBUF_NOINLINE absl::Status ParseFieldMask(JsonLexer& lex,
+                                              const Desc<Traits>& desc,
+                                              Msg<Traits>& msg) {
   absl::StatusOr<LocationWith<MaybeOwnedString>> str = lex.ParseUtf8();
   RETURN_IF_ERROR(str.status());
   auto paths = str->value.AsView();
@@ -1038,8 +1042,9 @@ absl::Status ParseFieldMask(JsonLexer& lex, const Desc<Traits>& desc,
 }
 
 template <typename Traits>
-absl::Status ParseAny(JsonLexer& lex, const Desc<Traits>& desc,
-                      Msg<Traits>& msg) {
+PROTOBUF_NOINLINE absl::Status ParseAny(JsonLexer& lex,
+                                        const Desc<Traits>& desc,
+                                        Msg<Traits>& msg) {
   // Buffer an entire object. Because @type can occur anywhere, we're forced
   // to do this.
   RETURN_IF_ERROR(lex.SkipToToken());
@@ -1101,15 +1106,18 @@ absl::Status ParseAny(JsonLexer& lex, const Desc<Traits>& desc,
 
 // These are mutually recursive with ParseValue.
 template <typename Traits>
-absl::Status ParseStructValue(JsonLexer& lex, const Desc<Traits>& desc,
-                              Msg<Traits>& msg);
+PROTOBUF_NOINLINE absl::Status ParseStructValue(JsonLexer& lex,
+                                                const Desc<Traits>& desc,
+                                                Msg<Traits>& msg);
 template <typename Traits>
-absl::Status ParseListValue(JsonLexer& lex, const Desc<Traits>& desc,
-                            Msg<Traits>& msg);
+PROTOBUF_NOINLINE absl::Status ParseListValue(JsonLexer& lex,
+                                              const Desc<Traits>& desc,
+                                              Msg<Traits>& msg);
 
 template <typename Traits>
-absl::Status ParseValue(JsonLexer& lex, const Desc<Traits>& desc,
-                        Msg<Traits>& msg) {
+PROTOBUF_NOINLINE absl::Status ParseValue(JsonLexer& lex,
+                                          const Desc<Traits>& desc,
+                                          Msg<Traits>& msg) {
   auto kind = lex.PeekKind();
   RETURN_IF_ERROR(kind.status());
   // NOTE: The field numbers 1 through 6 are the numbers of the oneof fields

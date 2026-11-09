@@ -30,6 +30,7 @@
 #include "upb/message/internal/accessors.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
+#include "upb/message/test.upb.h"
 #include "upb/message/test.upb_minitable.h"
 #include "upb/message/unknown_fields.h"
 #include "upb/mini_table/extension_registry.h"
@@ -40,6 +41,7 @@
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 #include "upb/wire/encode_extension.h"
+#include "upb/wire/types.h"
 
 // Must be last to ensure UPB_PRIVATE is defined.
 #include "upb/port/def.inc"
@@ -1045,9 +1047,9 @@ TEST(ConvertTest, ConvertExtensionToNonExtendable) {
   uintptr_t iter = kUpb_Message_UnknownBegin;
   upb_MessageUnknown unknown;
   ASSERT_TRUE(upb_Message_NextUnknown2(dst_msg, &unknown, &iter));
-  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
-  const upb_Extension* ext_found =
-      static_cast<const upb_Extension*>(unknown.value.extension);
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_AuxField);
+  const upb_AuxField* ext_found =
+      static_cast<const upb_AuxField*>(unknown.value.aux_field);
   EXPECT_EQ(upb_MiniTableField_Number(upb_Extension_MiniTableField(ext_found)),
             1000);
   EXPECT_EQ(upb_Extension_GetInt32(ext_found), 123);
@@ -1082,9 +1084,9 @@ TEST(ConvertTest, ConvertExtensionToExtendableButUnknown) {
   uintptr_t iter2 = kUpb_Message_UnknownBegin;
   upb_MessageUnknown unknown2;
   ASSERT_TRUE(upb_Message_NextUnknown2(dst_msg, &unknown2, &iter2));
-  EXPECT_EQ(unknown2.type, kUpb_MessageUnknownType_NonCanonicalExtension);
-  const upb_Extension* ext_found2 =
-      static_cast<const upb_Extension*>(unknown2.value.extension);
+  EXPECT_EQ(unknown2.type, kUpb_MessageUnknownType_AuxField);
+  const upb_AuxField* ext_found2 =
+      static_cast<const upb_AuxField*>(unknown2.value.aux_field);
   EXPECT_EQ(upb_MiniTableField_Number(upb_Extension_MiniTableField(ext_found2)),
             1000);
   EXPECT_EQ(upb_Extension_GetInt32(ext_found2), 123);
@@ -1120,9 +1122,9 @@ TEST(ConvertTest, NonCanonicalToNonCanonical) {
   uintptr_t iter = kUpb_Message_UnknownBegin;
   upb_MessageUnknown unknown;
   ASSERT_TRUE(upb_Message_NextUnknown2(converted, &unknown, &iter));
-  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
-  const upb_Extension* ext_found =
-      static_cast<const upb_Extension*>(unknown.value.extension);
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_AuxField);
+  const upb_AuxField* ext_found =
+      static_cast<const upb_AuxField*>(unknown.value.aux_field);
   EXPECT_EQ(upb_MiniTableField_Number(upb_Extension_MiniTableField(ext_found)),
             1000);
   EXPECT_EQ(upb_Extension_GetInt32(ext_found), 123);
@@ -1187,7 +1189,7 @@ TEST(ConvertTest, DeepCloneNonCanonicalExtensionOutlivesSourceMiniTable) {
     uintptr_t iter = kUpb_Message_UnknownBegin;
     upb_MessageUnknown unknown;
     ASSERT_TRUE(upb_Message_NextUnknown2(msg2, &unknown, &iter));
-    ASSERT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+    ASSERT_EQ(unknown.type, kUpb_MessageUnknownType_AuxField);
   }
 
   // msg3: a deep clone of msg2. It should only depend on B.
@@ -1256,7 +1258,7 @@ TEST(ConvertTest, DeepCloneMessageNonCanonicalExtensionOutlivesSourceSchema) {
     uintptr_t iter = kUpb_Message_UnknownBegin;
     upb_MessageUnknown unknown;
     ASSERT_TRUE(upb_Message_NextUnknown2(msg2, &unknown, &iter));
-    ASSERT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+    ASSERT_EQ(unknown.type, kUpb_MessageUnknownType_AuxField);
   }
   upb_Message* msg3 = upb_Message_DeepClone(msg2, dst_mt, arena3);
   ASSERT_NE(msg3, nullptr);
@@ -1293,10 +1295,10 @@ TEST(ConvertTest, DeepCloneEmptyNonCanonicalExtension) {
   uintptr_t iter = kUpb_Message_UnknownBegin;
   upb_MessageUnknown unknown;
   ASSERT_TRUE(upb_Message_NextUnknown2(msg, &unknown, &iter));
-  ASSERT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  ASSERT_EQ(unknown.type, kUpb_MessageUnknownType_AuxField);
   upb_StringView encoded;
   ASSERT_EQ(upb_EncodeExtension(
-                static_cast<const upb_Extension*>(unknown.value.extension),
+                static_cast<const upb_AuxField*>(unknown.value.aux_field),
                 src_arena.ptr(), &encoded, /*encode_options=*/0),
             kUpb_EncodeStatus_Ok);
   EXPECT_EQ(encoded.size, 0);
@@ -2417,9 +2419,9 @@ TEST(ConvertTest, NonCanonicalMessageToNonCanonical) {
   uintptr_t iter = kUpb_Message_UnknownBegin;
   upb_MessageUnknown unknown;
   ASSERT_TRUE(upb_Message_NextUnknown2(converted, &unknown, &iter));
-  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
-  const upb_Extension* ext_found =
-      static_cast<const upb_Extension*>(unknown.value.extension);
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_AuxField);
+  const upb_AuxField* ext_found =
+      static_cast<const upb_AuxField*>(unknown.value.aux_field);
   EXPECT_EQ(upb_MiniTableField_Number(upb_Extension_MiniTableField(ext_found)),
             1002);
 
@@ -2845,4 +2847,84 @@ TEST(ConvertTest, EncodeFieldAsUnknownAbortOnError) {
       upb_Message_Convert(UPB_UPCAST(msg), TEST_MT, incompatible_mt, nullptr, 0,
                           0, dst_arena2.ptr());
   EXPECT_EQ(dst2, nullptr);
+}
+
+TEST(ConvertTest, MessageSetExtensionKeptAsNonCanonicalMessageSetItem) {
+  upb::Arena arena;
+  const upb_MiniTable* src_mt = &upb_0test__TestMessageSet_msg_init;
+  const upb_MiniTable* dst_mt = &upb__test__convert__MessageSetClone_msg_init;
+
+  upb_test_TestMessageSet* src = upb_test_TestMessageSet_new(arena.ptr());
+  upb_test_MessageSetMember* member =
+      upb_test_MessageSetMember_new(arena.ptr());
+  upb_test_MessageSetMember_set_optional_int32(member, 42);
+  ASSERT_TRUE(upb_Message_SetExtension(
+      UPB_UPCAST(src), upb_test_MessageSetMember_message_set_extension_ext,
+      &member, arena.ptr()));
+
+  // The destination doesn't know the extension, so it is kept as a
+  // non-canonical extension.
+  const upb_Message* dst = upb_Message_Convert(UPB_UPCAST(src), src_mt, dst_mt,
+                                               nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(dst, nullptr);
+  EXPECT_EQ(upb_Message_ExtensionCount(dst), 0u);
+
+  // It is still encoded as a MessageSet item, so the destination encodes to the
+  // same bytes as the source.
+  char* src_buf;
+  size_t src_size;
+  ASSERT_EQ(
+      upb_Encode(UPB_UPCAST(src), src_mt, 0, arena.ptr(), &src_buf, &src_size),
+      kUpb_EncodeStatus_Ok);
+  char* dst_buf;
+  size_t dst_size;
+  ASSERT_EQ(upb_Encode(dst, dst_mt, 0, arena.ptr(), &dst_buf, &dst_size),
+            kUpb_EncodeStatus_Ok);
+  ASSERT_GT(dst_size, 0u);
+  // A MessageSet item starts with the start-group tag of field 1.
+  EXPECT_EQ(dst_buf[0], (1 << 3) | kUpb_WireType_StartGroup);
+  EXPECT_EQ(std::string_view(dst_buf, dst_size),
+            std::string_view(src_buf, src_size));
+
+  // And it parses back into the extension.
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  ASSERT_NE(extreg, nullptr);
+  ASSERT_EQ(upb_ExtensionRegistry_Add(
+                extreg, upb_test_MessageSetMember_message_set_extension_ext),
+            kUpb_ExtensionRegistryStatus_Ok);
+  upb_test_TestMessageSet* parsed = upb_test_TestMessageSet_new(arena.ptr());
+  ASSERT_EQ(upb_Decode(dst_buf, dst_size, UPB_UPCAST(parsed), src_mt, extreg, 0,
+                       arena.ptr()),
+            kUpb_DecodeStatus_Ok);
+  const upb_Message* parsed_member = upb_Message_GetExtensionMessage(
+      UPB_UPCAST(parsed), upb_test_MessageSetMember_message_set_extension_ext,
+      nullptr);
+  ASSERT_NE(parsed_member, nullptr);
+  EXPECT_EQ(upb_test_MessageSetMember_optional_int32(
+                (const upb_test_MessageSetMember*)parsed_member),
+            42);
+}
+
+TEST(ConvertTest, MessageSetToNonMessageSetIsIncompatible) {
+  upb::Arena arena;
+  upb_test_TestMessageSet* src = upb_test_TestMessageSet_new(arena.ptr());
+  upb_test_MessageSetMember* member =
+      upb_test_MessageSetMember_new(arena.ptr());
+  ASSERT_TRUE(upb_Message_SetExtension(
+      UPB_UPCAST(src), upb_test_MessageSetMember_message_set_extension_ext,
+      &member, arena.ptr()));
+
+  const upb_MiniTable* mset_mt = &upb_0test__TestMessageSet_msg_init;
+  const upb_MiniTable* non_mset_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+
+  EXPECT_EQ(upb_Message_Convert(UPB_UPCAST(src), mset_mt, non_mset_mt, nullptr,
+                                0, 0, arena.ptr()),
+            nullptr);
+
+  upb_test_convert_MessageWithExtension* non_mset =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+  EXPECT_EQ(upb_Message_Convert(UPB_UPCAST(non_mset), non_mset_mt, mset_mt,
+                                nullptr, 0, 0, arena.ptr()),
+            nullptr);
 }

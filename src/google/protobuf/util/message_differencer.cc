@@ -20,7 +20,6 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/descriptor.pb.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -28,6 +27,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/generated_enum_reflection.h"
 #include "google/protobuf/io/printer.h"

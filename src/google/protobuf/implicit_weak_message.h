@@ -13,6 +13,7 @@
 #include <string>
 
 #include "google/protobuf/arena.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/field_with_arena.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/internal_visibility.h"
@@ -36,7 +37,8 @@ namespace protobuf {
 namespace internal {
 
 struct ImplicitWeakMessageDefaultType;
-extern ImplicitWeakMessageDefaultType implicit_weak_message_globals;
+extern ImplicitWeakMessageDefaultType PROTOBUF_ALIGNAS(kClassDataAlignment)
+    implicit_weak_message_globals;
 
 // An implementation of MessageLite that treats all data as unknown. This type
 // acts as a placeholder for an implicit weak field in the case where the true

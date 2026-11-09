@@ -59,6 +59,12 @@ def _CheckNotSelfMerge(container: Any, other: Any) -> None:
     )
 
 
+def _CheckNotRepeatedSelfMerge(container: Any, other: Any) -> None:
+  """Raises AssertionError for a repeated field self-merge."""
+  if other is container:
+    raise AssertionError('Cannot merge a repeated field into itself.')
+
+
 class BaseContainer(Sequence[_T]):
   """Base container class."""
 
@@ -184,6 +190,7 @@ class RepeatedScalarFieldContainer(BaseContainer[_T], MutableSequence[_T]):
     one. We do not check the types of the individual fields.
     """
     self._AssureWritable()
+    _CheckNotRepeatedSelfMerge(self, other)
     self._values.extend(other)
     self._message_listener.Modified()
 
@@ -354,6 +361,10 @@ class RepeatedCompositeFieldContainer(BaseContainer[_T], MutableSequence[_T]):
     message_class = self._message_descriptor._concrete_class
     listener = self._message_listener
     values = self._values
+    if elem_seq is self:
+      # Append copies of the elements that were there to begin with, so that the
+      # new elements are not visited.
+      elem_seq = (values[i] for i in range(len(values)))
     for message in elem_seq:
       new_element = message_class()
       new_element._SetListener(listener)
@@ -370,6 +381,7 @@ class RepeatedCompositeFieldContainer(BaseContainer[_T], MutableSequence[_T]):
     one, copying each individual message.
     """
     self._AssureWritable()
+    _CheckNotRepeatedSelfMerge(self, other)
     self.extend(other)
 
   def remove(self, elem: _T) -> None:
