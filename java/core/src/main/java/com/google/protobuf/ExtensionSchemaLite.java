@@ -236,7 +236,10 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
             break;
 
           case STRING:
-            value = reader.readString();
+            value =
+                extension.descriptor.checkUtf8
+                    ? reader.readStringRequireUtf8()
+                    : reader.readString();
             break;
           case GROUP:
             // Special case handling for non-repeated sub-messages: merge in-place rather than

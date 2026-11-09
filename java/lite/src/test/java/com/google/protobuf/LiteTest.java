@@ -3252,4 +3252,90 @@ public class LiteTest {
             () -> TestMessageSet.parseFrom(payload, registry));
     assertThat(exception).hasMessageThat().contains("too many levels of nesting");
   }
+
+  @Test
+  public void testParseUnknownFieldExtensionUtf8Validation() throws Exception {
+    GeneratedMessageLite.GeneratedExtension<TestAllExtensionsLite, String> strictSingularExt =
+        GeneratedMessageLite.newSingularGeneratedExtension(
+            TestAllExtensionsLite.getDefaultInstance(),
+            "",
+            null,
+            null,
+            999001,
+            WireFormat.FieldType.STRING,
+            /* checkUtf8= */ true,
+            String.class);
+    GeneratedMessageLite.GeneratedExtension<TestAllExtensionsLite, List<String>> strictRepeatedExt =
+        GeneratedMessageLite.newRepeatedGeneratedExtension(
+            TestAllExtensionsLite.getDefaultInstance(),
+            null,
+            null,
+            999002,
+            WireFormat.FieldType.STRING,
+            /* isPacked= */ false,
+            /* checkUtf8= */ true,
+            String.class);
+    GeneratedMessageLite.GeneratedExtension<TestAllExtensionsLite, String> looseSingularExt =
+        GeneratedMessageLite.newSingularGeneratedExtension(
+            TestAllExtensionsLite.getDefaultInstance(),
+            "",
+            null,
+            null,
+            999003,
+            WireFormat.FieldType.STRING,
+            String.class);
+
+    ExtensionRegistryLite registry = ExtensionRegistryLite.newInstance();
+    registry.add(strictSingularExt);
+    registry.add(strictRepeatedExt);
+    registry.add(looseSingularExt);
+
+    byte[] invalidUtf8 = new byte[] {(byte) 0xC0, (byte) 0x80};
+    for (int fieldNumber : new int[] {999001, 999002}) {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      CodedOutputStream cout = CodedOutputStream.newInstance(baos);
+      cout.writeByteArray(fieldNumber, invalidUtf8);
+      cout.flush();
+      CodedInputStream input = CodedInputStream.newInstance(baos.toByteArray());
+      int tag = input.readTag();
+      TestAllExtensionsLite msg = TestAllExtensionsLite.getDefaultInstance().newMutableInstance();
+      assertThrows(
+          InvalidProtocolBufferException.class,
+          () ->
+              msg.parseUnknownField(
+                  TestAllExtensionsLite.getDefaultInstance(), input, registry, tag));
+    }
+
+    ByteArrayOutputStream looseOut = new ByteArrayOutputStream();
+    CodedOutputStream looseCout = CodedOutputStream.newInstance(looseOut);
+    looseCout.writeByteArray(999003, invalidUtf8);
+    looseCout.flush();
+    CodedInputStream looseInput = CodedInputStream.newInstance(looseOut.toByteArray());
+    int looseTag = looseInput.readTag();
+    TestAllExtensionsLite looseMsg =
+        TestAllExtensionsLite.getDefaultInstance().newMutableInstance();
+    assertThat(
+            looseMsg.parseUnknownField(
+                TestAllExtensionsLite.getDefaultInstance(), looseInput, registry, looseTag))
+        .isTrue();
+    assertThat(looseMsg.getExtension(looseSingularExt)).isEqualTo("\uFFFD\uFFFD");
+
+    ByteArrayOutputStream validOut = new ByteArrayOutputStream();
+    CodedOutputStream validCout = CodedOutputStream.newInstance(validOut);
+    validCout.writeString(999001, "hello");
+    validCout.writeString(999002, "world");
+    validCout.flush();
+    CodedInputStream validInput = CodedInputStream.newInstance(validOut.toByteArray());
+    TestAllExtensionsLite validMsg =
+        TestAllExtensionsLite.getDefaultInstance().newMutableInstance();
+    int tag;
+    while ((tag = validInput.readTag()) != 0) {
+      assertThat(
+              validMsg.parseUnknownField(
+                  TestAllExtensionsLite.getDefaultInstance(), validInput, registry, tag))
+          .isTrue();
+    }
+    assertThat(validMsg.getExtension(strictSingularExt)).isEqualTo("hello");
+    assertThat(validMsg.getExtension(strictRepeatedExt)).containsExactly("world");
+  }
 }

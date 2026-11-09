@@ -13,9 +13,13 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
+#include "google/protobuf/compiler/java/generator.h"
 #include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/internal_helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/compiler/java/names.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 
 // Must be last.
@@ -49,6 +53,10 @@ void ImmutableExtensionLiteGenerator::Generate(io::Printer* printer) {
   printer->Print(vars, "public static final int $constant_name$ = $number$;\n");
 
   WriteFieldDocComment(printer, descriptor_, context_->options());
+  const bool check_utf8 = descriptor_->type() == FieldDescriptor::TYPE_STRING &&
+                          JavaGenerator::GetEdition(*descriptor_->file()) >=
+                              Edition::EDITION_2023 &&
+                          CheckUtf8(descriptor_);
   if (descriptor_->is_repeated()) {
     printer->Print(
         vars,
@@ -62,8 +70,12 @@ void ImmutableExtensionLiteGenerator::Generate(io::Printer* printer) {
         "      $enum_map$,\n"
         "      $number$,\n"
         "      com.google.protobuf.WireFormat.FieldType.$type_constant$,\n"
-        "      $packed$,\n"
-        "      $singular_type$.class);\n");
+        "      $packed$,\n");
+    printer->Annotate("name", descriptor_);
+    if (check_utf8) {
+      printer->Print("      true,\n");
+    }
+    printer->Print(vars, "      $singular_type$.class);\n");
   } else {
     printer->Print(
         vars,
@@ -77,10 +89,13 @@ void ImmutableExtensionLiteGenerator::Generate(io::Printer* printer) {
         "      $prototype$,\n"
         "      $enum_map$,\n"
         "      $number$,\n"
-        "      com.google.protobuf.WireFormat.FieldType.$type_constant$,\n"
-        "      $singular_type$.class);\n");
+        "      com.google.protobuf.WireFormat.FieldType.$type_constant$,\n");
+    printer->Annotate("name", descriptor_);
+    if (check_utf8) {
+      printer->Print("      true,\n");
+    }
+    printer->Print(vars, "      $singular_type$.class);\n");
   }
-  printer->Annotate("name", descriptor_);
 }
 
 int ImmutableExtensionLiteGenerator::GenerateNonNestedInitializationCode(

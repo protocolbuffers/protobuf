@@ -767,7 +767,7 @@ public abstract class GeneratedMessageLite<
           default:
             value =
                 FieldSet.readPrimitiveField(
-                    input, extension.descriptor.getLiteType(), /* checkUtf8= */ false);
+                    input, extension.descriptor.getLiteType(), extension.descriptor.checkUtf8);
             break;
         }
 
@@ -1191,18 +1191,40 @@ public abstract class GeneratedMessageLite<
   public static <ContainingType extends MessageLite, ExtensionT>
       GeneratedExtension<ContainingType, ExtensionT> newSingularGeneratedExtension(
           final ContainingType containingTypeDefaultInstance,
-          final ExtensionT defaultValue,
-          final MessageLite messageDefaultInstance,
-          final Internal.EnumLiteMap<?> enumTypeMap,
+              final ExtensionT defaultValue,
+              final MessageLite messageDefaultInstance,
+              final Internal.EnumLiteMap<?> enumTypeMap,
           final int number,
           final WireFormat.FieldType type,
           final Class<?> singularType) {
-    return new GeneratedExtension<ContainingType, ExtensionT>(
+    return newSingularGeneratedExtension(
+        containingTypeDefaultInstance,
+        defaultValue,
+        messageDefaultInstance,
+        enumTypeMap,
+        number,
+        type,
+        /* checkUtf8= */ false,
+        singularType);
+  }
+
+  /** For use by generated code only. */
+  public static <ContainingT extends MessageLite, ExtensionT>
+      GeneratedExtension<ContainingT, ExtensionT> newSingularGeneratedExtension(
+          final ContainingT containingTypeDefaultInstance,
+              final ExtensionT defaultValue,
+              final MessageLite messageDefaultInstance,
+              final Internal.EnumLiteMap<?> enumTypeMap,
+          final int number,
+          final WireFormat.FieldType type,
+          final boolean checkUtf8,
+          final Class<?> singularType) {
+    return new GeneratedExtension<ContainingT, ExtensionT>(
         containingTypeDefaultInstance,
         defaultValue,
         messageDefaultInstance,
         new ExtensionDescriptor(
-            enumTypeMap, number, type, /* isRepeated= */ false, /* isPacked= */ false),
+            enumTypeMap, number, type, /* isRepeated= */ false, /* isPacked= */ false, checkUtf8),
         singularType);
   }
 
@@ -1210,19 +1232,42 @@ public abstract class GeneratedMessageLite<
   public static <ContainingType extends MessageLite, ExtensionT>
       GeneratedExtension<ContainingType, ExtensionT> newRepeatedGeneratedExtension(
           final ContainingType containingTypeDefaultInstance,
-          final MessageLite messageDefaultInstance,
-          final Internal.EnumLiteMap<?> enumTypeMap,
+              final MessageLite messageDefaultInstance,
+              final Internal.EnumLiteMap<?> enumTypeMap,
           final int number,
           final WireFormat.FieldType type,
           final boolean isPacked,
           final Class<?> singularType) {
+    return newRepeatedGeneratedExtension(
+        containingTypeDefaultInstance,
+        messageDefaultInstance,
+        enumTypeMap,
+        number,
+        type,
+        isPacked,
+        /* checkUtf8= */ false,
+        singularType);
+  }
+
+  /** For use by generated code only. */
+  public static <ContainingT extends MessageLite, ExtensionT>
+      GeneratedExtension<ContainingT, ExtensionT> newRepeatedGeneratedExtension(
+          final ContainingT containingTypeDefaultInstance,
+              final MessageLite messageDefaultInstance,
+              final Internal.EnumLiteMap<?> enumTypeMap,
+          final int number,
+          final WireFormat.FieldType type,
+          final boolean isPacked,
+          final boolean checkUtf8,
+          final Class<?> singularType) {
     @SuppressWarnings("unchecked") // Subclasses ensure ExtensionT is a List
     ExtensionT emptyList = (ExtensionT) ProtobufArrayList.emptyList();
-    return new GeneratedExtension<ContainingType, ExtensionT>(
+    return new GeneratedExtension<ContainingT, ExtensionT>(
         containingTypeDefaultInstance,
         emptyList,
         messageDefaultInstance,
-        new ExtensionDescriptor(enumTypeMap, number, type, /* isRepeated= */ true, isPacked),
+        new ExtensionDescriptor(
+            enumTypeMap, number, type, /* isRepeated= */ true, isPacked, checkUtf8),
         singularType);
   }
 
@@ -1233,12 +1278,14 @@ public abstract class GeneratedMessageLite<
         final int number,
         final WireFormat.FieldType type,
         final boolean isRepeated,
-        final boolean isPacked) {
+        final boolean isPacked,
+        final boolean checkUtf8) {
       this.enumTypeMap = enumTypeMap;
       this.number = number;
       this.type = type;
       this.isRepeated = isRepeated;
       this.isPacked = isPacked;
+      this.checkUtf8 = checkUtf8;
     }
 
     final Internal.EnumLiteMap<?> enumTypeMap;
@@ -1246,6 +1293,7 @@ public abstract class GeneratedMessageLite<
     final WireFormat.FieldType type;
     final boolean isRepeated;
     final boolean isPacked;
+    final boolean checkUtf8;
 
     @Override
     public int getNumber() {
