@@ -350,7 +350,7 @@ TEST_F(RepeatedPtrFieldTest, DestroyErroneousIncorrectElement) {
   // The destructor of `RepeatedPtrField` verifies that all elements are of the
   // expected type.
   ASSERT_DEATH(destroy_wrong_element_type(),
-               "Type mismatch in RepeatedPtrFieldBase::DestroyMessageLites");
+               "Type mismatch in RepeatedPtrField");
 #endif
 }
 
@@ -367,7 +367,7 @@ TEST_F(RepeatedPtrFieldTest, DestroyErroneousMixedElements) {
   // The destructor of `RepeatedPtrField` verifies that all elements are of the
   // same type if the element type is `Message` or `MessageLite`.
   ASSERT_DEATH(destroy_heterogenous_repeated_field(),
-               "Type mismatch in RepeatedPtrFieldBase::DestroyMessageLites");
+               "Type mismatch in RepeatedPtrField");
 #endif
 }
 
