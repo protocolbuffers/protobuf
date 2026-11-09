@@ -17,8 +17,10 @@
 
 #include <atomic>
 #include <type_traits>
+#include <utility>
 
 #include "absl/base/optimization.h"
+#include "absl/cleanup/cleanup.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/pyext/free_threading/access_guard.h"
 #include "google/protobuf/pyext/message_tree.h"
@@ -32,10 +34,27 @@ class Message;
 namespace python {
 
 struct CMessage;
+struct ContainerBase;
+
+// The source of a call to TreeLockable::WithWriteRead(dst, src, ...): `source`,
+// is readable through `access`. Code that mutates `dst` may consequently detach
+// the subtree that contains `src` onto a new MessageTree, which splits the
+// destination's write lock. Passing the WriteReadSource down to the code that
+// detaches (WithSplitTree()) lets `access` follow `source` to the new tree, so
+// `source` stays readable through `access` for the rest of the WithWriteRead()
+// call.
+struct WriteReadSource {
+  const ContainerBase* source;
+  const ReadAccess& access;
+};
 
 namespace cmessage {
 // Defined in message.cc. Promotes self (and its ancestors) to mutable.
 Message* AssureWritable(CMessage* self, const WriteAccess& lock);
+// As above, from inside TreeLockable::WithWriteRead(): promoting may release
+// an overlapping oneof and so detach `src.source`.
+Message* AssureWritable(CMessage* self, const WriteAccess& lock,
+                        const WriteReadSource& src);
 }  // namespace cmessage
 
 struct ContainerBase {
@@ -80,6 +99,35 @@ struct ContainerBase {
   std::atomic<MessageTree*> tree;
 };
 
+// Detaches a subtree from `prev` onto a new MessageTree, as a split of the
+// write lock `prev_lock` (see MessageTree::WithSplit()):
+//
+//   1. Creates the new tree, born write-locked, so the subtree is never
+//      unlocked while it moves and no other thread can see it half-moved.
+//   2. Invokes f(MessageTree* new_tree, const WriteAccess& new_lock), which
+//      moves the subtree (MoveToTree()). f must hand new_tree's initial
+//      reference to the root of the detached subtree, which must stay alive
+//      until WithSplitTree() returns.
+//   3. If `src` is non-null and f moved `src->source` to new_tree, downgrades
+//      new_lock to a read lock held by `src->access` (the lock it would hold
+//      had the source been on another tree all along); otherwise releases it.
+//
+// Returns f's result.
+template <typename F>
+auto WithSplitTree(MessageTree* prev, const WriteAccess& prev_lock,
+                   const WriteReadSource* src, F&& f) {
+  return MessageTree::WithSplit(
+      prev, prev_lock, std::forward<F>(f),
+      [&](MessageTree* new_tree) -> const ReadAccess* {
+        if (src == nullptr || src->source->GetTree() != new_tree) {
+          return nullptr;
+        }
+        // Only a source on the split guard can have moved off it.
+        ABSL_DCHECK_EQ(src->access.guard(), prev_lock.guard());
+        return &src->access;
+      });
+}
+
 // Scoped access to the MessageTree that an object belongs to. Messages and
 // containers work the same way: both lock the MessageTree they belong to.
 //
@@ -111,7 +159,14 @@ struct TreeLockable : public ContainerBase {
 
   // Acquires write access to dst's tree and read access to src's tree (a
   // single write lock if they share a tree), promotes dst->Owner() to mutable,
-  // and invokes f(const WriteAccess&, const ReadAccess&).
+  // and invokes f(const WriteAccess& w, const ReadAccess& r).
+  //
+  // `r` reads `src` for the whole call, even if mutating `dst` through `w`
+  // detaches the subtree containing `src` onto a new MessageTree. That tree is
+  // born write-locked as a split of `w`, and `r` follows `src` to it
+  // (WithSplitTree()), so there is no instant at which `src` is unlocked. For
+  // that, any call in `f` that can detach part of `dst`'s tree must be passed
+  // WriteReadSource{src, r}.
   template <typename OnFail, typename F>
   static auto WithWriteRead(Derived* dst, const ContainerBase* src,
                             OnFail&& on_fail, F&& f);
@@ -131,6 +186,18 @@ struct TreeLockable : public ContainerBase {
   // yields Message*.
   const Message* TargetMessage(const ReadAccess& access) const;
   Message* TargetMessage(const WriteAccess& access);
+
+  // Reading a const wrapper with a WriteAccess is deleted. This deletion
+  // causes the compiler to reject buggy code like:
+  //
+  //   CMessage::WithWriteRead(self, other, nullptr,
+  //       [&](const WriteAccess& w, const ReadAccess& r) -> PyObject* {
+  //         if (InternalClear(self, w, ...) < 0) return nullptr;
+  //         self->TargetMessage(w)->CopyFrom(
+  //             *other->TargetMessage(w));  // error: `other` must use `r`
+  //         ...
+  //       });
+  const Message* TargetMessage(const WriteAccess&) const = delete;
 
   // Sets this object's tree and binds all of its Guarded<T> fields to the
   // tree's guard. Only for objects not reachable from other threads (newly
@@ -245,8 +312,16 @@ auto TreeLockable<Derived>::WithWriteRead(Derived* dst,
           AccessGuard::ReportConcurrentAccess();
           return free_threading_internal::Fail<RetT>(on_fail);
         }
+        // src may only move to a tree split off from dst_access, which
+        // src_access follows (see WithSplitTree()).
+        absl::Cleanup check_src_followed = [&] {
+          ABSL_DCHECK_EQ(&src->GetTree()->guard(), src_access.guard())
+              << "Source moved to a tree not split from the destination's "
+                 "write lock";
+        };
         using cmessage::AssureWritable;
-        if (AssureWritable(dst->Owner(dst_access), dst_access) == nullptr) {
+        if (AssureWritable(dst->Owner(dst_access), dst_access,
+                           WriteReadSource{src, src_access}) == nullptr) {
           return free_threading_internal::Fail<RetT>(on_fail);
         }
         return f(dst_access, src_access);

@@ -40,6 +40,7 @@ from google.protobuf.internal import more_extensions_pb2
 from google.protobuf.internal import more_messages_pb2
 from google.protobuf.internal import packed_field_test_pb2
 from google.protobuf.internal import self_recursive_pb2
+from google.protobuf.internal import test_proto2_pb2
 from google.protobuf.internal import test_proto3_optional_pb2
 from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
@@ -4310,6 +4311,96 @@ class MessageMetaGetAttrTest(unittest.TestCase):
         del unittest_pb2.TestAllTypes.bomb
       except Exception:
         pass
+
+
+@testing_refleaks.TestCase
+class SameTreeCopyAndMergeTest(unittest.TestCase):
+
+  def testCopyFromOneofSibling(self):
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    msg.direct_leaf.value = 42
+    src = msg.direct_leaf
+    msg.other_leaf.CopyFrom(src)
+    self.assertEqual(msg.WhichOneof('choice'), 'other_leaf')
+    self.assertEqual(msg.other_leaf.value, 42)
+    self.assertEqual(src.value, 42)
+    msg.other_leaf.value = 99
+    self.assertEqual(src.value, 42)
+
+  def testCopyFromNestedSubmessageInOtherOneofArm(self):
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    msg.wrapped_leaf.leaf.value = 42
+    src = msg.wrapped_leaf.leaf
+    msg.direct_leaf.CopyFrom(src)
+    self.assertEqual(msg.WhichOneof('choice'), 'direct_leaf')
+    self.assertEqual(msg.direct_leaf.value, 42)
+    self.assertEqual(src.value, 42)
+    msg.direct_leaf.value = 99
+    self.assertEqual(src.value, 42)
+
+  def testCopyFromChildSubmessage(self):
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    msg.child.direct_leaf.value = 42
+    child = msg.child
+    msg.CopyFrom(child)
+    self.assertEqual(msg.direct_leaf.value, 42)
+    self.assertFalse(msg.HasField('child'))
+    self.assertEqual(child.direct_leaf.value, 42)
+    msg.direct_leaf.value = 99
+    self.assertEqual(child.direct_leaf.value, 42)
+
+  def testMergeFromOneofSibling(self):
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    msg.direct_leaf.value = 42
+    msg.direct_leaf.values.extend([1, 2])
+    src = msg.direct_leaf
+    msg.other_leaf.MergeFrom(src)
+    self.assertEqual(msg.WhichOneof('choice'), 'other_leaf')
+    self.assertEqual(msg.other_leaf.value, 42)
+    self.assertEqual(msg.other_leaf.values, [1, 2])
+    self.assertEqual(src.value, 42)
+    self.assertEqual(src.values, [1, 2])
+
+  def testMergeFromNestedSubmessageInOtherOneofArm(self):
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    msg.wrapped_leaf.leaf.value = 42
+    msg.wrapped_leaf.leaf.values.extend([1, 2])
+    src = msg.wrapped_leaf.leaf
+    msg.direct_leaf.MergeFrom(src)
+    self.assertEqual(msg.WhichOneof('choice'), 'direct_leaf')
+    self.assertEqual(msg.direct_leaf.value, 42)
+    self.assertEqual(msg.direct_leaf.values, [1, 2])
+    self.assertEqual(src.value, 42)
+    self.assertEqual(src.values, [1, 2])
+
+  def testMergeFromOneofChildReleasedDuringMerge(self):
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    src = msg.recursive_choice
+    src.wrapped_leaf.leaf.value = 42
+    msg.MergeFrom(src)
+    self.assertEqual(msg.WhichOneof('choice'), 'wrapped_leaf')
+    self.assertEqual(msg.wrapped_leaf.leaf.value, 42)
+    self.assertEqual(src.wrapped_leaf.leaf.value, 42)
+    msg.wrapped_leaf.leaf.value = 99
+    self.assertEqual(src.wrapped_leaf.leaf.value, 42)
+
+  def testExtendRepeatedScalarFromOtherOneofArm(self):
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    msg.wrapped_leaf.leaf.values.extend([1, 2, 3])
+    src = msg.wrapped_leaf.leaf.values
+    msg.direct_leaf.values.extend(src)
+    self.assertEqual(msg.WhichOneof('choice'), 'direct_leaf')
+    self.assertEqual(msg.direct_leaf.values, [1, 2, 3])
+    self.assertEqual(src, [1, 2, 3])
+
+  def testMergeScalarMapFromOtherOneofArm(self):
+    msg = test_proto2_pb2.OneofTreeTestMessage()
+    msg.wrapped_leaf.leaf.scalar_map['a'] = 1
+    src = msg.wrapped_leaf.leaf.scalar_map
+    msg.direct_leaf.scalar_map.MergeFrom(src)
+    self.assertEqual(msg.WhichOneof('choice'), 'direct_leaf')
+    self.assertEqual(dict(msg.direct_leaf.scalar_map), {'a': 1})
+    self.assertEqual(dict(src), {'a': 1})
 
 
 if __name__ == '__main__':

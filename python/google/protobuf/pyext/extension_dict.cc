@@ -46,8 +46,8 @@ namespace extension_dict {
 static Py_ssize_t len(ExtensionDict* self) {
   Py_ssize_t size = 0;
   std::vector<const FieldDescriptor*> fields;
-  self->parent->message->GetReflection()->ListFields(*self->parent->message,
-                                                     &fields);
+  self->parent->DeprecatedUnguardedMessage()->GetReflection()->ListFields(
+      *self->parent->DeprecatedUnguardedMessage(), &fields);
 
   for (size_t i = 0; i < fields.size(); ++i) {
     if (fields[i]->is_extension()) {
@@ -95,8 +95,8 @@ PyObject* GetIter(PyObject* _self) {
   // std::vector<...> fields will be called.
   new (iter) ExtensionIterator;
 
-  self->parent->message->GetReflection()->ListFields(*self->parent->message,
-                                                     &iter->fields);
+  self->parent->DeprecatedUnguardedMessage()->GetReflection()->ListFields(
+      *self->parent->DeprecatedUnguardedMessage(), &iter->fields);
   iter->index = 0;
   Py_INCREF(self);
   iter->extension_dict = self;
@@ -118,13 +118,14 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
   if (descriptor == nullptr) {
     return nullptr;
   }
-  if (!CheckFieldBelongsToMessage(descriptor, self->parent->message)) {
+  if (!CheckFieldBelongsToMessage(descriptor, self->parent)) {
     return nullptr;
   }
 
   if (!descriptor->is_repeated() &&
       descriptor->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
-    return cmessage::InternalGetScalar(self->parent->message, descriptor);
+    return cmessage::InternalGetScalar(
+        self->parent->DeprecatedUnguardedMessage(), descriptor);
   }
 
   CMessage::CompositeFieldsMap* parent_fields =
@@ -193,7 +194,7 @@ int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value) {
   if (descriptor == nullptr) {
     return -1;
   }
-  if (!CheckFieldBelongsToMessage(descriptor, self->parent->message)) {
+  if (!CheckFieldBelongsToMessage(descriptor, self->parent)) {
     return -1;
   }
 
@@ -274,8 +275,8 @@ PyObject* _FindExtensionByNumber(ExtensionDict* self, PyObject* arg) {
 
   PyDescriptorPool* pool = cmessage::GetFactoryForMessage(self->parent)->pool;
   const FieldDescriptor* message_extension =
-      pool->pool->get()->FindExtensionByNumber(
-          self->parent->message->GetDescriptor(), static_cast<int>(number));
+      pool->pool->get()->FindExtensionByNumber(self->parent->GetDescriptor(),
+                                               static_cast<int>(number));
   if (message_extension == nullptr) {
     Py_RETURN_NONE;
   }
@@ -297,7 +298,7 @@ static int Contains(PyObject* _self, PyObject* key) {
     return -1;
   }
 
-  const Message* message = self->parent->message;
+  const Message* message = self->parent->DeprecatedUnguardedMessage();
   const Reflection* reflection = message->GetReflection();
   if (field_descriptor->is_repeated()) {
     if (reflection->FieldSize(*message, field_descriptor) > 0) {

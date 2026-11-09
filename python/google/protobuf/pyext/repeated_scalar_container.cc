@@ -240,7 +240,7 @@ std::optional<SourceSpan<T>> TrySourceSpanFromRepeatedScalarContainer(
     const auto* container =
         reinterpret_cast<const RepeatedScalarContainer*>(value);
     const auto* field = container->parent_field_descriptor;
-    const auto* value_message = container->parent->message;
+    const auto* value_message = container->parent->DeprecatedUnguardedMessage();
     const Reflection* reflection = value_message->GetReflection();
     bool is_self_assign = field_descriptor == field && message == value_message;
     if constexpr (!std::is_same_v<T, absl::string_view>) {
@@ -548,7 +548,7 @@ static int InternalAssignRepeatedField(RepeatedScalarContainer* self,
 static Py_ssize_t Len(PyObject* pself) {
   RepeatedScalarContainer* self =
       reinterpret_cast<RepeatedScalarContainer*>(pself);
-  const Message* message = self->parent->message;
+  const Message* message = self->parent->DeprecatedUnguardedMessage();
   return message->GetReflection()->FieldSize(*message,
                                              self->parent_field_descriptor);
 }
@@ -663,7 +663,7 @@ static PyObject* Item(PyObject* pself, Py_ssize_t index) {
   RepeatedScalarContainer* self =
       reinterpret_cast<RepeatedScalarContainer*>(pself);
 
-  const Message* message = self->parent->message;
+  const Message* message = self->parent->DeprecatedUnguardedMessage();
   const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
   const Reflection* reflection = message->GetReflection();
 
@@ -1192,7 +1192,7 @@ std::string GetDefaultDTypeStr(FieldDescriptor::CppType cpp_type) {
 PyObject* CreateArrayFromView(PyObject* pself, PyObject* np_module) {
   RepeatedScalarContainer* self =
       reinterpret_cast<RepeatedScalarContainer*>(pself);
-  const Message* message = self->parent->message;
+  const Message* message = self->parent->DeprecatedUnguardedMessage();
   const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
   const Reflection* reflection = message->GetReflection();
   std::string out_dtype = GetDefaultDTypeStr(field_descriptor->cpp_type());
@@ -1454,7 +1454,7 @@ static PyObject* MergeFrom(PyObject* pself, PyObject* arg) {
 // The private constructor of RepeatedScalarContainer objects.
 RepeatedScalarContainer* NewContainer(
     CMessage* parent, const FieldDescriptor* parent_field_descriptor) {
-  if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
+  if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent)) {
     return nullptr;
   }
 

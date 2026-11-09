@@ -74,3 +74,21 @@ message MessageWithRepeatedAndMap {
 message ContainerForLazyRepeatedAndMap {
   optional MessageWithRepeatedAndMap lazy_field = 1 [lazy = true];
 }
+
+message OneofTreeTestMessage {
+  message Leaf {
+    optional int32 value = 1;
+    repeated int32 values = 2;
+    map<string, int32> scalar_map = 3;
+  }
+  message Wrapper {
+    optional Leaf leaf = 1;
+  }
+  oneof choice {
+    Leaf direct_leaf = 1;
+    Leaf other_leaf = 2;
+    Wrapper wrapped_leaf = 3;
+    OneofTreeTestMessage recursive_choice = 4;
+  }
+  optional OneofTreeTestMessage child = 5;
+}
