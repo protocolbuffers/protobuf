@@ -309,6 +309,19 @@ final class LongArrayList extends AbstractProtobufList<Long>
     array = Arrays.copyOf(array, n);
   }
 
+  @Override
+  protected void onMakeImmutable() {
+    if (size == 0) {
+      array = EMPTY_ARRAY;
+    } else if (size < array.length && array.length <= MAX_TRIM_CAPACITY) {
+      array = Arrays.copyOf(array, size);
+    }
+  }
+
+  int getCapacityForTesting() {
+    return array.length;
+  }
+
   private static int growSize(int previousSize) {
     // Resize to 1.5x the size, rounding up to DEFAULT_CAPACITY.
     return max(((previousSize * 3) / 2) + 1, DEFAULT_CAPACITY);
