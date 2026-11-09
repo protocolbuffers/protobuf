@@ -68,15 +68,17 @@ core::arch::global_asm!(
 // EXTENSION_MINI_TABLE_TO_DEF_INITS registry; this is used for reflection.
 //
 // Registered the same way as EXTENSIONS.
+#[cfg(not(lite_runtime))]
 pub struct ExtensionMiniTableToDefInit {
     pub mini_table: &'static LazyLock<MiniTableExtensionInitPtr>,
     pub def_init: fn() -> DefPoolInit,
 }
 
+#[cfg(not(lite_runtime))]
 #[linkme::distributed_slice]
 pub static EXTENSION_MINI_TABLE_TO_DEF_INITS: [ExtensionMiniTableToDefInit];
 
-#[cfg(all(target_family = "unix", not(target_vendor = "apple")))]
+#[cfg(all(not(lite_runtime), target_family = "unix", not(target_vendor = "apple")))]
 core::arch::global_asm!(
     r#"
     .section linkme_EXTENSION_MINI_TABLE_TO_DEF_INITS,"awR",@progbits
