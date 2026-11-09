@@ -211,8 +211,7 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
           // The +1 below is to account for the $ in between them.
           // This string is safe, because prev.text and chunk are contiguous
           // by construction.
-          prev.text = absl::string_view(prev.text.data(),
-                                        prev.text.size() + 1 + chunk.size());
+          prev.text = prev.text.substr(0, prev.text.size() + 1 + chunk.size());
 
           // Account for the foo$ part of $_start$foo$.
           total_len += chunk.size() + 1;
