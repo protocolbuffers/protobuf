@@ -8,19 +8,23 @@
 #include "hpb/extension.h"
 
 #include <cstdint>
+#include <limits>
+#include <string>
 #include <type_traits>
+#include <utility>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/status/status_matchers.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
-#include "hpb_generator/tests/child_model.hpb.h"
 #include "hpb_generator/tests/test_extension.hpb.h"
 #include "hpb_generator/tests/test_model.hpb.h"
 #include "hpb/arena.h"
 #include "hpb/backend/upb/interop.h"
 #include "hpb/hpb.h"
 #include "hpb/options.h"
+#include "hpb/ptr.h"
 #include "hpb/requires.h"
 #include "hpb/status.h"
 #include "upb/mem/arena.h"
