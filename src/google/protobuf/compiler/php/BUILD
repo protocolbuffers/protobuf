@@ -35,7 +35,6 @@ cc_library(
     deps = [
         "//src/google/protobuf",
         "//src/google/protobuf:port",
-        "//src/google/protobuf/compiler:code_generator",
         "@abseil-cpp//absl/strings",
     ],
 )
@@ -64,6 +63,7 @@ cc_library(
         "//src/google/protobuf/io:printer",
         "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:charset",
