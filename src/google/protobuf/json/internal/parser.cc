@@ -15,7 +15,6 @@
 #include <utility>
 
 #include "google/protobuf/type.pb.h"
-#include "absl/base/attributes.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -37,7 +36,9 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/json/internal/descriptor_traits.h"
 #include "google/protobuf/json/internal/lexer.h"
+#include "google/protobuf/json/internal/message_path.h"
 #include "google/protobuf/json/internal/parser_traits.h"
+#include "google/protobuf/json/internal/untyped_message.h"
 #include "google/protobuf/json/internal/zero_copy_buffered_stream.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/util/type_resolver.h"
