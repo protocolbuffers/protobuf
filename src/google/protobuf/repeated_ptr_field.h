@@ -374,8 +374,12 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
+  // Debug-only. Asserts that all elements in the repeated field have the same
+  // `ClassData` (i.e. are the same type).
+  void DebugAssertAllSameType(const ClassData* class_data) const;
+
   // Specialized destructor routine for repeated message objects.
-  void DestroyMessageLites(const ClassData* class_data);
+  void DestroyMessageLites(const ClassDataPrefix* class_data);
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
   bool NeedsDestroy() const {
@@ -1739,6 +1743,9 @@ RepeatedPtrField<Element>::~RepeatedPtrField() {
                   std::is_same_v<Element, Message>) {
       DestroyProtos();
     } else {
+#ifndef NDEBUG
+      DebugAssertAllSameType(internal::MessageTraits<Element>::class_data());
+#endif
       DestroyMessageLites(internal::MessageTraits<Element>::class_data());
     }
 #else
