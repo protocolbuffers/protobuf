@@ -41,6 +41,8 @@
 //     a `ReadAccess` / `WriteAccess` token to the callback.
 //   * `AccessGuard::WithWriteRead()` / `WithReadRead()` acquire two guards
 //     (which may be the same guard) and pass two tokens.
+//   * A guard constructed from a `WriteAccess` is born write-locked, as a
+//     split of that lock; `WithSplitWrite()` passes its token to the callback.
 //
 // Tokens are proof that a lock is held. They are passed to `Guarded<T>::Get()`
 // and `Guarded<T>::Set()` (see guarded.h) to access any value protected by the
@@ -63,6 +65,7 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
+#include "absl/cleanup/cleanup.h"
 #include "absl/log/absl_check.h"
 
 namespace google {
@@ -160,10 +163,15 @@ using DebugGuardTracker =
 // grants read access.
 //
 // Tokens are created only by `AccessGuard::WithRead()`, `WithWrite()`,
-// `WithWriteRead()`, and `WithReadRead()`, and are passed by const reference to
-// the caller's callback. They are non-copyable and non-movable, so they cannot
-// outlive the callback. Tokens do not own the lock; the scoped `With*()` call
-// that created them releases it when the callback returns.
+// `WithWriteRead()`, `WithReadRead()`, and `WithSplitWrite()`, and are passed
+// by const reference to the caller's callback. They are non-copyable and
+// non-movable, so they cannot outlive the callback. Tokens do not own the lock;
+// the scoped `With*()` call that created them releases it when the callback
+// returns.
+//
+// A token always names the same guard, with one exception: the source token of
+// `WithWriteRead()` is re-pointed at a guard split off from the paired
+// `WriteAccess` if the source moves under it (see `WithSplitWrite()`).
 //
 // Tokens carry no pointer to any guarded object. Guarded state is accessed by
 // passing a token to `Guarded<T>::Get()` / `Set()` (see guarded.h).
@@ -179,18 +187,19 @@ class ReadAccess {
   friend class AccessGuard;
   friend class WriteAccess;
 
-  explicit ReadAccess(const AccessGuard* guard) : guard_(guard) {
+  explicit ReadAccess(AccessGuard* guard) : guard_(guard) {
     ABSL_DCHECK(guard != nullptr);
   }
 
-  const AccessGuard* guard_;
+  // Mutable only for AccessGuard::WithSplitWrite().
+  mutable AccessGuard* guard_;
 };
 
 class WriteAccess : public ReadAccess {
  private:
   friend class AccessGuard;
 
-  explicit WriteAccess(const AccessGuard* guard) : ReadAccess(guard) {}
+  explicit WriteAccess(AccessGuard* guard) : ReadAccess(guard) {}
 };
 
 // -----------------------------------------------------------------------------
@@ -235,6 +244,34 @@ class AccessGuard {
   AccessGuard(const AccessGuard&) = delete;
   AccessGuard& operator=(const AccessGuard&) = delete;
 
+  // Constructs a guard that is born write-locked, as a split of the write lock
+  // that `split_from` proves the caller holds. Values protected by
+  // split_from's guard can be moved under this one with no instant at which
+  // they are unlocked. WithSplitWrite() must then be called exactly once, to
+  // obtain this guard's token and give up the born write lock.
+  explicit AccessGuard(const WriteAccess& split_from);
+
+  // AccessGuard::WithSplitWrite()
+  //
+  // Must be called exactly once on a guard born write-locked by the split
+  // constructor above. Invokes f(const WriteAccess&) with this guard's write
+  // token, then ends the write lock in one of two ways, decided by calling
+  // `follower`, a callable taking no arguments and returning
+  // `const ReadAccess*`, after f returns:
+  //
+  //   * nullptr: nobody needs this guard any more, so the write lock is
+  //     released.
+  //   * a pointer to the `src_access` token of the enclosing WithWriteRead()
+  //     call (which holds `split_from`), when f moved WithWriteRead()'s source
+  //     under this guard. The write lock is atomically downgraded to a read
+  //     lock held by that token, which is re-pointed at this guard: the lock it
+  //     would hold had the source been on this guard all along.
+  //     WithWriteRead() releases it on return.
+  //
+  // Returns f's result. Cannot fail, since the lock is already held.
+  template <typename F, typename Follower>
+  auto WithSplitWrite(F&& f, Follower&& follower);
+
   static void SetEnabledInTsanForTesting(bool enabled) {
 #if defined(Py_GIL_DISABLED) && defined(ABSL_HAVE_THREAD_SANITIZER)
     enabled_in_tsan_.store(enabled, std::memory_order_relaxed);
@@ -276,10 +313,16 @@ class AccessGuard {
   // Acquires a write lock on dst and a read lock on src, and invokes
   // f(const WriteAccess& dst_access, const ReadAccess& src_access).
   //
-  //   * If &dst == &src, acquires a single write lock and passes the same
-  //     WriteAccess as both arguments (a write lock implies read access).
+  //   * If &dst == &src, acquires a single write lock; src_access then names
+  //     the same guard as dst_access (a write lock implies read access).
   //   * Otherwise acquires both locks in canonical address order, rolling back
   //     the first if the second fails.
+  //
+  // src_access is a distinct token in both cases, so that it can follow the
+  // source to a guard split off from dst_access (see WithSplitWrite()). On
+  // return, the write lock is released, and src_access's read lock is released
+  // if it names a guard other than dst: the source guard, or a split it
+  // followed.
   template <typename OnFail, typename F>
   [[nodiscard]] static auto WithWriteRead(AccessGuard& dst, AccessGuard& src,
                                           OnFail&& on_fail, F&& f);
@@ -372,6 +415,36 @@ class AccessGuard {
     // in the TryAcquireRead() failure path.
   }
 
+  // The initial state of a guard born write-locked by the split constructor.
+  static uintptr_t BornWriteLockedState() {
+#ifdef ABSL_HAVE_THREAD_SANITIZER
+    if (!enabled_in_tsan_.load(std::memory_order_relaxed)) return 0;
+#endif
+    return kWriteBit;
+  }
+
+  // Atomically turns the write lock held by the caller into a single read
+  // lock, with no instant at which the guard is unlocked.
+  void DowngradeWriteToRead() {
+#ifdef ABSL_HAVE_THREAD_SANITIZER
+    if (!enabled_in_tsan_.load(std::memory_order_relaxed)) return;
+#endif
+    // Readers failing to acquire may transiently add kReadIncrement; their
+    // undo commutes with this, so the result is exactly one read share.
+    uintptr_t prev =
+        state_.fetch_add(kReadIncrement - kWriteBit, std::memory_order_release);
+    ABSL_DCHECK_EQ(prev & kWriteBit, kWriteBit);
+  }
+
+  // For DCHECKs only: whether the write bit is set (always true when the guard
+  // is disabled, since then no state is tracked).
+  bool DebugIsWriteLocked() const {
+#ifdef ABSL_HAVE_THREAD_SANITIZER
+    if (!enabled_in_tsan_.load(std::memory_order_relaxed)) return true;
+#endif
+    return (state_.load(std::memory_order_relaxed) & kWriteBit) != 0;
+  }
+
   static constexpr uintptr_t kWriteBit = 1;
   static constexpr uintptr_t kReadIncrement = 2;
   std::atomic<uintptr_t> state_{0};
@@ -386,6 +459,8 @@ class AccessGuard {
   void ReleaseRead() {}
   bool TryAcquireWrite() { return true; }
   void ReleaseWrite() {}
+  void DowngradeWriteToRead() {}
+  bool DebugIsWriteLocked() const { return true; }
 #endif  // Py_GIL_DISABLED
 
   static inline std::atomic<uintptr_t> concurrent_access_count_{0};
@@ -460,17 +535,24 @@ auto AccessGuard::WithWriteRead(AccessGuard& dst, AccessGuard& src,
                                 OnFail&& on_fail, F&& f) {
   using RetT = std::invoke_result_t<F, const WriteAccess&, const ReadAccess&>;
   if (&dst == &src) {
-    return dst.WithWrite(
-        std::forward<OnFail>(on_fail),
-        [&](const WriteAccess& access) -> RetT { return f(access, access); });
-  }
-  if (ABSL_PREDICT_FALSE(!TryAcquireWriteReadGuards(dst, src))) {
+    if (ABSL_PREDICT_FALSE(!dst.TryAcquireWrite())) {
+      return free_threading_internal::Fail<RetT>(
+          std::forward<OnFail>(on_fail));
+    }
+  } else if (ABSL_PREDICT_FALSE(!TryAcquireWriteReadGuards(dst, src))) {
     return free_threading_internal::Fail<RetT>(std::forward<OnFail>(on_fail));
   }
-  WriteReleaser release_dst{&dst};
-  ReadReleaser release_src{&src};
   const WriteAccess dst_access(&dst);
   const ReadAccess src_access(&src);
+  absl::Cleanup release = [&] {
+    // src_access holds its own read lock iff it names a guard other than
+    // dst's: the source guard, or a guard split off from dst that it followed
+    // (see WithSplitWrite()).
+    if (src_access.guard_ != dst_access.guard_) {
+      src_access.guard_->ReleaseRead();
+    }
+    dst_access.guard_->ReleaseWrite();
+  };
   return std::forward<F>(f)(dst_access, src_access);
 }
 
@@ -486,6 +568,40 @@ bool AccessGuard::WithWriteRead(AccessGuard& dst, AccessGuard& src, F&& f) {
         f(dst_access, src_access);
         return true;
       });
+}
+
+inline AccessGuard::AccessGuard(const WriteAccess& split_from)
+#ifdef Py_GIL_DISABLED
+    : state_(BornWriteLockedState())
+#endif
+{
+  ABSL_DCHECK_NE(split_from.guard(), this);
+}
+
+template <typename F, typename Follower>
+auto AccessGuard::WithSplitWrite(F&& f, Follower&& follower) {
+  static_assert(
+      std::is_same_v<std::invoke_result_t<Follower&>, const ReadAccess*>,
+      "follower must be callable with no arguments and return "
+      "const ReadAccess*");
+  ABSL_DCHECK(DebugIsWriteLocked()) << "Guard was not born write-locked";
+  struct SplitReleaser {
+    AccessGuard* guard;
+    Follower& follower;
+    ~SplitReleaser() {
+      const ReadAccess* token = follower();
+      if (token == nullptr) {
+        guard->ReleaseWrite();
+        return;
+      }
+      ABSL_DCHECK_NE(token->guard_, guard)
+          << "Token already follows this guard";
+      guard->DowngradeWriteToRead();
+      token->guard_ = guard;
+    }
+  } release{this, follower};
+  const WriteAccess access(this);
+  return std::forward<F>(f)(access);
 }
 
 template <typename OnFail, typename F>

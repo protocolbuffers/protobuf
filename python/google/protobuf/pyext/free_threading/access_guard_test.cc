@@ -12,6 +12,7 @@
 
 #include <atomic>
 #include <memory>
+#include <optional>
 #include <thread>  // NOLINT
 #include <type_traits>
 #include <utility>
@@ -210,7 +211,7 @@ TEST(AccessTokenTest, ContentionFailsAndInvokesOnFail) {
 }
 #endif  // Py_GIL_DISABLED
 
-TEST(AccessTokenTest, WithWriteReadSameGuardSharesOneToken) {
+TEST(AccessTokenTest, WithWriteReadSameGuardSharesOneLock) {
   ScopedPyThreadState py_thread;
   AccessGuard guard;
   int dst = 1;
@@ -220,7 +221,8 @@ TEST(AccessTokenTest, WithWriteReadSameGuardSharesOneToken) {
 
   EXPECT_TRUE(AccessGuard::WithWriteRead(
       guard, guard, [&](const WriteAccess& w, const ReadAccess& r) {
-        EXPECT_EQ(static_cast<const ReadAccess*>(&w), &r);
+        EXPECT_EQ(w.guard(), &guard);
+        EXPECT_EQ(r.guard(), &guard);
         *dst_ptr.Get(w) += *src_ptr.Get(r);
       }));
   EXPECT_EQ(dst, 3);
@@ -239,7 +241,8 @@ TEST(AccessTokenTest, WithWriteReadDifferentGuards) {
   Guarded<int*> src_ptr(&src, src_guard);
 
   int result = AccessGuard::WithWriteRead(
-      dst_guard, src_guard, -1, [&](const WriteAccess& w, const ReadAccess& r) {
+      dst_guard, src_guard, -1,
+      [&](const WriteAccess& w, const ReadAccess& r) {
         *dst_ptr.Get(w) = *src_ptr.Get(r) * 10;
 #ifdef Py_GIL_DISABLED
         // Read lock on src still permits other readers; write lock on dst
@@ -269,6 +272,80 @@ TEST(AccessTokenTest, WithWriteReadDifferentGuards) {
       dst_guard.WithWrite(false, [](const WriteAccess&) { return true; }));
   EXPECT_TRUE(
       src_guard.WithWrite(false, [](const WriteAccess&) { return true; }));
+}
+
+// A guard born write-locked as a split of a held write lock: nobody else can
+// acquire it until WithSplitWrite() releases it.
+TEST(AccessTokenTest, BornWriteLockedSplitIsReleasedByWithSplitWrite) {
+  ScopedPyThreadState py_thread;
+  AccessGuard parent;
+  int child_val = 7;
+  Guarded<int*> child(&child_val, parent);
+
+  EXPECT_TRUE(parent.WithWrite([&](const WriteAccess& w) {
+    AccessGuard split(w);
+#ifdef Py_GIL_DISABLED
+    EXPECT_EQ(split.WithRead(-1, [](const ReadAccess&) { return 0; }), -1);
+    PyErr_Clear();
+#endif
+    EXPECT_EQ(split.WithSplitWrite(
+                  [&](const WriteAccess& split_w) {
+                    EXPECT_EQ(split_w.guard(), &split);
+                    child.UpdateGuard(w, split_w);
+                    return *child.Get(split_w);
+                  },
+                  []() -> const ReadAccess* { return nullptr; }),
+              7);
+    // Released: the split guard is cleanly lockable.
+    EXPECT_TRUE(split.WithRead([&](const ReadAccess& r) {
+      EXPECT_EQ(*child.Get(r), 7);
+    }));
+  }));
+}
+
+// WithWriteRead()'s source token follows the source to a split guard: once the
+// move is done, WithSplitWrite() downgrades its write lock to a read lock held
+// by the token, and WithWriteRead() releases that read lock because the token
+// names a guard other than dst's.
+TEST(AccessTokenTest, SplitWriteLockIsDowngradedForFollower) {
+  ScopedPyThreadState py_thread;
+  AccessGuard guard;
+  int dst_val = 1;
+  int src_val = 2;
+  Guarded<int*> dst(&dst_val, guard);
+  Guarded<int*> src(&src_val, guard);
+  std::optional<AccessGuard> split;
+
+  EXPECT_TRUE(AccessGuard::WithWriteRead(
+      guard, guard, [&](const WriteAccess& w, const ReadAccess& r) {
+        EXPECT_EQ(r.guard(), &guard);
+        split.emplace(w);
+        split->WithSplitWrite(
+            [&](const WriteAccess& split_w) {
+              src.UpdateGuard(w, split_w);
+#ifdef Py_GIL_DISABLED
+              // Still exclusive while the split is being written.
+              EXPECT_EQ(
+                  split->WithRead(-1, [](const ReadAccess&) { return 0; }), -1);
+              PyErr_Clear();
+#endif
+            },
+            [&]() -> const ReadAccess* { return &r; });
+        EXPECT_EQ(r.guard(), &*split);
+#ifdef Py_GIL_DISABLED
+        // Now r holds an ordinary read lock: other readers may share it,
+        // writers are excluded.
+        EXPECT_EQ(split->WithRead(-1, [](const ReadAccess&) { return 0; }), 0);
+        EXPECT_FALSE(
+            split->WithWrite(false, [](const WriteAccess&) { return true; }));
+        PyErr_Clear();
+#endif
+        *dst.Get(w) += *src.Get(r);
+      }));
+  EXPECT_EQ(dst_val, 3);
+  // Both guards were released when WithWriteRead() returned.
+  EXPECT_TRUE(guard.WithWrite(false, [](const WriteAccess&) { return true; }));
+  EXPECT_TRUE(split->WithWrite(false, [](const WriteAccess&) { return true; }));
 }
 
 TEST(AccessTokenTest, WithReadRead) {
