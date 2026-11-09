@@ -2,7 +2,7 @@
     "37.x": {
         "protoc_version": "37.0-dev",
         "lts": false,
-        "date": "2026-10-14",
+        "date": "2026-11-09",
         "languages": {
             "cpp": "7.37.0-dev",
             "csharp": "3.37.0-dev",
