@@ -44,16 +44,14 @@ using ::conformance::ConformanceResponse;
   return ::conformance::UNSPECIFIED;
 }
 
+// Builds the test name "<Level>.<Edition>.<InputFormat>Input.<name>";
+// InMemoryMessage::Finish() appends the output format where it belongs.
 std::string GetTestName(absl::string_view test_name, TestPriority priority,
                         const ::conformance::ConformanceRequest& request,
                         const Descriptor& message) {
-  absl::string_view level = PriorityLevelName(priority);
-  std::string syntax_identifier = GetEditionIdentifier(message);
-
   return absl::StrCat(
-      level, ".", syntax_identifier, ".",
-      GetFormatIdentifier(GetInputFormat(request)), "Input.", test_name, ".",
-      GetFormatIdentifier(request.requested_output_format()), "Output");
+      PriorityLevelName(priority), ".", GetEditionIdentifier(message), ".",
+      GetFormatIdentifier(GetInputFormat(request)), "Input.", test_name);
 }
 
 }  // namespace
@@ -62,6 +60,7 @@ std::string GetTestName(absl::string_view test_name, TestPriority priority,
     absl::string_view test_name, const ConformanceRequest& request) {
   ABSL_CHECK(test_names_ran_.emplace(test_name).second)
       << "Duplicated test name: " << test_name;
+  tests_run_.emplace_back(test_name);
 
   std::string serialized_request;
   // TODO: Remove this suppression.
@@ -109,7 +108,7 @@ InMemoryMessage Test::ParseJson(const Descriptor* type, absl::string_view input,
 }
 
 TestResult InMemoryMessage::SerializeBinary() && {
-  return SerializeImpl(::conformance::PROTOBUF);
+  return Finish(::conformance::PROTOBUF, NameStyle::kWithOutputFormat);
 }
 
 TestResult InMemoryMessage::SerializeText(TextSerializationOptions options) && {
@@ -117,23 +116,36 @@ TestResult InMemoryMessage::SerializeText(TextSerializationOptions options) && {
     request_.set_print_unknown_fields(true);
   }
 
-  return SerializeImpl(::conformance::TEXT_FORMAT);
+  return Finish(::conformance::TEXT_FORMAT, NameStyle::kWithOutputFormat);
 }
 
 TestResult InMemoryMessage::SerializeJson() && {
-  return SerializeImpl(::conformance::JSON);
+  return Finish(::conformance::JSON, NameStyle::kWithOutputFormat);
 }
 
-TestResult InMemoryMessage::SerializeImpl(
-    const ::conformance::WireFormat format) {
-  request_.set_requested_output_format(format);
+TestResult InMemoryMessage::Discard() && {
+  // There is no parse-only request, so ask for the input's format back: if the
+  // testee erroneously accepts the input it must still be able to respond.
+  // The legacy runner did the same.  Once the protocol can skip serialization
+  // this is the one place to change.
+  return Finish(GetInputFormat(request_), NameStyle::kWithoutOutputFormat);
+}
+
+TestResult InMemoryMessage::Finish(
+    const ::conformance::WireFormat output_format, const NameStyle name_style) {
+  request_.set_requested_output_format(output_format);
 
   std::string full_name = GetTestName(name_, priority_, request_, *type_);
+  if (name_style == NameStyle::kWithOutputFormat) {
+    absl::StrAppend(&full_name, ".", GetFormatIdentifier(output_format),
+                    "Output");
+  }
 
   ::conformance::ConformanceResponse response =
       testee_->Run(full_name, request_);
 
-  return TestResult(full_name, priority_, type_, format, std::move(response));
+  return TestResult(full_name, priority_, type_, output_format,
+                    std::move(response));
 }
 
 }  // namespace internal

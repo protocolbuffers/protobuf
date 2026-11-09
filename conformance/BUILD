@@ -129,6 +129,7 @@ test_suite(
         "naming_test",
         "recording_test_runner_test",
         "result_ledger_test",
+        "result_listener_test",
         "sample_conformance_test",
         "test_environment_flags_test",
         "test_environment_integration_test",
@@ -368,9 +369,22 @@ cc_library(
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",
         "@abseil-cpp//absl/types:optional",
+    ],
+)
+
+cc_library(
+    name = "result_listener",
+    testonly = True,
+    srcs = ["result_listener.cc"],
+    hdrs = ["result_listener.h"],
+    deps = [
+        ":result_ledger",
+        "@abseil-cpp//absl/base:nullability",
+        "@googletest//:gtest",
     ],
 )
 
@@ -420,6 +434,7 @@ cc_library(
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:span",
     ],
 )
 
@@ -462,17 +477,38 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "result_listener_test",
+    srcs = ["result_listener_test.cc"],
+    deps = [
+        ":result_ledger",
+        ":result_listener",
+        ":testee",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "global_test_environment",
     testonly = 1,
     hdrs = ["global_test_environment.h"],
-    deps = [":result_ledger"],
+    deps = [
+        ":testee",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings:string_view",
+    ],
 )
 
 # gMock matchers for conformance TestResults.
 #
-# NOTE: Consumers must link a definition of GetGlobalResultLedger(), declared in
-# global_test_environment.h.  The conformance test environment provides it in
+# NOTE: Consumers must link definitions of the functions declared in
+# global_test_environment.h.  The conformance test environment provides them in
 # the real test binary; matchers_test provides an in-memory stand-in.
 cc_library(
     name = "matchers",
@@ -483,22 +519,17 @@ cc_library(
         ":binary_wireformat",
         ":conformance_cc_proto",
         ":global_test_environment",
-        ":result_ledger",
         ":testee",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf/util:differencer",
-        "@abseil-cpp//absl/base:core_headers",
         "@abseil-cpp//absl/base:nullability",
         "@abseil-cpp//absl/log:absl_check",
-        "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/memory",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
         "@abseil-cpp//absl/strings:string_view",
-        "@abseil-cpp//absl/synchronization",
-        "@abseil-cpp//absl/types:optional",
         "@googletest//:gtest",
     ],
 )
@@ -516,9 +547,11 @@ cc_test(
         ":testee",
         "//:test_messages_proto2_cc_proto",
         "//src/google/protobuf",
+        "//src/google/protobuf/testing:protobuf_test",
         "@abseil-cpp//absl/base:log_severity",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:scoped_mock_log",
+        "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:status_matchers",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",
@@ -549,6 +582,7 @@ cc_library(
         ":fork_pipe_runner",
         ":global_test_environment",
         ":result_ledger",
+        ":result_listener",
         ":test_runner",
         ":testee",
         "//src/google/protobuf",
@@ -559,6 +593,7 @@ cc_library(
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",
         "@abseil-cpp//absl/types:optional",
+        "@abseil-cpp//absl/types:span",
         "@googletest//:gtest",
     ],
 )
@@ -585,6 +620,7 @@ cc_test(
         ":matchers",
         ":mock_test_runner",
         ":result_ledger",
+        ":result_listener",
         ":test_environment",
         ":test_environment_testing",
         ":testee",
@@ -613,7 +649,6 @@ cc_library(
         "//src/google/protobuf",
         "//src/google/protobuf:descriptor_legacy",
         "@abseil-cpp//absl/base:nullability",
-        "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
@@ -637,9 +672,11 @@ cc_test(
         "//conformance/test_protos:test_messages_edition2023_cc_proto",
         "//conformance/test_protos:test_messages_edition_unstable_cc_proto",
         "//src/google/protobuf",
+        "//src/google/protobuf/testing:protobuf_test",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
