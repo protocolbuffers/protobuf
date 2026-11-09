@@ -13,6 +13,7 @@ import "google/protobuf/descriptor.proto";
 
 option go_package = "google.golang.org/protobuf/types/jsonoptionspb";
 option java_package = "com.google.protobuf.util";
+option dllexport_decl = "PROTOBUF_EXPORT";
 
 local message JsonEnumValueOptions {
   // Allows user to specify a custom string to use when serializing an enum

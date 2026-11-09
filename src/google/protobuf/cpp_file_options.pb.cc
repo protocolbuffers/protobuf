@@ -185,8 +185,8 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcpp_5ffile_5foptions_2e
     "\022\007pb.file\032 google/protobuf/descriptor.pr"
     "oto\"%\n\016CppFileOptions\022\021\n\tnamespace\030\001 \001(\t"
     "X\001:K\n\003cpp\022\034.google.protobuf.FileOptions\030"
-    "\336\007 \001(\0132\027.pb.file.CppFileOptionsB\006\262\001\003\010\352\007b"
-    "\010editionsp\351\007"
+    "\336\007 \001(\0132\027.pb.file.CppFileOptionsB\006\262\001\003\010\352\007B"
+    "\022\252\003\017PROTOBUF_EXPORTb\010editionsp\351\007"
 };
 static const ::_pbi::DescriptorTable* PROTOBUF_NONNULL const
     descriptor_table_google_2fprotobuf_2fcpp_5ffile_5foptions_2eproto_deps[1] = {
@@ -196,7 +196,7 @@ static ::absl::once_flag descriptor_table_google_2fprotobuf_2fcpp_5ffile_5foptio
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fcpp_5ffile_5foptions_2eproto = {
     false,
     false,
-    212,
+    232,
     descriptor_table_protodef_google_2fprotobuf_2fcpp_5ffile_5foptions_2eproto,
     "google/protobuf/cpp_file_options.proto",
     &descriptor_table_google_2fprotobuf_2fcpp_5ffile_5foptions_2eproto_once,

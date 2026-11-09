@@ -506,7 +506,7 @@ const upb_MiniTable* google__protobuf__MethodDescriptorProto_msg_init(void) {
 
 const upb_MiniTable* google__protobuf__FileOptions_msg_init(void) {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$P1f14/1d///a/b/c/c/d11a111b11d3t|G";
+  static const char* mini_descriptor = "$P1f14/1d///a/b/c/c/d11a111b11d3b1q|G";
   if (mini_table) return mini_table;
   upb_Status status;
   mini_table =

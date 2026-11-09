@@ -12,6 +12,7 @@ package pb;
 option csharp_namespace = "Google.Protobuf.Reflection";
 option java_multiple_files = true;
 option java_outer_classname = "CSharpFeaturesOuterClass";
+option dllexport_decl = "PROTOC_EXPORT";
 
 import "google/protobuf/descriptor.proto";
 

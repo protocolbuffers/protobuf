@@ -23,6 +23,7 @@ option java_outer_classname = "DescriptorProtos";
 option csharp_namespace = "Google.Protobuf.Reflection";
 option objc_class_prefix = "GPB";
 option cc_enable_arenas = true;
+option dllexport_decl = "PROTOBUF_EXPORT";
 
 // descriptor.proto must be optimized for speed because reflection-based
 // algorithms don't work during bootstrapping.
@@ -570,6 +571,11 @@ message FileOptions {
   // cases like the proto compiler. Other uses are discouraged and
   // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 50;
+
+  // Specifies the C++ macro to use for DLL export/import declarations on
+  // generated classes and functions in this file, as well as inline forward
+  // declarations when this file is imported by another file.
+  optional string dllexport_decl = 53;
 
   // Range reserved for first-class custom options defined by the Protobuf
   // team. User custom options must use the 1000+ range instead.

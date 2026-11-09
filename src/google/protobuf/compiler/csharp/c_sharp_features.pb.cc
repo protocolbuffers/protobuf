@@ -181,8 +181,8 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fcsharp_2fc_5
     "able_reference_types\030\001 \001(\010B\037\210\001\001\230\001\004\230\001\003\230\001\001"
     "\242\001\n\022\005false\030\204\007\262\001\003\010\352\007:@\n\006csharp\022\033.google.p"
     "rotobuf.FeatureSet\030\354\007 \001(\0132\022.pb.CSharpFea"
-    "turesB9B\030CSharpFeaturesOuterClassP\001\252\002\032Go"
-    "ogle.Protobuf.Reflection"
+    "turesBIB\030CSharpFeaturesOuterClassP\001\252\002\032Go"
+    "ogle.Protobuf.Reflection\252\003\rPROTOC_EXPORT"
 };
 static const ::_pbi::DescriptorTable* PROTOBUF_NONNULL const
     descriptor_table_google_2fprotobuf_2fcompiler_2fcsharp_2fc_5fsharp_5ffeatures_2eproto_deps[1] = {
@@ -192,7 +192,7 @@ static ::absl::once_flag descriptor_table_google_2fprotobuf_2fcompiler_2fcsharp_
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fcsharp_2fc_5fsharp_5ffeatures_2eproto = {
     false,
     false,
-    304,
+    320,
     descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fcsharp_2fc_5fsharp_5ffeatures_2eproto,
     "google/protobuf/compiler/csharp/c_sharp_features.proto",
     &descriptor_table_google_2fprotobuf_2fcompiler_2fcsharp_2fc_5fsharp_5ffeatures_2eproto_once,

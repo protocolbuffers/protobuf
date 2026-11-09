@@ -536,6 +536,111 @@ TEST_F(CppGeneratorTest, MapOptionsDeterministicSerialization) {
   EXPECT_EQ(file_content1, file_content2);
 }
 
+TEST_F(CppGeneratorTest, DllExportDeclFileOption) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto2";
+    package test;
+    option dllexport_decl = "FOO_EXPORT";
+
+    enum FooEnum {
+      FOO_ENUM_UNKNOWN = 0;
+    }
+
+    message FooMsg {
+      optional int32 x = 1;
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+  ExpectFileContentContainsSubstring(
+      "foo.pb.h", "FOO_EXPORT extern const uint32_t FooEnum_internal_data_[];");
+  ExpectFileContentContainsSubstring(
+      "foo.pb.h", "FOO_EXPORT extern const FooMsgGlobalsTypeInternal");
+  ExpectFileContentContainsSubstring("foo.pb.h", "class FOO_EXPORT");
+}
+
+TEST_F(CppGeneratorTest, DllExportDeclCrossDllProtoH) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto2";
+    package test;
+    option dllexport_decl = "FOO_EXPORT";
+
+    enum FooEnum {
+      FOO_ENUM_UNKNOWN = 0;
+    }
+
+    message FooMsg {
+      optional int32 x = 1;
+    }
+  )schema");
+
+  CreateTempFile("bar.proto",
+                 R"schema(
+    syntax = "proto2";
+    package test;
+    import "foo.proto";
+    option dllexport_decl = "BAR_EXPORT";
+
+    enum BarEnum {
+      BAR_ENUM_UNKNOWN = 0;
+    }
+
+    message BarMsg {
+      optional FooMsg foo_msg = 1;
+      optional FooEnum foo_enum = 2;
+      optional BarEnum bar_enum = 3;
+    }
+  )schema");
+
+  CreateTempFile("baz.proto",
+                 R"schema(
+    syntax = "proto2";
+    package test;
+    import "foo.proto";
+
+    message BazMsg {
+      optional FooMsg foo_msg = 1;
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--cpp_opt=proto_h bar.proto baz.proto");
+
+  ExpectNoErrors();
+
+  // In bar.proto.h, imported types from foo.proto must use FOO_EXPORT, while
+  // types defined in bar.proto must use BAR_EXPORT.
+  ExpectFileContentContainsSubstring(
+      "bar.proto.h",
+      "FOO_EXPORT extern const uint32_t FooEnum_internal_data_[];");
+  ExpectFileContentContainsSubstring(
+      "bar.proto.h", "FOO_EXPORT extern const FooMsgGlobalsTypeInternal");
+  ExpectFileContentNotContainsSubstring(
+      "bar.proto.h",
+      "BAR_EXPORT extern const uint32_t FooEnum_internal_data_[];");
+  ExpectFileContentNotContainsSubstring(
+      "bar.proto.h", "BAR_EXPORT extern const FooMsgGlobalsTypeInternal");
+  ExpectFileContentContainsSubstring(
+      "bar.proto.h",
+      "BAR_EXPORT extern const uint32_t BarEnum_internal_data_[];");
+  ExpectFileContentContainsSubstring(
+      "bar.proto.h", "BAR_EXPORT extern const BarMsgGlobalsTypeInternal");
+  ExpectFileContentContainsSubstring("bar.proto.h", "class BAR_EXPORT");
+
+  // In baz.proto.h (which has no dllexport_decl), imported types from foo.proto
+  // still use FOO_EXPORT, while BazMsg has no export macro.
+  ExpectFileContentContainsSubstring(
+      "baz.proto.h", "FOO_EXPORT extern const FooMsgGlobalsTypeInternal");
+  ExpectFileContentContainsSubstring(
+      "baz.proto.h", "\nextern const BazMsgGlobalsTypeInternal");
+}
+
 
 }  // namespace
 }  // namespace cpp

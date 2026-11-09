@@ -327,6 +327,10 @@ bool CppGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
   // FOO_EXPORT is a macro which should expand to __declspec(dllexport) or
   // __declspec(dllimport) depending on what is being compiled.
   //
+  // Note: the --cpp_opt=dllexport_decl command-line option is deprecated in
+  // favor of setting `option dllexport_decl = "FOO_EXPORT";` in the .proto
+  // file itself.
+  //
   // If the proto_h option is passed to the compiler, we will generate all
   // classes and enums so that they can be forward-declared from files that
   // need them from imports.
@@ -410,6 +414,9 @@ bool CppGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
   for (size_t i = 0; i < files.size(); i++) {
     const FileDescriptor* file = files[i];
     Options file_options = common_file_options;
+    if (!file->options().dllexport_decl().empty()) {
+      file_options.dllexport_decl = file->options().dllexport_decl();
+    }
     for (absl::string_view proto : protos_for_field_listener_events) {
       if (file->name() == proto) {
         file_options.field_listener_options.inject_field_listener_events = true;

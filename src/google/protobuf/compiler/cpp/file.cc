@@ -1342,13 +1342,16 @@ class FileGenerator::ForwardDeclarations {
   void AddEnum(const EnumDescriptor* d) { enums_.emplace(ClassName(d), d); }
   void AddSplit(const Descriptor* d) { splits_.emplace(ClassName(d), d); }
 
-  void Print(io::Printer* p, const Options& options) const {
+  void Print(io::Printer* p, const FileDescriptor* file,
+             const Options& options) const {
     for (const auto& e : enums_) {
+      const EnumDescriptor* desc = e.second;
       p->Emit(
           {
-              Sub("enum", e.first).AnnotatedAs(e.second),
+              Sub("enum", e.first).AnnotatedAs(desc),
               {"DEPRECATED",
-               e.second->options().deprecated() ? "[[deprecated]]" : ""},
+               desc->options().deprecated() ? "[[deprecated]]" : ""},
+              {"dllexport_decl", ForwardDeclDllExport(desc, file, options)},
           },
           R"cc(
             enum $DEPRECATED $$enum$ : int;
@@ -1365,6 +1368,7 @@ class FileGenerator::ForwardDeclarations {
               {"globals_name", MsgGlobalsInstanceName(desc, options)},
               {"const",
                IsFileDescriptorProto(desc->file(), options) ? "" : "const"},
+              {"dllexport_decl", ForwardDeclDllExport(desc, file, options)},
           },
           R"cc(
             class $class$;
@@ -1380,6 +1384,7 @@ class FileGenerator::ForwardDeclarations {
           {
               {"default_type", SplitDefaultInstanceType(desc, options)},
               {"default_name", SplitDefaultInstanceName(desc, options)},
+              {"dllexport_decl", ForwardDeclDllExport(desc, file, options)},
           },
           R"cc(
             struct $default_type$;
@@ -1441,6 +1446,19 @@ class FileGenerator::ForwardDeclarations {
   }
 
  private:
+  template <typename T>
+  static std::string ForwardDeclDllExport(const T* desc,
+                                          const FileDescriptor* file,
+                                          const Options& options) {
+    if (!desc->file()->options().dllexport_decl().empty()) {
+      return desc->file()->options().dllexport_decl();
+    }
+    if (desc->file() == file) {
+      return options.dllexport_decl;
+    }
+    return "";
+  }
+
   absl::btree_map<std::string, const Descriptor*> classes_;
   absl::btree_map<std::string, const EnumDescriptor*> enums_;
   absl::btree_map<std::string, const Descriptor*> splits_;
@@ -1504,7 +1522,7 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
   NamespaceOpener ns(p);
   for (const auto& decl : decls) {
     ns.ChangeTo(decl.first);
-    decl.second.Print(p, options_);
+    decl.second.Print(p, file_, options_);
   }
 
   ns.ChangeTo(ProtobufNamespace(options_));
