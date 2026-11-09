@@ -7,7 +7,6 @@
 
 #include "google/protobuf/compiler/cpp/field_layout.h"
 
-#include <algorithm>
 #include <cstddef>
 #include <memory>
 #include <string>
