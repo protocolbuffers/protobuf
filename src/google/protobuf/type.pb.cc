@@ -849,89 +849,88 @@ static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
     file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[3];
 static constexpr const ::_pb::ServiceDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2ftype_2eproto = nullptr;
-const ::uint32_t
-    TableStruct_google_2fprotobuf_2ftype_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-        protodesc_cold) = {
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_._has_bits_),
-        10, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.name_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.fields_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.oneofs_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.options_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.source_context_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.syntax_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.edition_),
-        3,
-        0,
-        1,
-        2,
-        5,
-        6,
-        4,
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_._has_bits_),
-        13, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.kind_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.cardinality_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.number_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.name_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.type_url_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.oneof_index_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.packed_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.options_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.json_name_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.default_value_),
-        5,
-        6,
-        7,
-        1,
-        2,
-        8,
-        9,
-        0,
-        3,
-        4,
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_._has_bits_),
-        9, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.name_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.enumvalue_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.options_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.source_context_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.syntax_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.edition_),
-        2,
-        0,
-        1,
-        4,
-        5,
-        3,
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValue, _impl_._has_bits_),
-        6, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValue, _impl_.name_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValue, _impl_.number_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValue, _impl_.options_),
-        1,
-        2,
-        0,
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Option, _impl_._has_bits_),
-        5, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Option, _impl_.name_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Option, _impl_.value_),
-        0,
-        1,
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+const ::uint32_t TableStruct_google_2fprotobuf_2ftype_2eproto::offsets[] = {
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_._has_bits_),
+    10, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.name_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.fields_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.oneofs_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.options_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.source_context_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.syntax_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.edition_),
+    3,
+    0,
+    1,
+    2,
+    5,
+    6,
+    4,
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_._has_bits_),
+    13, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.kind_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.cardinality_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.number_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.name_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.type_url_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.oneof_index_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.packed_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.options_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.json_name_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.default_value_),
+    5,
+    6,
+    7,
+    1,
+    2,
+    8,
+    9,
+    0,
+    3,
+    4,
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_._has_bits_),
+    9, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.name_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.enumvalue_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.options_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.source_context_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.syntax_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.edition_),
+    2,
+    0,
+    1,
+    4,
+    5,
+    3,
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValue, _impl_._has_bits_),
+    6, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValue, _impl_.name_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValue, _impl_.number_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValue, _impl_.options_),
+    1,
+    2,
+    0,
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Option, _impl_._has_bits_),
+    5, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Option, _impl_.name_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Option, _impl_.value_),
+    0,
+    1,
 };
 
-static const ::_pbi::MigrationSchema
-    schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-        {0, sizeof(::google::protobuf::Type)},
-        {17, sizeof(::google::protobuf::Field)},
-        {40, sizeof(::google::protobuf::Enum)},
-        {55, sizeof(::google::protobuf::EnumValue)},
-        {64, sizeof(::google::protobuf::Option)},
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+static const ::_pbi::MigrationSchema schemas[] = {
+    {0, sizeof(::google::protobuf::Type)},
+    {17, sizeof(::google::protobuf::Field)},
+    {40, sizeof(::google::protobuf::Enum)},
+    {55, sizeof(::google::protobuf::EnumValue)},
+    {64, sizeof(::google::protobuf::Option)},
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
@@ -941,8 +940,8 @@ static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
         &::google::protobuf::EnumValue_globals_,
         &::google::protobuf::Option_globals_,
 };
-const char descriptor_table_protodef_google_2fprotobuf_2ftype_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-    protodesc_cold) = {
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+const char descriptor_table_protodef_google_2fprotobuf_2ftype_2eproto[] = {
     "\n\032google/protobuf/type.proto\022\017google.pro"
     "tobuf\032\031google/protobuf/any.proto\032$google"
     "/protobuf/source_context.proto\"\350\001\n\004Type\022"

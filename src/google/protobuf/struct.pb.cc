@@ -562,43 +562,42 @@ static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
     file_level_enum_descriptors_google_2fprotobuf_2fstruct_2eproto[1];
 static constexpr const ::_pb::ServiceDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fstruct_2eproto = nullptr;
-const ::uint32_t
-    TableStruct_google_2fprotobuf_2fstruct_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-        protodesc_cold) = {
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct_FieldsEntry_DoNotUse, _impl_._has_bits_),
-        5, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct_FieldsEntry_DoNotUse, _impl_.key_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct_FieldsEntry_DoNotUse, _impl_.value_),
-        0,
-        1,
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct, _impl_._has_bits_),
-        4, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct, _impl_.fields_),
-        0,
-        0x004, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_._oneof_case_[0]),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::ListValue, _impl_._has_bits_),
-        4, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::ListValue, _impl_.values_),
-        0,
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+const ::uint32_t TableStruct_google_2fprotobuf_2fstruct_2eproto::offsets[] = {
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct_FieldsEntry_DoNotUse, _impl_._has_bits_),
+    5, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct_FieldsEntry_DoNotUse, _impl_.key_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct_FieldsEntry_DoNotUse, _impl_.value_),
+    0,
+    1,
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct, _impl_._has_bits_),
+    4, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct, _impl_.fields_),
+    0,
+    0x004, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_._oneof_case_[0]),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::ListValue, _impl_._has_bits_),
+    4, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::ListValue, _impl_.values_),
+    0,
 };
 
-static const ::_pbi::MigrationSchema
-    schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-        {0, sizeof(::google::protobuf::Struct_FieldsEntry_DoNotUse)},
-        {7, sizeof(::google::protobuf::Struct)},
-        {12, sizeof(::google::protobuf::Value)},
-        {21, sizeof(::google::protobuf::ListValue)},
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+static const ::_pbi::MigrationSchema schemas[] = {
+    {0, sizeof(::google::protobuf::Struct_FieldsEntry_DoNotUse)},
+    {7, sizeof(::google::protobuf::Struct)},
+    {12, sizeof(::google::protobuf::Value)},
+    {21, sizeof(::google::protobuf::ListValue)},
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
@@ -607,8 +606,8 @@ static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
         &::google::protobuf::Value_globals_,
         &::google::protobuf::ListValue_globals_,
 };
-const char descriptor_table_protodef_google_2fprotobuf_2fstruct_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-    protodesc_cold) = {
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+const char descriptor_table_protodef_google_2fprotobuf_2fstruct_2eproto[] = {
     "\n\034google/protobuf/struct.proto\022\017google.p"
     "rotobuf\"\204\001\n\006Struct\0223\n\006fields\030\001 \003(\0132#.goo"
     "gle.protobuf.Struct.FieldsEntry\032E\n\013Field"

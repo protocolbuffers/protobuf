@@ -175,28 +175,27 @@ static constexpr const ::_pb::EnumDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABL
     file_level_enum_descriptors_google_2fprotobuf_2fany_2eproto = nullptr;
 static constexpr const ::_pb::ServiceDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fany_2eproto = nullptr;
-const ::uint32_t
-    TableStruct_google_2fprotobuf_2fany_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-        protodesc_cold) = {
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Any, _impl_._has_bits_),
-        5, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Any, _impl_.type_url_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Any, _impl_.value_),
-        0,
-        1,
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+const ::uint32_t TableStruct_google_2fprotobuf_2fany_2eproto::offsets[] = {
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Any, _impl_._has_bits_),
+    5, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Any, _impl_.type_url_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Any, _impl_.value_),
+    0,
+    1,
 };
 
-static const ::_pbi::MigrationSchema
-    schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-        {0, sizeof(::google::protobuf::Any)},
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+static const ::_pbi::MigrationSchema schemas[] = {
+    {0, sizeof(::google::protobuf::Any)},
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
         &::google::protobuf::Any_globals_,
 };
-const char descriptor_table_protodef_google_2fprotobuf_2fany_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-    protodesc_cold) = {
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+const char descriptor_table_protodef_google_2fprotobuf_2fany_2eproto[] = {
     "\n\031google/protobuf/any.proto\022\017google.prot"
     "obuf\"&\n\003Any\022\020\n\010type_url\030\001 \001(\t\022\r\n\005value\030\002"
     " \001(\014Bv\n\023com.google.protobufB\010AnyProtoP\001Z"
