@@ -9,10 +9,10 @@
 
 import unittest
 from google.protobuf.pyext import _message
-from google3.net.proto2.python.internal import api_implementation
-from google3.net.proto2.python.internal import factory_test1_pb2
-from google3.net.proto2.python.internal import factory_test2_pb2
-from google3.net.proto2.python.internal import more_extensions_pb2
+from google.protobuf.internal import api_implementation
+from google.protobuf.internal import factory_test1_pb2
+from google.protobuf.internal import factory_test2_pb2
+from google.protobuf.internal import more_extensions_pb2
 from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor_pool
 from google.protobuf import map_unittest_pb2

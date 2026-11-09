@@ -67,7 +67,6 @@ enum {
 // The members are public so generated code can initialize them,
 // but users MUST NOT directly read or write any of its members.
 
-// LINT.IfChange(minitable_struct_definition)
 struct upb_MiniTable {
   const struct upb_MiniTableField* UPB_ONLYBITS(fields);
 
@@ -92,7 +91,6 @@ struct upb_MiniTable {
   _upb_FastTable_Entry UPB_PRIVATE(fasttable)[];
 #endif
 };
-// LINT.ThenChange(//depot/google3/third_party/upb/bits/typescript/mini_table.ts)
 
 #ifdef __cplusplus
 extern "C" {

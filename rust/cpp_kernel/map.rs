@@ -177,7 +177,7 @@ pub struct FfiMapValue {
     pub tag: FfiMapValueTag,
     pub val: FfiMapValueUnion,
 }
-// LINT.ThenChange(//depot/google3/third_party/protobuf/rust/cpp_kernel/map.cc:
+// LINT.ThenChange(rust/cpp_kernel/map.cc:
 // map_ffi)
 
 impl FfiMapValue {

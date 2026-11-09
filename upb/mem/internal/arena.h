@@ -46,16 +46,12 @@ typedef struct UPB_PRIVATE(_upb_ArenaPool) {
 
 extern const UPB_PRIVATE(_upb_ArenaPool) UPB_PRIVATE(_upb_Arena_EmptyPool);
 
-// LINT.IfChange(upb_Arena)
-
 struct upb_Arena {
   char* UPB_ONLYBITS(ptr);
   const UPB_NODEREF char* UPB_ONLYBITS(end);
   UPB_PRIVATE(_upb_ArenaPool) * UPB_ONLYBITS(pool);
   UPB_XSAN_MEMBER
 };
-
-// LINT.ThenChange(//depot/google3/third_party/upb/bits/typescript/arena.ts:upb_Arena)
 
 #ifdef __cplusplus
 extern "C" {

@@ -66,7 +66,7 @@ enum {
    * If set, the fasttable decoder will not be used. */
   kUpb_DecodeOption_DisableFastTable = 16,
 };
-// LINT.ThenChange(//depot/google3/third_party/upb/rust/wire.rs:decode_status)
+// LINT.ThenChange(rust/upb/wire.rs:decode_status)
 
 UPB_INLINE uint32_t upb_DecodeOptions_MaxDepth(uint16_t depth) {
   return (uint32_t)depth << 16;
@@ -98,7 +98,7 @@ typedef enum {
   // succeeded.
   kUpb_DecodeStatus_MissingRequired = 11,
 } upb_DecodeStatus;
-// LINT.ThenChange(//depot/google3/third_party/upb/rust/sys/wire/wire.rs:decode_status)
+// LINT.ThenChange(rust/upb/sys/wire/wire.rs:decode_status)
 
 UPB_NODISCARD UPB_API upb_DecodeStatus upb_Decode(
     const char* buf, size_t size, upb_Message* msg, const upb_MiniTable* mt,
