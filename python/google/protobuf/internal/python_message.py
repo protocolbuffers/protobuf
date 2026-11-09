@@ -1534,7 +1534,8 @@ def _AddMergeFromMethod(cls):
           )
       )
 
-    assert msg is not self
+    if msg is self:
+      raise AssertionError('Cannot merge a message into itself.')
     self._Modified()
 
     fields = self._fields
