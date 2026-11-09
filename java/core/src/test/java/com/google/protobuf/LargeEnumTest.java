@@ -103,6 +103,17 @@ public class LargeEnumTest {
   }
 
   @Test
+  public void testInternalGetValueMap() throws Exception {
+    assertThat(LargeOpenEnum.internalGetValueMap())
+        .isSameInstanceAs(LargeOpenEnum.internalGetValueMap());
+    assertThat(LargeOpenEnum.internalGetValueMap().findValueByNumber(1))
+        .isSameInstanceAs(LargeOpenEnum.LARGE_ENUM1);
+    assertThat(LargeOpenEnum.internalGetValueMap().findValueByNumber(999999)).isNull();
+    assertThrows(
+        NoSuchFieldException.class, () -> LargeOpenEnum.class.getDeclaredField("internalValueMap"));
+  }
+
+  @Test
   public void testToString() throws Exception {
     assertThat(LargeOpenEnum.LARGE_ENUM1.toString()).isEqualTo("LARGE_ENUM1");
     assertThat(LargeOpenEnum.UNRECOGNIZED.toString()).isEqualTo("UNRECOGNIZED");

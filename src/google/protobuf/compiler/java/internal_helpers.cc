@@ -579,16 +579,19 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
           $read_resolve_func$
 
           public static com.google.protobuf.Internal.EnumLiteMap<$classname$> internalGetValueMap() {
-            return internalValueMap;
+            return InternalValueMap.INSTANCE;
           }
 
-          private static final com.google.protobuf.Internal.EnumLiteMap<
-            $classname$> internalValueMap =
-              new com.google.protobuf.Internal.EnumLiteMap<$classname$>() {
-                public $classname$ findValueByNumber(int number) {
-                  return $classname$.forNumber(number);
-                }
-              };
+          private static final class InternalValueMap implements
+              com.google.protobuf.Internal.EnumLiteMap<$classname$> {
+            static final com.google.protobuf.Internal.EnumLiteMap<$classname$>
+                INSTANCE = new InternalValueMap();
+            @java.lang.Override
+            $method_return_null_annotation$
+            public $classname$ findValueByNumber(int number) {
+              return $classname$.forNumber(number);
+            }
+          }
 
           $enum_verifier_func$
 

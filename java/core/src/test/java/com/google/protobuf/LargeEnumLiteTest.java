@@ -41,6 +41,17 @@ public class LargeEnumLiteTest {
   }
 
   @Test
+  public void testInternalGetValueMap() throws Exception {
+    assertThat(LargeOpenEnum.internalGetValueMap())
+        .isSameInstanceAs(LargeOpenEnum.internalGetValueMap());
+    assertThat(LargeOpenEnum.internalGetValueMap().findValueByNumber(1))
+        .isSameInstanceAs(LargeOpenEnum.LARGE_ENUM1);
+    assertThat(LargeOpenEnum.internalGetValueMap().findValueByNumber(999999)).isNull();
+    assertThrows(
+        NoSuchFieldException.class, () -> LargeOpenEnum.class.getDeclaredField("internalValueMap"));
+  }
+
+  @Test
   public void testUnrecognizedValueDoesNotCollideWithNegativeOne() throws Exception {
     assertThat(LargeOpenEnum.UNRECOGNIZED.value()).isEqualTo(-1);
 
