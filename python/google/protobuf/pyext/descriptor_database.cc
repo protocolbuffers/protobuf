@@ -20,7 +20,6 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
-#include "google/protobuf/pyext/free_threading/access_guard.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
 
@@ -56,20 +55,12 @@ static bool GetFileDescriptorProto(PyObject* py_descriptor,
       FileDescriptorProto::default_instance().GetDescriptor();
   CMessage* message = reinterpret_cast<CMessage*>(py_descriptor);
   if (PyObject_TypeCheck(py_descriptor, CMessage_Type) &&
-      message->GetDescriptor() == filedescriptor_descriptor) {
+      message->message->GetDescriptor() == filedescriptor_descriptor) {
     // Fast path: Just use the pointer.
-    return message->WithRead(
-        [&]() {
-          PyErr_Print();
-          return false;
-        },
-        [&](const ReadAccess& r) {
-          const FileDescriptorProto* file_proto =
-              google::protobuf::DownCastMessage<FileDescriptorProto>(
-                  message->TargetMessage(r));
-          *output = *file_proto;
-          return true;
-        });
+    const FileDescriptorProto* file_proto =
+        google::protobuf::DownCastMessage<FileDescriptorProto>(message->message);
+    *output = *file_proto;
+    return true;
   } else {
     // Slow path: serialize the message. This allows to use databases which
     // use a different implementation of FileDescriptorProto.

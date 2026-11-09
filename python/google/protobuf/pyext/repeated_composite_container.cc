@@ -38,7 +38,7 @@ static Py_ssize_t Length(PyObject* pself) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
 
-  const Message* message = self->parent->DeprecatedUnguardedMessage();
+  const Message* message = self->parent->message;
   return message->GetReflection()->FieldSize(*message,
                                              self->parent_field_descriptor);
 }
@@ -193,7 +193,7 @@ static PyObject* MergeFromMethod(PyObject* self, PyObject* other) {
 // This function does not check the bounds.
 static PyObject* GetItem(RepeatedCompositeContainer* self, Py_ssize_t index,
                          Py_ssize_t length = -1) {
-  const Message* message = self->parent->DeprecatedUnguardedMessage();
+  const Message* message = self->parent->message;
   const Reflection* reflection = message->GetReflection();
   if (length == -1) {
     length = reflection->FieldSize(*message, self->parent_field_descriptor);
@@ -219,7 +219,7 @@ static PyObject* GetItem(RepeatedCompositeContainer* self, Py_ssize_t index,
 }
 
 PyObject* Subscript(RepeatedCompositeContainer* self, PyObject* item) {
-  const Message* message = self->parent->DeprecatedUnguardedMessage();
+  const Message* message = self->parent->message;
   const Reflection* reflection = message->GetReflection();
   Py_ssize_t length =
       reflection->FieldSize(*message, self->parent_field_descriptor);
@@ -388,8 +388,7 @@ static void ReorderAttached(RepeatedCompositeContainer* self,
     // parent's repeated field (released above) and is already an allocated,
     // mutable Message object in memory.
     reflection->UnsafeArenaAddAllocatedMessage(
-        message, descriptor,
-        const_cast<Message*>(child_cmsg->DeprecatedUnguardedMessage()));
+        message, descriptor, const_cast<Message*>(child_cmsg->message));
   }
 }
 
@@ -526,7 +525,7 @@ PyObject* DeepCopy(PyObject* pself, PyObject* arg) {
 RepeatedCompositeContainer* NewContainer(
     CMessage* parent, const FieldDescriptor* parent_field_descriptor,
     CMessageClass* child_message_class) {
-  if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent)) {
+  if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
     return nullptr;
   }
 
