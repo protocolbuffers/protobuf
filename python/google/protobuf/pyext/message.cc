@@ -2185,6 +2185,8 @@ PyObject* MergeFrom(CMessage* self, PyObject* arg) {
             .c_str());
     return nullptr;
   }
+  Message* message = AssureWritable(self);
+  if (message == nullptr) return nullptr;
   if (other_message == self) {
     // Self-merge is not supported (Message::MergeFrom() CHECK-fails). Raise
     // AssertionError, like the pure-Python implementation.
@@ -2192,8 +2194,6 @@ PyObject* MergeFrom(CMessage* self, PyObject* arg) {
                     "Cannot merge a message into itself.");
     return nullptr;
   }
-  Message* message = AssureWritable(self);
-  if (message == nullptr) return nullptr;
 
   if (MaybeReleaseOneofBeforeMerge(self, *other_message->message) < 0) {
     return nullptr;

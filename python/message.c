@@ -1540,6 +1540,7 @@ PyObject* PyUpb_Message_MergeFrom(PyObject* self, PyObject* arg) {
                  Py_TYPE(self), Py_TYPE(arg));
     return NULL;
   }
+  if (!PyUpb_Message_AssureWritable((PyUpb_Message*)self)) return NULL;
   if (self == arg) {
     // Self-merge is not supported, as in C++ and the other Python
     // implementations.
