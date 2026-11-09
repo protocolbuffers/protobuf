@@ -178,32 +178,31 @@ static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
     file_level_enum_descriptors_google_2fprotobuf_2fcpp_5ffeatures_2eproto[2];
 static constexpr const ::_pb::ServiceDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fcpp_5ffeatures_2eproto = nullptr;
-const ::uint32_t
-    TableStruct_google_2fprotobuf_2fcpp_5ffeatures_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-        protodesc_cold) = {
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::pb::CppFeatures, _impl_._has_bits_),
-        7, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::pb::CppFeatures, _impl_.legacy_closed_enum_),
-        PROTOBUF_FIELD_OFFSET(::pb::CppFeatures, _impl_.string_type_),
-        PROTOBUF_FIELD_OFFSET(::pb::CppFeatures, _impl_.enum_name_uses_string_view_),
-        PROTOBUF_FIELD_OFFSET(::pb::CppFeatures, _impl_.repeated_type_),
-        1,
-        0,
-        2,
-        3,
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+const ::uint32_t TableStruct_google_2fprotobuf_2fcpp_5ffeatures_2eproto::offsets[] = {
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::pb::CppFeatures, _impl_._has_bits_),
+    7, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::pb::CppFeatures, _impl_.legacy_closed_enum_),
+    PROTOBUF_FIELD_OFFSET(::pb::CppFeatures, _impl_.string_type_),
+    PROTOBUF_FIELD_OFFSET(::pb::CppFeatures, _impl_.enum_name_uses_string_view_),
+    PROTOBUF_FIELD_OFFSET(::pb::CppFeatures, _impl_.repeated_type_),
+    1,
+    0,
+    2,
+    3,
 };
 
-static const ::_pbi::MigrationSchema
-    schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-        {0, sizeof(::pb::CppFeatures)},
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+static const ::_pbi::MigrationSchema schemas[] = {
+    {0, sizeof(::pb::CppFeatures)},
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
         &::pb::CppFeatures_globals_,
 };
-const char descriptor_table_protodef_google_2fprotobuf_2fcpp_5ffeatures_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-    protodesc_cold) = {
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+const char descriptor_table_protodef_google_2fprotobuf_2fcpp_5ffeatures_2eproto[] = {
     "\n\"google/protobuf/cpp_features.proto\022\002pb"
     "\032 google/protobuf/descriptor.proto\"\222\005\n\013C"
     "ppFeatures\022\373\001\n\022legacy_closed_enum\030\001 \001(\010B"

@@ -288,37 +288,36 @@ static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
     file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[2];
 static constexpr const ::_pb::ServiceDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto = nullptr;
-const ::uint32_t
-    TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-        protodesc_cold) = {
-        0x000, // bitmap
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _impl_._has_bits_),
-        8, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _impl_.legacy_closed_enum_),
-        PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _impl_.utf8_validation_),
-        PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _impl_.large_enum_),
-        PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _impl_.use_old_outer_classname_default_),
-        PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _impl_.nest_in_file_class_),
-        1,
-        0,
-        2,
-        3,
-        4,
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+const ::uint32_t TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto::offsets[] = {
+    0x000, // bitmap
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _impl_._has_bits_),
+    8, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _impl_.legacy_closed_enum_),
+    PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _impl_.utf8_validation_),
+    PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _impl_.large_enum_),
+    PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _impl_.use_old_outer_classname_default_),
+    PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _impl_.nest_in_file_class_),
+    1,
+    0,
+    2,
+    3,
+    4,
 };
 
-static const ::_pbi::MigrationSchema
-    schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-        {0, sizeof(::pb::JavaFeatures_NestInFileClassFeature)},
-        {1, sizeof(::pb::JavaFeatures)},
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+static const ::_pbi::MigrationSchema schemas[] = {
+    {0, sizeof(::pb::JavaFeatures_NestInFileClassFeature)},
+    {1, sizeof(::pb::JavaFeatures)},
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
         &::pb::JavaFeatures_NestInFileClassFeature_globals_,
         &::pb::JavaFeatures_globals_,
 };
-const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-    protodesc_cold) = {
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[] = {
     "\n1google/protobuf/compiler/java/java_fea"
     "tures.proto\022\002pb\032 google/protobuf/descrip"
     "tor.proto\"\203\010\n\014JavaFeatures\022\376\001\n\022legacy_cl"
