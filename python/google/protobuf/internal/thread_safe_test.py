@@ -543,6 +543,89 @@ class FreeThreadingTest(unittest.TestCase):
     for t in threads:
       t.join()
 
+  def testConcurrentAddSerializedFileDataRace(self):
+    """Reproduces concurrent `_pb2` imports building into one pool."""
+    pool = descriptor_pool.DescriptorPool()
+    num_threads = 8
+    num_files_per_thread = 100
+    serialized_files = [
+        [
+            descriptor_pb2.FileDescriptorProto(
+                name=f'concurrent_add_{t}_{i}.proto',
+                package=f'concurrent_add_{t}',
+                message_type=[
+                    descriptor_pb2.DescriptorProto(name=f'Message_{i}')
+                ],
+            ).SerializeToString()
+            for i in range(num_files_per_thread)
+        ]
+        for t in range(num_threads)
+    ]
+    barrier = threading.Barrier(num_threads)
+
+    def Worker(thread_id):
+      barrier.wait()
+      for serialized_file in serialized_files[thread_id]:
+        pool.AddSerializedFile(serialized_file)
+
+    threads = [
+        threading.Thread(target=Worker, args=(t,)) for t in range(num_threads)
+    ]
+    for t in threads:
+      t.start()
+    for t in threads:
+      t.join()
+
+    self.assertEqual(
+        pool.FindMessageTypeByName('concurrent_add_7.Message_99').full_name,
+        'concurrent_add_7.Message_99',
+    )
+
+  def testConcurrentFindDuringAddSerializedFileDataRace(self):
+    """Reproduces pool lookups racing with a concurrent `_pb2` import."""
+    pool = descriptor_pool.DescriptorPool()
+    base_file = descriptor_pb2.FileDescriptorProto(
+        name='find_during_add_base.proto', package='find_during_add'
+    )
+    base_file.message_type.add(name='BaseMessage')
+    pool.Add(base_file)
+    serialized_files = [
+        descriptor_pb2.FileDescriptorProto(
+            name=f'find_during_add_{i}.proto',
+            package='find_during_add',
+            message_type=[descriptor_pb2.DescriptorProto(name=f'Message_{i}')],
+        ).SerializeToString()
+        for i in range(500)
+    ]
+    barrier = threading.Barrier(5)
+    found_names = []
+
+    def Adder():
+      barrier.wait()
+      for serialized_file in serialized_files:
+        pool.AddSerializedFile(serialized_file)
+
+    def Finder():
+      barrier.wait()
+      for _ in range(500):
+        found_names.append(
+            pool.FindMessageTypeByName('find_during_add.BaseMessage').name
+        )
+
+    threads = [threading.Thread(target=Adder)] + [
+        threading.Thread(target=Finder) for _ in range(4)
+    ]
+    for t in threads:
+      t.start()
+    for t in threads:
+      t.join()
+
+    self.assertEqual(found_names, ['BaseMessage'] * 2000)
+    self.assertEqual(
+        pool.FindMessageTypeByName('find_during_add.Message_499').name,
+        'Message_499',
+    )
+
   @unittest.skipIf(
       api_implementation.Type() != 'cpp',
       'BuildFileErrorCollector only exists in the cpp implementation.',

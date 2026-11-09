@@ -39,10 +39,14 @@ class ABSL_LOCKABLE ABSL_ATTRIBUTE_WARN_UNUSED FreeThreadingMutex {
   // GIL-enabled build: no-op mutex (zero cost)
   void Lock() {}
   void Unlock() {}
+  void ReaderLock() {}
+  void ReaderUnlock() {}
 #else
   // Free-threaded build: real mutex
   void Lock() ABSL_EXCLUSIVE_LOCK_FUNCTION() { mutex_.Lock(); }
   void Unlock() ABSL_UNLOCK_FUNCTION() { mutex_.Unlock(); }
+  void ReaderLock() ABSL_SHARED_LOCK_FUNCTION() { mutex_.ReaderLock(); }
+  void ReaderUnlock() ABSL_UNLOCK_FUNCTION() { mutex_.ReaderUnlock(); }
 
  private:
   absl::Mutex mutex_;
@@ -61,6 +65,26 @@ class ABSL_SCOPED_LOCKABLE FreeThreadingLockGuard {
 
   FreeThreadingLockGuard(const FreeThreadingLockGuard&) = delete;
   FreeThreadingLockGuard& operator=(const FreeThreadingLockGuard&) = delete;
+
+ private:
+  FreeThreadingMutex& mutex_;
+};
+
+// RAII shared (reader) lock guard for FreeThreadingMutex
+class ABSL_SCOPED_LOCKABLE FreeThreadingReaderLockGuard {
+ public:
+  explicit FreeThreadingReaderLockGuard(FreeThreadingMutex& mutex)
+      ABSL_SHARED_LOCK_FUNCTION(mutex)
+      : mutex_(mutex) {
+    mutex_.ReaderLock();
+  }
+  ~FreeThreadingReaderLockGuard() ABSL_UNLOCK_FUNCTION() {
+    mutex_.ReaderUnlock();
+  }
+
+  FreeThreadingReaderLockGuard(const FreeThreadingReaderLockGuard&) = delete;
+  FreeThreadingReaderLockGuard& operator=(const FreeThreadingReaderLockGuard&) =
+      delete;
 
  private:
   FreeThreadingMutex& mutex_;
