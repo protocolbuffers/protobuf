@@ -16,6 +16,7 @@
 #include "upb/base/status.hpp"
 #include "upb/mem/alloc.h"
 #include "upb/mem/arena.hpp"
+#include "upb/mini_table/extension.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
 #include "upb/reflection/internal/def_pool.h"
@@ -552,15 +553,13 @@ TEST(ReflectionTest, DefPoolFindMethodsRespectSize) {
   }
 }
 
-TEST(ReflectionTest, TooManyExtensionsRejected) {
-  // upb_FieldDef::layout_index is a uint16_t that indexes the file's flat
-  // extension table. The def-builder counts every extension in the file (top
-  // level plus nested) and assigns each one an incrementing layout_index. With
-  // more than UINT16_MAX extensions the index wraps, aliasing distinct
-  // extensions onto a single mini-table slot and leaving another slot
-  // uninitialized, so a file this large must be rejected up front.
+TEST(ReflectionTest, MoreThanUint16MaxExtensions) {
+  // upb_FieldDef::layout_index indexes the file's flat extension table, and
+  // every extension in the file (top level plus nested) gets its own slot. A
+  // file with more than UINT16_MAX extensions must still give each extension
+  // a distinct mini-table instead of wrapping the index.
   google::protobuf::FileDescriptorProto proto;
-  proto.set_name("overflow.proto");
+  proto.set_name("many_exts.proto");
   proto.set_package("pkg");
   proto.set_syntax("proto2");
 
@@ -587,9 +586,22 @@ TEST(ReflectionTest, TooManyExtensionsRejected) {
   google::protobuf::FileDescriptorSet set;
   *set.add_file() = proto;
   absl::StatusOr<upb::DefPool> pool = LoadDescriptorSetFromProto(set);
-  ASSERT_FALSE(pool.ok());
-  EXPECT_THAT(std::string(pool.status().message()),
-              HasSubstr("too many extensions"));
+  ASSERT_TRUE(pool.ok()) << pool.status();
+
+  upb::MessageDefPtr m = pool->FindMessageByName("pkg.M");
+  ASSERT_TRUE(m);
+  for (int i : {0, 65535, 65536, kCount - 1}) {
+    upb::FieldDefPtr f =
+        pool->FindExtensionByName(absl::StrFormat("pkg.ext_%d", i));
+    ASSERT_TRUE(f) << i;
+    EXPECT_EQ(f.layout_index(), static_cast<uint32_t>(i));
+    EXPECT_EQ(upb_MiniTableExtension_Number(
+                  upb_FieldDef_MiniTableExtension(f.ptr())),
+              f.number());
+    EXPECT_EQ(upb_DefPool_FindExtensionByNumber(pool->ptr(), m.ptr(),
+                                                f.number()),
+              f.ptr());
+  }
 }
 
 }  // namespace
