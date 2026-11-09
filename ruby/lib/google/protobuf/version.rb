@@ -7,6 +7,6 @@
 
 module Google
   module Protobuf
-    VERSION = "4.37.0"
+    VERSION = "4.37.0.rc.2"
   end
 end
