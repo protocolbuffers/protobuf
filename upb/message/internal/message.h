@@ -43,7 +43,6 @@ extern const double kUpb_NaN;
 // Internal members of a upb_Message that track unknown fields and/or
 // extensions. We can change this without breaking binary compatibility.
 
-// LINT.IfChange(tagged_aux_type)
 typedef struct upb_TaggedAuxPtr {
   // Three lowest bits form a tag:
   // 000 - non-aliased unknown data (upb_StringView*)
@@ -162,8 +161,6 @@ UPB_INLINE upb_StringView* upb_TaggedPtrAux_StringViewRepr(
   UPB_ASSERT(upb_TaggedAuxPtr_IsUnknownStringView(ptr));
   return (upb_StringView*)(ptr.ptr & ~7ULL);
 }
-
-// LINT.ThenChange(//depot/google3/third_party/upb/bits/golang/message.go:tagged_aux_type)
 
 UPB_INLINE upb_TaggedAuxPtr upb_TaggedAuxPtr_Null(void) {
   upb_TaggedAuxPtr ptr;

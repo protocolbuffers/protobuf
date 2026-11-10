@@ -1107,15 +1107,14 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
              }},
         },
         R"cc(
-          const ::uint32_t
-              $tablename$::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-                  protodesc_cold) = {
-                  $offsets$,
+          ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+          const ::uint32_t $tablename$::offsets[] = {
+              $offsets$,
           };
 
-          static const ::_pbi::MigrationSchema
-              schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-                  $schemas$,
+          ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+          static const ::_pbi::MigrationSchema schemas[] = {
+              $schemas$,
           };
         )cc");
     constexpr absl::string_view file_default_instances_code = R"cc(
@@ -1208,8 +1207,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
           }
         }}},
       R"cc(
-        const char $desc_name$[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-            protodesc_cold) = {
+        ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+        const char $desc_name$[] = {
             $encoded_file_proto$,
         };
       )cc");

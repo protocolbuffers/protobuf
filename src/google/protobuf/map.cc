@@ -34,8 +34,6 @@ namespace internal {
 std::atomic<MapFieldBaseForParse::SyncFunc>
     MapFieldBaseForParse::sync_map_with_repeated{};
 
-NodeBase* const kGlobalEmptyTable[kGlobalEmptyTableSize] = {};
-
 void UntypedMapBase::UntypedMergeFrom(Arena* arena,
                                       const UntypedMapBase& other) {
   ABSL_DCHECK_EQ(arena, this->arena());
@@ -141,12 +139,12 @@ void UntypedMapBase::DeleteList(NodeBase* list) {
 }
 
 void UntypedMapBase::ClearTableImpl(Arena* arena, bool reset) {
-  ABSL_DCHECK_NE(num_buckets_, kGlobalEmptyTableSize);
   ABSL_DCHECK_EQ(arena, this->arena());
 
+  NodeBase** table = buckets();
+  ABSL_DCHECK_NE(table, nullptr);
   if (arena == nullptr) {
-    const auto loop = [this](auto destroy_node) {
-      NodeBase** table = table_;
+    const auto loop = [this, table](auto destroy_node) {
       for (map_index_t b = 0, end = num_buckets_; b < end; ++b) {
         for (NodeBase* node = table[b]; node != nullptr;) {
           NodeBase* next = node->next;
@@ -187,17 +185,17 @@ void UntypedMapBase::ClearTableImpl(Arena* arena, bool reset) {
   }
 
   if (reset) {
-    std::fill(table_, table_ + num_buckets_, nullptr);
+    std::fill(table, table + num_buckets_, nullptr);
     num_elements_ = 0;
-  } else {
-    DeleteTable(arena, table_, num_buckets_);
+  } else if (!is_single_bucket()) {
+    DeleteTable(arena, table, num_buckets_);
   }
 }
 
 size_t UntypedMapBase::SpaceUsedExcludingSelfLong() const {
   size_t size = 0;
   // The size of the table.
-  size += sizeof(void*) * num_buckets_;
+  if (!is_single_bucket()) size += sizeof(void*) * num_buckets_;
   // All the nodes.
   size += type_info_.node_size * num_elements_;
   VisitAllNodes([&](auto* key, auto* value) {

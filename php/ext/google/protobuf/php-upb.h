@@ -943,7 +943,6 @@ Error, UINTPTR_MAX is undefined
 #define UPB_STRINGVIEW_FORMAT "%.*s"
 #define UPB_STRINGVIEW_ARGS(view) (int)(view).size, (view).data
 
-// LINT.IfChange(struct_definition)
 typedef struct {
   const char* data;
   size_t size;
@@ -982,12 +981,6 @@ UPB_INLINE int upb_StringView_Compare(upb_StringView a, upb_StringView b) {
     return 0;
   }
 }
-
-// LINT.ThenChange(
-//  GoogleInternalName1,
-//  //depot/google3/third_party/upb/bits/golang/accessor.go:map_go_string,
-//  //depot/google3/third_party/upb/bits/typescript/string_view.ts
-// )
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -1621,16 +1614,12 @@ typedef struct UPB_PRIVATE(_upb_ArenaPool) {
 
 extern const UPB_PRIVATE(_upb_ArenaPool) UPB_PRIVATE(_upb_Arena_EmptyPool);
 
-// LINT.IfChange(upb_Arena)
-
 struct upb_Arena {
   char* UPB_ONLYBITS(ptr);
   const UPB_NODEREF char* UPB_ONLYBITS(end);
   UPB_PRIVATE(_upb_ArenaPool) * UPB_ONLYBITS(pool);
   UPB_XSAN_MEMBER
 };
-
-// LINT.ThenChange(//depot/google3/third_party/upb/bits/typescript/arena.ts:upb_Arena)
 
 #ifdef __cplusplus
 extern "C" {
@@ -2271,8 +2260,6 @@ extern "C" {
 
 #define _UPB_ARRAY_DEFAULT_INITIAL_SIZE 4
 
-// LINT.IfChange(upb_Array)
-
 // Our internal representation for repeated fields.
 struct upb_Array {
   // This is a tagged pointer. Bits #0 and #1 encode the elem size as follows:
@@ -2341,8 +2328,6 @@ UPB_API_INLINE const void* upb_Array_DataPtr(const struct upb_Array* array) {
 UPB_API_INLINE void* upb_Array_MutableDataPtr(struct upb_Array* array) {
   return (void*)upb_Array_DataPtr(array);
 }
-
-// LINT.ThenChange(GoogleInternalName0)
 
 UPB_NODISCARD UPB_INLINE struct upb_Array* UPB_PRIVATE(
     _upb_Array_NewMaybeAllowSlow)(upb_Arena* arena, size_t init_capacity,
@@ -2753,7 +2738,6 @@ UPB_PRIVATE(_upb_FieldType_SizeLg2)(upb_FieldType field_type) {
 
 // Must be last.
 
-// LINT.IfChange(struct_definition)
 struct upb_MiniTableField {
   uint32_t UPB_ONLYBITS(number);
   uint16_t UPB_ONLYBITS(offset);
@@ -2969,8 +2953,6 @@ UPB_INLINE size_t UPB_PRIVATE(_upb_MiniTableField_ElemSizeLg2)(
   return UPB_PRIVATE(_upb_FieldType_SizeLg2)(field_type);
 }
 
-// LINT.ThenChange(//depot/google3/third_party/upb/bits/typescript/mini_table_field.ts)
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
@@ -3125,7 +3107,6 @@ enum {
 // The members are public so generated code can initialize them,
 // but users MUST NOT directly read or write any of its members.
 
-// LINT.IfChange(minitable_struct_definition)
 struct upb_MiniTable {
   const struct upb_MiniTableField* UPB_ONLYBITS(fields);
 
@@ -3150,7 +3131,6 @@ struct upb_MiniTable {
   _upb_FastTable_Entry UPB_PRIVATE(fasttable)[];
 #endif
 };
-// LINT.ThenChange(//depot/google3/third_party/upb/bits/typescript/mini_table.ts)
 
 #ifdef __cplusplus
 extern "C" {
@@ -5217,7 +5197,6 @@ extern const double kUpb_NaN;
 // Internal members of a upb_Message that track unknown fields and/or
 // extensions. We can change this without breaking binary compatibility.
 
-// LINT.IfChange(tagged_aux_type)
 typedef struct upb_TaggedAuxPtr {
   // Three lowest bits form a tag:
   // 000 - non-aliased unknown data (upb_StringView*)
@@ -5336,8 +5315,6 @@ UPB_INLINE upb_StringView* upb_TaggedPtrAux_StringViewRepr(
   UPB_ASSERT(upb_TaggedAuxPtr_IsUnknownStringView(ptr));
   return (upb_StringView*)(ptr.ptr & ~7ULL);
 }
-
-// LINT.ThenChange(//depot/google3/third_party/upb/bits/golang/message.go:tagged_aux_type)
 
 UPB_INLINE upb_TaggedAuxPtr upb_TaggedAuxPtr_Null(void) {
   upb_TaggedAuxPtr ptr;
@@ -5731,8 +5708,6 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionFieldReverse)(
 extern "C" {
 #endif
 
-// LINT.IfChange(presence_logic)
-
 // Hasbit access ///////////////////////////////////////////////////////////////
 
 UPB_INLINE bool UPB_PRIVATE(_upb_Message_GetHasbitFromOffset)(
@@ -5820,8 +5795,6 @@ UPB_API_INLINE const upb_MiniTableField* upb_Message_WhichOneof(
   return upb_MiniTable_FindFieldByNumber(m, field_number);
 }
 
-// LINT.ThenChange(GoogleInternalName2)
-
 // Returns false if the message is missing any of its required fields.
 UPB_INLINE bool UPB_PRIVATE(_upb_Message_IsInitializedShallow)(
     const struct upb_Message* msg, const upb_MiniTable* m) {
@@ -5831,7 +5804,6 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_IsInitializedShallow)(
   return (UPB_PRIVATE(_upb_MiniTable_RequiredMask)(m) & ~bits) == 0;
 }
 
-// LINT.IfChange(message_raw_fields)
 UPB_INLINE void* UPB_PRIVATE(_upb_Message_MutableDataPtr)(
     struct upb_Message* msg, const upb_MiniTableField* f) {
   return (char*)msg + f->UPB_ONLYBITS(offset);
@@ -5850,8 +5822,6 @@ UPB_INLINE void UPB_PRIVATE(_upb_Message_SetPresence)(
     UPB_PRIVATE(_upb_Message_SetOneofCase)(msg, f);
   }
 }
-
-// LINT.ThenChange(//depot/google3/third_party/upb/bits/golang/message.go:message_raw_fields)
 
 // Here we define universal getter/setter functions for message fields.
 // These look very branchy and inefficient, but as long as the MiniTableField
@@ -7668,7 +7638,7 @@ typedef enum {
   kUpb_ExtensionRegistryStatus_DuplicateEntry = 1,
   kUpb_ExtensionRegistryStatus_OutOfMemory = 2,
 } upb_ExtensionRegistryStatus;
-// LINT.ThenChange(//depot/google3/third_party/upb/rust/sys/mini_table/extension_registry.rs)
+// LINT.ThenChange(rust/upb/sys/mini_table/extension_registry.rs)
 
 // Creates a upb_ExtensionRegistry in the given arena.
 // The arena must outlive any use of the extreg.
@@ -7947,7 +7917,7 @@ enum {
    * If set, the fasttable decoder will not be used. */
   kUpb_DecodeOption_DisableFastTable = 16,
 };
-// LINT.ThenChange(//depot/google3/third_party/upb/rust/wire.rs:decode_status)
+// LINT.ThenChange(rust/upb/wire.rs:decode_status)
 
 UPB_INLINE uint32_t upb_DecodeOptions_MaxDepth(uint16_t depth) {
   return (uint32_t)depth << 16;
@@ -7979,7 +7949,7 @@ typedef enum {
   // succeeded.
   kUpb_DecodeStatus_MissingRequired = 11,
 } upb_DecodeStatus;
-// LINT.ThenChange(//depot/google3/third_party/upb/rust/sys/wire/wire.rs:decode_status)
+// LINT.ThenChange(rust/upb/sys/wire/wire.rs:decode_status)
 
 UPB_NODISCARD UPB_API upb_DecodeStatus upb_Decode(
     const char* buf, size_t size, upb_Message* msg, const upb_MiniTable* mt,
@@ -8074,7 +8044,7 @@ typedef enum {
   // The message is larger than protobuf's 2GB size limit.
   kUpb_EncodeStatus_MaxSizeExceeded = 11,
 } upb_EncodeStatus;
-// LINT.ThenChange(//depot/google3/third_party/upb/rust/sys/wire/wire.rs:encode_status)
+// LINT.ThenChange(rust/upb/sys/wire/wire.rs:encode_status)
 
 UPB_NODISCARD UPB_INLINE uint32_t upb_EncodeOptions_MaxDepth(uint16_t depth) {
   return (uint32_t)depth << 16;

@@ -8,23 +8,27 @@
 //! UPB FFI wrapper code for use by Rust Protobuf.
 
 pub mod conversions;
+#[cfg(not(lite_runtime))]
 pub mod def_pool;
 pub mod extension;
 pub mod interop;
 pub mod map;
 pub mod message;
 pub mod minitable;
+#[cfg(not(lite_runtime))]
 pub mod reflection;
 pub mod repeated;
 pub mod string;
 
 pub use conversions::*;
+#[cfg(not(lite_runtime))]
 pub use def_pool::*;
 pub use extension::*;
 pub use interop::*;
 pub use map::*;
 pub use message::*;
 pub use minitable::*;
+#[cfg(not(lite_runtime))]
 pub use reflection::*;
 pub use repeated::*;
 pub use string::*;
@@ -51,9 +55,9 @@ use crate::upb;
 
 // The upb `reflection` crate is renamed so that it does not clash with this kernel's own
 // `reflection` module.
-#[cfg(bzl)]
+#[cfg(all(bzl, not(lite_runtime)))]
 extern crate reflection as upb_reflection;
-#[cfg(not(bzl))]
+#[cfg(all(not(bzl), not(lite_runtime)))]
 use crate::upb::reflection as upb_reflection;
 
 pub use upb::Arena;

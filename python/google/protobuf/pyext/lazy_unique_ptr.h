@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYEXT_LAZY_UNIQUE_PTR_H_
-#define THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYEXT_LAZY_UNIQUE_PTR_H_
+#ifndef GOOGLE_PROTOBUF_PYEXT_LAZY_UNIQUE_PTR_H__
+#define GOOGLE_PROTOBUF_PYEXT_LAZY_UNIQUE_PTR_H__
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
@@ -108,4 +108,4 @@ T* LazyUniquePtr<T>::Get() {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYEXT_LAZY_UNIQUE_PTR_H_
+#endif  // GOOGLE_PROTOBUF_PYEXT_LAZY_UNIQUE_PTR_H__

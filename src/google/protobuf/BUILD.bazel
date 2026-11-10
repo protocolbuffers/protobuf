@@ -2539,6 +2539,7 @@ cc_test(
         "//src/google/protobuf/io:tokenizer",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
+        "//src/google/protobuf/testing:protobuf_test",
         "//src/google/protobuf/util:differencer",
         "//src/google/protobuf/util:time_util",
         "@abseil-cpp//absl/base",

@@ -54,8 +54,6 @@
 extern "C" {
 #endif
 
-// LINT.IfChange(presence_logic)
-
 // Hasbit access ///////////////////////////////////////////////////////////////
 
 UPB_INLINE bool UPB_PRIVATE(_upb_Message_GetHasbitFromOffset)(
@@ -143,8 +141,6 @@ UPB_API_INLINE const upb_MiniTableField* upb_Message_WhichOneof(
   return upb_MiniTable_FindFieldByNumber(m, field_number);
 }
 
-// LINT.ThenChange(GoogleInternalName2)
-
 // Returns false if the message is missing any of its required fields.
 UPB_INLINE bool UPB_PRIVATE(_upb_Message_IsInitializedShallow)(
     const struct upb_Message* msg, const upb_MiniTable* m) {
@@ -154,7 +150,6 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_IsInitializedShallow)(
   return (UPB_PRIVATE(_upb_MiniTable_RequiredMask)(m) & ~bits) == 0;
 }
 
-// LINT.IfChange(message_raw_fields)
 UPB_INLINE void* UPB_PRIVATE(_upb_Message_MutableDataPtr)(
     struct upb_Message* msg, const upb_MiniTableField* f) {
   return (char*)msg + f->UPB_ONLYBITS(offset);
@@ -173,8 +168,6 @@ UPB_INLINE void UPB_PRIVATE(_upb_Message_SetPresence)(
     UPB_PRIVATE(_upb_Message_SetOneofCase)(msg, f);
   }
 }
-
-// LINT.ThenChange(//depot/google3/third_party/upb/bits/golang/message.go:message_raw_fields)
 
 // Here we define universal getter/setter functions for message fields.
 // These look very branchy and inefficient, but as long as the MiniTableField

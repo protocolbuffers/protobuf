@@ -68,15 +68,17 @@ core::arch::global_asm!(
 // EXTENSION_MINI_TABLE_TO_DEF_INITS registry; this is used for reflection.
 //
 // Registered the same way as EXTENSIONS.
+#[cfg(not(lite_runtime))]
 pub struct ExtensionMiniTableToDefInit {
     pub mini_table: &'static LazyLock<MiniTableExtensionInitPtr>,
     pub def_init: fn() -> DefPoolInit,
 }
 
+#[cfg(not(lite_runtime))]
 #[linkme::distributed_slice]
 pub static EXTENSION_MINI_TABLE_TO_DEF_INITS: [ExtensionMiniTableToDefInit];
 
-#[cfg(all(target_family = "unix", not(target_vendor = "apple")))]
+#[cfg(all(not(lite_runtime), target_family = "unix", not(target_vendor = "apple")))]
 core::arch::global_asm!(
     r#"
     .section linkme_EXTENSION_MINI_TABLE_TO_DEF_INITS,"awR",@progbits
@@ -92,6 +94,13 @@ core::arch::global_asm!(
 );
 
 pub fn generated_extension_registry() -> RawExtensionRegistry {
+    // SAFETY:
+    // - `THREAD_LOCAL_ARENA` is `ManuallyDrop` and never freed, so the registry allocated on it
+    //   stays valid for the rest of the process, even after the initializing thread exits.
+    // - `LazyLock` runs this initializer once, and every `upb_ExtensionRegistry_Add` happens before
+    //   any caller can read the registry.
+    // - Each `extension.0` forces that extension's `LazyLock`, yielding a fully built
+    //   `upb_MiniTableExtension` that lives for the rest of the process.
     static EXTENSIONS_REGISTRY: LazyLock<ExtensionRegistryInitPtr> = LazyLock::new(|| unsafe {
         let registry = upb_ExtensionRegistry_New(THREAD_LOCAL_ARENA.with(|a| a.raw()));
         for extension in EXTENSIONS {

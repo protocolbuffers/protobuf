@@ -86,9 +86,7 @@ struct MapIterator {
   uint64_t version;
 };
 
-const Message* MapContainer::GetReadOnlyMessage() {
-  return parent->DeprecatedUnguardedMessage();
-}
+const Message* MapContainer::GetReadOnlyMessage() { return parent->message; }
 
 Message* MapContainer::GetMutableMessage() {
   return cmessage::AssureWritable(parent);
@@ -301,7 +299,7 @@ static MapContainer* GetMap(PyObject* obj) {
 
 Py_ssize_t MapReflectionFriend::Length(PyObject* _self) {
   MapContainer* self = GetMap(_self);
-  const google::protobuf::Message* message = self->parent->DeprecatedUnguardedMessage();
+  const google::protobuf::Message* message = self->parent->message;
   auto map =
       message->GetReflection()->GetMap(*message, self->parent_field_descriptor);
   return map.ok() ? map->size() : 0;
@@ -341,8 +339,7 @@ PyObject* MapReflectionFriend::MergeFrom(PyObject* _self, PyObject* arg) {
   }
   Message* message = self->GetMutableMessage();
   if (message == nullptr) return nullptr;
-  const Message* other_message =
-      other_map->parent->DeprecatedUnguardedMessage();
+  const Message* other_message = other_map->parent->message;
   const Reflection* reflection = message->GetReflection();
   const Reflection* other_reflection = other_message->GetReflection();
   internal::MapFieldBase* field =
@@ -391,7 +388,7 @@ PyObject* MapReflectionFriend::MergeFrom(PyObject* _self, PyObject* arg) {
 int MapReflectionFriend::Contains(PyObject* _self, PyObject* key) {
   MapContainer* self = GetMap(_self);
 
-  const Message* message = self->parent->DeprecatedUnguardedMessage();
+  const Message* message = self->parent->message;
   const Reflection* reflection = message->GetReflection();
   MapKey map_key;
 
@@ -411,7 +408,7 @@ int MapReflectionFriend::Contains(PyObject* _self, PyObject* key) {
 
 MapContainer* NewScalarMapContainer(
     CMessage* parent, const google::protobuf::FieldDescriptor* parent_field_descriptor) {
-  if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent)) {
+  if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
     return nullptr;
   }
 
@@ -664,7 +661,7 @@ static PyObject* GetCMessage(MessageMapContainer* self, const Message* message,
 MessageMapContainer* NewMessageMapContainer(
     CMessage* parent, const google::protobuf::FieldDescriptor* parent_field_descriptor,
     CMessageClass* message_class) {
-  if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent)) {
+  if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
     return nullptr;
   }
 

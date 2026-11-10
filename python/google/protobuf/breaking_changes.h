@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef THIRD_PARTY_PY_GOOGLE_PROTOBUF_BREAKING_CHANGES_H_
-#define THIRD_PARTY_PY_GOOGLE_PROTOBUF_BREAKING_CHANGES_H_
+#ifndef GOOGLE_PROTOBUF_BREAKING_CHANGES_H__
+#define GOOGLE_PROTOBUF_BREAKING_CHANGES_H__
 
 // Future versions of Protobuf Python will include breaking changes.
 // This file tracks Python-specific breaking changes that need to wait,
@@ -28,4 +28,4 @@
 
 #endif
 
-#endif  // THIRD_PARTY_PY_GOOGLE_PROTOBUF_BREAKING_CHANGES_H_
+#endif  // GOOGLE_PROTOBUF_BREAKING_CHANGES_H__

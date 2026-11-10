@@ -538,61 +538,60 @@ static constexpr const ::_pb::EnumDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABL
     file_level_enum_descriptors_google_2fprotobuf_2fapi_2eproto = nullptr;
 static constexpr const ::_pb::ServiceDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fapi_2eproto = nullptr;
-const ::uint32_t
-    TableStruct_google_2fprotobuf_2fapi_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-        protodesc_cold) = {
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_._has_bits_),
-        11, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.name_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.methods_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.options_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.version_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.source_context_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.mixins_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.syntax_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.edition_),
-        3,
-        0,
-        1,
-        4,
-        6,
-        2,
-        7,
-        5,
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_._has_bits_),
-        11, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.name_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.request_type_url_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.request_streaming_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.response_type_url_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.response_streaming_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.options_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.syntax_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.edition_),
-        1,
-        2,
-        5,
-        3,
-        6,
-        0,
-        7,
-        4,
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Mixin, _impl_._has_bits_),
-        5, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Mixin, _impl_.name_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Mixin, _impl_.root_),
-        0,
-        1,
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+const ::uint32_t TableStruct_google_2fprotobuf_2fapi_2eproto::offsets[] = {
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_._has_bits_),
+    11, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.name_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.methods_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.options_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.version_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.source_context_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.mixins_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.syntax_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.edition_),
+    3,
+    0,
+    1,
+    4,
+    6,
+    2,
+    7,
+    5,
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_._has_bits_),
+    11, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.name_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.request_type_url_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.request_streaming_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.response_type_url_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.response_streaming_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.options_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.syntax_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.edition_),
+    1,
+    2,
+    5,
+    3,
+    6,
+    0,
+    7,
+    4,
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Mixin, _impl_._has_bits_),
+    5, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Mixin, _impl_.name_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Mixin, _impl_.root_),
+    0,
+    1,
 };
 
-static const ::_pbi::MigrationSchema
-    schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-        {0, sizeof(::google::protobuf::Api)},
-        {19, sizeof(::google::protobuf::Method)},
-        {38, sizeof(::google::protobuf::Mixin)},
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+static const ::_pbi::MigrationSchema schemas[] = {
+    {0, sizeof(::google::protobuf::Api)},
+    {19, sizeof(::google::protobuf::Method)},
+    {38, sizeof(::google::protobuf::Mixin)},
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
@@ -600,8 +599,8 @@ static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
         &::google::protobuf::Method_globals_,
         &::google::protobuf::Mixin_globals_,
 };
-const char descriptor_table_protodef_google_2fprotobuf_2fapi_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-    protodesc_cold) = {
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+const char descriptor_table_protodef_google_2fprotobuf_2fapi_2eproto[] = {
     "\n\031google/protobuf/api.proto\022\017google.prot"
     "obuf\032$google/protobuf/source_context.pro"
     "to\032\032google/protobuf/type.proto\"\222\002\n\003Api\022\014"

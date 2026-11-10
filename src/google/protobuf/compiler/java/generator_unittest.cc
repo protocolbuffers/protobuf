@@ -338,6 +338,119 @@ TEST_F(JavaGeneratorTest, LargeOpenEnumAllowedEdition2024) {
   ExpectNoErrors();
 }
 
+TEST_F(JavaGeneratorTest, LargeEnumUsesLazyInternalValueMapHolder) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2024";
+    package proto2_unittest;
+    import "third_party/java/protobuf/java_features.proto";
+
+    enum Bar {
+      option features.(pb.java).large_enum = true;
+
+      AAA = 0;
+      BBB = 1;
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_out=lite:$tmpdir "
+      "foo.proto --experimental_editions");
+
+  ExpectNoErrors();
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "proto2_unittest/Bar.java"));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX "proto2_unittest/Bar.java",
+                                    "return InternalValueMap.INSTANCE;"));
+  EXPECT_TRUE(
+      FileContainsSubstring(PACKAGE_PREFIX "proto2_unittest/Bar.java",
+                            "private static final class InternalValueMap"));
+  EXPECT_FALSE(FileContainsSubstring(PACKAGE_PREFIX "proto2_unittest/Bar.java",
+                                     "internalValueMap"));
+}
+
+TEST_F(JavaGeneratorTest, LargeEnumAliasesEmittedInSameShardAsCanonical) {
+  std::string schema = R"schema(
+    edition = "2024";
+    package proto2_unittest;
+    import "third_party/java/protobuf/java_features.proto";
+    enum BigAliasedEnum {
+      option allow_alias = true;
+      option features.(pb.java).large_enum = true;
+  )schema";
+  for (int i = 0; i <= 1996; ++i) {
+    absl::StrAppend(&schema, "  VAL", i, " = ", i, ";\n");
+  }
+  absl::StrAppend(
+      &schema,
+      "  VAL1_ALIAS = 1;\n  VAL998_ALIAS = 998;\n  VAL1995_ALIAS = 1995;\n}\n");
+  CreateTempFile("big_aliased.proto", schema);
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir "
+      "big_aliased.proto --experimental_editions");
+
+  ExpectNoErrors();
+  EXPECT_TRUE(
+      FileGenerated(PACKAGE_PREFIX "proto2_unittest/BigAliasedEnum.java"));
+  // VAL1_ALIAS, VAL998_ALIAS, and VAL1995_ALIAS must be emitted in the same
+  // shard as their canonical values using direct same-interface references
+  // rather than cross-interface references:
+  // - BigAliasedEnum0 has 999 constants (VAL0..VAL997 plus VAL1_ALIAS), because
+  //   (VAL998, VAL998_ALIAS) has group_size = 2 (999 + 2 > 1000) and is pushed
+  //   to the start of BigAliasedEnum1.
+  // - BigAliasedEnum1 has 1000 constants (VAL998..VAL1995 plus VAL998_ALIAS and
+  //   VAL1995_ALIAS), because (VAL1995, VAL1995_ALIAS) starts at size 998
+  //   (998 + 2 == 1000 <= 1000) and fits at the end of BigAliasedEnum1, while
+  //   VAL1996 starts BigAliasedEnum2.
+  EXPECT_TRUE(FileContainsSubstring(
+      PACKAGE_PREFIX "proto2_unittest/BigAliasedEnum.java",
+      "public static final BigAliasedEnum VAL1_ALIAS = VAL1;"));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX
+                                    "proto2_unittest/BigAliasedEnum.java",
+                                    R"(VAL996, VAL997
+    };
+  }
+}
+interface BigAliasedEnum1 {
+
+  /**
+   * <code>VAL998 = 998;</code>
+   */
+  public static final BigAliasedEnum VAL998 = new BigAliasedEnum(998, 998, "VAL998");
+  public static final int VAL998_VALUE = 998;
+  /**
+   * <code>VAL998_ALIAS = 998;</code>
+   */
+  public static final BigAliasedEnum VAL998_ALIAS = VAL998;
+  public static final int VAL998_ALIAS_VALUE = 998;)"));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX
+                                    "proto2_unittest/BigAliasedEnum.java",
+                                    R"(VAL1994, VAL1995
+    };
+  }
+}
+interface BigAliasedEnum2 {
+
+  /**
+   * <code>VAL1996 = 1996;</code>
+   */
+  public static final BigAliasedEnum VAL1996 = new BigAliasedEnum(1996, 1996, "VAL1996");)"));
+  EXPECT_TRUE(FileContainsSubstring(
+      PACKAGE_PREFIX "proto2_unittest/BigAliasedEnum.java",
+      "public static final BigAliasedEnum VAL1995_ALIAS = VAL1995;"));
+  EXPECT_FALSE(FileContainsSubstring(PACKAGE_PREFIX
+                                     "proto2_unittest/BigAliasedEnum.java",
+                                     "interface BigAliasedEnum3"));
+  EXPECT_FALSE(FileContainsSubstring(PACKAGE_PREFIX
+                                     "proto2_unittest/BigAliasedEnum.java",
+                                     "BigAliasedEnum0.VAL1"));
+  EXPECT_FALSE(FileContainsSubstring(PACKAGE_PREFIX
+                                     "proto2_unittest/BigAliasedEnum.java",
+                                     "BigAliasedEnum0.VAL998"));
+  EXPECT_FALSE(FileContainsSubstring(PACKAGE_PREFIX
+                                     "proto2_unittest/BigAliasedEnum.java",
+                                     "BigAliasedEnum1.VAL998"));
+}
 struct OpenEnumUnrecognizedTestCase {
   absl::string_view test_name;
   bool lite;

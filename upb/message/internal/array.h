@@ -26,8 +26,6 @@ extern "C" {
 
 #define _UPB_ARRAY_DEFAULT_INITIAL_SIZE 4
 
-// LINT.IfChange(upb_Array)
-
 // Our internal representation for repeated fields.
 struct upb_Array {
   // This is a tagged pointer. Bits #0 and #1 encode the elem size as follows:
@@ -96,8 +94,6 @@ UPB_API_INLINE const void* upb_Array_DataPtr(const struct upb_Array* array) {
 UPB_API_INLINE void* upb_Array_MutableDataPtr(struct upb_Array* array) {
   return (void*)upb_Array_DataPtr(array);
 }
-
-// LINT.ThenChange(GoogleInternalName0)
 
 UPB_NODISCARD UPB_INLINE struct upb_Array* UPB_PRIVATE(
     _upb_Array_NewMaybeAllowSlow)(upb_Arena* arena, size_t init_capacity,

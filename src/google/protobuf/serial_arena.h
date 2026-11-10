@@ -231,8 +231,7 @@ class PROTOBUF_EXPORT SerialArena {
   PROTOBUF_ALWAYS_INLINE
   void* AllocateAlignedWithCleanup(size_t n, size_t align,
                                    void (*destructor)(void*)) {
-    auto align_as = align <= ArenaAlignDefault::align ? ArenaAlignDefault{}
-                                                      : ArenaAlignAs(align);
+    auto align_as = ArenaAlignAs(std::max(align, ArenaAlignDefault::align));
     n = align_as.Ceil(n);
     char* ret = align_as.CeilDefaultAligned(ptr());
     // See the comment in MaybeAllocateAligned re uintptr_t.

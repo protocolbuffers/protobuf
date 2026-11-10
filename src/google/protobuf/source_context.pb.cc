@@ -162,26 +162,25 @@ static constexpr const ::_pb::EnumDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABL
     file_level_enum_descriptors_google_2fprotobuf_2fsource_5fcontext_2eproto = nullptr;
 static constexpr const ::_pb::ServiceDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fsource_5fcontext_2eproto = nullptr;
-const ::uint32_t
-    TableStruct_google_2fprotobuf_2fsource_5fcontext_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-        protodesc_cold) = {
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceContext, _impl_._has_bits_),
-        4, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceContext, _impl_.file_name_),
-        0,
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+const ::uint32_t TableStruct_google_2fprotobuf_2fsource_5fcontext_2eproto::offsets[] = {
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceContext, _impl_._has_bits_),
+    4, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceContext, _impl_.file_name_),
+    0,
 };
 
-static const ::_pbi::MigrationSchema
-    schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-        {0, sizeof(::google::protobuf::SourceContext)},
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+static const ::_pbi::MigrationSchema schemas[] = {
+    {0, sizeof(::google::protobuf::SourceContext)},
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
         &::google::protobuf::SourceContext_globals_,
 };
-const char descriptor_table_protodef_google_2fprotobuf_2fsource_5fcontext_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-    protodesc_cold) = {
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+const char descriptor_table_protodef_google_2fprotobuf_2fsource_5fcontext_2eproto[] = {
     "\n$google/protobuf/source_context.proto\022\017"
     "google.protobuf\"\"\n\rSourceContext\022\021\n\tfile"
     "_name\030\001 \001(\tB\212\001\n\023com.google.protobufB\022Sou"

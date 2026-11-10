@@ -27,6 +27,7 @@
 #include "google/protobuf/map_proto2_unittest.pb.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/reflection_tester.h"
+#include "google/protobuf/testing/protobuf_test.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
 
@@ -238,17 +239,68 @@ TEST(MapTest, LoadFactorCalculationWorks) {
   //  - large
 
   const auto calculate = MapTestPeer::CalculateHiCutoff;
-  // empty
-  EXPECT_EQ(calculate(kGlobalEmptyTableSize), 0);
+  // single bucket
+  EXPECT_EQ(calculate(1), kMapSooBucketMaxLength);
+
+  // We skip 2 because we can't have two buckets.
+  // We go from single-bucket to 4 buckets.
 
   // small
-  EXPECT_EQ(calculate(2), 2);
   EXPECT_EQ(calculate(4), 4);
   EXPECT_EQ(calculate(8), 8);
 
   // large
   for (int i = 16; i < 10000; i *= 2) {
     EXPECT_EQ(calculate(i), .75 * i) << "i=" << i;
+  }
+}
+
+PB_TEST(MapSooTest, ParseUsesSingleBucketForSmallSizes) {
+  const int count = PB_TEST_CHOOSE_VALUE((1, 2, 3));
+  const bool expect_single_bucket =
+      count <= static_cast<int>(kMapSooBucketMaxLength);
+  TestMap input;
+  for (int i = 0; i < count; ++i) {
+    (*input.mutable_map_int32_int32())[i] = i;
+  }
+  const std::string serialized = input.SerializeAsString();
+
+  Arena the_arena;
+  Arena* arena =
+      PB_TEST_CHOOSE_VALUE((nullptr, &the_arena), {"no_arena", "arena"});
+  auto parsed = Arena::MakeUnique<TestMap>(arena);
+  ASSERT_TRUE(parsed->ParseFromString(serialized));
+  EXPECT_EQ(parsed->map_int32_int32().size(), static_cast<size_t>(count));
+  if (expect_single_bucket) {
+    EXPECT_TRUE(MapTestPeer::IsSingleBucket(parsed->map_int32_int32()));
+    EXPECT_EQ(MapTestPeer::NumBuckets(parsed->map_int32_int32()), size_t{1});
+  } else {
+    EXPECT_FALSE(MapTestPeer::IsSingleBucket(parsed->map_int32_int32()));
+    EXPECT_GT(MapTestPeer::NumBuckets(parsed->map_int32_int32()), size_t{1});
+  }
+}
+
+PB_TEST(MapSooTest, MergeUsesSingleBucketForSmallSizes) {
+  const int count = PB_TEST_CHOOSE_VALUE((1, 2, 3));
+  const bool expect_single_bucket =
+      count <= static_cast<int>(kMapSooBucketMaxLength);
+  TestMap input;
+  for (int i = 0; i < count; ++i) {
+    (*input.mutable_map_int32_int32())[i] = i;
+  }
+
+  Arena the_arena;
+  Arena* arena =
+      PB_TEST_CHOOSE_VALUE((nullptr, &the_arena), {"no_arena", "arena"});
+  auto merged = Arena::MakeUnique<TestMap>(arena);
+  merged->MergeFrom(input);
+  EXPECT_EQ(merged->map_int32_int32().size(), static_cast<size_t>(count));
+  if (expect_single_bucket) {
+    EXPECT_TRUE(MapTestPeer::IsSingleBucket(merged->map_int32_int32()));
+    EXPECT_EQ(MapTestPeer::NumBuckets(merged->map_int32_int32()), size_t{1});
+  } else {
+    EXPECT_FALSE(MapTestPeer::IsSingleBucket(merged->map_int32_int32()));
+    EXPECT_GT(MapTestPeer::NumBuckets(merged->map_int32_int32()), size_t{1});
   }
 }
 

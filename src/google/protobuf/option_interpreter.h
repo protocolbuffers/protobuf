@@ -14,6 +14,8 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/functional/function_ref.h"
+#include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_builder.h"
 #include "google/protobuf/dynamic_message.h"
@@ -70,21 +72,25 @@ class OptionInterpreter {
 
   ~OptionInterpreter();
 
-  // Interprets the uninterpreted options in the specified Options message.
+  // Interprets the uninterpreted options in the specified Options messages.
   // On error, calls AddError() on the underlying builder and returns false.
   // Otherwise returns true.
-  bool InterpretOptionExtensions(OptionsToInterpret* options_to_interpret);
+  bool InterpretOptionExtensions(
+      absl::Span<OptionsToInterpret> options_to_interpret);
 
   // Interprets the uninterpreted feature options in the specified Options
-  // message. On error, calls AddError() on the underlying builder and returns
+  // messages. On error, calls AddError() on the underlying builder and returns
   // false. Otherwise returns true.
-  bool InterpretNonExtensionOptions(OptionsToInterpret* options_to_interpret);
+  bool InterpretNonExtensionOptions(
+      absl::Span<OptionsToInterpret> options_to_interpret);
 
   // Updates the given source code info by re-writing uninterpreted option
   // locations to refer to the corresponding interpreted option.
   void UpdateSourceCodeInfo(SourceCodeInfo* info);
 
  private:
+  bool InterpretOptionsSpan(absl::Span<OptionsToInterpret> options_to_interpret,
+                            bool skip_extensions);
   bool InterpretOptionsImpl(OptionsToInterpret* options_to_interpret,
                             bool skip_extensions);
 
@@ -265,9 +271,11 @@ class OptionInterpreter {
   // index portion of the element path when interpreting a single option.
   absl::flat_hash_map<SourceCodePath, int> repeated_option_counts_;
 
-  // Factory used to create the dynamic messages we need to parse
-  // any aggregate option values we encounter.
-  DynamicMessageFactory dynamic_factory_;
+  // Factory used to create the dynamic messages we need to parse any aggregate
+  // option values we encounter. Scoped to each InterpretOptionsSpan() call so
+  // prototypes cached before PostProcessFieldFeatures() cannot be reused in
+  // later passes after field representations (e.g., ctype) change.
+  absl::optional<DynamicMessageFactory> dynamic_factory_;
 
   // Accumulates all sub-field locations gathered during aggregate option
   // interpretation.

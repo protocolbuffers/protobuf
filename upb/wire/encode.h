@@ -55,7 +55,7 @@ typedef enum {
   // The message is larger than protobuf's 2GB size limit.
   kUpb_EncodeStatus_MaxSizeExceeded = 11,
 } upb_EncodeStatus;
-// LINT.ThenChange(//depot/google3/third_party/upb/rust/sys/wire/wire.rs:encode_status)
+// LINT.ThenChange(rust/upb/sys/wire/wire.rs:encode_status)
 
 UPB_NODISCARD UPB_INLINE uint32_t upb_EncodeOptions_MaxDepth(uint16_t depth) {
   return (uint32_t)depth << 16;

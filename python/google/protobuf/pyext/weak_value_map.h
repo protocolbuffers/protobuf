@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYEXT_WEAK_VALUE_MAP_H_
-#define THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYEXT_WEAK_VALUE_MAP_H_
+#ifndef GOOGLE_PROTOBUF_PYEXT_WEAK_VALUE_MAP_H__
+#define GOOGLE_PROTOBUF_PYEXT_WEAK_VALUE_MAP_H__
 
 #include <atomic>
 #include <memory>
@@ -158,4 +158,4 @@ void PyWeakValueMap::ForEach(Func&& func) {
 
 #endif
 
-#endif  // THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYEXT_WEAK_VALUE_MAP_H_
+#endif  // GOOGLE_PROTOBUF_PYEXT_WEAK_VALUE_MAP_H__

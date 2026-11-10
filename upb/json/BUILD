@@ -57,6 +57,8 @@ cc_test(
         "//:any_upb_proto",
         "//:field_mask_upb_proto",
         "//:struct_upb_proto",
+        "//:timestamp_upb_proto",
+        "//:timestamp_upb_reflection_proto",
         "//upb/base",
         "//upb/mem",
         "//upb/message",

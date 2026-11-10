@@ -5898,11 +5898,8 @@ PROTOBUF_NOINLINE FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
   if (!has_errors()) {
     OptionInterpreter option_interpreter(
         this, /*update_source_code_info=*/info != nullptr);
-    for (std::vector<OptionsToInterpret>::iterator iter =
-             options_to_interpret_.begin();
-         iter != options_to_interpret_.end(); ++iter) {
-      option_interpreter.InterpretNonExtensionOptions(&(*iter));
-    }
+    option_interpreter.InterpretNonExtensionOptions(
+        absl::MakeSpan(options_to_interpret_));
 
     // Handle feature resolution.  This must occur after option interpretation,
     // but before validation.
@@ -5934,11 +5931,8 @@ PROTOBUF_NOINLINE FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
     // Interpret any remaining uninterpreted options gathered into
     // options_to_interpret_ during descriptor building.  Cross-linking has made
     // extension options known, so all interpretations should now succeed.
-    for (std::vector<OptionsToInterpret>::iterator iter =
-             options_to_interpret_.begin();
-         iter != options_to_interpret_.end(); ++iter) {
-      option_interpreter.InterpretOptionExtensions(&(*iter));
-    }
+    option_interpreter.InterpretOptionExtensions(
+        absl::MakeSpan(options_to_interpret_));
     options_to_interpret_.clear();
     if (info != nullptr) {
       option_interpreter.UpdateSourceCodeInfo(info);

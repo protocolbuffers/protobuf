@@ -42,7 +42,7 @@ struct FfiMapValue {
     google::protobuf::MessageLite* message;
   };
 };
-// LINT.ThenChange(//depot/google3/third_party/protobuf/rust/cpp_kernel/map.rs:map_ffi)
+// LINT.ThenChange(rust/cpp_kernel/map.rs:map_ffi)
 
 template <typename T>
 struct FromViewType {

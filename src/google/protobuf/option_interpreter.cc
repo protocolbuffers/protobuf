@@ -69,12 +69,30 @@ OptionInterpreter::OptionInterpreter(DescriptorBuilder* builder,
 OptionInterpreter::~OptionInterpreter() = default;
 
 bool OptionInterpreter::InterpretOptionExtensions(
-    OptionsToInterpret* options_to_interpret) {
-  return InterpretOptionsImpl(options_to_interpret, /*skip_extensions=*/false);
+    absl::Span<OptionsToInterpret> options_to_interpret) {
+  return InterpretOptionsSpan(options_to_interpret, /*skip_extensions=*/false);
 }
+
 bool OptionInterpreter::InterpretNonExtensionOptions(
-    OptionsToInterpret* options_to_interpret) {
-  return InterpretOptionsImpl(options_to_interpret, /*skip_extensions=*/true);
+    absl::Span<OptionsToInterpret> options_to_interpret) {
+  return InterpretOptionsSpan(options_to_interpret, /*skip_extensions=*/true);
+}
+
+bool OptionInterpreter::InterpretOptionsSpan(
+    absl::Span<OptionsToInterpret> options_to_interpret, bool skip_extensions) {
+  // PostProcessFieldFeatures() between passes can change field representations
+  // (e.g., ctype) of message types defined in the current file, invalidating
+  // prototypes cached during the non-extension pass. Keep the factory scoped
+  // to each pass so stale prototypes cannot be reused.
+  dynamic_factory_.emplace();
+  bool success = true;
+  for (OptionsToInterpret& opt : options_to_interpret) {
+    if (!InterpretOptionsImpl(&opt, skip_extensions)) {
+      success = false;
+    }
+  }
+  dynamic_factory_.reset();
+  return success;
 }
 bool OptionInterpreter::InterpretOptionsImpl(
     OptionsToInterpret* options_to_interpret, bool skip_extensions) {
@@ -1045,7 +1063,8 @@ bool OptionInterpreter::SetAggregateOption(const FieldDescriptor* option_field,
   }
 
   const Descriptor* type = option_field->message_type();
-  std::unique_ptr<Message> dynamic(dynamic_factory_.GetPrototype(type)->New());
+  ABSL_CHECK(dynamic_factory_.has_value());
+  std::unique_ptr<Message> dynamic(dynamic_factory_->GetPrototype(type)->New());
   ABSL_CHECK(dynamic.get() != nullptr)
       << "Could not create an instance of " << option_field->DebugString();
 
@@ -1228,8 +1247,9 @@ bool OptionInterpreter::MaybeCollectAnyFieldInAggregateOption(
   // and serialized back to a binary string stored in `Any.value`. We need to
   // reparse it here to inspect its fields with reflection and recursively
   // collect source locations.
+  ABSL_CHECK(dynamic_factory_.has_value());
   std::unique_ptr<Message> sub_message(
-      dynamic_factory_.GetPrototype(sub_desc)->New());
+      dynamic_factory_->GetPrototype(sub_desc)->New());
   ABSL_CHECK(sub_message != nullptr)
       << "Failed to create prototype for Any message type: " << full_type_name;
   ABSL_CHECK(sub_message->ParseFromString(
