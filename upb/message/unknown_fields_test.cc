@@ -21,12 +21,19 @@
 #include "upb/base/string_view.h"
 #include "upb/base/upcast.h"
 #include "upb/mem/arena.h"
+#include "upb/mem/arena.hpp"
+#include "upb/message/array.h"
 #include "upb/message/internal/accessors.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/message.h"
 #include "upb/message/test.upb.h"
 #include "upb/message/test.upb_minitable.h"
 #include "upb/mini_table/extension.h"
+#include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
+#include "upb/mini_table/internal/message.h"
+#include "upb/mini_table/internal/sub.h"
+#include "upb/mini_table/message.h"
 #include "upb/port/sanitizers.h"
 #include "upb/test/test.upb.h"
 #include "upb/test/test.upb_minitable.h"
@@ -303,6 +310,114 @@ TEST(GeneratedCode, MessageUnknown_Encode_NonCanonicalMessageSetExtension) {
   EXPECT_GT(view.size, 0);
 
   upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, NonCanonicalFreestandingField) {
+  upb::Arena arena;
+
+  // A freestanding copy of a regular field of another message, with no offset
+  // or presence, like upb_Message_Convert() synthesizes for a dropped field.
+  const upb_MiniTableField* src_f =
+      upb_MiniTable_FindFieldByNumber(&upb_0test__MessageSetMember_msg_init, 1);
+  ASSERT_NE(src_f, nullptr);
+  ASSERT_FALSE(upb_MiniTableField_IsExtension(src_f));
+  upb_MiniTableField f = *src_f;
+  f.UPB_PRIVATE(offset) = 0;
+  f.presence = 0;
+
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+  upb_AuxField* ext = UPB_PRIVATE(_upb_Message_CreateUnknownField)(
+      UPB_UPCAST(msg), &f, arena.ptr());
+  ASSERT_NE(ext, nullptr);
+  upb_MessageValue val;
+  val.int32_val = 42;
+  upb_Extension_SetValue(ext, val);
+
+  // It is an unknown field described by the freestanding field.
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(UPB_UPCAST(msg), &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_AuxField);
+  const upb_AuxField* unknown_ext = unknown.value.aux_field;
+  EXPECT_EQ(unknown_ext, ext);
+  EXPECT_EQ(upb_Extension_MiniTableField(unknown_ext), &f);
+  EXPECT_FALSE(upb_Message_NextUnknown2(UPB_UPCAST(msg), &unknown, &iter));
+  EXPECT_EQ(upb_Message_ExtensionCount(UPB_UPCAST(msg)), 0u);
+
+  // It is encoded as a regular field: tag 1 (varint), value 42.
+  const std::string expected("\x08\x2a");
+  char* buf;
+  size_t size;
+  ASSERT_EQ(
+      upb_Encode(UPB_UPCAST(msg), &upb_0test__ModelWithExtensions_msg_init, 0,
+                 arena.ptr(), &buf, &size),
+      kUpb_EncodeStatus_Ok);
+  EXPECT_EQ(std::string(buf, size), expected);
+
+  upb_StringView view;
+  ASSERT_EQ(upb_EncodeExtension(unknown_ext, arena.ptr(), &view,
+                                /*encode_options=*/0),
+            kUpb_EncodeStatus_Ok);
+  EXPECT_EQ(std::string(view.data, view.size), expected);
+}
+
+TEST(GeneratedCode, NonCanonicalFreestandingFieldInMessageSet) {
+  upb::Arena arena;
+
+  // A freestanding copy of a singular sub-message field of another message,
+  // like upb_Message_Convert() synthesizes for a dropped field: no offset or
+  // presence, and its sub copied right after it.
+  const upb_MiniTableField* src_f =
+      upb_MiniTable_FindFieldByNumber(&upb_0test__TestFreeze_msg_init, 2);
+  ASSERT_NE(src_f, nullptr);
+  ASSERT_FALSE(upb_MiniTableField_IsExtension(src_f));
+  ASSERT_TRUE(upb_MiniTableField_IsScalar(src_f));
+  ASSERT_EQ(upb_MiniTableField_CType(src_f), kUpb_CType_Message);
+  struct FieldWithSub {
+    upb_MiniTableField field;
+    upb_MiniTableSubInternal sub;
+  } f;
+  static_assert(offsetof(FieldWithSub, sub) % kUpb_SubmsgOffsetBytes == 0);
+  f.field = *src_f;
+  f.field.UPB_PRIVATE(offset) = 0;
+  f.field.presence = 0;
+  f.sub = *UPB_PRIVATE(_upb_MiniTableField_Sub)(src_f);
+  f.field.UPB_PRIVATE(submsg_ofs) =
+      offsetof(FieldWithSub, sub) / kUpb_SubmsgOffsetBytes;
+  ASSERT_EQ(upb_MiniTable_SubMessage(&f.field),
+            &upb_0test__TestFreeze_msg_init);
+
+  // Hold it in a MessageSet. The entry is not an extension field, so it must
+  // be encoded as a regular field rather than as a MessageSet item.
+  ASSERT_TRUE(upb_MiniTable_IsMessageSet(&upb_0test__TestMessageSet_msg_init));
+  upb_test_TestMessageSet* msg = upb_test_TestMessageSet_new(arena.ptr());
+  upb_AuxField* ext = UPB_PRIVATE(_upb_Message_CreateUnknownField)(
+      UPB_UPCAST(msg), &f.field, arena.ptr());
+  ASSERT_NE(ext, nullptr);
+  EXPECT_FALSE(UPB_PRIVATE(_upb_Extension_IsMessageSetItem)(ext));
+  upb_test_TestFreeze* sub = upb_test_TestFreeze_new(arena.ptr());
+  upb_test_TestFreeze_set_str(sub, upb_StringView_FromString("hi"));
+  upb_MessageValue val;
+  val.msg_val = UPB_UPCAST(sub);
+  upb_Extension_SetValue(ext, val);
+
+  // Tag 2 (delimited), length 4, then the sub-message: tag 1 (delimited),
+  // length 2, "hi". A MessageSet item would start with the group start tag
+  // of field 1 (0x0b) instead.
+  const std::string expected("\x12\x04\x0a\x02hi", 6);
+  char* buf;
+  size_t size;
+  ASSERT_EQ(upb_Encode(UPB_UPCAST(msg), &upb_0test__TestMessageSet_msg_init, 0,
+                       arena.ptr(), &buf, &size),
+            kUpb_EncodeStatus_Ok);
+  EXPECT_EQ(std::string(buf, size), expected);
+
+  upb_StringView view;
+  ASSERT_EQ(upb_EncodeExtension(ext, arena.ptr(), &view,
+                                /*encode_options=*/0),
+            kUpb_EncodeStatus_Ok);
+  EXPECT_EQ(std::string(view.data, view.size), expected);
 }
 
 TEST(GeneratedCode, NextWireFormatUnknown) {

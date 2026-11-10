@@ -319,7 +319,7 @@ UPB_NODISCARD UPB_API_INLINE bool UPB_PRIVATE(
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   UPB_ASSERT(a);
   upb_AuxField* ext =
-      UPB_PRIVATE(_upb_Message_CreateNonCanonicalExtension)(msg, e, a);
+      UPB_PRIVATE(_upb_Message_CreateUnknownExtension)(msg, e, a);
   if (!ext) return false;
   UPB_ASSERT(upb_MiniTableField_IsExtension(upb_Extension_MiniTableField(ext)));
   upb_Extension_SetField(ext, val);

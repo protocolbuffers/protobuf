@@ -52,6 +52,7 @@
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
@@ -296,6 +297,8 @@ TEST(MessageTest, LargeMessageSetExtension) {
   upb_MiniTableExtension ext;
   memset(&ext, 0, sizeof(ext));
   ext.UPB_PRIVATE(field).UPB_ONLYBITS(number) = (1 << 29) + 5;
+  ext.UPB_PRIVATE(field).UPB_ONLYBITS(mode) =
+      kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsExtension;
   ext.UPB_PRIVATE(extendee) = &upb_0test__TestMessageSet_msg_init;
 
   EXPECT_EQ(upb_ExtensionRegistry_Add(reg, &ext),

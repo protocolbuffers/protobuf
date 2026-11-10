@@ -33,6 +33,7 @@
 #include "upb/message/test.upb.h"
 #include "upb/message/test.upb_minitable.h"
 #include "upb/message/unknown_fields.h"
+#include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
@@ -2927,4 +2928,109 @@ TEST(ConvertTest, MessageSetToNonMessageSetIsIncompatible) {
   EXPECT_EQ(upb_Message_Convert(UPB_UPCAST(non_mset), non_mset_mt, mset_mt,
                                 nullptr, 0, 0, arena.ptr()),
             nullptr);
+}
+
+// Returns the only unknown entry of `msg`, which must be a non-canonical
+// extension.
+static const upb_AuxField* OnlyNonCanonicalEntry(const upb_Message* msg) {
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  EXPECT_TRUE(upb_Message_NextUnknown2(msg, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_AuxField);
+  const upb_AuxField* ext = unknown.value.aux_field;
+  EXPECT_FALSE(upb_Message_NextUnknown2(msg, &unknown, &iter));
+  return ext;
+}
+
+TEST(ConvertTest, UnknownCanonicalExtensionKeepsMiniTableExtension) {
+  upb::Arena arena;
+  const upb_MiniTable* src_mt = &upb_0test__TestMessageSet_msg_init;
+  const upb_MiniTable* dst_mt = &upb__test__convert__MessageSetClone_msg_init;
+  const upb_MiniTableExtension* ext_mt =
+      upb_test_MessageSetMember_message_set_extension_ext;
+
+  upb_test_TestMessageSet* src = upb_test_TestMessageSet_new(arena.ptr());
+  upb_test_MessageSetMember* member =
+      upb_test_MessageSetMember_new(arena.ptr());
+  ASSERT_TRUE(
+      upb_Message_SetExtension(UPB_UPCAST(src), ext_mt, &member, arena.ptr()));
+
+  const upb_Message* dst = upb_Message_Convert(UPB_UPCAST(src), src_mt, dst_mt,
+                                               nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(dst, nullptr);
+
+  // The non-canonical entry is still described by the extension itself, not by
+  // some other field, so its extendee (which decides MessageSet framing) is
+  // preserved.
+  const upb_AuxField* entry = OnlyNonCanonicalEntry(dst);
+  ASSERT_NE(entry, nullptr);
+  const upb_MiniTableField* f = upb_Extension_MiniTableField(entry);
+  EXPECT_EQ(f, upb_MiniTableExtension_ToField(ext_mt));
+  ASSERT_TRUE(upb_MiniTableField_IsExtension(f));
+  EXPECT_EQ(UPB_PRIVATE(_upb_Extension_MiniTableExtension)(entry), ext_mt);
+  EXPECT_EQ(upb_MiniTableExtension_Extendee(
+                UPB_PRIVATE(_upb_Extension_MiniTableExtension)(entry)),
+            src_mt);
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Extension_IsMessageSetItem)(entry));
+}
+
+TEST(ConvertTest, MessageSetExtensionRoundTripsThroughNonCanonical) {
+  upb::Arena arena;
+  const upb_MiniTable* mset_mt = &upb_0test__TestMessageSet_msg_init;
+  const upb_MiniTable* clone_mt = &upb__test__convert__MessageSetClone_msg_init;
+  const upb_MiniTableExtension* ext_mt =
+      upb_test_MessageSetMember_message_set_extension_ext;
+
+  upb_test_TestMessageSet* src = upb_test_TestMessageSet_new(arena.ptr());
+  upb_test_MessageSetMember* member =
+      upb_test_MessageSetMember_new(arena.ptr());
+  upb_test_MessageSetMember_set_optional_int32(member, 42);
+  ASSERT_TRUE(
+      upb_Message_SetExtension(UPB_UPCAST(src), ext_mt, &member, arena.ptr()));
+  char* src_buf;
+  size_t src_size;
+  ASSERT_EQ(
+      upb_Encode(UPB_UPCAST(src), mset_mt, 0, arena.ptr(), &src_buf, &src_size),
+      kUpb_EncodeStatus_Ok);
+
+  // TestMessageSet -> MessageSetClone: the extension becomes non-canonical.
+  const upb_Message* clone = upb_Message_Convert(
+      UPB_UPCAST(src), mset_mt, clone_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(clone, nullptr);
+
+  // MessageSetClone -> TestMessageSet without a registry: the non-canonical
+  // entry is converted again and stays non-canonical. It must still be
+  // described by the extension, so that it is still encoded as a MessageSet
+  // item.
+  const upb_Message* back =
+      upb_Message_Convert(clone, clone_mt, mset_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(back, nullptr);
+  EXPECT_EQ(upb_Message_ExtensionCount(back), 0u);
+  const upb_AuxField* entry = OnlyNonCanonicalEntry(back);
+  ASSERT_NE(entry, nullptr);
+  EXPECT_EQ(upb_Extension_MiniTableField(entry),
+            upb_MiniTableExtension_ToField(ext_mt));
+  char* back_buf;
+  size_t back_size;
+  ASSERT_EQ(upb_Encode(back, mset_mt, 0, arena.ptr(), &back_buf, &back_size),
+            kUpb_EncodeStatus_Ok);
+  EXPECT_EQ(std::string_view(back_buf, back_size),
+            std::string_view(src_buf, src_size));
+
+  // MessageSetClone -> TestMessageSet with a registry: the extension is
+  // canonical again.
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  ASSERT_NE(extreg, nullptr);
+  ASSERT_EQ(upb_ExtensionRegistry_Add(extreg, ext_mt),
+            kUpb_ExtensionRegistryStatus_Ok);
+  const upb_Message* promoted =
+      upb_Message_Convert(clone, clone_mt, mset_mt, extreg, 0, 0, arena.ptr());
+  ASSERT_NE(promoted, nullptr);
+  EXPECT_EQ(upb_Message_ExtensionCount(promoted), 1u);
+  const upb_Message* promoted_member =
+      upb_Message_GetExtensionMessage(promoted, ext_mt, nullptr);
+  ASSERT_NE(promoted_member, nullptr);
+  EXPECT_EQ(upb_test_MessageSetMember_optional_int32(
+                (const upb_test_MessageSetMember*)promoted_member),
+            42);
 }

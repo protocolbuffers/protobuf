@@ -14,6 +14,7 @@
 #include "upb/hash/ext_table.h"
 #include "upb/mem/arena.h"
 #include "upb/mini_table/extension.h"
+#include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
@@ -38,6 +39,8 @@ UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
       offsetof(upb_MiniTableExtension,
                UPB_PRIVATE(field).UPB_PRIVATE(number)) == 0,
       "Extension must be first-member-of-struct convertable with uint32_t");
+  // Only actual extension fields can be registered.
+  UPB_ASSERT(upb_MiniTableField_IsExtension(upb_MiniTableExtension_ToField(e)));
   uint32_t fieldnum = upb_MiniTableExtension_Number(e);
   const upb_MiniTable* extendee = upb_MiniTableExtension_Extendee(e);
 
