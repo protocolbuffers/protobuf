@@ -256,13 +256,13 @@ SourceContext::~SourceContext() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void SourceContext::SharedDtor(
     MessageLite& self) {
   SourceContext& this_ = static_cast<SourceContext&>(self);
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.file_name_.Destroy();
   this_._impl_.~Impl_();
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL

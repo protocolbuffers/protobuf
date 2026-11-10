@@ -1213,12 +1213,12 @@ DoubleValue::~DoubleValue() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void DoubleValue::SharedDtor(
     MessageLite& self) {
   DoubleValue& this_ = static_cast<DoubleValue&>(self);
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._impl_.~Impl_();
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
+  this_._impl_.~Impl_();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -1385,12 +1385,12 @@ FloatValue::~FloatValue() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FloatValue::SharedDtor(
     MessageLite& self) {
   FloatValue& this_ = static_cast<FloatValue&>(self);
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._impl_.~Impl_();
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
+  this_._impl_.~Impl_();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -1557,12 +1557,12 @@ Int64Value::~Int64Value() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Int64Value::SharedDtor(
     MessageLite& self) {
   Int64Value& this_ = static_cast<Int64Value&>(self);
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._impl_.~Impl_();
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
+  this_._impl_.~Impl_();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -1730,12 +1730,12 @@ UInt64Value::~UInt64Value() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void UInt64Value::SharedDtor(
     MessageLite& self) {
   UInt64Value& this_ = static_cast<UInt64Value&>(self);
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._impl_.~Impl_();
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
+  this_._impl_.~Impl_();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -1903,12 +1903,12 @@ Int32Value::~Int32Value() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Int32Value::SharedDtor(
     MessageLite& self) {
   Int32Value& this_ = static_cast<Int32Value&>(self);
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._impl_.~Impl_();
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
+  this_._impl_.~Impl_();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -2076,12 +2076,12 @@ UInt32Value::~UInt32Value() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void UInt32Value::SharedDtor(
     MessageLite& self) {
   UInt32Value& this_ = static_cast<UInt32Value&>(self);
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._impl_.~Impl_();
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
+  this_._impl_.~Impl_();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -2249,12 +2249,12 @@ BoolValue::~BoolValue() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void BoolValue::SharedDtor(
     MessageLite& self) {
   BoolValue& this_ = static_cast<BoolValue&>(self);
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._impl_.~Impl_();
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
+  this_._impl_.~Impl_();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -2432,13 +2432,13 @@ StringValue::~StringValue() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void StringValue::SharedDtor(
     MessageLite& self) {
   StringValue& this_ = static_cast<StringValue&>(self);
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.value_.Destroy();
   this_._impl_.~Impl_();
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -2625,13 +2625,13 @@ BytesValue::~BytesValue() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void BytesValue::SharedDtor(
     MessageLite& self) {
   BytesValue& this_ = static_cast<BytesValue&>(self);
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.value_.Destroy();
   this_._impl_.~Impl_();
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
