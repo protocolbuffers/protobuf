@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -837,17 +838,12 @@ void BinaryAndJsonConformanceSuite::ExpectParseFailureForJson(
   }
 }
 
-template <typename MessageType>
-void BinaryAndJsonConformanceSuite::RunValidJsonTestWithValidator(
-    const std::string& test_name, ConformanceLevel level,
-    const std::string& input_json, const Validator& validator) {
-  MessageType prototype;
-  ConformanceRequestSetting setting(
-      level, ::conformance::JSON, ::conformance::JSON, ::conformance::JSON_TEST,
-      prototype, test_name, input_json);
+void BinaryAndJsonConformanceSuite::ValidateJsonResponse(
+    const ConformanceRequestSetting& setting, const Validator& validator) {
   const ConformanceRequest& request = setting.GetRequest();
   ConformanceResponse response;
   const std::string& effective_test_name = setting.GetTestName();
+  ConformanceLevel level = setting.GetLevel();
 
   if (!RunTest(effective_test_name, request, &response)) {
     return;
@@ -888,6 +884,17 @@ void BinaryAndJsonConformanceSuite::RunValidJsonTestWithValidator(
     return;
   }
   ReportSuccess(test);
+}
+
+template <typename MessageType>
+void BinaryAndJsonConformanceSuite::RunValidJsonTestWithValidator(
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_json, const Validator& validator) {
+  MessageType prototype;
+  ConformanceRequestSetting setting(
+      level, ::conformance::JSON, ::conformance::JSON, ::conformance::JSON_TEST,
+      prototype, test_name, input_json);
+  ValidateJsonResponse(setting, validator);
 }
 
 template <typename MessageType>
@@ -948,6 +955,18 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
       level, ::conformance::PROTOBUF, ::conformance::JSON,
       ::conformance::JSON_TEST, input, test_name, input.SerializeAsString());
   suite_.RunValidInputTest(setting, equivalent_text_format);
+}
+
+template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::
+    RunValidJsonTestWithProtobufInput(const std::string& test_name,
+                                      ConformanceLevel level,
+                                      const MessageType& input,
+                                      const Validator& validator) {
+  ConformanceRequestSetting setting(
+      level, ::conformance::PROTOBUF, ::conformance::JSON,
+      ::conformance::JSON_TEST, input, test_name, input.SerializeAsString());
+  suite_.ValidateJsonResponse(setting, validator);
 }
 
 template <typename MessageType>
@@ -3097,6 +3116,27 @@ void BinaryAndJsonConformanceSuiteImpl<
                    R"({"optionalFloat": "Infinity"})", "optional_float: inf");
   RunValidJsonTest("FloatFieldNegativeInfinity", REQUIRED,
                    R"({"optionalFloat": "-Infinity"})", "optional_float: -inf");
+  RunValidJsonTestWithValidator(
+      "FloatFieldNanValidator", REQUIRED, R"({"optionalFloat": "NaN"})",
+      [](const Json::Value& value) {
+        return value.isObject() &&
+               value["optionalFloat"].type() == Json::stringValue &&
+               value["optionalFloat"].asString() == "NaN";
+      });
+  RunValidJsonTestWithValidator(
+      "FloatFieldInfinityValidator", REQUIRED,
+      R"({"optionalFloat": "Infinity"})", [](const Json::Value& value) {
+        return value.isObject() &&
+               value["optionalFloat"].type() == Json::stringValue &&
+               value["optionalFloat"].asString() == "Infinity";
+      });
+  RunValidJsonTestWithValidator(
+      "FloatFieldNegativeInfinityValidator", REQUIRED,
+      R"({"optionalFloat": "-Infinity"})", [](const Json::Value& value) {
+        return value.isObject() &&
+               value["optionalFloat"].type() == Json::stringValue &&
+               value["optionalFloat"].asString() == "-Infinity";
+      });
   // Non-canonical Nan will be correctly normalized.
   {
     MessageType message;
@@ -3220,6 +3260,27 @@ void BinaryAndJsonConformanceSuiteImpl<
   RunValidJsonTest("DoubleFieldNegativeInfinity", REQUIRED,
                    R"({"optionalDouble": "-Infinity"})",
                    "optional_double: -inf");
+  RunValidJsonTestWithValidator(
+      "DoubleFieldNanValidator", REQUIRED, R"({"optionalDouble": "NaN"})",
+      [](const Json::Value& value) {
+        return value.isObject() &&
+               value["optionalDouble"].type() == Json::stringValue &&
+               value["optionalDouble"].asString() == "NaN";
+      });
+  RunValidJsonTestWithValidator(
+      "DoubleFieldInfinityValidator", REQUIRED,
+      R"({"optionalDouble": "Infinity"})", [](const Json::Value& value) {
+        return value.isObject() &&
+               value["optionalDouble"].type() == Json::stringValue &&
+               value["optionalDouble"].asString() == "Infinity";
+      });
+  RunValidJsonTestWithValidator(
+      "DoubleFieldNegativeInfinityValidator", REQUIRED,
+      R"({"optionalDouble": "-Infinity"})", [](const Json::Value& value) {
+        return value.isObject() &&
+               value["optionalDouble"].type() == Json::stringValue &&
+               value["optionalDouble"].asString() == "-Infinity";
+      });
   // Non-canonical Nan will be correctly normalized.
   {
     MessageType message;
@@ -3516,6 +3577,44 @@ void BinaryAndJsonConformanceSuiteImpl<
   RunValidJsonTest("PrimitiveRepeatedField", REQUIRED,
                    R"({"repeatedInt32": [1, 2, 3, 4]})",
                    "repeated_int32: [1, 2, 3, 4]");
+  {
+    const Validator validator = [](const Json::Value& value) {
+      auto is_json_number = [](const Json::Value& element, double expected) {
+        return (element.type() == Json::intValue ||
+                element.type() == Json::uintValue ||
+                element.type() == Json::realValue) &&
+               element.asDouble() == expected;
+      };
+      auto is_json_string = [](const Json::Value& element,
+                               absl::string_view expected) {
+        return element.type() == Json::stringValue &&
+               element.asString() == expected;
+      };
+      if (!value.isObject()) {
+        return false;
+      }
+      const Json::Value& elements = value["repeatedDouble"];
+      return elements.isArray() && elements.size() == 5 &&
+             is_json_number(elements[0], 0.0) &&
+             is_json_string(elements[1], "Infinity") &&
+             is_json_string(elements[2], "-Infinity") &&
+             is_json_string(elements[3], "NaN") &&
+             is_json_number(elements[4], 1.0);
+    };
+    RunValidJsonTestWithValidator(
+        "DoubleRepeatedFieldNanAndInfinityValidator", REQUIRED,
+        R"({"repeatedDouble": [0, "Infinity", "-Infinity", "NaN", 1]})",
+        validator);
+    MessageType message;
+    message.add_repeated_double(0.0);
+    message.add_repeated_double(std::numeric_limits<double>::infinity());
+    message.add_repeated_double(-std::numeric_limits<double>::infinity());
+    message.add_repeated_double(std::numeric_limits<double>::quiet_NaN());
+    message.add_repeated_double(1.0);
+    RunValidJsonTestWithProtobufInput(
+        "DoubleRepeatedFieldNanAndInfinityValidator", REQUIRED, message,
+        validator);
+  }
   RunValidJsonTest("EnumRepeatedField", REQUIRED,
                    R"({"repeatedNestedEnum": ["FOO", "BAR", "BAZ"]})",
                    "repeated_nested_enum: [FOO, BAR, BAZ]");
