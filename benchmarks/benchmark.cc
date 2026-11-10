@@ -447,11 +447,6 @@ static void BM_JsonParse_Upb_Utf8Disable(benchmark::State& state) {
 }
 BENCHMARK(BM_JsonParse_Upb_Utf8Disable);
 
-static void BM_JsonParse_Upb_Utf8Enforce(benchmark::State& state) {
-  BM_JsonParse_Upb(state, upb_JsonDecode_ValidateUtf8_Enforce);
-}
-BENCHMARK(BM_JsonParse_Upb_Utf8Enforce);
-
 static void BM_JsonParse_Proto2(benchmark::State& state) {
   protobuf::FileDescriptorProto proto;
   absl::string_view input(descriptor.data, descriptor.size);

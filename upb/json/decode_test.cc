@@ -395,15 +395,15 @@ TEST(JsonTest, Utf8ValidationLevels) {
   // Invalid UTF-8 sequence inside JSON string
   std::string invalid_json = "{\"name\": \"\xff\xff\"}";
 
-  // 1. Default (options = 0): Defaults to WARN (prints warning to stderr but
-  // succeeds)
+  // 1. Default (options = 0): Defaults to ENFORCE (fails to parse)
   {
     upb_test_Box* box = upb_test_Box_new(arena.ptr());
     upb::Status status;
     bool ok = upb_JsonDecode(invalid_json.data(), invalid_json.size(),
                              UPB_UPCAST(box), m, defpool.ptr(), 0, arena.ptr(),
                              status.ptr());
-    EXPECT_TRUE(ok) << status.error_message();
+    EXPECT_FALSE(ok);
+    EXPECT_STREQ(status.error_message(), "Invalid UTF-8 in JSON input");
   }
 
   // 2. Explicit DISABLE: Should not fail on UTF-8 (decoding succeeds without
@@ -418,26 +418,14 @@ TEST(JsonTest, Utf8ValidationLevels) {
     EXPECT_TRUE(ok) << status.error_message();
   }
 
-  // 3. Explicit ENFORCE: Should fail to parse
-  {
-    upb_test_Box* box = upb_test_Box_new(arena.ptr());
-    upb::Status status;
-    bool ok = upb_JsonDecode(invalid_json.data(), invalid_json.size(),
-                             UPB_UPCAST(box), m, defpool.ptr(),
-                             upb_JsonDecode_ValidateUtf8_Enforce, arena.ptr(),
-                             status.ptr());
-    EXPECT_FALSE(ok);
-    EXPECT_STREQ(status.error_message(), "Invalid UTF-8 in JSON input");
-  }
-
-  // Valid UTF-8 should succeed with ENFORCE
+  // Valid UTF-8 should succeed by default
   {
     std::string valid_json = "{\"name\": \"hello world\"}";
     upb_test_Box* box = upb_test_Box_new(arena.ptr());
     upb::Status status;
-    bool ok = upb_JsonDecode(
-        valid_json.data(), valid_json.size(), UPB_UPCAST(box), m, defpool.ptr(),
-        upb_JsonDecode_ValidateUtf8_Enforce, arena.ptr(), status.ptr());
+    bool ok =
+        upb_JsonDecode(valid_json.data(), valid_json.size(), UPB_UPCAST(box), m,
+                       defpool.ptr(), 0, arena.ptr(), status.ptr());
     EXPECT_TRUE(ok) << status.error_message();
   }
 }
