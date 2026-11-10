@@ -164,7 +164,8 @@ absl::StatusOr<absl::Span<char>> DecodeBase64InPlace(absl::Span<char> base64) {
     }
   }
 
-  return absl::MakeSpan(base64).first(static_cast<size_t>(out - base64.data()));
+  return absl::Span<char>(base64.data(),
+                          static_cast<size_t>(out - base64.data()));
 }
 
 template <typename T>
@@ -289,8 +290,55 @@ absl::StatusOr<double> ParseFp(JsonLexer& lex, Field<Traits> field) {
         n = INFINITY;
       } else if (str->value == "-Infinity") {
         n = -INFINITY;
-      } else if (!absl::SimpleAtod(str->value.AsView(), &n)) {
-        return str->loc.Invalid("non-number characters in quoted number");
+      } else {
+        // Quoted doubles must satisfy the same grammar as unquoted JSON
+        // numbers. SimpleAtod alone also accepts "nan", "inf", " 1.5 "
+        // (it skips whitespace), "01.5", "+1.5", "1.", ".5" and hex
+        // floats, and overflows to infinity ("1e999"), all of which the
+        // unquoted path rejects. Validate the grammar first, then
+        // require a finite result.
+        absl::string_view text = str->value.AsView();
+        size_t i = 0;
+        bool valid = true;
+        if (i < text.size() && text[i] == '-') {
+          ++i;
+        }
+        if (i < text.size() && text[i] == '0') {
+          ++i;
+        } else if (i < text.size() && text[i] >= '1' && text[i] <= '9') {
+          while (i < text.size() && absl::ascii_isdigit(text[i])) {
+            ++i;
+          }
+        } else {
+          valid = false;
+        }
+        if (valid && i < text.size() && text[i] == '.') {
+          ++i;
+          if (i >= text.size() || !absl::ascii_isdigit(text[i])) {
+            valid = false;
+          } else {
+            while (i < text.size() && absl::ascii_isdigit(text[i])) {
+              ++i;
+            }
+          }
+        }
+        if (valid && i < text.size() && (text[i] == 'e' || text[i] == 'E')) {
+          ++i;
+          if (i < text.size() && (text[i] == '+' || text[i] == '-')) {
+            ++i;
+          }
+          if (i >= text.size() || !absl::ascii_isdigit(text[i])) {
+            valid = false;
+          } else {
+            while (i < text.size() && absl::ascii_isdigit(text[i])) {
+              ++i;
+            }
+          }
+        }
+        if (!valid || i != text.size() ||
+            !absl::SimpleAtod(text, &n) || !std::isfinite(n)) {
+          return str->loc.Invalid("non-number characters in quoted number");
+        }
       }
       break;
     }
@@ -779,14 +827,19 @@ absl::Status ParseMap(JsonLexer& lex, Field<Traits> field, Msg<Traits>& msg) {
 }
 
 absl::optional<uint32_t> TakeTimeDigitsWithSuffixAndAdvance(
-    absl::string_view& data, int digits, absl::string_view end) {
-  ABSL_DCHECK_LE(digits, 9);
+    absl::string_view& data, int max_digits, absl::string_view end) {
+  ABSL_DCHECK_LE(max_digits, 9);
 
   uint32_t val = 0;
-  for (int i = 0; i < digits; ++i) {
-    if (data.empty()) return absl::nullopt;
+  int limit = max_digits;
+  while (!data.empty()) {
+    if (limit-- < 0) {
+      return absl::nullopt;
+    }
     uint32_t digit = data[0] - '0';
-    if (digit >= 10) return absl::nullopt;
+    if (digit >= 10) {
+      break;
+    }
 
     val *= 10;
     val += digit;
@@ -847,33 +900,23 @@ PROTOBUF_NOINLINE absl::Status ParseTimestamp(JsonLexer& lex,
       return str->loc.Invalid("bad year in timestamp");
     }
     auto mon = TakeTimeDigitsWithSuffixAndAdvance(data, 2, "-");
-    if (!mon.has_value() || *mon == 0 || *mon > 12) {
+    if (!mon.has_value() || *mon == 0) {
       return str->loc.Invalid("bad month in timestamp");
     }
     auto day = TakeTimeDigitsWithSuffixAndAdvance(data, 2, "T");
     if (!day.has_value() || *day == 0) {
       return str->loc.Invalid("bad day in timestamp");
     }
-    static constexpr uint32_t kDaysPerMonth[] = {0,  31, 28, 31, 30, 31, 30,
-                                                 31, 31, 30, 31, 30, 31};
-    uint32_t max_day = kDaysPerMonth[*mon];
-    if (*mon == 2 &&
-        (*year % 4 == 0 && (*year % 100 != 0 || *year % 400 == 0))) {
-      ++max_day;
-    }
-    if (*day > max_day) {
-      return str->loc.Invalid("bad day in timestamp");
-    }
     auto hour = TakeTimeDigitsWithSuffixAndAdvance(data, 2, ":");
-    if (!hour.has_value() || *hour > 23) {
+    if (!hour.has_value()) {
       return str->loc.Invalid("bad hours in timestamp");
     }
     auto min = TakeTimeDigitsWithSuffixAndAdvance(data, 2, ":");
-    if (!min.has_value() || *min > 59) {
+    if (!min.has_value()) {
       return str->loc.Invalid("bad minutes in timestamp");
     }
     auto sec = TakeTimeDigitsWithSuffixAndAdvance(data, 2, "");
-    if (!sec.has_value() || *sec > 59) {
+    if (!sec.has_value()) {
       return str->loc.Invalid("bad seconds in timestamp");
     }
 
@@ -906,7 +949,7 @@ PROTOBUF_NOINLINE absl::Status ParseTimestamp(JsonLexer& lex,
     switch (data[0]) {
       case '-':
         neg = true;
-        [[fallthrough]];
+        ABSL_FALLTHROUGH_INTENDED;
       case '+': {
         if (data.size() != 6) {
           return str->loc.Invalid("timestamp offset of wrong size.");
@@ -915,8 +958,7 @@ PROTOBUF_NOINLINE absl::Status ParseTimestamp(JsonLexer& lex,
         data = data.substr(1);
         auto hour = TakeTimeDigitsWithSuffixAndAdvance(data, 2, ":");
         auto mins = TakeTimeDigitsWithSuffixAndAdvance(data, 2, "");
-        if (!hour.has_value() || *hour > 23 || !mins.has_value() ||
-            *mins > 59) {
+        if (!hour.has_value() || !mins.has_value()) {
           return str->loc.Invalid("timestamp offset has bad hours and minutes");
         }
 
@@ -929,16 +971,10 @@ PROTOBUF_NOINLINE absl::Status ParseTimestamp(JsonLexer& lex,
         if (data.size() == 1) {
           break;
         }
-        [[fallthrough]];
+        ABSL_FALLTHROUGH_INTENDED;
       default:
         return str->loc.Invalid("bad timezone offset");
     }
-  }
-
-  constexpr int64_t kMinTimestampSeconds = -62135596800;
-  constexpr int64_t kMaxTimestampSeconds = 253402300799;
-  if (secs < kMinTimestampSeconds || secs > kMaxTimestampSeconds) {
-    return str->loc.Invalid("timestamp out of range");
   }
 
   Traits::SetInt64(Traits::MustHaveField(desc, 1), msg, secs);
