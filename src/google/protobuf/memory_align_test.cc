@@ -107,18 +107,18 @@ TEST(ArenaAlignDefault, IsAligned) {
 }
 
 TEST(MemoryAlign, Of) {
-  EXPECT_EQ(MemoryAlign::Of<void*>().align, alignof(void*));
-  EXPECT_EQ(MemoryAlign::Of<bool>().align, alignof(bool));
-  EXPECT_EQ(MemoryAlign::Of<char>().align, alignof(char));
-  EXPECT_EQ(MemoryAlign::Of<int8_t>().align, alignof(int8_t));
-  EXPECT_EQ(MemoryAlign::Of<int16_t>().align, alignof(int16_t));
-  EXPECT_EQ(MemoryAlign::Of<int32_t>().align, alignof(int32_t));
-  EXPECT_EQ(MemoryAlign::Of<int64_t>().align, alignof(int64_t));
+  EXPECT_EQ(MemoryAlign::Of<void*>().align(), alignof(void*));
+  EXPECT_EQ(MemoryAlign::Of<bool>().align(), alignof(bool));
+  EXPECT_EQ(MemoryAlign::Of<char>().align(), alignof(char));
+  EXPECT_EQ(MemoryAlign::Of<int8_t>().align(), alignof(int8_t));
+  EXPECT_EQ(MemoryAlign::Of<int16_t>().align(), alignof(int16_t));
+  EXPECT_EQ(MemoryAlign::Of<int32_t>().align(), alignof(int32_t));
+  EXPECT_EQ(MemoryAlign::Of<int64_t>().align(), alignof(int64_t));
 }
 
 TEST(MemoryAlign, Align) {
   auto align_64 = ArenaAlignAs(64);
-  EXPECT_EQ(align_64.align, 64);
+  EXPECT_EQ(align_64.align(), 64);
 }
 
 TEST(MemoryAlign, Floor) {

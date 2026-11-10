@@ -1614,8 +1614,8 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(
     }
 
     new_rep =
-        new (arena->AllocateAligned<internal::AllocationClient::kArray>(bytes))
-            internal::HeapRep(new_size);
+        new (arena->AllocateDefaultAligned<internal::AllocationClient::kArray>(
+            bytes)) internal::HeapRep(new_size);
   }
 
   if (old_size > 0) {
