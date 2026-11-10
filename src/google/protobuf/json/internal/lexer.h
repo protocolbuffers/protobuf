@@ -19,6 +19,7 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/json/internal/message_path.h"
@@ -238,8 +239,9 @@ class JsonLexer {
 
   // Parses a Unicode escape (\uXXXX); this may be a surrogate pair, so it may
   // consume the character that follows. Both are encoded as utf8 into
-  // `out_utf8`; returns the number of bytes written.
-  absl::StatusOr<size_t> ParseUnicodeEscape(char out_utf8[4]);
+  // `out_utf8`, which must have a size of exactly 4; returns the number of
+  // bytes written.
+  absl::StatusOr<size_t> ParseUnicodeEscape(absl::Span<char> out_utf8);
 
   // Parses an alphanumeric "identifier", for use with the non-standard
   // "unquoted keys" extension.

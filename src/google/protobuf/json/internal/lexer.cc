@@ -29,12 +29,17 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/json/internal/zero_copy_buffered_stream.h"
 #include "utf8_validity.h"
 #include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
+
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang diagnostic error "-Wunsafe-buffer-usage"
+#endif
 
 namespace google {
 namespace protobuf {
@@ -299,7 +304,9 @@ absl::StatusOr<LocationWith<double>> JsonLexer::ParseNumber() {
   return LocationWith<double>{d, number->loc};
 }
 
-absl::StatusOr<size_t> JsonLexer::ParseUnicodeEscape(char out_utf8[4]) {
+absl::StatusOr<size_t> JsonLexer::ParseUnicodeEscape(
+    absl::Span<char> out_utf8) {
+  ABSL_DCHECK_EQ(out_utf8.size(), 4);
   auto hex = ParseU16HexCodepoint();
   RETURN_IF_ERROR(hex.status());
 
@@ -487,7 +494,7 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8Slow(
             (c == 'U' && options_.allow_legacy_nonconformant_behavior)) {
           // Ensure there is actual space to scribble the UTF-8 onto.
           on_heap.resize(on_heap.size() + 4);
-          auto written = ParseUnicodeEscape(&on_heap[on_heap.size() - 4]);
+          auto written = ParseUnicodeEscape(absl::MakeSpan(on_heap).last(4));
           RETURN_IF_ERROR(written.status());
           on_heap.resize(on_heap.size() - 4 + *written);
         } else {

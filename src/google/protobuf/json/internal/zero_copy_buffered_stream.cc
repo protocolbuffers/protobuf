@@ -24,6 +24,10 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang diagnostic error "-Wunsafe-buffer-usage"
+#endif
+
 namespace google {
 namespace protobuf {
 namespace json_internal {
