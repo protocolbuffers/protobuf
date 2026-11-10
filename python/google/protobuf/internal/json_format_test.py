@@ -11,6 +11,8 @@ __author__ = 'jieluo@google.com (Jie Luo)'
 
 import json
 import math
+import warnings
+import re
 import struct
 import unittest
 
@@ -1277,10 +1279,12 @@ class JsonFormatTest(JsonFormatBase):
     )
 
   def testInvalidFloatValue(self):
+    # Non canonical non finite spellings still parse today, but warn that a
+    # future release will reject them; see testNonCanonicalFloatWarns below.
     self.CheckError(
-        '{"floatValue": "nan"}',
+        '{"floatValue": "not-a-number"}',
         "Failed to parse floatValue field: Couldn't "
-        'parse float "nan", use "NaN" instead at TestMessage.floatValue.',
+        'parse float: not-a-number at TestMessage.floatValue.',
     )
     self.CheckError(
         '{"floatValue": NaN}',
@@ -1312,6 +1316,47 @@ class JsonFormatTest(JsonFormatBase):
         '{"floatValue": -3.502823e+38}',
         'Failed to parse floatValue field: Float value too small.',
     )
+
+
+  def testNonCanonicalFloatSpellingWarns(self):
+    # Python's float() accepts many spellings of NaN and Infinity, but the
+    # proto3 JSON mapping only allows the three canonical ones.  They still
+    # parse today, with a warning that a future release will reject them.
+    for bad in (
+        'NAN',
+        'Nan',
+        'nan',
+        '+nan',
+        '-nan',
+        'inf',
+        'INF',
+        'Inf',
+        '+inf',
+        '-inf',
+        '+Infinity',
+        '-INF',
+        ' NaN ',
+        'Infinity ',
+        '1e999',
+    ):
+      with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter('always')
+        msg = json_format.Parse('{"floatValue": "%s"}' % bad, json_format_proto3_pb2.TestMessage())
+      expected = (
+          math.isnan(msg.float_value) if 'nan' in bad.lower()
+          else math.isinf(msg.float_value))
+      self.assertTrue(expected, 'value parsed from %s is not non finite' % bad)
+      self.assertEqual(len(caught), 1, 'expected exactly one warning for %s' % bad)
+      self.assertTrue(issubclass(caught[0].category, FutureWarning))
+      self.assertIn('non canonical spelling', str(caught[0].message))
+      self.assertIn(bad, str(caught[0].message))
+
+    # The three canonical spellings parse without any warning.
+    for good in ('NaN', 'Infinity', '-Infinity'):
+      with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter('always')
+        json_format.Parse('{"floatValue": "%s"}' % good, json_format_proto3_pb2.TestMessage())
+      self.assertEqual(len(caught), 0, 'unexpected warning for %s' % good)
 
   def testInvalidRepeated(self):
     self.CheckError(

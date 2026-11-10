@@ -22,6 +22,7 @@ import base64
 from collections import OrderedDict
 import json
 import math
+import warnings
 from operator import methodcaller
 import re
 import warnings
@@ -1188,20 +1189,31 @@ def _ConvertFloat(value, field):
       # pylint: disable=protected-access
       if value < type_checkers._FLOAT_MIN:
         raise ParseError('Float value too small')
-  if value == 'nan':
-    raise ParseError('Couldn\'t parse float "nan", use "NaN" instead')
+  # The proto3 JSON mapping allows exactly three spellings for non finite
+  # values; return them before touching float() so the canonical hot path is
+  # three comparisons.
+  if value == _NEG_INFINITY:
+    return float('-inf')
+  elif value == _INFINITY:
+    return float('inf')
+  elif value == _NAN:
+    return float('nan')
   try:
-    # Assume Python compatible syntax.
-    return float(value)
+    val = float(value)
+    if not math.isfinite(val):
+      # A non finite value that was not a canonical spelling ("NAN", "inf",
+      # "1e999", ...).  Other implementations reject these; rejecting here is
+      # a breaking change, so they parse as before and warn that a future
+      # release will reject the input.
+      warnings.warn(
+          'Non finite float "%s" uses a non canonical spelling; only "NaN",'
+          ' "Infinity" and "-Infinity" are part of the proto3 JSON mapping.'
+          ' A future release will reject this input.' % value,
+          category=FutureWarning,
+          stacklevel=5,
+      )
+    return val
   except ValueError as e:
-    # Check alternative spellings.
-    if value == _NEG_INFINITY:
-      return float('-inf')
-    elif value == _INFINITY:
-      return float('inf')
-    elif value == _NAN:
-      return float('nan')
-    else:
       raise ParseError("Couldn't parse float: {0}".format(value)) from e
 
 
