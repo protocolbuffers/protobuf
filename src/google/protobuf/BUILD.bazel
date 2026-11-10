@@ -558,6 +558,15 @@ cc_library(
 )
 
 cc_library(
+    name = "arena_seed",
+    hdrs = ["arena_seed.h"],
+    strip_include_prefix = "/src",
+    deps = [
+        ":port",
+    ],
+)
+
+cc_library(
     name = "arena_cleanup",
     hdrs = ["arena_cleanup.h"],
     strip_include_prefix = "/src",
@@ -646,6 +655,7 @@ cc_library(
     deps = [
         ":arena_allocation_policy",
         ":arena_cleanup",
+        ":arena_seed",
         ":class_data",
         ":internal_visibility",
         ":memory_align",
@@ -812,6 +822,7 @@ cc_library(
         ":arena",
         ":arena_allocation_policy",
         ":arena_cleanup",
+        ":arena_seed",
         ":class_data",
         ":endian",
         ":internal_visibility",
@@ -1084,6 +1095,7 @@ cc_library(
     visibility = [
         "//:__subpackages__",
     ],
+    deps = [":private_access"],
 )
 
 cc_library(
@@ -2574,6 +2586,7 @@ cc_test(
         ":arena",
         ":cc_lite_test_protos",
         ":cc_test_protos",
+        ":class_data",
         ":internal_visibility",
         ":lite_test_util",
         ":port",
@@ -2612,6 +2625,7 @@ cc_test(
     deps = [
         ":arena",
         ":cc_test_protos",
+        ":class_data",
         ":internal_visibility",
         ":lite_test_util",
         ":micro_string",

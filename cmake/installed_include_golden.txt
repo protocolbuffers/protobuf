@@ -7,6 +7,7 @@ google/protobuf/arena.h
 google/protobuf/arena_align.h
 google/protobuf/arena_allocation_policy.h
 google/protobuf/arena_cleanup.h
+google/protobuf/arena_seed.h
 google/protobuf/arenastring.h
 google/protobuf/arenaz_sampler.h
 google/protobuf/c_sharp_features.proto

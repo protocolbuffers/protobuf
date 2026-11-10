@@ -229,35 +229,16 @@ void TestCtorAndDtorTraits(std::vector<absl::string_view> def,
   static auto& actions = *new std::vector<absl::string_view>;
   struct TraitsProber
       : std::conditional_t<arena_ctor, ArenaCtorBase, EmptyBase<0>>,
-        std::conditional_t<arena_dtor, ArenaDtorBase, EmptyBase<1>>,
-        Message {
-    TraitsProber() : Message(nullptr, nullptr) { actions.push_back("()"); }
-    TraitsProber(const TraitsProber&) : Message(nullptr, nullptr) {
-      actions.push_back("(const T&)");
-    }
-    explicit TraitsProber(int) : Message(nullptr, nullptr) {
-      actions.push_back("(int)");
-    }
-    explicit TraitsProber(Arena* arena) : Message(nullptr, nullptr) {
-      actions.push_back("(Arena)");
-    }
-    TraitsProber(Arena* arena, const TraitsProber&)
-        : Message(nullptr, nullptr) {
+        std::conditional_t<arena_dtor, ArenaDtorBase, EmptyBase<1>> {
+    TraitsProber() { actions.push_back("()"); }
+    TraitsProber(const TraitsProber&) { actions.push_back("(const T&)"); }
+    explicit TraitsProber(int) { actions.push_back("(int)"); }
+    explicit TraitsProber(Arena* arena) { actions.push_back("(Arena)"); }
+    TraitsProber(Arena* arena, const TraitsProber&) {
       actions.push_back("(Arena, const T&)");
     }
-    TraitsProber(Arena* arena, int) : Message(nullptr, nullptr) {
-      actions.push_back("(Arena, int)");
-    }
+    TraitsProber(Arena* arena, int) { actions.push_back("(Arena, int)"); }
     ~TraitsProber() { actions.push_back("~()"); }
-
-    TraitsProber* New(Arena*) const {
-      ABSL_LOG(FATAL);
-      return nullptr;
-    }
-    const internal::ClassData* GetClassData() const PROTOBUF_FINAL {
-      ABSL_LOG(FATAL);
-      return nullptr;
-    }
   };
 
   static_assert(
