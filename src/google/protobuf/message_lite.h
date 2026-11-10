@@ -393,7 +393,11 @@ class PROTOBUF_EXPORT MessageLite {
   // internal memory). This method is used in proto's implementation for
   // swapping, moving and setting allocated, for deciding whether the ownership
   // of this message or its internal memory could be changed.
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  [[nodiscard]] Arena* GetArena() const { return _arena_; }
+#else
   [[nodiscard]] Arena* GetArena() const { return _internal_metadata_.arena(); }
+#endif
 
   // Clear all fields of the message and set them to their default values.
   // Clear() assumes that any memory allocated to hold parts of the message
@@ -855,7 +859,14 @@ class PROTOBUF_EXPORT MessageLite {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   explicit constexpr MessageLite(const internal::ClassData* data)
-      : _class_data_(data) {
+      :
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+        _internal_metadata_(data),
+        _arena_(nullptr)
+#else
+        _class_data_(data)
+#endif
+  {
     // We want to evaluate the aligned-ness of `data` at compile time, which
     // requires the use of `__builtin_is_aligned`. When message globals are
     // constructed, the address of `data` has not been synthesized yet, but the
@@ -864,7 +875,15 @@ class PROTOBUF_EXPORT MessageLite {
     internal::DebugAssertPtrIsAligned(data, internal::kClassDataAlignment);
   }
   explicit MessageLite(Arena* arena, const internal::ClassData* data)
-      : _internal_metadata_(arena), _class_data_(data) {
+      :
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+        _internal_metadata_(data),
+        _arena_(arena)
+#else
+        _internal_metadata_(arena),
+        _class_data_(data)
+#endif
+  {
     internal::DebugAssertPtrIsAligned(data, internal::kClassDataAlignment);
   }
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -882,21 +901,53 @@ class PROTOBUF_EXPORT MessageLite {
   //
   // This is a work in progress. There are still some types (eg MapEntry) that
   // return a default table instead of a unique one.
-#if defined(PROTOBUF_CUSTOM_VTABLE)
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  const internal::ClassData* class_data() const {
+    return _internal_metadata_.class_data();
+  }
+  const internal::ClassData* GetClassData() const {
+    auto* data = _internal_metadata_.class_data();
+    ::absl::PrefetchToLocalCache(data);
+    return data;
+  }
+  const internal::ClassDataPrefix* class_data_prefix() const {
+    return _internal_metadata_.class_data_prefix();
+  }
+  const internal::ClassDataPrefix* GetClassDataPrefix() const {
+    auto* data = _internal_metadata_.class_data_prefix();
+    ::absl::PrefetchToLocalCache(data);
+    return data;
+  }
+#elif defined(PROTOBUF_CUSTOM_VTABLE)
   const internal::ClassData* class_data() const { return _class_data_; }
   const internal::ClassData* GetClassData() const {
     ::absl::PrefetchToLocalCache(_class_data_);
     return class_data();
   }
+  const internal::ClassDataPrefix* class_data_prefix() const {
+    return class_data();
+  }
+  const internal::ClassDataPrefix* GetClassDataPrefix() const {
+    return GetClassData();
+  }
 #else   // PROTOBUF_CUSTOM_VTABLE
   virtual const internal::ClassData* GetClassData() const = 0;
+  const internal::ClassDataPrefix* class_data_prefix() const {
+    return GetClassData();
+  }
+  const internal::ClassDataPrefix* GetClassDataPrefix() const {
+    return GetClassData();
+  }
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
-  // NOLINTNEXTLINE(google3-readability-class-member-naming)
+  // NOLINTBEGIN(google3-readability-class-member-naming)
   internal::InternalMetadata _internal_metadata_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  Arena* _arena_;
+#elif defined(PROTOBUF_CUSTOM_VTABLE)
   const internal::ClassData* _class_data_;
 #endif  // PROTOBUF_CUSTOM_VTABLE
+  // NOLINTEND(google3-readability-class-member-naming)
 
   // Return the cached size object as described by
   // ClassData::cached_size_offset.
@@ -986,6 +1037,7 @@ class PROTOBUF_EXPORT MessageLite {
 
  private:
   friend internal::ClassData;
+  friend internal::InternalMetadata;
   friend class internal::MessageCreator;
   friend class FastReflectionMessageMutator;
   friend class AssignDescriptorsHelper;
@@ -1232,8 +1284,14 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
   // avoid the double-write. It's easier than trying to avoid the overlap.
   memcpy(dst, static_cast<const void*>(prototype_for_copy),
          sizeof(MessageLite));
-  memcpy(dst + PROTOBUF_FIELD_OFFSET(MessageLite, _internal_metadata_), &arena,
-         sizeof(arena));
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  static constexpr size_t kArenaOffset =
+      PROTOBUF_FIELD_OFFSET(MessageLite, _arena_);
+#else
+  static constexpr size_t kArenaOffset =
+      PROTOBUF_FIELD_OFFSET(MessageLite, _internal_metadata_);
+#endif
+  memcpy(dst + kArenaOffset, &arena, sizeof(arena));
   return Launder(reinterpret_cast<MessageLite*>(mem));
 }
 
