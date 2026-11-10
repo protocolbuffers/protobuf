@@ -1698,6 +1698,81 @@ TEST(TcParserTest, OobGenReproduction) {
   (void)msg->ParseFromString(payload);
 }
 
+namespace {
+
+template <typename MessageT>
+void ExpectBoundedParseIgnoresSlop(const MessageT& expected,
+                                   bool poison_slop = true) {
+  const std::string wire = expected.SerializeAsString();
+  constexpr size_t kSlopTail = 32;
+  auto raw_buf = std::make_unique<char[]>(wire.size() + kSlopTail);
+  memcpy(raw_buf.get(), wire.data(), wire.size());
+#if !defined(ABSL_HAVE_MEMORY_SANITIZER)
+  // Fill trailing slop with valid 2-byte varint fields (`0x08, 0x7f`) so any
+  // prepared dispatch past `wire.size()` hits the fast table and must be
+  // discarded when `!DataAvailable(ptr)`.
+  for (size_t i = 0; i < kSlopTail; i += 2) {
+    raw_buf[wire.size() + i] = 0x08;
+    raw_buf[wire.size() + i + 1] = 0x7f;
+  }
+#else
+  if (!poison_slop) memset(raw_buf.get() + wire.size(), 0, kSlopTail);
+#endif
+  if (poison_slop) {
+    internal::PoisonMemoryRegion(raw_buf.get() + wire.size(), kSlopTail);
+  }
+  io::ArrayInputStream stream(raw_buf.get(),
+                              static_cast<int>(wire.size() + kSlopTail));
+  MessageT actual;
+  const bool ok = actual.ParseFromBoundedZeroCopyStream(
+      &stream, static_cast<int>(wire.size()));
+  if (poison_slop) {
+    internal::UnpoisonMemoryRegion(raw_buf.get() + wire.size(), kSlopTail);
+  }
+  EXPECT_TRUE(ok);
+  EXPECT_EQ(actual.SerializeAsString(), wire);
+}
+
+}  // namespace
+
+TEST(TcParserTest, EarlyTagDispatchIgnoresTrailingSlop) {
+  proto2_unittest::TestAllTypes m;
+  m.set_optional_fixed32(0x12345678u);  // SingularFixed
+  ExpectBoundedParseIgnoresSlop(m);
+  m.Clear();
+  m.set_optional_sint32(-1);  // SingularVarint
+  ExpectBoundedParseIgnoresSlop(m);
+  m.Clear();
+  m.set_optional_bool(true);  // FastV8S1
+  ExpectBoundedParseIgnoresSlop(m);
+
+  FeatureSet fs;
+  fs.set_field_presence(FeatureSet::IMPLICIT);  // SingularEnumSmallRange (Er0)
+  ExpectBoundedParseIgnoresSlop(fs);
+
+  FieldDescriptorProto fdp;
+  fdp.set_label(FieldDescriptorProto::LABEL_REPEATED);  // Er1
+  ExpectBoundedParseIgnoresSlop(fdp);
+
+  // `VarintParse` asserts 10 readable bytes on non-x86_64.
+  constexpr bool kPoisonVarintSlop =
+#if defined(__x86_64__)
+      true;
+#else
+      false;
+#endif
+  m.Clear();
+  m.set_optional_int32(42);  // FastVarintS1
+  ExpectBoundedParseIgnoresSlop(m, kPoisonVarintSlop);
+  m.Clear();
+  m.set_optional_sint32(-500);  // SingularVarBigint
+  ExpectBoundedParseIgnoresSlop(m, kPoisonVarintSlop);
+
+  proto2_unittest::TestRequiredEnum req_enum;
+  req_enum.set_required_enum(proto2_unittest::FOREIGN_BAZ);  // SingularEnum
+  ExpectBoundedParseIgnoresSlop(req_enum, kPoisonVarintSlop);
+}
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
