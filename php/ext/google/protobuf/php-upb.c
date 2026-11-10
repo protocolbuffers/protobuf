@@ -12045,25 +12045,15 @@ const upb_AuxField* UPB_PRIVATE(_upb_Message_Getext)(
       msg, upb_MiniTableExtension_ToField(e));
 }
 
-upb_AuxField* UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
-    struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a,
-    upb_TaggedAuxType tag) {
-  UPB_ASSERT(!upb_Message_IsFrozen(msg));
-  UPB_ASSERT(!upb_MiniTableField_IsMap(upb_MiniTableExtension_ToField(e)));
-  // For Canonical Extensions, we check whether the extension has already been
-  // set. If we find an extension with the same pointer and tag, we reuse it to
-  // prevent duplicate entries for the same extension.
-  //
-  // For Non-Canonical Extensions, we do NOT reuse them, matching the behavior
-  // of adding a unknown StringView (through `_upb_Message_AddUnknown`) which
-  // accumulates.
-  if (tag == kUpb_TaggedAuxType_CanonicalExtension) {
-    upb_AuxField* ext = (upb_AuxField*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
-    if (ext) return ext;
-  }
+// Appends a new zero-initialized entry described by `f` to the aux data of
+// `msg`, with the given tag. Returns NULL on allocation failure.
+static upb_AuxField* _upb_Message_AppendAuxField(struct upb_Message* msg,
+                                                 const upb_MiniTableField* f,
+                                                 upb_Arena* a,
+                                                 upb_TaggedAuxType tag) {
   if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, a)) return NULL;
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  upb_AuxField* ext = UPB_PRIVATE(_upb_Extension_New)(e, a);
+  upb_AuxField* ext = UPB_PRIVATE(_upb_Extension_New)(f, a);
   if (!ext) return NULL;
   in->aux_data[in->size++] = upb_TaggedAuxPtr_MakeAuxField(ext, tag);
   return ext;
@@ -12071,14 +12061,37 @@ upb_AuxField* UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
 
 upb_AuxField* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a) {
-  return UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
-      msg, e, a, kUpb_TaggedAuxType_CanonicalExtension);
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  const upb_MiniTableField* f = upb_MiniTableExtension_ToField(e);
+  UPB_ASSERT(!upb_MiniTableField_IsMap(f));
+  // Reuse an existing canonical extension to prevent duplicate entries for the
+  // same extension.
+  upb_AuxField* ext =
+      (upb_AuxField*)UPB_PRIVATE(_upb_Message_GetExtension)(msg, f);
+  if (ext) return ext;
+  return _upb_Message_AppendAuxField(msg, f, a,
+                                     kUpb_TaggedAuxType_CanonicalExtension);
 }
 
-upb_AuxField* UPB_PRIVATE(_upb_Message_CreateNonCanonicalExtension)(
+upb_AuxField* UPB_PRIVATE(_upb_Message_CreateUnknownExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a) {
-  return UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
-      msg, e, a, kUpb_TaggedAuxType_UnknownAuxField);
+  return UPB_PRIVATE(_upb_Message_CreateUnknownField)(
+      msg, upb_MiniTableExtension_ToField(e), a);
+}
+
+upb_AuxField* UPB_PRIVATE(_upb_Message_CreateUnknownField)(
+    struct upb_Message* msg, const upb_MiniTableField* f, upb_Arena* a) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  // Non-canonical entries are never maps.
+  UPB_ASSERT(!upb_MiniTableField_IsMap(f));
+  // Like for an extension field, the value lives in the upb_AuxField and the
+  // entry is present iff it exists, so the field has no offset or presence.
+  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_Offset)(f) == 0);
+  UPB_ASSERT(f->presence == 0);
+  // Like unknown fields (see `_upb_Message_AddUnknown`), non-canonical entries
+  // accumulate; an existing entry for the same field is never reused.
+  return _upb_Message_AppendAuxField(msg, f, a,
+                                     kUpb_TaggedAuxType_UnknownAuxField);
 }
 
 
@@ -13947,6 +13960,8 @@ UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
       offsetof(upb_MiniTableExtension,
                UPB_PRIVATE(field).UPB_PRIVATE(number)) == 0,
       "Extension must be first-member-of-struct convertable with uint32_t");
+  // Only actual extension fields can be registered.
+  UPB_ASSERT(upb_MiniTableField_IsExtension(upb_MiniTableExtension_ToField(e)));
   uint32_t fieldnum = upb_MiniTableExtension_Number(e);
   const upb_MiniTable* extendee = upb_MiniTableExtension_Extendee(e);
 

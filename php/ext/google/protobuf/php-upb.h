@@ -5072,12 +5072,6 @@ UPB_API_INLINE struct upb_Map* upb_Extension_GetMutableMap(upb_AuxField* ext) {
   return (struct upb_Map*)upb_Extension_GetMap(ext);
 }
 
-UPB_NODISCARD upb_AuxField* UPB_PRIVATE(
-    _upb_Message_GetOrCreateExtensionWithTag)(struct upb_Message* msg,
-                                              const upb_MiniTableExtension* ext,
-                                              upb_Arena* arena,
-                                              upb_TaggedAuxType tag);
-
 // Adds the given extension data to the given message.
 // |ext| is copied into the message instance.
 // This logically replaces any previously-added extension with this number.
@@ -5085,13 +5079,21 @@ UPB_NODISCARD upb_AuxField* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* ext,
     upb_Arena* arena);
 
-// Adds the given non-canonical extension data to the given message.
-// |ext| is copied into the message instance.
-// This logically replaces any previously-added extension with this number.
-UPB_NODISCARD upb_AuxField* UPB_PRIVATE(
-    _upb_Message_CreateNonCanonicalExtension)(struct upb_Message* msg,
-                                              const upb_MiniTableExtension* ext,
-                                              upb_Arena* arena);
+// Adds a non-canonical entry for `ext` to the given message, and returns it,
+// or NULL on allocation failure. Equivalent to
+// _upb_Message_CreateUnknownField() with the field of `ext`.
+UPB_NODISCARD upb_AuxField* UPB_PRIVATE(_upb_Message_CreateUnknownExtension)(
+    struct upb_Message* msg, const upb_MiniTableExtension* ext,
+    upb_Arena* arena);
+
+// Adds a non-canonical entry described by `f` to the given message, and returns
+// it, or NULL on allocation failure. Unlike
+// _upb_Message_CreateUnknownExtension(), `f` need not be part of a
+// upb_MiniTableExtension: it may be a freestanding field, e.g. a copy of a
+// regular field of another message. `f` must not be a map, and must have no
+// offset or presence (like an extension field). It must outlive the message.
+UPB_NODISCARD upb_AuxField* UPB_PRIVATE(_upb_Message_CreateUnknownField)(
+    struct upb_Message* msg, const upb_MiniTableField* f, upb_Arena* arena);
 
 // Returns the canonical extension of `msg` that is described by `ext`, or NULL
 // if there is no such extension.
@@ -5444,12 +5446,12 @@ UPB_NODISCARD UPB_INLINE struct upb_Message* _upb_Message_New(
   return msg;
 }
 
-// Allocates a new zero-initialized extension described by `e`, for internal
-// use.
+// Allocates a new zero-initialized extension entry described by `f`, which may
+// be an extension field or a freestanding field, for internal use.
+//
+// TODO: b/569995025 - Rename to _upb_AuxField_New.
 UPB_NODISCARD UPB_INLINE upb_AuxField* UPB_PRIVATE(_upb_Extension_New)(
-    const upb_MiniTableExtension* e, upb_Arena* a) {
-  const upb_MiniTableField* f = upb_MiniTableExtension_ToField(e);
-  UPB_ASSERT(upb_MiniTableField_IsExtension(f));
+    const upb_MiniTableField* f, upb_Arena* a) {
   const size_t size = UPB_PRIVATE(_upb_Extension_Size)(f);
   upb_AuxField* ext = (upb_AuxField*)upb_Arena_Malloc(a, size);
   if (UPB_UNLIKELY(!ext)) return NULL;
@@ -5567,114 +5569,98 @@ UPB_INLINE bool upb_Message_NextUnknown(const struct upb_Message* msg,
   return false;
 }
 
-UPB_INLINE bool upb_Message_NextExtension(const struct upb_Message* msg,
-                                          const upb_MiniTableExtension** out_e,
-                                          upb_MessageValue* out_v,
-                                          uintptr_t* iter) {
+// Iterates the canonical extension entries of `msg` in wire order. Empty
+// repeated extensions are skipped, since they semantically don't exist.
+UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionEntry)(
+    const struct upb_Message* msg, const upb_AuxField** out_ext,
+    uintptr_t* iter) {
   const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   uintptr_t i = *iter;
   if (in) {
     while (i < in->size) {
       upb_TaggedAuxPtr tagged_ptr = in->aux_data[i++];
-      if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
-        const upb_AuxField* ext =
-            upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
-
-        // Empty repeated fields or maps semantically don't exist.
-        if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;
-
-        *out_e = UPB_PRIVATE(_upb_Extension_MiniTableExtension)(ext);
-        *out_v = upb_Extension_GetValue(ext);
-        *iter = i;
-        return true;
-      }
+      if (!upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) continue;
+      const upb_AuxField* ext = upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
+      if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;
+      *out_ext = ext;
+      *iter = i;
+      return true;
     }
   }
   *iter = i;
-
   return false;
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
-    const struct upb_Message* msg, const upb_MiniTableExtension** out_e,
-    upb_MessageValue* out_v, uintptr_t* iter) {
-  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+// Same as _upb_Message_NextExtensionEntry(), but in reverse wire order.
+UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionEntryReverse)(
+    const struct upb_Message* msg, const upb_AuxField** out_ext,
+    uintptr_t* iter) {
+  const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return false;
   uintptr_t i = *iter;
   uint32_t size = in->size;
   while (i < size) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[size - 1 - i];
     i++;
-    if (!upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
-      continue;
-    }
+    if (!upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) continue;
     const upb_AuxField* ext = upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
-
-    // Empty repeated fields or maps semantically don't exist.
     if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;
-
-    *out_e = UPB_PRIVATE(_upb_Extension_MiniTableExtension)(ext);
-    *out_v = upb_Extension_GetValue(ext);
+    *out_ext = ext;
     *iter = i;
     return true;
   }
   *iter = i;
   return false;
+}
+
+UPB_INLINE bool upb_Message_NextExtension(const struct upb_Message* msg,
+                                          const upb_MiniTableExtension** out_e,
+                                          upb_MessageValue* out_v,
+                                          uintptr_t* iter) {
+  const upb_AuxField* ext;
+  if (!UPB_PRIVATE(_upb_Message_NextExtensionEntry)(msg, &ext, iter)) {
+    return false;
+  }
+  *out_e = UPB_PRIVATE(_upb_Extension_MiniTableExtension)(ext);
+  *out_v = upb_Extension_GetValue(ext);
+  return true;
+}
+
+UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
+    const struct upb_Message* msg, const upb_MiniTableExtension** out_e,
+    upb_MessageValue* out_v, uintptr_t* iter) {
+  const upb_AuxField* ext;
+  if (!UPB_PRIVATE(_upb_Message_NextExtensionEntryReverse)(msg, &ext, iter)) {
+    return false;
+  }
+  *out_e = UPB_PRIVATE(_upb_Extension_MiniTableExtension)(ext);
+  *out_v = upb_Extension_GetValue(ext);
+  return true;
 }
 
 UPB_INLINE bool upb_Message_NextExtensionField(const struct upb_Message* msg,
                                                const upb_MiniTableField** out_f,
                                                upb_MessageValue* out_v,
                                                uintptr_t* iter) {
-  const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  uintptr_t i = *iter;
-  if (in) {
-    while (i < in->size) {
-      upb_TaggedAuxPtr tagged_ptr = in->aux_data[i++];
-      if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
-        const upb_AuxField* ext =
-            upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
-
-        // Empty repeated fields or maps semantically don't exist.
-        if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;
-
-        *out_f = upb_Extension_MiniTableField(ext);
-        *out_v = upb_Extension_GetValue(ext);
-        *iter = i;
-        return true;
-      }
-    }
+  const upb_AuxField* ext;
+  if (!UPB_PRIVATE(_upb_Message_NextExtensionEntry)(msg, &ext, iter)) {
+    return false;
   }
-  *iter = i;
-
-  return false;
+  *out_f = upb_Extension_MiniTableField(ext);
+  *out_v = upb_Extension_GetValue(ext);
+  return true;
 }
 
 UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionFieldReverse)(
     const struct upb_Message* msg, const upb_MiniTableField** out_f,
     upb_MessageValue* out_v, uintptr_t* iter) {
-  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  if (!in) return false;
-  uintptr_t i = *iter;
-  uint32_t size = in->size;
-  while (i < size) {
-    upb_TaggedAuxPtr tagged_ptr = in->aux_data[size - 1 - i];
-    i++;
-    if (!upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
-      continue;
-    }
-    const upb_AuxField* ext = upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
-
-    // Empty repeated fields or maps semantically don't exist.
-    if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;
-
-    *out_f = upb_Extension_MiniTableField(ext);
-    *out_v = upb_Extension_GetValue(ext);
-    *iter = i;
-    return true;
+  const upb_AuxField* ext;
+  if (!UPB_PRIVATE(_upb_Message_NextExtensionEntryReverse)(msg, &ext, iter)) {
+    return false;
   }
-  *iter = i;
-  return false;
+  *out_f = upb_Extension_MiniTableField(ext);
+  *out_v = upb_Extension_GetValue(ext);
+  return true;
 }
 
 #ifdef __cplusplus
@@ -5973,7 +5959,7 @@ UPB_NODISCARD UPB_API_INLINE bool UPB_PRIVATE(
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   UPB_ASSERT(a);
   upb_AuxField* ext =
-      UPB_PRIVATE(_upb_Message_CreateNonCanonicalExtension)(msg, e, a);
+      UPB_PRIVATE(_upb_Message_CreateUnknownExtension)(msg, e, a);
   if (!ext) return false;
   UPB_ASSERT(upb_MiniTableField_IsExtension(upb_Extension_MiniTableField(ext)));
   upb_Extension_SetField(ext, val);
@@ -18226,6 +18212,17 @@ typedef enum {
 
 // Represents an unknown field in a message, whether it's in a serialized
 // (upb_StringView) or parsed non-canonical aux field (upb_AuxField*) format.
+//
+// A non-canonical aux field is described by the upb_MiniTableField returned by
+// upb_Extension_MiniTableField(), which is either an extension field of some
+// other message, or a freestanding field, e.g. a copy of a regular field of
+// another message (see upb_Message_Convert()). upb_MiniTableField_IsExtension()
+// tells them apart. Like for an extension field, a freestanding field has no
+// offset or presence, and is never a map.
+//
+// Since the field is not a field of the containing message, never use it with
+// that message (e.g. upb_Message_GetField()); read the value with
+// upb_Extension_GetValue() instead.
 typedef struct upb_MessageUnknown {
   uint8_t type;
   union {
