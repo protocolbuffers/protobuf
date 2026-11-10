@@ -5,7 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-"""Test for google3.net.proto2.python.internal.well_known_types."""
+"""Test for google.protobuf.internal.well_known_types."""
 
 import unittest
 
