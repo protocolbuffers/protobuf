@@ -16,6 +16,8 @@
 
 #include <type_traits>
 
+#include "google/protobuf/private_access.h"
+
 namespace google {
 namespace protobuf {
 
@@ -26,6 +28,7 @@ namespace internal {
 
 struct MessageGlobalsBase;
 struct ClassData;
+struct ClassDataPrefix;
 
 template <typename MessageT>
 const ClassData* GetClassData(const MessageT& msg);
@@ -56,6 +59,17 @@ const ClassData* GetClassData(const MessageT& msg) {
   if constexpr (std::is_same_v<MessageT, MessageLite> ||
                 std::is_same_v<MessageT, Message>) {
     return msg.GetClassData();
+  } else {
+    return MessageTraits<MessageT>::class_data();
+  }
+}
+
+template <typename MessageT>
+inline const ClassDataPrefix* PrivateAccess::GetClassDataPrefix(
+    const MessageT& msg) {
+  if constexpr (std::is_same_v<MessageT, MessageLite> ||
+                std::is_same_v<MessageT, Message>) {
+    return msg.GetClassDataPrefix();
   } else {
     return MessageTraits<MessageT>::class_data();
   }

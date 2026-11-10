@@ -18,6 +18,7 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
+#include "absl/log/absl_check.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/arena_cleanup.h"
@@ -70,12 +71,24 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   uint64_t SpaceUsed() const;
 
   template <AllocationClient alloc_client = AllocationClient::kDefault>
-  void* AllocateAligned(size_t n) {
+  void* AllocateDefaultAligned(size_t n) {
+    ABSL_DCHECK(internal::ArenaAlignDefault{}.IsAligned(n));
     SerialArena* arena;
     if (ABSL_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
-      return arena->AllocateAligned<alloc_client>(n);
+      return arena->AllocateDefaultAligned<alloc_client>(n);
     } else {
-      return AllocateAlignedFallback<alloc_client>(n);
+      return AllocateDefaultAlignedFallback<alloc_client>(n);
+    }
+  }
+
+  void* AllocateOverAligned(size_t n, size_t align) {
+    ABSL_DCHECK_GT(align, ArenaAlignDefault::align);
+    SerialArena* arena;
+    if (ABSL_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+      return arena->AllocateImpl<SerialArena::AllocationMode::kDefault>(
+          n, ArenaAlignAs(align));
+    } else {
+      return AllocateOverAlignedFallback(n, align);
     }
   }
 
@@ -86,17 +99,14 @@ class PROTOBUF_EXPORT ThreadSafeArena {
     }
   }
 
-  // This function allocates n bytes if the common happy case is true and
-  // returns true. Otherwise does nothing and returns false. This strange
-  // semantics is necessary to allow callers to program functions that only
-  // have fallback function calls in tail position. This substantially improves
-  // code for the happy path.
-  PROTOBUF_NDEBUG_INLINE bool MaybeAllocateAligned(size_t n, void** out) {
+  // This function allocates n bytes if the current block has enough space.
+  // Otherwise does nothing and returns `nullptr`.
+  PROTOBUF_NDEBUG_INLINE void* MaybeAllocateAligned(size_t n) {
     SerialArena* arena = nullptr;
     if (ABSL_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
-      return arena->MaybeAllocateAligned(n, out);
+      return arena->AllocateImpl<SerialArena::AllocationMode::kNoFallback>(n);
     }
-    return false;
+    return nullptr;
   }
 
   void* AllocateAlignedWithCleanup(size_t n, size_t align,
@@ -198,7 +208,9 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   }
 
   template <AllocationClient alloc_client = AllocationClient::kDefault>
-  void* AllocateAlignedFallback(size_t n);
+  void* AllocateDefaultAlignedFallback(size_t n);
+
+  void* AllocateOverAlignedFallback(size_t n, size_t align);
 
   // Executes callback function over SerialArenaChunk. Passes const
   // SerialArenaChunk*.

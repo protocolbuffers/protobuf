@@ -1084,6 +1084,7 @@ cc_library(
     visibility = [
         "//:__subpackages__",
     ],
+    deps = [":private_access"],
 )
 
 cc_library(
@@ -2574,6 +2575,7 @@ cc_test(
         ":arena",
         ":cc_lite_test_protos",
         ":cc_test_protos",
+        ":class_data",
         ":internal_visibility",
         ":lite_test_util",
         ":port",
@@ -2612,6 +2614,7 @@ cc_test(
     deps = [
         ":arena",
         ":cc_test_protos",
+        ":class_data",
         ":internal_visibility",
         ":lite_test_util",
         ":micro_string",

@@ -21,7 +21,9 @@
 #include "google/protobuf/field_with_arena.h"
 #include "google/protobuf/memory_align.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/private_access.h"
 
 
 // Must be included last.
@@ -249,7 +251,8 @@ static Offsets AlignAndAddSizeDynamic(
     case UntypedMapBase::TypeKind::kString:
       return AlignAndAddSize<std::string>(v, max_align);
     case UntypedMapBase::TypeKind::kMessage: {
-      auto* class_data = GetClassData(*value_prototype_if_message);
+      auto* class_data =
+          PrivateAccess::GetClassDataPrefix(*value_prototype_if_message);
       v = AlignTo(v, class_data->alignment(), max_align);
       return {v, v + class_data->allocation_size()};
     }
