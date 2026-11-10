@@ -5252,6 +5252,23 @@ TEST_F(ValidationErrorTest, ShadowedOptionsWithCordField) {
   EXPECT_THAT(file->DebugString(), testing::HasSubstr("hello"));
 }
 
+TEST_F(ValidationErrorTest, ShadowedOptionsWithLazyField) {
+  const FileDescriptor* file = ParseAndBuildFile(
+      "foo.proto", absl::Substitute(
+                       R"schema(
+            syntax = "proto2";
+            package $0;
+            message FieldOptions {
+              optional bool lazy = 5 [(FieldOptions.a) = {}];
+              optional FieldOptions a = 500
+                  [lazy = true, (FieldOptions.lazy) = false];
+              optional int32 b = 501 [(FieldOptions.a) = { a: {} }];
+            }
+          )schema",
+                       FileOptions::descriptor()->file()->package()));
+  ASSERT_NE(file, nullptr);
+}
+
 TEST_F(ValidationErrorTest, AlreadyDefined) {
   BuildFileWithErrors(
       R"pb(
