@@ -31,6 +31,9 @@ void InternalMetadata::DoSwap<UnknownFieldSet>(UnknownFieldSet* other) {
 template <>
 void InternalMetadata::DeleteOutOfLineHelper<UnknownFieldSet>() {
   delete PtrValue<Container<UnknownFieldSet>>();
+  // TODO:  This store is load-bearing.  Since we are destructing
+  // the message at this point, see if we can eliminate it.
+  ptr_ = nullptr;
 }
 
 }  // namespace internal

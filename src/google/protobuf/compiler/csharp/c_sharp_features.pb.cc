@@ -244,12 +244,12 @@ CSharpFeatures::~CSharpFeatures() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void CSharpFeatures::SharedDtor(
     MessageLite& self) {
   CSharpFeatures& this_ = static_cast<CSharpFeatures&>(self);
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._impl_.~Impl_();
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
+  this_._impl_.~Impl_();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL

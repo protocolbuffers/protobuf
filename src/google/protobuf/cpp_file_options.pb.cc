@@ -260,13 +260,13 @@ CppFileOptions::~CppFileOptions() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void CppFileOptions::SharedDtor(
     MessageLite& self) {
   CppFileOptions& this_ = static_cast<CppFileOptions&>(self);
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.namespace__.Destroy();
   this_._impl_.~Impl_();
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL

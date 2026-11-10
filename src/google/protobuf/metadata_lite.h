@@ -50,7 +50,8 @@ class PROTOBUF_EXPORT InternalMetadata {
   explicit InternalMetadata(Arena* arena) : ptr_(arena) {}
 
   // Delete will delete the unknown fields only if they weren't allocated on an
-  // arena.
+  // arena.  Then it updates the flags so that if you call
+  // have_unknown_fields(), it will return false.
   //
   // It is designed to be used as part of a Message class's destructor call, so
   // that when control eventually gets to ~InternalMetadata(), we don't need to
