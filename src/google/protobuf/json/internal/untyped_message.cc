@@ -463,9 +463,25 @@ absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
   if (!stream.IncrementRecursionDepth()) {
     return MakeTooDeepError();
   }
-  auto limit = stream.ReadLengthAndPushLimit();
-  if (limit == 0) {
+  // Read the length explicitly instead of ReadLengthAndPushLimit(): the
+  // latter returns the *previous* limit, so a truncated length (failed
+  // varint read) pushes a zero-length limit and silently yields an empty
+  // field, and a length larger than the remaining input is clamped to
+  // the enclosing limit by PushLimit, so the inner parse swallows
+  // trailing outer fields.
+  int size = 0;
+  if (!stream.ReadVarintSizeAsInt(&size)) {
+    stream.DecrementRecursionDepth();
     return MakeUnexpectedEofError();
+  }
+  int start = stream.CurrentPosition();
+  auto limit = stream.PushLimit(size);
+  if (stream.BytesUntilLimit() != size) {
+    // The pushed limit did not advance by exactly `size`: the declared
+    // length ran past the enclosing limit (or could not be represented),
+    // so the length is a lie; do not parse into it.
+    stream.DecrementRecursionDepthAndPopLimit(limit);
+    return MakeMalformedLengthDelimError();
   }
 
   switch (field.proto().kind()) {
@@ -526,8 +542,26 @@ absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
       break;
     }
   }
-  // TODO: Remove this suppression.
-  (void)stream.DecrementRecursionDepthAndPopLimit(limit);
+  // The delimited region must be consumed exactly: an inner parse that
+  // stops early would leave bytes to be misparsed as outer fields.
+  // (ConsumedEntireMessage, the value DecrementRecursionDepthAndPopLimit
+  // returns, cannot be used for this on its own: it reports the
+  // legitimate_message_end_ flag, which only ReadTag sets — the string
+  // and packed branches below never call ReadTag, so it is stale/false
+  // for honest fields of those kinds. The position comparison below is
+  // the exact check for every kind.)
+  if (stream.CurrentPosition() - start != size) {
+    stream.DecrementRecursionDepthAndPopLimit(limit);
+    return MakeMalformedLengthDelimError();
+  }
+  // For message fields the inner parse does end via ReadTag, so the flag
+  // is meaningful there: honour it instead of discarding it, as the old
+  // code did with its (void) cast.
+  bool is_message = field.proto().kind() == Field::TYPE_MESSAGE;
+  bool consumed_entire = stream.DecrementRecursionDepthAndPopLimit(limit);
+  if (is_message && !consumed_entire) {
+    return MakeMalformedLengthDelimError();
+  }
   return absl::OkStatus();
 }
 
