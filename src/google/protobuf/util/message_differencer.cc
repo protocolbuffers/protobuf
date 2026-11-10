@@ -609,7 +609,8 @@ bool MessageDifferencer::Compare(const Message& message1,
                                  const Message& message2, int unpacked_any,
                                  std::vector<SpecificField>* parent_fields) {
   // Expand google.protobuf.Any payload if possible.
-  if (message1.GetDescriptor()->full_name() == internal::kAnyFullTypeName) {
+  if (unpack_any_ &&
+      message1.GetDescriptor()->full_name() == internal::kAnyFullTypeName) {
     std::unique_ptr<Message> data1;
     std::unique_ptr<Message> data2;
     if (unpack_any_field_.UnpackAny(message1, &data1) &&

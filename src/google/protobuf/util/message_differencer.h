@@ -88,6 +88,7 @@ class FieldContext;  // declared below MessageDifferencer
 // Note on handling of google.protobuf.Any: MessageDifferencer automatically
 // unpacks Any::value into a Message and compares its individual fields.
 // Messages encoded in a repeated Any cannot be compared using TreatAsMap.
+// This can be disabled with set_unpack_any(false).
 //
 // Note on thread-safety: MessageDifferencer is *not* thread-safe. You need to
 // guard it with a lock to use the same MessageDifferencer instance from
@@ -564,6 +565,13 @@ class PROTOBUF_EXPORT MessageDifferencer {
     report_ignores_ = report_ignores;
   }
 
+  // Tells the differencer whether or not to unpack google.protobuf.Any
+  // messages and compare their payloads field by field. When false, Any
+  // messages are compared as regular messages (i.e. by their raw type_url and
+  // value bytes). This method must be called before Compare. The default for a
+  // new differencer is true.
+  void set_unpack_any(bool unpack_any) { unpack_any_ = unpack_any; }
+
   // Sets the scope of the comparison (as defined in the Scope enumeration
   // above) that is used by this differencer when determining which fields to
   // compare between the messages.
@@ -967,6 +975,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
   bool report_moves_;
   bool report_ignores_;
   bool force_compare_no_presence_ = false;
+  bool unpack_any_ = true;
 
   std::string* output_string_;
 
