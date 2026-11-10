@@ -5232,6 +5232,26 @@ TEST(CustomOptions, FeatureSupportValid) {
 
 // ===================================================================
 
+TEST_F(ValidationErrorTest, ShadowedOptionsWithCordField) {
+  const FileDescriptor* file = ParseAndBuildFile(
+      "foo.proto", absl::Substitute(
+                       R"schema(
+            syntax = "proto2";
+            package $0;
+            message Opt { optional string a = 1 [ctype = CORD]; }
+            message FileOptions {
+              optional Opt non_ext = 500;
+              extensions 1000 to max;
+            }
+            extend FileOptions { optional Opt ext = 1000; }
+            option non_ext = {};
+            option (ext) = { a: "hello" };
+          )schema",
+                       FileOptions::descriptor()->file()->package()));
+  ASSERT_NE(file, nullptr);
+  EXPECT_THAT(file->DebugString(), testing::HasSubstr("hello"));
+}
+
 TEST_F(ValidationErrorTest, AlreadyDefined) {
   BuildFileWithErrors(
       R"pb(
