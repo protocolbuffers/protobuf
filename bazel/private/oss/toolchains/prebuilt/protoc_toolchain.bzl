@@ -30,9 +30,23 @@ def _prebuilt_protoc_repo_impl(rctx):
         rctx.attr.platform,
     )
     artifact = RELEASED_BINARY_INTEGRITY[filename]
+    if type(artifact) == "string":
+        # Legacy format ("<filename>": "<sha256>"). The release pipeline only
+        # writes it for branches before 37.x, but accepting it here means a
+        # writer/reader version mismatch can never break a release. The archive
+        # is always on the GitHub release named by RELEASE_VERSION.
+        url = "https://github.com/protocolbuffers/protobuf/releases/download/{}/{}".format(
+            RELEASE_VERSION,
+            filename,
+        )
+        sha256 = artifact
+    else:
+        # Current format: "<filename>": {"url": "...", "sha256": "<sha256>"}.
+        url = artifact["url"]
+        sha256 = artifact["sha256"]
     rctx.download_and_extract(
-        url = artifact["url"],
-        sha256 = artifact["sha256"],
+        url = url,
+        sha256 = sha256,
     )
 
     rctx.file("BUILD.bazel", """\
