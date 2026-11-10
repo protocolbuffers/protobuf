@@ -70,6 +70,11 @@ struct MemoryAlign {
         << "Alignment not a power of 2: " << align;
   }
 
+  template <typename T>
+  static constexpr MemoryAlign Of() {
+    return MemoryAlign{alignof(T)};
+  }
+
   constexpr bool IsAligned(size_t n) const { return (n & (align - 1)) == 0U; }
 
   template <typename T>

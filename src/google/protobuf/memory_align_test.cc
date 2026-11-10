@@ -7,6 +7,8 @@
 
 #include "google/protobuf/memory_align.h"
 
+#include <cstdint>
+
 #include <gtest/gtest.h>
 
 namespace google {
@@ -102,6 +104,16 @@ TEST(ArenaAlignDefault, IsAligned) {
   EXPECT_FALSE(align_default.IsAligned(9));
   EXPECT_FALSE(align_default.IsAligned(15));
   EXPECT_TRUE(align_default.IsAligned(16));
+}
+
+TEST(MemoryAlign, Of) {
+  EXPECT_EQ(MemoryAlign::Of<void*>().align, alignof(void*));
+  EXPECT_EQ(MemoryAlign::Of<bool>().align, alignof(bool));
+  EXPECT_EQ(MemoryAlign::Of<char>().align, alignof(char));
+  EXPECT_EQ(MemoryAlign::Of<int8_t>().align, alignof(int8_t));
+  EXPECT_EQ(MemoryAlign::Of<int16_t>().align, alignof(int16_t));
+  EXPECT_EQ(MemoryAlign::Of<int32_t>().align, alignof(int32_t));
+  EXPECT_EQ(MemoryAlign::Of<int64_t>().align, alignof(int64_t));
 }
 
 TEST(MemoryAlign, Align) {

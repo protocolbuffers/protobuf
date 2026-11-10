@@ -639,7 +639,7 @@ void ThreadSafeArena::InitializeWithPolicy(const AllocationPolicy& policy) {
     return;
   }
   new (p) AllocationPolicy{policy};
-  ABSL_DCHECK(MemoryAlign{alignof(AllocationPolicy)}.IsAligned(p));
+  ABSL_DCHECK(MemoryAlign::Of<AllocationPolicy>().IsAligned(p));
   alloc_policy_.set_policy(reinterpret_cast<AllocationPolicy*>(p));
   ABSL_DCHECK_POLICY_FLAGS_();
 

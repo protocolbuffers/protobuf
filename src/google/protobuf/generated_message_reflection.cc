@@ -3764,7 +3764,7 @@ const MapFieldBase* Reflection::GetMapData(const Message& message,
 
 template <typename T>
 static uint32_t AlignTo(uint32_t v) {
-  return static_cast<uint32_t>(internal::MemoryAlign{alignof(T)}.Ceil(v));
+  return static_cast<uint32_t>(internal::MemoryAlign::Of<T>().Ceil(v));
 }
 
 static internal::TailCallParseFunc GetFastParseFunction(
