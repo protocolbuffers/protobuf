@@ -511,7 +511,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
                  const_iterator last) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Gets the Arena on which this RepeatedField stores its elements.
-  [[nodiscard]] inline Arena* GetArena() {
+  [[nodiscard]] Arena* GetArena() {
     // Note: we make this function non-const to force callers to call the
     // `mutable_*` accessor on the repeated field before calling `GetArena()`,
     // which initializes the field if it is split. If this method were const,
