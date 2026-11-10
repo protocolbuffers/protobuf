@@ -52,6 +52,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <type_traits>
 
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
@@ -60,39 +61,43 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-struct MemoryAlign {
+template <typename AlignT>
+struct MemoryAlignImpl {
   static constexpr size_t kMinArenaAlignment = 8;
 
-  size_t align;
+  AlignT align_val;
 
-  constexpr explicit MemoryAlign(size_t align) : align(align) {
-    ABSL_DCHECK(absl::has_single_bit(align))
-        << "Alignment not a power of 2: " << align;
+  constexpr size_t align() const {
+    if constexpr (std::is_integral_v<AlignT>) {
+      return align_val;
+    } else {
+      return align_val.value;
+    }
   }
 
-  template <typename T>
-  static constexpr MemoryAlign Of() {
-    return MemoryAlign{alignof(T)};
+  constexpr explicit MemoryAlignImpl(AlignT align_val) : align_val(align_val) {
+    ABSL_DCHECK(absl::has_single_bit(align()))
+        << "Alignment not a power of 2: " << align();
   }
 
-  constexpr bool IsAligned(size_t n) const { return (n & (align - 1)) == 0U; }
+  constexpr bool IsAligned(size_t n) const { return (n & (align() - 1)) == 0U; }
 
   template <typename T>
   bool IsAligned(T* ptr) const {
-    return (reinterpret_cast<uintptr_t>(ptr) & (align - 1)) == 0U;
+    return (reinterpret_cast<uintptr_t>(ptr) & (align() - 1)) == 0U;
   }
 
   constexpr size_t Ceil(size_t n) const {
-    return (n + align - 1) & ~(align - 1);
+    return (n + align() - 1) & ~(align() - 1);
   }
-  constexpr size_t Floor(size_t n) const { return (n & ~(align - 1)); }
+  constexpr size_t Floor(size_t n) const { return (n & ~(align() - 1)); }
 
   constexpr size_t Padded(size_t n) const;
 
   template <typename T>
   T* Ceil(T* ptr) const {
     uintptr_t intptr = reinterpret_cast<uintptr_t>(ptr);
-    return reinterpret_cast<T*>((intptr + align - 1) & ~(align - 1));
+    return reinterpret_cast<T*>((intptr + align() - 1) & ~(align() - 1));
   }
 
   template <typename T>
@@ -106,10 +111,19 @@ struct MemoryAlign {
   }
 };
 
-struct ArenaAlignDefault : MemoryAlign {
+struct ArenaAlignDefault : MemoryAlignImpl<std::integral_constant<size_t, 8>> {
   static constexpr size_t align = 8;  // NOLINT
 
-  constexpr ArenaAlignDefault() : MemoryAlign{align} {}
+  constexpr ArenaAlignDefault() : MemoryAlignImpl{{}} {}
+};
+
+struct MemoryAlign : MemoryAlignImpl<size_t> {
+  constexpr explicit MemoryAlign(size_t align) : MemoryAlignImpl{align} {}
+
+  template <typename T>
+  static constexpr MemoryAlign Of() {
+    return MemoryAlign{alignof(T)};
+  }
 };
 
 constexpr MemoryAlign ArenaAlignAs(size_t align) {
@@ -118,16 +132,18 @@ constexpr MemoryAlign ArenaAlignAs(size_t align) {
   return MemoryAlign{align};
 }
 
-constexpr size_t MemoryAlign::Padded(size_t n) const {
-  ABSL_DCHECK(ArenaAlignDefault{}.IsAligned(align))
+template <typename AlignT>
+constexpr size_t MemoryAlignImpl<AlignT>::Padded(size_t n) const {
+  ABSL_DCHECK(ArenaAlignDefault{}.IsAligned(align()))
       << "`Padded` is only meant to be used for arena allocations with an "
          "alignment >= `kMinArenaAlignment`.";
   ABSL_DCHECK(ArenaAlignDefault{}.IsAligned(n));
-  return n + align - ArenaAlignDefault{}.align;
+  return n + align() - ArenaAlignDefault{}.align;
 }
 
+template <typename AlignT>
 template <typename T>
-inline T* MemoryAlign::CeilDefaultAligned(T* ptr) const {
+inline T* MemoryAlignImpl<AlignT>::CeilDefaultAligned(T* ptr) const {
   ABSL_DCHECK(ArenaAlignDefault{}.IsAligned(ptr));
   return Ceil(ptr);
 }
