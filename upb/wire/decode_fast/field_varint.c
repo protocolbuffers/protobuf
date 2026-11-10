@@ -10,7 +10,6 @@
 #include <string.h>
 
 #include "upb/base/error_handler.h"
-#include "upb/base/internal/endian.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/enum.h"
@@ -50,9 +49,10 @@ static UPB_PRESERVE_MOST void _upb_FastDecoder_AddEnumValueToUnknown(
   }
 }
 
-static bool upb_DecodeFast_SingleVarint(upb_Decoder* d, const char** ptr,
-                                        void* dst, upb_DecodeFast_Type type,
-                                        upb_DecodeFastNext* next, void* ctx) {
+UPB_FORCEINLINE
+bool upb_DecodeFast_SingleVarint(upb_Decoder* d, const char** ptr, void* dst,
+                                 upb_DecodeFast_Type type,
+                                 upb_DecodeFastNext* next, void* ctx) {
   UPB_ASSERT(dst);
   UPB_UNUSED(ctx);
 
@@ -62,21 +62,31 @@ static bool upb_DecodeFast_SingleVarint(upb_Decoder* d, const char** ptr,
   p = upb_WireReader_ReadVarint(p, &val, EPS(d));
 
   switch (type) {
-    case kUpb_DecodeFast_Bool:
-      val = val != 0;
+    case kUpb_DecodeFast_Bool: {
+      uint8_t val1 = val != 0;
+      UPB_MEMCPY_INLINE(dst, &val1, 1);
       break;
-    case kUpb_DecodeFast_ZigZag32:
-      val = _upb_Decoder_ZigZagDecode32(val);
+    }
+    case kUpb_DecodeFast_Varint32: {
+      uint32_t val4 = (uint32_t)val;
+      UPB_MEMCPY_INLINE(dst, &val4, 4);
+      break;
+    }
+    case kUpb_DecodeFast_ZigZag32: {
+      uint32_t val4 = _upb_Decoder_ZigZagDecode32(val);
+      UPB_MEMCPY_INLINE(dst, &val4, 4);
+      break;
+    }
+    case kUpb_DecodeFast_Varint64:
+      UPB_MEMCPY_INLINE(dst, &val, 8);
       break;
     case kUpb_DecodeFast_ZigZag64:
       val = _upb_Decoder_ZigZagDecode64(val);
+      UPB_MEMCPY_INLINE(dst, &val, 8);
       break;
     default:
-      break;
+      UPB_UNREACHABLE();
   }
-
-  UPB_ASSERT(upb_IsLittleEndian());
-  memcpy(dst, &val, upb_DecodeFast_ValueBytes(type));
   *ptr = p;
   return true;
 }
@@ -110,47 +120,50 @@ static const char* upb_DecodeFast_PackedVarint(upb_EpsCopyInputStream* st,
 
   if (size == 0) return ptr;  // 0-element packed fields are valid.
 
+  upb_Decoder* d = c->decoder;
+  upb_DecodeFast_Type type = c->type;
   upb_DecodeFastArray arr;
   int count = upb_DecodeFast_CountVarints(ptr, ptr + size);
-  int valbytes = upb_DecodeFast_ValueBytes(c->type);
+  int valbytes = upb_DecodeFast_ValueBytes(type);
 
   // If the last byte is a continuation byte, we have a malformed varint.
   if (count == 0 || (ptr[size - 1] & 0x80) != 0) {
-    UPB_DECODEFAST_ERROR(c->decoder, kUpb_DecodeStatus_Malformed, c->ret);
+    UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, c->ret);
     return NULL;
   }
 
-  if (!upb_DecodeFast_GetArrayForAppend(c->decoder, ptr, c->msg, *c->data,
-                                        c->hasbits, &arr, c->type, count,
-                                        c->ret)) {
+  if (!upb_DecodeFast_GetArrayForAppend(d, ptr, c->msg, *c->data, c->hasbits,
+                                        &arr, type, count, c->ret)) {
     return NULL;
   }
 
   UPB_ASSERT(arr.dst);
 
-  if (c->type == kUpb_DecodeFast_ClosedEnum) {
-    while (!upb_EpsCopyInputStream_IsDone(&c->decoder->input, &ptr)) {
+  if (type == kUpb_DecodeFast_ClosedEnum) {
+    const upb_MiniTableEnum* enum_table = c->enum_table;
+    while (!upb_EpsCopyInputStream_IsDone(&d->input, &ptr)) {
+      upb_DecodeFast_AssumeArrayIsSeparate(d, &arr);
       uint64_t val;
-      ptr = upb_WireReader_ReadVarint(ptr, &val, &c->decoder->input);
+      ptr = upb_WireReader_ReadVarint(ptr, &val, &d->input);
       if (UPB_UNLIKELY(!ptr)) {
-        UPB_DECODEFAST_ERROR(c->decoder, kUpb_DecodeStatus_Malformed, c->ret);
+        UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, c->ret);
         return NULL;
       }
-      if (UPB_LIKELY(upb_MiniTableEnum_CheckValue(c->enum_table, val))) {
+      if (UPB_LIKELY(upb_MiniTableEnum_CheckValue(enum_table, val))) {
         uint32_t val32 = val;
-        memcpy(arr.dst, &val32, 4);
+        UPB_MEMCPY_INLINE(arr.dst, &val32, 4);
         arr.dst = UPB_PTR_AT(arr.dst, 4, char);
       } else {
-        _upb_FastDecoder_AddEnumValueToUnknown(c->decoder, c->msg, c->data2,
-                                               c->tagsize, val);
+        _upb_FastDecoder_AddEnumValueToUnknown(d, c->msg, c->data2, c->tagsize,
+                                               val);
       }
     }
   } else {
     int read = 0;
-    while (!upb_EpsCopyInputStream_IsDone(&c->decoder->input, &ptr)) {
+    while (!upb_EpsCopyInputStream_IsDone(&d->input, &ptr)) {
+      upb_DecodeFast_AssumeArrayIsSeparate(d, &arr);
       UPB_ASSERT(read < count);
-      if (!upb_DecodeFast_SingleVarint(c->decoder, &ptr, arr.dst, c->type,
-                                       c->ret, NULL)) {
+      if (!upb_DecodeFast_SingleVarint(d, &ptr, arr.dst, type, c->ret, NULL)) {
         return NULL;
       }
       arr.dst = UPB_PTR_AT(arr.dst, valbytes, char);
@@ -158,7 +171,7 @@ static const char* upb_DecodeFast_PackedVarint(upb_EpsCopyInputStream* st,
     }
   }
 
-  upb_DecodeFastField_SetArraySize(&arr, c->type);
+  upb_DecodeFastField_SetArraySize(&arr, type);
 
   return ptr;
 }
@@ -222,7 +235,7 @@ void upb_DecodeFast_ClosedEnum(upb_Decoder* d, const char** ptr,
       if (UPB_LIKELY(upb_MiniTableEnum_CheckValue(enum_table, val))) {
         _upb_Decoder_Trace(d, 'F');
         uint32_t val32 = val;
-        memcpy(arr.dst, &val32, 4);
+        UPB_MEMCPY_INLINE(arr.dst, &val32, 4);
       } else {
         _upb_FastDecoder_AddEnumValueToUnknown(d, msg, data2, tagsize, val);
         arr.dst = UPB_PTR_AT(arr.dst, -4, char);
@@ -252,7 +265,7 @@ void upb_DecodeFast_ClosedEnum(upb_Decoder* d, const char** ptr,
                                         card, kUpb_DecodeFast_ClosedEnum)) {
         _upb_Decoder_Trace(d, 'F');
         uint32_t val32 = val;
-        memcpy(dst, &val32, 4);
+        UPB_MEMCPY_INLINE(dst, &val32, 4);
       } else {
         return;
       }
