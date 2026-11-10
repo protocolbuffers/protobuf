@@ -6,7 +6,6 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "google/protobuf/testing/file.h"
@@ -17,7 +16,6 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/span.h"
 #include "google/protobuf/compiler/annotation_test_util.h"
 #include "google/protobuf/compiler/command_line_interface.h"
 #include "google/protobuf/compiler/kotlin/generator.h"
