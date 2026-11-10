@@ -42,6 +42,7 @@ protobuf_module!(
 );
 protobuf_module!(import_public_primary_src_rust_proto, "import_public_primary_src", "rust/test");
 protobuf_module!(import_public_rust_proto, "import_public", "rust/test");
+protobuf_module!(lite_enums_rust_proto, "lite_enums", "rust/test");
 protobuf_module!(map_unittest_rust_proto, "map_unittest", "rust/test");
 protobuf_module!(nested_rust_proto, "nested", "rust/test");
 protobuf_module!(no_package_import_rust_proto, "no_package_import", "rust/test");

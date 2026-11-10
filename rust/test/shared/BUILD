@@ -141,7 +141,9 @@ rust_test(
         "//rust:protobuf_cpp_export": "protobuf",
     },
     edition = "2024",
-    rustc_flags = ["--cfg=bzl"],
+    rustc_flags = ["--cfg=bzl"] + select({
+        "//conditions:default": [],
+    }),
     deps = [
         "//rust:protobuf_cpp_export",
         "//rust/test:enums_cpp_rust_proto",
@@ -157,11 +159,49 @@ rust_test(
         "//rust:protobuf_upb_export": "protobuf",
     },
     edition = "2024",
-    rustc_flags = ["--cfg=bzl"],
+    rustc_flags = ["--cfg=bzl"] + select({
+        "//conditions:default": [],
+    }),
     deps = [
         "//rust:protobuf_upb_export",
         "//rust/test:enums_upb_rust_proto",
         "//rust/test:unittest_upb_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
+    name = "lite_enum_cpp_test",
+    srcs = ["lite_enum_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp_export": "protobuf",
+    },
+    edition = "2024",
+    rustc_flags = ["--cfg=bzl"] + select({
+        "//conditions:default": [],
+    }),
+    deps = [
+        "//rust:protobuf_cpp_export",
+        "//rust/test:enums_cpp_rust_proto",
+        "//rust/test:lite_enums_cpp_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
+    name = "lite_enum_upb_test",
+    srcs = ["lite_enum_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb_export": "protobuf",
+    },
+    edition = "2024",
+    rustc_flags = ["--cfg=bzl"] + select({
+        "//conditions:default": [],
+    }),
+    deps = [
+        "//rust:protobuf_upb_export",
+        "//rust/test:enums_upb_rust_proto",
+        "//rust/test:lite_enums_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
