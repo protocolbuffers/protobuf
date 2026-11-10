@@ -164,7 +164,8 @@ absl::StatusOr<absl::Span<char>> DecodeBase64InPlace(absl::Span<char> base64) {
     }
   }
 
-  return absl::MakeSpan(base64).first(static_cast<size_t>(out - base64.data()));
+  return absl::Span<char>(base64.data(),
+                          static_cast<size_t>(out - base64.data()));
 }
 
 template <typename T>
@@ -184,6 +185,95 @@ static absl::Status ParseFloatStringAsInt(
   if (d - static_cast<double>(*out) != 0) {
     return x.loc.Invalid(
         "expected integer, but JSON number had fractional part");
+  }
+
+  // Above 2^53, doubles are spaced 2 or more apart, so a decimal integer
+  // such as 9007199254740993.0 rounds to a neighbouring double
+  // (9007199254740992.0) and the checks above pass it as exact. Re-read
+  // the decimal text exactly (no floating point involved) and require it
+  // to equal the converted value. Below 2^53 every integer is exactly
+  // representable as a double, so the checks above already suffice there.
+  if (d >= 9007199254740992.0 || d <= -9007199254740992.0) {
+    absl::string_view text = x.value.AsView();
+    bool neg = false;
+    if (!text.empty() && (text[0] == '-' || text[0] == '+')) {
+      neg = text[0] == '-';
+      text.remove_prefix(1);
+    }
+    size_t epos = text.find_first_of("eE");
+    int32_t exp10 = 0;
+    absl::string_view mantissa = text;
+    if (epos != absl::string_view::npos) {
+      if (!absl::SimpleAtoi(text.substr(epos + 1), &exp10)) {
+        return x.loc.Invalid("invalid number");
+      }
+      mantissa = text.substr(0, epos);
+    }
+    size_t dot = mantissa.find('.');
+    absl::string_view int_part =
+        dot == absl::string_view::npos ? mantissa : mantissa.substr(0, dot);
+    absl::string_view frac_part =
+        dot == absl::string_view::npos ? absl::string_view()
+                                       : mantissa.substr(dot + 1);
+    // Accumulate the mantissa magnitude digit by digit. Any value that
+    // could legitimately pass here is at most 2^54 (the ParseUInt bound),
+    // so overflow during accumulation means the true value exceeds the
+    // converted one and cannot be equal to it.
+    uint64_t magnitude = 0;
+    bool overflow = false;
+    for (absl::string_view part : {int_part, frac_part}) {
+      for (char c : part) {
+        if (!absl::ascii_isdigit(c)) {
+          return x.loc.Invalid("invalid number");
+        }
+        uint64_t digit = static_cast<uint64_t>(c - '0');
+        if (magnitude > (std::numeric_limits<uint64_t>::max() - digit) / 10) {
+          overflow = true;
+        } else {
+          magnitude = magnitude * 10 + digit;
+        }
+      }
+    }
+    exp10 -= static_cast<int32_t>(frac_part.size());
+    if (!overflow) {
+      if (exp10 >= 0) {
+        for (int32_t i = 0; i < exp10; ++i) {
+          if (magnitude >
+              std::numeric_limits<uint64_t>::max() / 10) {
+            overflow = true;
+            break;
+          }
+          magnitude *= 10;
+        }
+      } else {
+        // A divisor beyond 10^19 exceeds any non-overflow magnitude, so
+        // the value would have a fractional part (magnitude is non-zero
+        // here: the double is at least 2^53).
+        if (exp10 < -19) {
+          return x.loc.Invalid(
+              "expected integer, but JSON number had fractional part");
+        }
+        uint64_t divisor = 1;
+        for (int32_t i = 0; i < -exp10; ++i) {
+          divisor *= 10;
+        }
+        if (magnitude % divisor != 0) {
+          return x.loc.Invalid(
+              "expected integer, but JSON number had fractional part");
+        }
+        magnitude /= divisor;
+      }
+    }
+    // *out is within [-2^53, 2^53] (int64 path) or [0, 2^54] (uint64 path),
+    // so converting it to int64 for the magnitude comparison is safe.
+    int64_t signed_out = static_cast<int64_t>(*out);
+    uint64_t out_magnitude =
+        signed_out < 0 ? static_cast<uint64_t>(-signed_out)
+                       : static_cast<uint64_t>(signed_out);
+    if (overflow || neg != (signed_out < 0) || magnitude != out_magnitude) {
+      return x.loc.Invalid(
+          "JSON number is not exactly representable as an integer");
+    }
   }
 
   return absl::OkStatus();
@@ -779,14 +869,19 @@ absl::Status ParseMap(JsonLexer& lex, Field<Traits> field, Msg<Traits>& msg) {
 }
 
 absl::optional<uint32_t> TakeTimeDigitsWithSuffixAndAdvance(
-    absl::string_view& data, int digits, absl::string_view end) {
-  ABSL_DCHECK_LE(digits, 9);
+    absl::string_view& data, int max_digits, absl::string_view end) {
+  ABSL_DCHECK_LE(max_digits, 9);
 
   uint32_t val = 0;
-  for (int i = 0; i < digits; ++i) {
-    if (data.empty()) return absl::nullopt;
+  int limit = max_digits;
+  while (!data.empty()) {
+    if (limit-- < 0) {
+      return absl::nullopt;
+    }
     uint32_t digit = data[0] - '0';
-    if (digit >= 10) return absl::nullopt;
+    if (digit >= 10) {
+      break;
+    }
 
     val *= 10;
     val += digit;
@@ -847,33 +942,23 @@ PROTOBUF_NOINLINE absl::Status ParseTimestamp(JsonLexer& lex,
       return str->loc.Invalid("bad year in timestamp");
     }
     auto mon = TakeTimeDigitsWithSuffixAndAdvance(data, 2, "-");
-    if (!mon.has_value() || *mon == 0 || *mon > 12) {
+    if (!mon.has_value() || *mon == 0) {
       return str->loc.Invalid("bad month in timestamp");
     }
     auto day = TakeTimeDigitsWithSuffixAndAdvance(data, 2, "T");
     if (!day.has_value() || *day == 0) {
       return str->loc.Invalid("bad day in timestamp");
     }
-    static constexpr uint32_t kDaysPerMonth[] = {0,  31, 28, 31, 30, 31, 30,
-                                                 31, 31, 30, 31, 30, 31};
-    uint32_t max_day = kDaysPerMonth[*mon];
-    if (*mon == 2 &&
-        (*year % 4 == 0 && (*year % 100 != 0 || *year % 400 == 0))) {
-      ++max_day;
-    }
-    if (*day > max_day) {
-      return str->loc.Invalid("bad day in timestamp");
-    }
     auto hour = TakeTimeDigitsWithSuffixAndAdvance(data, 2, ":");
-    if (!hour.has_value() || *hour > 23) {
+    if (!hour.has_value()) {
       return str->loc.Invalid("bad hours in timestamp");
     }
     auto min = TakeTimeDigitsWithSuffixAndAdvance(data, 2, ":");
-    if (!min.has_value() || *min > 59) {
+    if (!min.has_value()) {
       return str->loc.Invalid("bad minutes in timestamp");
     }
     auto sec = TakeTimeDigitsWithSuffixAndAdvance(data, 2, "");
-    if (!sec.has_value() || *sec > 59) {
+    if (!sec.has_value()) {
       return str->loc.Invalid("bad seconds in timestamp");
     }
 
@@ -906,7 +991,7 @@ PROTOBUF_NOINLINE absl::Status ParseTimestamp(JsonLexer& lex,
     switch (data[0]) {
       case '-':
         neg = true;
-        [[fallthrough]];
+        ABSL_FALLTHROUGH_INTENDED;
       case '+': {
         if (data.size() != 6) {
           return str->loc.Invalid("timestamp offset of wrong size.");
@@ -915,8 +1000,7 @@ PROTOBUF_NOINLINE absl::Status ParseTimestamp(JsonLexer& lex,
         data = data.substr(1);
         auto hour = TakeTimeDigitsWithSuffixAndAdvance(data, 2, ":");
         auto mins = TakeTimeDigitsWithSuffixAndAdvance(data, 2, "");
-        if (!hour.has_value() || *hour > 23 || !mins.has_value() ||
-            *mins > 59) {
+        if (!hour.has_value() || !mins.has_value()) {
           return str->loc.Invalid("timestamp offset has bad hours and minutes");
         }
 
@@ -929,16 +1013,10 @@ PROTOBUF_NOINLINE absl::Status ParseTimestamp(JsonLexer& lex,
         if (data.size() == 1) {
           break;
         }
-        [[fallthrough]];
+        ABSL_FALLTHROUGH_INTENDED;
       default:
         return str->loc.Invalid("bad timezone offset");
     }
-  }
-
-  constexpr int64_t kMinTimestampSeconds = -62135596800;
-  constexpr int64_t kMaxTimestampSeconds = 253402300799;
-  if (secs < kMinTimestampSeconds || secs > kMaxTimestampSeconds) {
-    return str->loc.Invalid("timestamp out of range");
   }
 
   Traits::SetInt64(Traits::MustHaveField(desc, 1), msg, secs);
