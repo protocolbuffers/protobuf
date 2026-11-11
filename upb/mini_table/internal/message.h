@@ -201,15 +201,14 @@ UPB_FORCEINLINE const struct upb_MiniTableField* UPB_PRIVATE(
   // arm64, which takes advantage of dual issue on in-order CPUs to maximize
   // what little instruction level parallelism they have.
   /*
-  and     w9, w1, #0xfffffffe
-  add     w9, w9, w1, lsr #1
-  ldr     w10, [x0, w9, uxtw #2]
-  sub     w1, w1, w1, lsr #1
-  add     x9, x0, w9, uxtw #2
-  cmp     w10, w2
-  csel    x0, x0, x9, hi
-  cmp     w1, #1
-  b.hi    .LBB3_1
+  add     w10, w9, w9, lsl #1
+  sub     w8, w8, w9
+  ldr     w11, [x23, w10, uxtw #2]
+  add     x10, x23, w10, uxtw #2
+  lsr     w9, w8, #1
+  cmp     w11, w26
+  csel    x23, x23, x10, hi
+  cbnz    w9, .LBB0_1
    */
   // Doing this requires inhibiting the natural instincts of the compiler to
   // eliminate duplicate work, so we introduce an optimization barrier with
@@ -217,7 +216,8 @@ UPB_FORCEINLINE const struct upb_MiniTableField* UPB_PRIVATE(
   UPB_STATIC_ASSERT(
       offsetof(struct upb_MiniTableField, UPB_ONLYBITS(number)) == 0,
       "Tag number must be first element of minitable field struct");
-  while (search_len > 1) {
+  uint32_t half = search_len >> 1;
+  while (half != 0) {
 #if UPB_ARM64_ASM
 #define UPB_OPT_LAUNDER(val) __asm__("" : "+r"(val))
 #define UPB_OPT_LAUNDER2(val1, val2) __asm__("" : "+r"(val1), "+r"(val2))
@@ -225,17 +225,16 @@ UPB_FORCEINLINE const struct upb_MiniTableField* UPB_PRIVATE(
 #define UPB_OPT_LAUNDER(val)
 #define UPB_OPT_LAUNDER2(val1, val2)
 #endif
-    // (search_len & ~1) is exactly (half_len * 2). Adding half_len yields
-    // (half_len * 3).
+    // Compute (half * 3) in a single shifted-add instruction so the load can
+    // issue without waiting on a preceding mask instruction.
     //
-    // and mid_offset_words, search_len, #0xfffffffe
-    uint32_t mid_offset_words = search_len & 0xfffffffe;
+    // add mid_offset_words, half, half, lsl #1
+    uint32_t mid_offset_words = half + (half << 1);
 
-    // add mid_offset_words, mid_offset_words, search_len, lsr #1
-    mid_offset_words = mid_offset_words + (search_len >> 1);
-
-    UPB_OPT_LAUNDER(search_len);
-    UPB_OPT_LAUNDER(mid_offset_words);
+    // Shrink the search window by half while mid_offset_words finishes its
+    // 2-cycle shifted-add latency on in-order little cores.
+    // sub search_len, search_len, half
+    search_len = search_len - half;
 
     // Arm processors, even little cores, have Address Generation Units capable
     // of performing these extensions, so we achieve more instruction level
@@ -244,24 +243,22 @@ UPB_FORCEINLINE const struct upb_MiniTableField* UPB_PRIVATE(
     //
     // ldr mid_num, [search_base, mid_offset_words, uxtw #2]
     uint32_t mid_num = search_base[mid_offset_words];
-
-    // Shrink the search window by half
-    // sub search_len, search_len, search_len, lsr #1
-    search_len = search_len - (search_len >> 1);
-    UPB_OPT_LAUNDER(search_len);
     UPB_OPT_LAUNDER(mid_offset_words);
 
-    // Calculate the mid pointer for the next iteration
+    // Calculate the mid pointer for the next iteration so it dual-issues with
+    // the load on 2-wide in-order cores (e.g. Cortex-A520).
     // add mid_ptr, search_base, mid_offset_words, uxtw #2
     const uint32_t* mid_ptr = search_base + mid_offset_words;
+    UPB_OPT_LAUNDER2(mid_ptr, search_len);
+
+    // Compute the next half in the load-to-use shadow so the loop tail is a
+    // single cbnz instruction.
+    // lsr half, search_len, #1
+    half = search_len >> 1;
 
     // Forbids LLVM's CSE pass from attempting to merge mid_ptr and mid_num's
-    // math. It sees that it can do a select before adding, rather than after;
-    // but if it orders it that way it creates a longer dependency chain. We
-    // need both as input/output to the same asm block to force them to be
-    // present in different registers at the same time; two separate LAUNDER
-    // usages could get reordered.
-    UPB_OPT_LAUNDER2(mid_ptr, mid_num);
+    // math, and keeps cmp after the address calculation and shift.
+    UPB_OPT_LAUNDER2(half, mid_num);
 
     // cmp + csel
     search_base = UPB_UNPREDICTABLE(mid_num <= number) ? mid_ptr : search_base;
@@ -295,7 +292,7 @@ const struct upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
   const uint32_t i = number - 1;  // 0 wraps to UINT32_MAX
 
   // Ideal case: index into dense fields
-  if (i < m->UPB_PRIVATE(dense_below)) {
+  if (UPB_LIKELY(i < m->UPB_PRIVATE(dense_below))) {
     UPB_ASSERT(m->UPB_ONLYBITS(fields)[i].UPB_ONLYBITS(number) == number);
     return &m->UPB_ONLYBITS(fields)[i];
   }
