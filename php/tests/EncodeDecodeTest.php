@@ -24,6 +24,8 @@ use Foo\TestMessage\Sub;
 use Custom_enum_json\Knight;
 use Custom_enum_json\Knight\Shield;
 use Custom_enum_json\Armor;
+use Custom_enum_json\Weapon;
+use Custom_enum_json\EmptyOptionOrder;
 use Google\Protobuf\DescriptorPool;
 use Foo\TestPackedMessage;
 use Foo\TestRandomFieldOrder;
@@ -2465,6 +2467,79 @@ class EncodeDecodeTest extends TestBase
         $message = new Knight();
         $message->mergeFromJsonString('{"shield":1}');
         $this->assertEquals(Shield::SHIELD_BUCKLER, $message->getShield());
+    }
+
+    public function testEmptyJsonOptionUsesDefaultIdentifier() {
+        $message = new Knight();
+        $message->setArmor(Armor::ARMOR_VAMBRACE);
+        $message->setWeapon(Weapon::WEAPON_SWORD);
+        $message->setEmptyOptionOrder(EmptyOptionOrder::VAL_EMPTY_OPT);
+        $json = $message->serializeToJsonString();
+        $this->assertEquals(
+            '{"armor":"ARMOR_VAMBRACE","weapon":"WEAPON_SWORD","emptyOptionOrder":"VAL_EMPTY_OPT"}',
+            $json
+        );
+
+        $parsed = new Knight();
+        $parsed->mergeFromJsonString($json);
+        $this->assertEquals(Armor::ARMOR_VAMBRACE, $parsed->getArmor());
+        $this->assertEquals(Weapon::WEAPON_SWORD, $parsed->getWeapon());
+        $this->assertEquals(EmptyOptionOrder::VAL_EMPTY_OPT, $parsed->getEmptyOptionOrder());
+    }
+
+    public function testEmptyStringResolvesToExplicitEmptyCustomString() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":"","emptyOptionOrder":""}');
+        $this->assertEquals(Armor::ARMOR_COIF, $message->getArmor());
+        $this->assertEquals(EmptyOptionOrder::VAL_EMPTY_STR, $message->getEmptyOptionOrder());
+        $this->assertEquals(
+            '{"armor":"","emptyOptionOrder":""}',
+            $message->serializeToJsonString()
+        );
+    }
+
+    public function testEmptyJsonOptionRejectsEmptyString() {
+        $message = new Knight();
+        $this->expectException(Exception::class);
+        $message->mergeFromJsonString('{"weapon":""}');
+    }
+
+    public function testEmptyJsonOptionIgnoresEmptyStringWhenLenient() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"weapons":["WEAPON_SWORD","","WEAPON_MACE"]}', true);
+        $this->assertCount(2, $message->getWeapons());
+        $this->assertEquals(Weapon::WEAPON_SWORD, $message->getWeapons()[0]);
+        $this->assertEquals(Weapon::WEAPON_MACE, $message->getWeapons()[1]);
+    }
+
+    public function testAliasedEmptyJsonOptionAndOmitted() {
+        // Test both alias orderings (= {} first on 11, = {} second on 12) so
+        // both C-ext (first-wins) and pure-PHP (last-wins) exercise the = {}
+        // descriptor entry without serializing "".
+        $m1 = new Knight();
+        $m1->setArmor(Armor::ARMOR_CUIRASS);
+        $this->assertContains(
+            $m1->serializeToJsonString(),
+            ['{"armor":"ARMOR_CUIRASS"}', '{"armor":"ARMOR_BREASTPLATE"}']
+        );
+
+        $m2 = new Knight();
+        $m2->setArmor(Armor::ARMOR_TASSET);
+        $this->assertContains(
+            $m2->serializeToJsonString(),
+            ['{"armor":"ARMOR_TASSET"}', '{"armor":"ARMOR_FAULD"}']
+        );
+
+        foreach (['ARMOR_CUIRASS', 'ARMOR_BREASTPLATE'] as $name) {
+            $parsed = new Knight();
+            $parsed->mergeFromJsonString('{"armor":"' . $name . '"}');
+            $this->assertEquals(Armor::ARMOR_CUIRASS, $parsed->getArmor());
+        }
+        foreach (['ARMOR_TASSET', 'ARMOR_FAULD'] as $name) {
+            $parsed = new Knight();
+            $parsed->mergeFromJsonString('{"armor":"' . $name . '"}');
+            $this->assertEquals(Armor::ARMOR_TASSET, $parsed->getArmor());
+        }
     }
 
     public function testEnumDescriptorReflection() {

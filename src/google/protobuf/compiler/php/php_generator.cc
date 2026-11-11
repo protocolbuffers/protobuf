@@ -23,6 +23,7 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/php/names.h"
 #include "google/protobuf/compiler/retention.h"
@@ -664,7 +665,7 @@ void Outdent(io::Printer* printer) {
   printer->Outdent();
 }
 
-std::string BinaryToPhpString(const std::string& src) {
+std::string BinaryToPhpString(absl::string_view src) {
   std::string dest;
   size_t i;
   unsigned char symbol[16] = {
@@ -931,6 +932,20 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
   }
 }
 
+absl::optional<absl::string_view> GetCustomEnumJsonName(
+    const EnumValueDescriptor* value) {
+  const EnumValueOptions& options = value->options();
+  if (&options == &EnumValueOptions::default_instance() ||
+      !options.HasExtension(pb::enumvalue::json)) {
+    return absl::nullopt;
+  }
+  const auto& ext = options.GetExtension(pb::enumvalue::json);
+  if (!ext.has_string()) {
+    return absl::nullopt;
+  }
+  return ext.string();
+}
+
 void GenerateEnumToPool(const EnumDescriptor* en, io::Printer* printer) {
   printer->Print(
       "$pool->addEnum('^name^', "
@@ -941,11 +956,11 @@ void GenerateEnumToPool(const EnumDescriptor* en, io::Printer* printer) {
   for (int i = 0; i < en->value_count(); i++) {
     const EnumValueDescriptor* value = en->value(i);
     std::string custom_json_name;
-    if (value->options().HasExtension(pb::enumvalue::json)) {
-      absl::string_view json_name =
-          value->options().GetExtension(pb::enumvalue::json).string();
+    if (absl::optional<absl::string_view> json_name =
+            GetCustomEnumJsonName(value);
+        json_name.has_value()) {
       custom_json_name =
-          absl::StrCat(", \"", BinaryToPhpString(std::string(json_name)), "\"");
+          absl::StrCat(", \"", BinaryToPhpString(*json_name), "\"");
     }
     printer->Print(
         "->value(\"^name^\", ^number^^custom_json_name^)\n", "name",
@@ -1037,11 +1052,12 @@ void CollectCustomEnumJsonNames(
     std::vector<std::pair<std::string, std::string>>* custom_names) {
   for (int i = 0; i < en->value_count(); ++i) {
     const EnumValueDescriptor* value = en->value(i);
-    if (value->options().HasExtension(pb::enumvalue::json)) {
-      std::string fqn = absl::StrCat(en->full_name(), ".", value->name());
-      std::string custom_name(
-          value->options().GetExtension(pb::enumvalue::json).string());
-      custom_names->push_back({std::move(fqn), std::move(custom_name)});
+    if (absl::optional<absl::string_view> json_name =
+            GetCustomEnumJsonName(value);
+        json_name.has_value()) {
+      custom_names->emplace_back(
+          absl::StrCat(en->full_name(), ".", value->name()),
+          std::string(*json_name));
     }
   }
 }

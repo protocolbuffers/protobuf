@@ -1955,6 +1955,21 @@ class JsonFormatTest(JsonFormatBase):
           json_enumval_custom_string_pb2.Armor.ARMOR_PAULDRON,
           'p\taul\ndron',
       ),
+      (
+          'SameAsName',
+          json_enumval_custom_string_pb2.Armor.ARMOR_GREAVES,
+          'ARMOR_GREAVES',
+      ),
+      (
+          'EmptyOptionOne',
+          json_enumval_custom_string_pb2.Armor.ARMOR_VAMBRACE,
+          'ARMOR_VAMBRACE',
+      ),
+      (
+          'EmptyOptionTwo',
+          json_enumval_custom_string_pb2.Armor.ARMOR_BRACERS,
+          'ARMOR_BRACERS',
+      ),
   )
   def testEnumValue(self, enum_value, expected_string):
     msg = json_enumval_custom_string_pb2.Knight(armor=enum_value)
@@ -2117,6 +2132,9 @@ class JsonFormatTest(JsonFormatBase):
     self.assertIn('gr8 helm', names)
     self.assertEqual(names['gr8 helm'].name, 'ARMOR_GREAT_HELM')
     self.assertEqual(names['gr8 helm'].number, 1)
+    self.assertIn('', names)
+    self.assertEqual(names[''].name, 'ARMOR_COIF')
+    self.assertEqual(names[''].number, 5)
     self.assertIn('sabaton', names)
     self.assertEqual(names['sabaton'].number, 7)
     self.assertIn(names['sabaton'].name, ('ARMOR_SABATON', 'ARMOR_SOLLERET'))
@@ -2124,12 +2142,91 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(names['8'].name, 'ARMOR_HACHI_MAI_DO')
     self.assertEqual(names['8'].number, 8)
     self.assertNotIn('ARMOR_GORGET', names)
+    self.assertNotIn('ARMOR_VAMBRACE', names)
+    self.assertNotIn('ARMOR_BRACERS', names)
 
     # Verify cache is populated and subsequent calls return the cached dict.
     self.assertIn(enum_type, cache)
     self.assertIs(cache[enum_type], names)
     cached_names = json_format._GetCustomJsonEnumNames(enum_type, cache)
     self.assertIs(cached_names, names)
+
+  def testGetCustomJsonEnumNamesOnlyEmptyOptions(self):
+    enum_type = json_enumval_custom_string_pb2.Weapon.DESCRIPTOR
+    cache = {}
+    names = json_format._GetCustomJsonEnumNames(enum_type, cache)
+    self.assertEqual(names, {})
+    self.assertIn(enum_type, cache)
+    self.assertEqual(cache[enum_type], {})
+
+  def testEmptyJsonOptionWeaponAndOrder(self):
+    msg = json_enumval_custom_string_pb2.Knight(
+        weapon=json_enumval_custom_string_pb2.Weapon.WEAPON_SWORD,
+        empty_option_order=(
+            json_enumval_custom_string_pb2.EmptyOptionOrder.VAL_EMPTY_OPT
+        ),
+    )
+    json_output = json_format.MessageToJson(msg)
+    self.assertEqual(
+        json.loads(json_output),
+        {
+            'weapon': 'WEAPON_SWORD',
+            'emptyOptionOrder': 'VAL_EMPTY_OPT',
+        },
+    )
+    parsed = json_enumval_custom_string_pb2.Knight()
+    json_format.Parse(json_output, parsed)
+    self.assertEqual(
+        parsed.weapon, json_enumval_custom_string_pb2.Weapon.WEAPON_SWORD
+    )
+    self.assertEqual(
+        parsed.empty_option_order,
+        json_enumval_custom_string_pb2.EmptyOptionOrder.VAL_EMPTY_OPT,
+    )
+
+    zero_msg = json_enumval_custom_string_pb2.Knight(
+        weapon=json_enumval_custom_string_pb2.Weapon.WEAPON_UNKNOWN
+    )
+    self.assertEqual(
+        json.loads(json_format.MessageToJson(zero_msg)),
+        {'weapon': 'WEAPON_UNKNOWN'},
+    )
+
+  def testEmptyStringResolvesToExplicitEmptyCustomString(self):
+    msg = json_enumval_custom_string_pb2.Knight()
+    json_format.Parse('{"armor": "", "emptyOptionOrder": ""}', msg)
+    self.assertEqual(msg.armor, json_enumval_custom_string_pb2.Armor.ARMOR_COIF)
+    self.assertEqual(
+        msg.empty_option_order,
+        json_enumval_custom_string_pb2.EmptyOptionOrder.VAL_EMPTY_STR,
+    )
+    self.assertEqual(
+        json.loads(json_format.MessageToJson(msg)),
+        {'armor': '', 'emptyOptionOrder': ''},
+    )
+
+  def testEmptyJsonOptionRejectsEmptyString(self):
+    msg = json_enumval_custom_string_pb2.Knight()
+    with self.assertRaises(json_format.ParseError):
+      json_format.Parse('{"weapon": ""}', msg)
+
+    json_format.Parse('{"weapon": ""}', msg, ignore_unknown_fields=True)
+    self.assertFalse(msg.HasField('weapon'))
+
+  def testAliasedEmptyOptionAndOmitted(self):
+    msg = json_enumval_custom_string_pb2.Knight(
+        armor=json_enumval_custom_string_pb2.Armor.ARMOR_CUIRASS
+    )
+    self.assertEqual(
+        json.loads(json_format.MessageToJson(msg)),
+        {'armor': 'ARMOR_CUIRASS'},
+    )
+    for raw_name in ('ARMOR_CUIRASS', 'ARMOR_BREASTPLATE'):
+      parsed = json_enumval_custom_string_pb2.Knight()
+      json_format.Parse('{"armor": "%s"}' % raw_name, parsed)
+      self.assertEqual(
+          parsed.armor, json_enumval_custom_string_pb2.Armor.ARMOR_CUIRASS
+      )
 
   def testGetCustomJsonEnumNamesNoCustomOptions(self):
     enum_type = unittest_pb2.ForeignEnum.DESCRIPTOR

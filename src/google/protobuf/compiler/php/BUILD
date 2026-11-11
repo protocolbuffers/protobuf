@@ -67,6 +67,7 @@ cc_library(
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:charset",
+        "@abseil-cpp//absl/types:optional",
     ],
 )
 

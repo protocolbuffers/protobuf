@@ -30,7 +30,9 @@ namespace {
 
 using ::absl_testing::StatusIs;
 using json_enumval_custom_string::Armor;
+using json_enumval_custom_string::EmptyOptionOrder;
 using json_enumval_custom_string::Knight;
+using json_enumval_custom_string::Weapon;
 using ::testing::HasSubstr;
 
 // Gorget does not have a custom json enumval string set, so it defaults to
@@ -266,6 +268,148 @@ TEST(JsonEnumvalCustomStringTest, ParserSingleElementArrayEnumName) {
       R"json({"armor":["ARMOR_GREAT_HELM"]})json", &msg);
   EXPECT_THAT(status, StatusIs(absl::StatusCode::kInvalidArgument,
                                HasSubstr("invalid JSON")));
+}
+
+TEST(JsonEnumvalCustomStringTest, EmptyJsonOptionUsesDefaultIdentifier) {
+  {
+    Knight msg;
+    msg.set_armor(Armor::ARMOR_VAMBRACE);
+    std::string json_res;
+    EXPECT_OK(json::MessageToJsonString(msg, &json_res));
+    EXPECT_EQ(json_res, R"json({"armor":"ARMOR_VAMBRACE"})json");
+
+    Knight parsed;
+    EXPECT_OK(json::JsonStringToMessage(json_res, &parsed));
+    EXPECT_EQ(parsed.armor(), Armor::ARMOR_VAMBRACE);
+  }
+  {
+    Knight msg;
+    msg.set_armor(Armor::ARMOR_BRACERS);
+    std::string json_res;
+    EXPECT_OK(json::MessageToJsonString(msg, &json_res));
+    EXPECT_EQ(json_res, R"json({"armor":"ARMOR_BRACERS"})json");
+
+    Knight parsed;
+    EXPECT_OK(json::JsonStringToMessage(json_res, &parsed));
+    EXPECT_EQ(parsed.armor(), Armor::ARMOR_BRACERS);
+  }
+  {
+    Knight msg;
+    msg.set_weapon(Weapon::WEAPON_SWORD);
+    std::string json_res;
+    EXPECT_OK(json::MessageToJsonString(msg, &json_res));
+    EXPECT_EQ(json_res, R"json({"weapon":"WEAPON_SWORD"})json");
+
+    Knight parsed;
+    EXPECT_OK(json::JsonStringToMessage(json_res, &parsed));
+    EXPECT_EQ(parsed.weapon(), Weapon::WEAPON_SWORD);
+  }
+  {
+    Knight msg;
+    msg.set_empty_option_order(EmptyOptionOrder::VAL_EMPTY_OPT);
+    std::string json_res;
+    EXPECT_OK(json::MessageToJsonString(msg, &json_res));
+    EXPECT_EQ(json_res, R"json({"emptyOptionOrder":"VAL_EMPTY_OPT"})json");
+
+    Knight parsed;
+    EXPECT_OK(json::JsonStringToMessage(json_res, &parsed));
+    EXPECT_EQ(parsed.empty_option_order(), EmptyOptionOrder::VAL_EMPTY_OPT);
+  }
+}
+
+TEST(JsonEnumvalCustomStringTest, EmptyJsonOptionCaseInsensitiveParsing) {
+  json::ParseOptions parse_options;
+  parse_options.case_insensitive_enum_parsing = true;
+
+  Knight msg;
+  EXPECT_OK(json::JsonStringToMessage(
+      R"json({"armor":"armor_VAMbrace","weapon":"WeApOn_SwOrD","emptyOptionOrder":"val_empty_opt"})json",
+      &msg, parse_options));
+  EXPECT_EQ(msg.armor(), Armor::ARMOR_VAMBRACE);
+  EXPECT_EQ(msg.weapon(), Weapon::WEAPON_SWORD);
+  EXPECT_EQ(msg.empty_option_order(), EmptyOptionOrder::VAL_EMPTY_OPT);
+}
+
+TEST(JsonEnumvalCustomStringTest,
+     EmptyStringResolvesToExplicitEmptyCustomStringNotEmptyOption) {
+  json::ParseOptions caseless_options;
+  caseless_options.case_insensitive_enum_parsing = true;
+
+  // ARMOR_COIF (5) precedes ARMOR_VAMBRACE (10) / ARMOR_BRACERS (11), catching
+  // last-wins map overwrites.
+  {
+    Knight strict_msg;
+    EXPECT_OK(
+        json::JsonStringToMessage(R"json({"armor":""})json", &strict_msg));
+    EXPECT_EQ(strict_msg.armor(), Armor::ARMOR_COIF);
+
+    Knight caseless_msg;
+    EXPECT_OK(json::JsonStringToMessage(R"json({"armor":""})json",
+                                        &caseless_msg, caseless_options));
+    EXPECT_EQ(caseless_msg.armor(), Armor::ARMOR_COIF);
+  }
+
+  // VAL_EMPTY_OPT (1) precedes VAL_EMPTY_STR (2), catching first-wins map
+  // hijacking.
+  {
+    Knight strict_msg;
+    EXPECT_OK(json::JsonStringToMessage(R"json({"emptyOptionOrder":""})json",
+                                        &strict_msg));
+    EXPECT_EQ(strict_msg.empty_option_order(), EmptyOptionOrder::VAL_EMPTY_STR);
+
+    std::string json_res;
+    EXPECT_OK(json::MessageToJsonString(strict_msg, &json_res));
+    EXPECT_EQ(json_res, R"json({"emptyOptionOrder":""})json");
+
+    Knight caseless_msg;
+    EXPECT_OK(json::JsonStringToMessage(R"json({"emptyOptionOrder":""})json",
+                                        &caseless_msg, caseless_options));
+    EXPECT_EQ(caseless_msg.empty_option_order(),
+              EmptyOptionOrder::VAL_EMPTY_STR);
+  }
+}
+
+TEST(JsonEnumvalCustomStringTest, EmptyJsonOptionRejectsEmptyStringInput) {
+  Knight strict_msg;
+  EXPECT_THAT(
+      json::JsonStringToMessage(R"json({"weapon":""})json", &strict_msg),
+      StatusIs(absl::StatusCode::kInvalidArgument));
+
+  json::ParseOptions caseless_options;
+  caseless_options.case_insensitive_enum_parsing = true;
+  Knight caseless_msg;
+  EXPECT_THAT(json::JsonStringToMessage(R"json({"weapon":""})json",
+                                        &caseless_msg, caseless_options),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+
+  json::ParseOptions lenient_options;
+  lenient_options.ignore_unknown_fields = true;
+  Knight lenient_msg;
+  EXPECT_OK(json::JsonStringToMessage(R"json({"weapon":""})json", &lenient_msg,
+                                      lenient_options));
+  EXPECT_FALSE(lenient_msg.has_weapon());
+
+  Knight default_zero_msg;
+  default_zero_msg.set_weapon(Weapon::WEAPON_UNKNOWN);
+  std::string json_res;
+  EXPECT_OK(json::MessageToJsonString(default_zero_msg, &json_res));
+  EXPECT_EQ(json_res, R"json({"weapon":"WEAPON_UNKNOWN"})json");
+}
+
+TEST(JsonEnumvalCustomStringTest, AliasedEmptyOptionAndOmitted) {
+  Knight msg;
+  msg.set_armor(Armor::ARMOR_CUIRASS);
+  std::string json_res;
+  EXPECT_OK(json::MessageToJsonString(msg, &json_res));
+  EXPECT_EQ(json_res, R"json({"armor":"ARMOR_CUIRASS"})json");
+
+  for (absl::string_view payload :
+       {R"json({"armor":"ARMOR_CUIRASS"})json",
+        R"json({"armor":"ARMOR_BREASTPLATE"})json"}) {
+    Knight parsed;
+    EXPECT_OK(json::JsonStringToMessage(payload, &parsed));
+    EXPECT_EQ(parsed.armor(), Armor::ARMOR_CUIRASS);
+  }
 }
 
 }  // namespace
