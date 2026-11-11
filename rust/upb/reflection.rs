@@ -24,8 +24,8 @@ use reflection::message_def::RawMessageDef;
 use reflection::upb_TextEncode;
 
 use upb::{
-    Arena, MessagePtr, RawMiniTable, RawMiniTableEnum, RawMiniTableExtension, StringView,
-    TextEncodeOptions,
+    encode_to_string_with, Arena, MessagePtr, RawMiniTable, RawMiniTableEnum,
+    RawMiniTableExtension, StringView, TextEncodeOptions,
 };
 
 pub use reflection::def_pool::upb_DefPool_Init;
@@ -135,30 +135,14 @@ pub unsafe fn text_encode<'pool, T>(
     let ext_pool_raw = ext_pool.map(|p| p.raw());
     let options = options.to_bits();
 
-    // Only find out the length first to then allocate a buffer of the minimum size
-    // needed.
-    // SAFETY:
-    // - `msg` is valid per safety requirements of this function.
-    // - `def` is valid per safety requirements of this function.
-    // - `ext_pool` is valid per safety requirements of this function.
-    // - `buf` is null and `size` is 0.
-    let min_len =
-        unsafe { upb_TextEncode(msg, def_raw, ext_pool_raw, options, core::ptr::null_mut(), 0) };
-    assert!(min_len < isize::MAX as usize);
-
-    // +1 for the trailing NULL
-    let mut buf = vec![0u8; min_len + 1];
-
-    // SAFETY:
-    // - `msg`, `def`, `ext_pool` are valid per safety requirements of this function.
-    // - `buf` is legally writable for `buf.len()` bytes.
-    let written_len =
-        unsafe { upb_TextEncode(msg, def_raw, ext_pool_raw, options, buf.as_mut_ptr(), buf.len()) };
-    assert_eq!(min_len, written_len);
-
-    // Drop the trailing NULL written by `upb_TextEncode`.
-    buf.truncate(written_len);
-    String::from_utf8_lossy(buf.as_slice()).into_owned()
+    encode_to_string_with(|buf| {
+        // SAFETY:
+        // - `msg` is valid per safety requirements of this function.
+        // - `def` is valid per safety requirements of this function.
+        // - `ext_pool` is valid per safety requirements of this function.
+        // - `buf` is a mutable slice, so `buf.as_mut_ptr()` is writable for `buf.len()` bytes.
+        unsafe { upb_TextEncode(msg, def_raw, ext_pool_raw, options, buf.as_mut_ptr(), buf.len()) }
+    })
 }
 
 fn copy_slice_or_null<T: Copy>(arena: &Arena, slice: &[T]) -> *const T {
