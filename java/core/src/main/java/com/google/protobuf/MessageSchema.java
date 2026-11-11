@@ -533,7 +533,14 @@ final class MessageSchema<T> implements Schema<T> {
       } else {
         Field field = reflectField(messageClass, (String) messageInfoObjects[objectsPosition++]);
         if (fieldType == 9 /* FieldType.MESSAGE */ || fieldType == 17 /* FieldType.GROUP */) {
-          objects[bufferIndex / INTS_PER_FIELD * 2 + 1] = field.getType();
+          // Submessage schemas may be keyed by default instance when classes are merged by an
+          // optimizer; otherwise fall back to the field's declared Class.
+          if (objectsPosition < messageInfoObjects.length
+              && messageInfoObjects[objectsPosition] instanceof GeneratedMessageLite) {
+            objects[bufferIndex / INTS_PER_FIELD * 2 + 1] = messageInfoObjects[objectsPosition++];
+          } else {
+            objects[bufferIndex / INTS_PER_FIELD * 2 + 1] = field.getType();
+          }
         } else if (fieldType == 27 /* FieldType.MESSAGE_LIST */
             || fieldType == 49 /* FieldType.GROUP_LIST */) {
           objects[bufferIndex / INTS_PER_FIELD * 2 + 1] = messageInfoObjects[objectsPosition++];
@@ -2948,7 +2955,7 @@ final class MessageSchema<T> implements Schema<T> {
       int position,
       int limit,
       WireFormat.FieldType fieldType,
-      Class<?> messageType,
+      Object messageDefaultValue,
       Registers registers)
       throws IOException {
     switch (fieldType) {
@@ -2992,7 +2999,7 @@ final class MessageSchema<T> implements Schema<T> {
         position =
             decodeMessageField(
                 Protobuf.getInstance()
-                    .schemaFor((Class<? extends GeneratedMessageLite<?, ?>>) messageType),
+                    .schemaForDefaultInstance((GeneratedMessageLite<?, ?>) messageDefaultValue),
                 data,
                 position,
                 limit,
@@ -3050,12 +3057,7 @@ final class MessageSchema<T> implements Schema<T> {
           if (wireType == metadata.valueType.getWireType()) {
             position =
                 decodeMapEntryValue(
-                    data,
-                    position,
-                    limit,
-                    metadata.valueType,
-                    metadata.defaultValue.getClass(),
-                    registers);
+                    data, position, limit, metadata.valueType, metadata.defaultValue, registers);
             value = (V) registers.object1;
             continue;
           }
@@ -3418,13 +3420,21 @@ final class MessageSchema<T> implements Schema<T> {
     return position;
   }
 
+  @SuppressWarnings("unchecked")
   private Schema getMessageFieldSchema(int pos) {
     final int index = pos / INTS_PER_FIELD * 2;
     Schema schema = (Schema) objects[index];
     if (schema != null) {
       return schema;
     }
-    schema = Protobuf.getInstance().schemaFor((Class) objects[index + 1]);
+    Object messageType = objects[index + 1];
+    schema =
+        messageType instanceof Class
+            // Generated code identifies the sub-message type by its class, a code shrinker that
+            // merges message classes by its default instance.
+            ? Protobuf.getInstance().schemaFor((Class) messageType)
+            : Protobuf.getInstance()
+                .schemaForDefaultInstance((GeneratedMessageLite<?, ?>) messageType);
     objects[index] = schema;
     return schema;
   }
@@ -4099,7 +4109,7 @@ final class MessageSchema<T> implements Schema<T> {
     Schema schema = null;
     for (Object nested : map.values()) {
       if (schema == null) {
-        schema = Protobuf.getInstance().schemaFor(((GeneratedMessageLite<?, ?>) nested).getClass());
+        schema = Protobuf.getInstance().schemaFor((GeneratedMessageLite<?, ?>) nested);
       }
       if (!schema.isInitialized(nested)) {
         return false;

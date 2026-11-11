@@ -167,7 +167,10 @@ public abstract class GeneratedMessageLite<
       return false;
     }
 
-    if (this.getClass() != other.getClass()) {
+    // The default instance identifies the message type; the class may be shared with other types.
+    if (!(other instanceof GeneratedMessageLite)
+        || getDefaultInstanceForType()
+            != ((GeneratedMessageLite<?, ?>) other).getDefaultInstanceForType()) {
       return false;
     }
 
@@ -537,7 +540,7 @@ public abstract class GeneratedMessageLite<
 
     /** All subclasses implement this. */
     public BuilderT mergeFrom(MessageT message) {
-      if (message != null && !getDefaultInstanceForType().getClass().isInstance(message)) {
+      if (message != null && message.getDefaultInstanceForType() != getDefaultInstanceForType()) {
         throw new IllegalArgumentException(
             "mergeFrom(MessageLite) can only merge messages of the same type.");
       }

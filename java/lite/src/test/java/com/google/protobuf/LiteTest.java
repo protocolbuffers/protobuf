@@ -3209,6 +3209,256 @@ public class LiteTest {
     assertThat(after).isSameInstanceAs(parser);
   }
 
+  private static final class DefaultInstanceSubmessageTestMessage
+      extends GeneratedMessageLite<
+          DefaultInstanceSubmessageTestMessage, DefaultInstanceSubmessageTestMessage.Builder> {
+    private static final DefaultInstanceSubmessageTestMessage DEFAULT_INSTANCE;
+
+    static {
+      DefaultInstanceSubmessageTestMessage defaultInstance =
+          new DefaultInstanceSubmessageTestMessage();
+      DEFAULT_INSTANCE = defaultInstance;
+      GeneratedMessageLite.registerDefaultInstance(
+          DefaultInstanceSubmessageTestMessage.class, defaultInstance);
+    }
+
+    private int bitField0_;
+    private Object sub_;
+
+    static final class Builder
+        extends GeneratedMessageLite.Builder<DefaultInstanceSubmessageTestMessage, Builder> {
+      private Builder() {
+        super(DEFAULT_INSTANCE);
+      }
+    }
+
+    @Override
+    protected Object dynamicMethod(MethodToInvoke method, Object arg0, Object arg1) {
+      switch (method) {
+        case NEW_MUTABLE_INSTANCE:
+          return new DefaultInstanceSubmessageTestMessage();
+        case NEW_BUILDER:
+          return new Builder();
+        case BUILD_MESSAGE_INFO:
+          // flags = 0x1 (PROTO2), fieldCount = 1, oneofCount = 0, hasBitsCount = 1,
+          // minFieldNumber = 1, maxFieldNumber = 1, numEntries = 1, mapFieldCount = 0,
+          // repeatedFieldCount = 0, checkInitialized = 0.
+          // Field 1: number=1, type=9 | 0x1000 (MESSAGE | HAS_HAS_BIT), hasBitIndex=0.
+          String info =
+              "\u0001\u0001\u0000\u0001\u0001\u0001\u0001\u0000\u0000\u0000\u0001\u1009\u0000";
+          Object[] objects =
+              new Object[] {"bitField0_", "sub_", TestAllTypesLite.getDefaultInstance()};
+          return newMessageInfo(DEFAULT_INSTANCE, info, objects);
+        case GET_DEFAULT_INSTANCE:
+          return DEFAULT_INSTANCE;
+        default:
+          return null;
+      }
+    }
+  }
+
+  @Test
+  public void testDefaultInstanceSubmessageSchema() throws Exception {
+    TestAllTypesLite nested = TestAllTypesLite.newBuilder().setOptionalInt32(99).build();
+    ByteString.Output rawOut = ByteString.newOutput();
+    CodedOutputStream cos = CodedOutputStream.newInstance(rawOut);
+    cos.writeMessage(1, nested);
+    cos.flush();
+
+    DefaultInstanceSubmessageTestMessage parsed =
+        GeneratedMessageLite.parseFrom(
+            DefaultInstanceSubmessageTestMessage.DEFAULT_INSTANCE, rawOut.toByteString());
+    assertThat(parsed.bitField0_ & 0x1).isEqualTo(0x1);
+    assertThat(parsed.sub_).isEqualTo(nested);
+
+    DefaultInstanceSubmessageTestMessage roundTripped =
+        GeneratedMessageLite.parseFrom(
+            DefaultInstanceSubmessageTestMessage.DEFAULT_INSTANCE, parsed.toByteArray());
+    assertThat(roundTripped).isEqualTo(parsed);
+    assertThat(roundTripped.hashCode()).isEqualTo(parsed.hashCode());
+  }
+
+  /**
+   * Two message types sharing one class, as a whole-program optimizer may produce by merging two
+   * generated classes with the same field layout: type A is {@code optional int32 a = 1;}, type B
+   * is {@code optional string b = 2;}. Each instance knows its type through {@code cid}.
+   */
+  private static final class TwoTypesCarrier
+      extends GeneratedMessageLite<TwoTypesCarrier, TwoTypesCarrier.Builder> {
+    private static final TwoTypesCarrier DEFAULT_A = new TwoTypesCarrier(0);
+    private static final TwoTypesCarrier DEFAULT_B = new TwoTypesCarrier(1);
+
+    static {
+      DEFAULT_A.markImmutable();
+      DEFAULT_B.markImmutable();
+    }
+
+    private final int cid;
+    private int bitField0_;
+    private int a_;
+    private String b_ = "";
+
+    private TwoTypesCarrier(int cid) {
+      this.cid = cid;
+    }
+
+    static final class Builder extends GeneratedMessageLite.Builder<TwoTypesCarrier, Builder> {
+      private Builder(TwoTypesCarrier defaultInstance) {
+        super(defaultInstance);
+      }
+    }
+
+    @Override
+    protected Object dynamicMethod(MethodToInvoke method, Object arg0, Object arg1) {
+      TwoTypesCarrier defaultInstance = cid == 0 ? DEFAULT_A : DEFAULT_B;
+      switch (method) {
+        case NEW_MUTABLE_INSTANCE:
+          return new TwoTypesCarrier(cid);
+        case NEW_BUILDER:
+          return new Builder(defaultInstance);
+        case GET_DEFAULT_INSTANCE:
+          return defaultInstance;
+        case GET_PARSER:
+          return new DefaultInstanceBasedParser<>(defaultInstance);
+        case BUILD_MESSAGE_INFO:
+          // Header as in DefaultInstanceSubmessageTestMessage; the single field is either
+          // number=1, type=4 | 0x1000 (INT32 | HAS_HAS_BIT) or number=2, type=8 | 0x1000
+          // (STRING | HAS_HAS_BIT), hasBitIndex=0 in both cases.
+          if (cid == 0) {
+            return newMessageInfo(
+                defaultInstance,
+                "\u0001\u0001\u0000\u0001\u0001\u0001\u0001\u0000\u0000\u0000\u0001\u1004\u0000",
+                new Object[] {"bitField0_", "a_"});
+          }
+          return newMessageInfo(
+              defaultInstance,
+              "\u0001\u0001\u0000\u0001\u0002\u0002\u0001\u0000\u0000\u0000\u0002\u1008\u0000",
+              new Object[] {"bitField0_", "b_"});
+        default:
+          return null;
+      }
+    }
+  }
+
+  /** A message with a sub-message field of type B, identified by B's default instance. */
+  private static final class TwoTypesCarrierHolder
+      extends GeneratedMessageLite<TwoTypesCarrierHolder, TwoTypesCarrierHolder.Builder> {
+    private static final TwoTypesCarrierHolder DEFAULT_INSTANCE;
+
+    static {
+      TwoTypesCarrierHolder defaultInstance = new TwoTypesCarrierHolder();
+      DEFAULT_INSTANCE = defaultInstance;
+      GeneratedMessageLite.registerDefaultInstance(TwoTypesCarrierHolder.class, defaultInstance);
+    }
+
+    private int bitField0_;
+    private Object sub_;
+
+    static final class Builder
+        extends GeneratedMessageLite.Builder<TwoTypesCarrierHolder, Builder> {
+      private Builder() {
+        super(DEFAULT_INSTANCE);
+      }
+    }
+
+    @Override
+    protected Object dynamicMethod(MethodToInvoke method, Object arg0, Object arg1) {
+      switch (method) {
+        case NEW_MUTABLE_INSTANCE:
+          return new TwoTypesCarrierHolder();
+        case NEW_BUILDER:
+          return new Builder();
+        case BUILD_MESSAGE_INFO:
+          return newMessageInfo(
+              DEFAULT_INSTANCE,
+              "\u0001\u0001\u0000\u0001\u0001\u0001\u0001\u0000\u0000\u0000\u0001\u1009\u0000",
+              new Object[] {"bitField0_", "sub_", TwoTypesCarrier.DEFAULT_B});
+        case GET_DEFAULT_INSTANCE:
+          return DEFAULT_INSTANCE;
+        default:
+          return null;
+      }
+    }
+  }
+
+  private static byte[] encodeInt32Field(int number, int value) throws IOException {
+    ByteString.Output out = ByteString.newOutput();
+    CodedOutputStream cos = CodedOutputStream.newInstance(out);
+    cos.writeInt32(number, value);
+    cos.flush();
+    return out.toByteString().toByteArray();
+  }
+
+  private static byte[] encodeStringField(int number, String value) throws IOException {
+    ByteString.Output out = ByteString.newOutput();
+    CodedOutputStream cos = CodedOutputStream.newInstance(out);
+    cos.writeString(number, value);
+    cos.flush();
+    return out.toByteString().toByteArray();
+  }
+
+  @Test
+  public void testTypesSharingAClass_areKeyedByDefaultInstance() throws Exception {
+    byte[] bytesA = encodeInt32Field(1, 42);
+    byte[] bytesB = encodeStringField(2, "hi");
+
+    TwoTypesCarrier a = GeneratedMessageLite.parseFrom(TwoTypesCarrier.DEFAULT_A, bytesA);
+    TwoTypesCarrier b = GeneratedMessageLite.parseFrom(TwoTypesCarrier.DEFAULT_B, bytesB);
+    assertThat(a.a_).isEqualTo(42);
+    assertThat(b.b_).isEqualTo("hi");
+    assertThat(a.getDefaultInstanceForType()).isSameInstanceAs(TwoTypesCarrier.DEFAULT_A);
+    assertThat(b.getDefaultInstanceForType()).isSameInstanceAs(TwoTypesCarrier.DEFAULT_B);
+    assertThat(a.isInitialized()).isTrue();
+    assertThat(b.isInitialized()).isTrue();
+
+    // Each type serializes with its own schema, even though the class is shared.
+    assertThat(a.toByteArray()).isEqualTo(bytesA);
+    assertThat(b.toByteArray()).isEqualTo(bytesB);
+    assertThat(a.getSerializedSize()).isEqualTo(bytesA.length);
+    assertThat(b.getSerializedSize()).isEqualTo(bytesB.length);
+
+    // Parsers are per type.
+    assertThat(TwoTypesCarrier.DEFAULT_A.getParserForType().parseFrom(bytesA)).isEqualTo(a);
+    assertThat(TwoTypesCarrier.DEFAULT_B.getParserForType().parseFrom(bytesB)).isEqualTo(b);
+
+    // Equality requires the same type, not just the same class and field values.
+    assertThat(TwoTypesCarrier.DEFAULT_A).isNotEqualTo(TwoTypesCarrier.DEFAULT_B);
+    assertThat(a).isNotEqualTo(b);
+    assertThat(GeneratedMessageLite.parseFrom(TwoTypesCarrier.DEFAULT_A, bytesA)).isEqualTo(a);
+    assertThat(GeneratedMessageLite.parseFrom(TwoTypesCarrier.DEFAULT_A, bytesA).hashCode())
+        .isEqualTo(a.hashCode());
+
+    // Builders work per type, and refuse to merge across types.
+    TwoTypesCarrier.Builder builderA =
+        (TwoTypesCarrier.Builder) TwoTypesCarrier.DEFAULT_A.newBuilderForType();
+    assertThat(builderA.mergeFrom(a).build()).isEqualTo(a);
+    TwoTypesCarrier.Builder builderB =
+        (TwoTypesCarrier.Builder) TwoTypesCarrier.DEFAULT_B.newBuilderForType();
+    assertThrows(IllegalArgumentException.class, () -> builderB.mergeFrom(a));
+
+    // Schemas are per type, too.
+    assertThat(Protobuf.getInstance().schemaFor(a))
+        .isNotSameInstanceAs(Protobuf.getInstance().schemaFor(b));
+    assertThat(Protobuf.getInstance().schemaFor(b))
+        .isSameInstanceAs(
+            Protobuf.getInstance().schemaForDefaultInstance(TwoTypesCarrier.DEFAULT_B));
+
+    // As a sub-message, the type is identified by the default instance stored in the schema.
+    ByteString.Output out = ByteString.newOutput();
+    CodedOutputStream cos = CodedOutputStream.newInstance(out);
+    cos.writeMessage(1, b);
+    cos.flush();
+    TwoTypesCarrierHolder holder =
+        GeneratedMessageLite.parseFrom(TwoTypesCarrierHolder.DEFAULT_INSTANCE, out.toByteString());
+    assertThat(holder.sub_).isEqualTo(b);
+    assertThat(((TwoTypesCarrier) holder.sub_).getDefaultInstanceForType())
+        .isSameInstanceAs(TwoTypesCarrier.DEFAULT_B);
+    assertThat(
+            GeneratedMessageLite.parseFrom(
+                TwoTypesCarrierHolder.DEFAULT_INSTANCE, holder.toByteArray()))
+        .isEqualTo(holder);
+  }
+
   private ByteString makeRecursivePayload(int depth) throws IOException {
     ByteString payload = ByteString.copyFromUtf8("payload");
     for (int i = 0; i < depth; ++i) {

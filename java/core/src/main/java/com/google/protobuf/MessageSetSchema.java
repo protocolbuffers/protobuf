@@ -146,9 +146,8 @@ final class MessageSetSchema<T> implements Schema<T> {
             position =
                 ArrayDecoders.decodeMessageField(
                     Protobuf.getInstance()
-                        .schemaFor(
-                            ((GeneratedMessageLite<?, ?>) extension.getMessageDefaultInstance())
-                                .getClass()),
+                        .schemaForDefaultInstance(
+                            (GeneratedMessageLite<?, ?>) extension.getMessageDefaultInstance()),
                     data,
                     position,
                     limit,
@@ -192,9 +191,8 @@ final class MessageSetSchema<T> implements Schema<T> {
               position =
                   ArrayDecoders.decodeMessageField(
                       Protobuf.getInstance()
-                          .schemaFor(
-                              ((GeneratedMessageLite<?, ?>) extension.getMessageDefaultInstance())
-                                  .getClass()),
+                          .schemaForDefaultInstance(
+                              (GeneratedMessageLite<?, ?>) extension.getMessageDefaultInstance()),
                       data,
                       position,
                       limit,

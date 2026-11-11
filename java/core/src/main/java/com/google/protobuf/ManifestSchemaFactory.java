@@ -37,8 +37,24 @@ final class ManifestSchemaFactory {
               + messageType.getName());
     }
 
-    MessageInfo messageInfo = messageInfoFactory.messageInfoFor(messageType);
+    return createSchema(messageType, messageInfoFactory.messageInfoFor(messageType));
+  }
 
+  /**
+   * Creates the schema of the message type whose default instance is {@code defaultInstance}.
+   *
+   * <p>Unlike {@link #createSchema(Class)}, this does not assume that the class identifies the
+   * message type: a code shrinker may merge several message types into one class.
+   */
+  @SuppressWarnings("unchecked")
+  <T extends GeneratedMessageLite<?, ?>> Schema<T> createSchemaForDefaultInstance(
+      T defaultInstance) {
+    return createSchema(
+        (Class<T>) defaultInstance.getClass(),
+        GeneratedMessageInfoFactory.messageInfoForDefaultInstance(defaultInstance));
+  }
+
+  private static <T> Schema<T> createSchema(Class<T> messageType, MessageInfo messageInfo) {
     // MessageSet has a special schema.
     if (messageInfo.isMessageSetWireFormat()) {
       return MessageSetSchema.newSchema(

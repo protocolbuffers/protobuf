@@ -246,7 +246,9 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
               Object oldValue = extensions.getField(extension.descriptor);
               if (oldValue instanceof GeneratedMessageLite) {
                 Schema extSchema =
-                    Protobuf.getInstance().schemaFor((GeneratedMessageLite<?, ?>) oldValue);
+                    Protobuf.getInstance()
+                        .schemaForDefaultInstance(
+                            (GeneratedMessageLite<?, ?>) extension.getMessageDefaultInstance());
                 if (!((GeneratedMessageLite<?, ?>) oldValue).isMutable()) {
                   Object newValue = extSchema.newInstance();
                   extSchema.mergeFrom(newValue, oldValue);
@@ -258,8 +260,11 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
               }
             }
             value =
-                reader.readGroup(
-                    extension.getMessageDefaultInstance().getClass(), extensionRegistry);
+                reader.readGroupBySchemaWithCheck(
+                    Protobuf.getInstance()
+                        .schemaForDefaultInstance(
+                            (GeneratedMessageLite<?, ?>) extension.getMessageDefaultInstance()),
+                    extensionRegistry);
             break;
 
           case MESSAGE:
@@ -270,7 +275,9 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
               Object oldValue = extensions.getField(extension.descriptor);
               if (oldValue instanceof GeneratedMessageLite) {
                 Schema extSchema =
-                    Protobuf.getInstance().schemaFor((GeneratedMessageLite<?, ?>) oldValue);
+                    Protobuf.getInstance()
+                        .schemaForDefaultInstance(
+                            (GeneratedMessageLite<?, ?>) extension.getMessageDefaultInstance());
                 if (!((GeneratedMessageLite<?, ?>) oldValue).isMutable()) {
                   Object newValue = extSchema.newInstance();
                   extSchema.mergeFrom(newValue, oldValue);
@@ -282,8 +289,11 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
               }
             }
             value =
-                reader.readMessage(
-                    extension.getMessageDefaultInstance().getClass(), extensionRegistry);
+                reader.readMessageBySchemaWithCheck(
+                    Protobuf.getInstance()
+                        .schemaForDefaultInstance(
+                            (GeneratedMessageLite<?, ?>) extension.getMessageDefaultInstance()),
+                    extensionRegistry);
             break;
 
           case ENUM:
@@ -440,7 +450,7 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
                   descriptor.getNumber(),
                   (List<?>) extension.getValue(),
                   writer,
-                  Protobuf.getInstance().schemaFor(data.get(0).getClass()));
+                  Protobuf.getInstance().schemaFor((GeneratedMessageLite<?, ?>) data.get(0)));
             }
           }
           break;
@@ -453,7 +463,7 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
                   descriptor.getNumber(),
                   (List<?>) extension.getValue(),
                   writer,
-                  Protobuf.getInstance().schemaFor(data.get(0).getClass()));
+                  Protobuf.getInstance().schemaFor((GeneratedMessageLite<?, ?>) data.get(0)));
             }
           }
           break;
@@ -512,15 +522,13 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
           writer.writeGroup(
               descriptor.getNumber(),
               extension.getValue(),
-              Protobuf.getInstance()
-                  .schemaFor(((GeneratedMessageLite<?, ?>) extension.getValue()).getClass()));
+              Protobuf.getInstance().schemaFor((GeneratedMessageLite<?, ?>) extension.getValue()));
           break;
         case MESSAGE:
           writer.writeMessage(
               descriptor.getNumber(),
               extension.getValue(),
-              Protobuf.getInstance()
-                  .schemaFor(((GeneratedMessageLite<?, ?>) extension.getValue()).getClass()));
+              Protobuf.getInstance().schemaFor((GeneratedMessageLite<?, ?>) extension.getValue()));
           break;
       }
     }
@@ -542,7 +550,11 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
     GeneratedMessageLite.GeneratedExtension<?, ?> extension =
         (GeneratedMessageLite.GeneratedExtension<?, ?>) extensionObject;
     Object value =
-        reader.readMessage(extension.getMessageDefaultInstance().getClass(), extensionRegistry);
+        reader.readMessageBySchemaWithCheck(
+            Protobuf.getInstance()
+                .schemaForDefaultInstance(
+                    (GeneratedMessageLite<?, ?>) extension.getMessageDefaultInstance()),
+            extensionRegistry);
     extensions.setField(extension.descriptor, value);
   }
 
