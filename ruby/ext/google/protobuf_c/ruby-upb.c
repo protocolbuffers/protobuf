@@ -8808,6 +8808,7 @@ bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
   size_t new_size;
   const bool ok = !upb_AddOverflow(arr->UPB_PRIVATE(size), count, &new_size);
   UPB_ASSERT(ok);
+  if (UPB_UNLIKELY(!ok)) return false;
   const size_t oldsize = arr->UPB_PRIVATE(size);
   if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(arr, new_size, arena)) {
     return false;
@@ -9111,19 +9112,21 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
 bool _upb_Map_Reserve(upb_Map* map, size_t size, upb_Arena* arena) {
   UPB_ASSERT(!upb_Map_IsFrozen(map));
   if (size == 0) return true;
+  if (UPB_UNLIKELY(size > SIZE_MAX - 1 - size / 7)) return false;
 
   size_t target = _upb_entries_needed_for(size);
   if (target < 8) target = 8;
   int size_lg2 = upb_Log2Ceiling(target);
+  if (UPB_UNLIKELY(size_lg2 >= 32)) return false;
 
   if (_upb_Map_Capacity(map) >= ((size_t)1 << size_lg2)) {
     return true;
   }
 
   if (map->UPB_PRIVATE(is_strtable)) {
-    return upb_strtable_resize(&map->t.strtable, size_lg2, arena);
+    return upb_strtable_resize(&map->t.strtable, (size_t)size_lg2, arena);
   } else {
-    return upb_inttable_resize(&map->t.inttable, size_lg2, arena);
+    return upb_inttable_resize(&map->t.inttable, (size_t)size_lg2, arena);
   }
 }
 
@@ -10573,6 +10576,9 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
                                const upb_MiniTable* mini_table,
                                upb_Arena* arena) {
   UPB_ASSERT(!upb_Message_IsFrozen(dst));
+  if (UPB_UNLIKELY(mini_table->UPB_PRIVATE(size) < sizeof(upb_Message))) {
+    return NULL;
+  }
   upb_StringView empty_string = upb_StringView_FromDataAndSize(NULL, 0);
   // Only copy message area skipping upb_Message_Internal.
   memcpy(dst + 1, src + 1, mini_table->UPB_PRIVATE(size) - sizeof(upb_Message));
@@ -12726,6 +12732,11 @@ UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
 
 upb_ExtensionRegistryStatus upb_ExtensionRegistry_AddArray(
     upb_ExtensionRegistry* r, const upb_MiniTableExtension** e, size_t count) {
+  size_t byte_len;
+  if (UPB_UNLIKELY(upb_MulOverflow(count, sizeof(*e), &byte_len) ||
+                   (uintptr_t)e > UINTPTR_MAX - byte_len)) {
+    return kUpb_ExtensionRegistryStatus_OutOfMemory;
+  }
   const upb_MiniTableExtension** start = e;
   const upb_MiniTableExtension** end = UPB_PTRADD(e, count);
   upb_ExtensionRegistryStatus status = kUpb_ExtensionRegistryStatus_Ok;
