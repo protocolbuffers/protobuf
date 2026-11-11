@@ -10,9 +10,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <atomic>
 #include <cassert>
 #include <cstdint>  // NOLINT
 #include <limits>
+#include <thread>  // NOLINT
+#include <type_traits>
+#include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -167,6 +171,73 @@ TEST(PortTest, CheckedAddWithLargerTypes) {
   x -= 10;
   EXPECT_DEATH(CheckedAdd(x, 0),
                HasSubstr("Integer overflow in CheckedAdd: -2147483658 + 0"));
+}
+
+TEST(PortTest, HybridAtomicExclusiveAndAtomicAccess) {
+  static_assert(sizeof(HybridAtomic<void*>) == sizeof(void*));
+  static_assert(std::is_trivially_destructible_v<HybridAtomic<void*>>);
+
+  struct Pair {
+    uint32_t a = 0;
+    uint32_t b = 0;
+  };
+  static_assert(sizeof(HybridAtomic<Pair>) == sizeof(Pair));
+
+  HybridAtomic<int> default_val;
+  EXPECT_EQ(default_val.GetExclusive(), 0);
+  EXPECT_EQ(default_val.AsAtomic().load(std::memory_order_acquire), 0);
+
+  HybridAtomic<int> lhs(10);
+  HybridAtomic<int> rhs(20);
+  EXPECT_EQ(lhs.GetExclusive(), 10);
+
+  lhs.SetExclusive(15);
+  EXPECT_EQ(lhs.GetExclusive(), 15);
+
+  lhs.UpdateExclusive([](int& v) { v += 3; });
+  EXPECT_EQ(lhs.GetExclusive(), 18);
+  EXPECT_EQ(lhs.UpdateExclusive([](int& v) {
+    int prev = v;
+    v = 15;
+    return prev;
+  }),
+            18);
+  EXPECT_EQ(lhs.GetExclusive(), 15);
+
+  lhs.SwapExclusive(rhs);
+  EXPECT_EQ(lhs.GetExclusive(), 20);
+  EXPECT_EQ(rhs.GetExclusive(), 15);
+
+  int expected = 20;
+  EXPECT_TRUE(lhs.AsAtomic().compare_exchange_strong(expected, 42));
+  EXPECT_EQ(lhs.GetExclusive(), 42);
+
+  HybridAtomic<Pair> pair_atom(Pair{1, 2});
+  Pair p = pair_atom.AsAtomic().load(std::memory_order_relaxed);
+  EXPECT_EQ(p.a, 1);
+  EXPECT_EQ(p.b, 2);
+}
+
+TEST(PortTest, HybridAtomicConcurrentAtomicAccess) {
+  HybridAtomic<int> val;
+  val.SetExclusive(10);
+
+  std::vector<std::thread> threads;
+  threads.reserve(4);
+  for (int i = 0; i < 4; ++i) {
+    threads.emplace_back([&] {
+      int expected = val.AsAtomic().load(std::memory_order_acquire);
+      while (!val.AsAtomic().compare_exchange_weak(expected, expected + 1,
+                                                   std::memory_order_acq_rel,
+                                                   std::memory_order_acquire)) {
+      }
+    });
+  }
+  for (std::thread& t : threads) {
+    t.join();
+  }
+
+  EXPECT_EQ(val.GetExclusive(), 14);
 }
 
 }  // namespace
