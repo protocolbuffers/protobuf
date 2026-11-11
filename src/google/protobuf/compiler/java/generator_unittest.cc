@@ -928,6 +928,174 @@ TEST_F(JavaGeneratorTest, OneofHasBitsBuildPartial) {
       "parseOneofMsg(input, extensionRegistry);"));
 }
 
+TEST_F(JavaGeneratorTest, LiteExtensionUtf8ValidationEditions) {
+  CreateTempFile("editions_ext.proto",
+                 R"schema(
+    edition = "2023";
+    package proto2_unittest;
+    import "third_party/java/protobuf/java_features.proto";
+    option java_outer_classname = "EditionsExtProto";
+
+    message Extendable {
+      extensions 100 to 200;
+    }
+
+    message Scope {
+      extend Extendable {
+        string nested_ext_verify = 110;
+        string nested_ext_none = 111 [features.utf8_validation = NONE];
+      }
+    }
+
+    extend Extendable {
+      string ext_verify_default = 101;
+      repeated string rep_ext_verify_default = 102;
+      string ext_java_verify = 103 [
+        features.utf8_validation = NONE,
+        features.(pb.java).utf8_validation = VERIFY
+      ];
+      repeated string rep_ext_java_verify = 104 [
+        features.utf8_validation = NONE,
+        features.(pb.java).utf8_validation = VERIFY
+      ];
+      string ext_none = 105 [features.utf8_validation = NONE];
+      repeated string rep_ext_none = 106 [features.utf8_validation = NONE];
+      bytes ext_bytes = 107;
+      int32 ext_int32 = 108;
+      repeated int32 rep_ext_int32 = 109;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_opt=lite "
+      "--java_out=$tmpdir editions_ext.proto");
+
+  ExpectNoErrors();
+  const std::string output_file =
+      PACKAGE_PREFIX "proto2_unittest/EditionsExtProto.java";
+  EXPECT_TRUE(FileGenerated(output_file));
+
+  // Editions VERIFY singular and repeated string extensions emit 8-arg calls
+  // with checkUtf8 = true.
+  EXPECT_TRUE(FileContainsSubstring(
+      output_file,
+      "extVerifyDefault = com.google.protobuf.GeneratedMessageLite\n"
+      "          .newSingularGeneratedExtension(\n"
+      "        " PACKAGE_IMPORT_PREFIX
+      "proto2_unittest.EditionsExtProto.Extendable.getDefaultInstance(),\n"
+      "        \"\",\n"
+      "        null,\n"
+      "        null,\n"
+      "        101,\n"
+      "        com.google.protobuf.WireFormat.FieldType.STRING,\n"
+      "        true,\n"
+      "        java.lang.String.class);"));
+  EXPECT_TRUE(FileContainsSubstring(
+      output_file,
+      "repExtVerifyDefault = com.google.protobuf.GeneratedMessageLite\n"
+      "          .newRepeatedGeneratedExtension(\n"
+      "        " PACKAGE_IMPORT_PREFIX
+      "proto2_unittest.EditionsExtProto.Extendable.getDefaultInstance(),\n"
+      "        null,\n"
+      "        null,\n"
+      "        102,\n"
+      "        com.google.protobuf.WireFormat.FieldType.STRING,\n"
+      "        false,\n"
+      "        true,\n"
+      "        java.lang.String.class);"));
+  EXPECT_TRUE(FileContainsSubstring(
+      output_file,
+      "        103,\n"
+      "        com.google.protobuf.WireFormat.FieldType.STRING,\n"
+      "        true,\n"
+      "        java.lang.String.class);"));
+  EXPECT_TRUE(FileContainsSubstring(
+      output_file,
+      "        104,\n"
+      "        com.google.protobuf.WireFormat.FieldType.STRING,\n"
+      "        false,\n"
+      "        true,\n"
+      "        java.lang.String.class);"));
+  // Nested message-scoped extension also honors VERIFY vs NONE.
+  EXPECT_TRUE(FileContainsSubstring(
+      output_file,
+      "          110,\n"
+      "          com.google.protobuf.WireFormat.FieldType.STRING,\n"
+      "          true,\n"
+      "          java.lang.String.class);"));
+  EXPECT_TRUE(FileContainsSubstring(
+      output_file,
+      "          111,\n"
+      "          com.google.protobuf.WireFormat.FieldType.STRING,\n"
+      "          java.lang.String.class);"));
+
+  // Editions NONE and non-string extensions emit 7-arg calls without checkUtf8.
+  EXPECT_TRUE(FileContainsSubstring(
+      output_file,
+      "        105,\n"
+      "        com.google.protobuf.WireFormat.FieldType.STRING,\n"
+      "        java.lang.String.class);"));
+  EXPECT_TRUE(FileContainsSubstring(
+      output_file,
+      "        106,\n"
+      "        com.google.protobuf.WireFormat.FieldType.STRING,\n"
+      "        false,\n"
+      "        java.lang.String.class);"));
+  EXPECT_TRUE(FileContainsSubstring(
+      output_file,
+      "        107,\n"
+      "        com.google.protobuf.WireFormat.FieldType.BYTES,\n"
+      "        com.google.protobuf.ByteString.class);"));
+  EXPECT_TRUE(FileContainsSubstring(
+      output_file,
+      "        108,\n"
+      "        com.google.protobuf.WireFormat.FieldType.INT32,\n"
+      "        java.lang.Integer.class);"));
+  EXPECT_TRUE(FileContainsSubstring(
+      output_file,
+      "        109,\n"
+      "        com.google.protobuf.WireFormat.FieldType.INT32,\n"
+      "        true,\n"
+      "        java.lang.Integer.class);"));
+}
+
+TEST_F(JavaGeneratorTest, LiteExtensionUtf8ValidationLegacyProto2Unchanged) {
+  CreateTempFile("proto2_ext.proto",
+                 R"schema(
+    syntax = "proto2";
+    package proto2_unittest;
+    option java_outer_classname = "Proto2ExtProto";
+    option java_string_check_utf8 = true;
+
+    message Extendable {
+      extensions 100 to 200;
+    }
+
+    extend Extendable {
+      optional string ext_checked = 101;
+      repeated string rep_ext_checked = 102;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_opt=lite "
+      "--java_out=$tmpdir proto2_ext.proto");
+
+  ExpectNoErrors();
+  const std::string output_file =
+      PACKAGE_PREFIX "proto2_unittest/Proto2ExtProto.java";
+  EXPECT_TRUE(FileGenerated(output_file));
+  EXPECT_TRUE(FileContainsSubstring(
+      output_file,
+      "        101,\n"
+      "        com.google.protobuf.WireFormat.FieldType.STRING,\n"
+      "        java.lang.String.class);"));
+  EXPECT_TRUE(FileContainsSubstring(
+      output_file,
+      "        102,\n"
+      "        com.google.protobuf.WireFormat.FieldType.STRING,\n"
+      "        false,\n"
+      "        java.lang.String.class);"));
+}
+
 }  // namespace
 }  // namespace java
 }  // namespace compiler

@@ -943,7 +943,10 @@ final class ArrayDecoders {
             value = CodedInputStream.decodeZigZag64(registers.long1);
             break;
           case STRING:
-            position = decodeString(data, position, registers);
+            position =
+                extension.descriptor.checkUtf8
+                    ? decodeStringRequireUtf8(data, position, registers)
+                    : decodeString(data, position, registers);
             value = registers.object1;
             break;
           case GROUP:
