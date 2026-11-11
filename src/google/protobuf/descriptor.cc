@@ -2332,7 +2332,7 @@ bool DescriptorPool::IsReadyForCheckingDescriptorExtDecl(
 void DescriptorPool::ClearDirectInputFiles() { direct_input_files_.clear(); }
 
 bool DescriptorPool::InternalIsFileLoaded(absl::string_view filename) const {
-  absl::MutexLockMaybe lock(mutex());
+  ReaderMutexLockMaybe lock(mutex());
   return tables_->FindFile(filename) != nullptr;
 }
 
