@@ -16,6 +16,7 @@
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/class_data.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -46,8 +47,13 @@ namespace internal {
 // allocation and bit 1 == 1 to indicate heap allocation.
 class PROTOBUF_EXPORT InternalMetadata {
  public:
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  constexpr explicit InternalMetadata(const ClassData* class_data)
+      : ptr_(class_data) {}
+#else
   constexpr InternalMetadata() : ptr_(nullptr) {}
   explicit InternalMetadata(Arena* arena) : ptr_(arena) {}
+#endif
 
   // Delete will delete the unknown fields only if they weren't allocated on an
   // arena.  Then it updates the flags so that if you call
@@ -64,6 +70,15 @@ class PROTOBUF_EXPORT InternalMetadata {
     }
   }
 
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  const ClassData* class_data() const {
+    if (ABSL_PREDICT_FALSE(have_unknown_fields())) {
+      return PtrValue<ContainerBase>()->class_data;
+    } else {
+      return PtrValue<const ClassData>();
+    }
+  }
+#else
   PROTOBUF_NDEBUG_INLINE Arena* arena() const {
     if (ABSL_PREDICT_FALSE(have_unknown_fields())) {
       return PtrValue<ContainerBase>()->arena;
@@ -71,6 +86,7 @@ class PROTOBUF_EXPORT InternalMetadata {
       return PtrValue<Arena>();
     }
   }
+#endif
 
   PROTOBUF_NDEBUG_INLINE bool have_unknown_fields() const {
     return HasUnknownFieldsTag();
@@ -110,6 +126,9 @@ class PROTOBUF_EXPORT InternalMetadata {
 
   PROTOBUF_NDEBUG_INLINE void InternalSwap(
       InternalMetadata* PROTOBUF_RESTRICT other) {
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+    ABSL_DCHECK_EQ(class_data(), other->class_data());
+#endif
     std::swap(ptr_, other->ptr_);
   }
 
@@ -144,7 +163,8 @@ class PROTOBUF_EXPORT InternalMetadata {
 
   template <typename U>
   U* PtrValue() const {
-    if constexpr (std::is_same_v<U, Arena>) {
+    if constexpr (std::is_same_v<U, Arena> ||
+                  std::is_same_v<U, const ClassData>) {
       // No mask to remove.
       ABSL_DCHECK_EQ(uptr() & kPtrTagMask, 0u);
       return reinterpret_cast<U*>(uptr());
@@ -159,11 +179,22 @@ class PROTOBUF_EXPORT InternalMetadata {
     }
   }
 
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  Arena* arena() const;
+#endif
+
   // If ptr_'s tag is kTagContainer, it points to an instance of this struct.
   struct ContainerBase {
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+    const ClassData* class_data;
+
+    explicit ContainerBase(const ClassData* input_class_data)
+        : class_data(input_class_data) {}
+#else
     Arena* arena;
 
     explicit ContainerBase(Arena* input_arena) : arena(input_arena) {}
+#endif
   };
 
   template <typename T>
@@ -196,7 +227,12 @@ template <>
 struct InternalMetadata::Container<std::string> : public ContainerBase {
   std::string unknown_fields;
 
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  Container(Arena*, const ClassData* input_class_data)
+      : ContainerBase(input_class_data) {}
+#else
   explicit Container(Arena* arena_param) : ContainerBase(arena_param) {}
+#endif
 
   using InternalArenaConstructable_ = void;
 };

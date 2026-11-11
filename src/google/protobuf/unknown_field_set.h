@@ -27,6 +27,7 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -436,9 +437,15 @@ struct InternalMetadata::Container<UnknownFieldSet>
     : public InternalMetadata::ContainerBase {
   UnknownFieldSet unknown_fields;
 
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  Container(Arena* input_arena, const ClassData* input_class_data)
+      : ContainerBase(input_class_data),
+        unknown_fields(InternalVisibility{}, input_arena) {}
+#else
   explicit Container(Arena* input_arena)
       : ContainerBase(input_arena),
         unknown_fields(InternalVisibility{}, input_arena) {}
+#endif
 
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
