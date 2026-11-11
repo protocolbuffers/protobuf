@@ -94,7 +94,7 @@ class CodedOutputStream
         if (PHP_INT_SIZE == 4) {
             GPBUtil::divideInt64ToInt32($value, $high, $low, $trim);
         } else {
-            $low = $value;
+            $low = $trim ? ($value & 0xFFFFFFFF) : $value;
         }
 
         while (($low >= 0x80 || $low < 0) || $high != 0) {
