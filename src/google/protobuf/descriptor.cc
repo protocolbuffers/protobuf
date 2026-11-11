@@ -9013,6 +9013,36 @@ const FileDescriptor* FileDescriptor::dependency(int index) const {
   return dependencies_[index];
 }
 
+std::vector<const FileDescriptor*> FileDescriptor::GetPublicImportClosure()
+    const {
+  if (public_dependency_count() == 0) {
+    return {this};
+  }
+
+  struct Frame {
+    const FileDescriptor* file;
+    int next_dep;
+  };
+  std::vector<const FileDescriptor*> closure;
+  closure.reserve(public_dependency_count() + 1);
+  absl::flat_hash_set<const FileDescriptor*> visited = {this};
+  std::vector<Frame> stack = {{this, 0}};
+  while (!stack.empty()) {
+    Frame& top = stack.back();
+    if (top.next_dep < top.file->public_dependency_count()) {
+      const FileDescriptor* dep = top.file->public_dependency(top.next_dep++);
+      ABSL_CHECK(dep != nullptr);
+      if (visited.insert(dep).second) {
+        stack.push_back({dep, 0});
+      }
+    } else {
+      closure.push_back(top.file);
+      stack.pop_back();
+    }
+  }
+  return closure;
+}
+
 absl::string_view FileDescriptor::option_dependency_name(int index) const {
   ABSL_DCHECK_LT(index, option_dependency_count());
   return option_dependencies_[index];

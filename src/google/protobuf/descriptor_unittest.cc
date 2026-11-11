@@ -833,6 +833,243 @@ TEST_F(FileDescriptorTest, AbslStringifyWorks) {
 
 // ===================================================================
 
+FileDescriptorProto MakeFileDescriptorProtoWithImports(
+    absl::string_view name,
+    std::initializer_list<absl::string_view> public_deps,
+    std::initializer_list<absl::string_view> plain_deps = {},
+    std::initializer_list<absl::string_view> weak_deps = {},
+    std::initializer_list<absl::string_view> option_deps = {}) {
+  FileDescriptorProto file;
+  file.set_name(name);
+  if (option_deps.size() > 0) {
+    file.set_syntax("editions");
+    file.set_edition(Edition::EDITION_2024);
+  } else {
+    file.set_syntax("proto2");
+  }
+  for (absl::string_view dep : public_deps) {
+    file.add_public_dependency(file.dependency_size());
+    file.add_dependency(dep);
+  }
+  for (absl::string_view dep : plain_deps) {
+    file.add_dependency(dep);
+  }
+  for (absl::string_view dep : weak_deps) {
+    file.add_weak_dependency(file.dependency_size());
+    file.add_dependency(dep);
+  }
+  for (absl::string_view dep : option_deps) {
+    file.add_option_dependency(dep);
+  }
+  return file;
+}
+
+std::vector<absl::string_view> ClosureNames(const FileDescriptor* file) {
+  std::vector<absl::string_view> names;
+  for (const FileDescriptor* member : file->GetPublicImportClosure()) {
+    ABSL_CHECK_NE(member, nullptr);
+    names.push_back(member->name());
+  }
+  return names;
+}
+
+TEST(PublicImportClosureTest, FileWithoutImportsReturnsOnlySelf) {
+  DescriptorPool pool;
+  const FileDescriptor* base =
+      pool.BuildFile(MakeFileDescriptorProtoWithImports("base.proto", {}));
+  ASSERT_NE(base, nullptr);
+
+  EXPECT_THAT(base->GetPublicImportClosure(), ElementsAre(base));
+}
+
+TEST(PublicImportClosureTest, PlainWeakAndOptionImportsAreNotFollowed) {
+  DescriptorPool pool;
+  FileDescriptorProto empty;
+  empty.set_name("google/protobuf/empty.proto");
+  empty.set_package("proto2");
+  empty.set_syntax("proto2");
+  empty.add_message_type()->set_name("Empty");
+  ASSERT_NE(pool.BuildFile(empty), nullptr);
+
+  ASSERT_NE(
+      pool.BuildFile(MakeFileDescriptorProtoWithImports("reexport.proto", {})),
+      nullptr);
+  ASSERT_NE(pool.BuildFile(MakeFileDescriptorProtoWithImports(
+                "plain.proto", {"reexport.proto"})),
+            nullptr);
+  ASSERT_NE(pool.BuildFile(MakeFileDescriptorProtoWithImports(
+                "weak.proto", {"reexport.proto"})),
+            nullptr);
+  ASSERT_NE(pool.BuildFile(MakeFileDescriptorProtoWithImports(
+                "opt.proto", {"reexport.proto"})),
+            nullptr);
+
+  const FileDescriptor* plain_and_weak =
+      pool.BuildFile(MakeFileDescriptorProtoWithImports(
+          "plain_and_weak.proto", /*public_deps=*/{},
+          /*plain_deps=*/{"plain.proto", "google/protobuf/empty.proto"},
+          /*weak_deps=*/{"weak.proto"}));
+  ASSERT_NE(plain_and_weak, nullptr);
+  EXPECT_THAT(plain_and_weak->GetPublicImportClosure(),
+              ElementsAre(plain_and_weak));
+
+  const FileDescriptor* option_importer =
+      pool.BuildFile(MakeFileDescriptorProtoWithImports(
+          "option_importer.proto", /*public_deps=*/{},
+          /*plain_deps=*/{"plain.proto"}, /*weak_deps=*/{},
+          /*option_deps=*/{"opt.proto"}));
+  ASSERT_NE(option_importer, nullptr);
+  EXPECT_THAT(option_importer->GetPublicImportClosure(),
+              ElementsAre(option_importer));
+}
+
+TEST(PublicImportClosureTest, DirectPublicImportsFollowDeclarationOrder) {
+  DescriptorPool pool;
+  ASSERT_NE(
+      pool.BuildFile(MakeFileDescriptorProtoWithImports("first.proto", {})),
+      nullptr);
+  ASSERT_NE(
+      pool.BuildFile(MakeFileDescriptorProtoWithImports("second.proto", {})),
+      nullptr);
+  const FileDescriptor* shim =
+      pool.BuildFile(MakeFileDescriptorProtoWithImports(
+          "shim.proto", {"first.proto", "second.proto"}));
+  ASSERT_NE(shim, nullptr);
+
+  EXPECT_THAT(ClosureNames(shim),
+              ElementsAre("first.proto", "second.proto", "shim.proto"));
+}
+
+TEST(PublicImportClosureTest, TransitivePublicImportsExcludePlainImports) {
+  DescriptorPool pool;
+  ASSERT_NE(
+      pool.BuildFile(MakeFileDescriptorProtoWithImports("hidden.proto", {})),
+      nullptr);
+  ASSERT_NE(pool.BuildFile(MakeFileDescriptorProtoWithImports(
+                "base.proto", /*public_deps=*/{},
+                /*plain_deps=*/{"hidden.proto"})),
+            nullptr);
+  ASSERT_NE(pool.BuildFile(MakeFileDescriptorProtoWithImports("shim.proto",
+                                                              {"base.proto"})),
+            nullptr);
+  const FileDescriptor* top = pool.BuildFile(
+      MakeFileDescriptorProtoWithImports("top.proto", {"shim.proto"}));
+  ASSERT_NE(top, nullptr);
+
+  EXPECT_THAT(ClosureNames(top),
+              ElementsAre("base.proto", "shim.proto", "top.proto"));
+}
+
+TEST(PublicImportClosureTest, DiamondDeduplicatesAtFirstVisit) {
+  DescriptorPool pool;
+  ASSERT_NE(
+      pool.BuildFile(MakeFileDescriptorProtoWithImports("base.proto", {})),
+      nullptr);
+  ASSERT_NE(pool.BuildFile(MakeFileDescriptorProtoWithImports("left.proto",
+                                                              {"base.proto"})),
+            nullptr);
+  ASSERT_NE(pool.BuildFile(MakeFileDescriptorProtoWithImports("right.proto",
+                                                              {"base.proto"})),
+            nullptr);
+  const FileDescriptor* symmetric =
+      pool.BuildFile(MakeFileDescriptorProtoWithImports(
+          "symmetric.proto", {"left.proto", "right.proto"}));
+  const FileDescriptor* indirect_first =
+      pool.BuildFile(MakeFileDescriptorProtoWithImports(
+          "indirect_first.proto", {"left.proto", "base.proto"}));
+  const FileDescriptor* direct_first =
+      pool.BuildFile(MakeFileDescriptorProtoWithImports(
+          "direct_first.proto", {"base.proto", "left.proto"}));
+  ASSERT_NE(symmetric, nullptr);
+  ASSERT_NE(indirect_first, nullptr);
+  ASSERT_NE(direct_first, nullptr);
+
+  EXPECT_THAT(ClosureNames(symmetric),
+              ElementsAre("base.proto", "left.proto", "right.proto",
+                          "symmetric.proto"));
+  EXPECT_THAT(ClosureNames(indirect_first),
+              ElementsAre("base.proto", "left.proto", "indirect_first.proto"));
+  EXPECT_THAT(ClosureNames(direct_first),
+              ElementsAre("base.proto", "left.proto", "direct_first.proto"));
+}
+
+TEST(PublicImportClosureTest, PlaceholderPublicDependencyIsIncluded) {
+  DescriptorPool pool;
+  pool.AllowUnknownDependencies();
+  const FileDescriptor* shim = pool.BuildFile(
+      MakeFileDescriptorProtoWithImports("shim.proto", {"unknown.proto"}));
+  ASSERT_NE(shim, nullptr);
+
+  std::vector<const FileDescriptor*> closure = shim->GetPublicImportClosure();
+  ASSERT_THAT(closure, SizeIs(2));
+  EXPECT_EQ(closure[0]->name(), "unknown.proto");
+  EXPECT_TRUE(closure[0]->is_placeholder());
+  EXPECT_EQ(closure[1], shim);
+}
+
+TEST(PublicImportClosureTest, LazyDependenciesResolveOnDemandAndHandleCycles) {
+  SimpleDescriptorDatabase db;
+  db.Add(MakeFileDescriptorProtoWithImports("base.proto", {}));
+  db.Add(
+      MakeFileDescriptorProtoWithImports("transitive_under_plain.proto", {}));
+  db.Add(MakeFileDescriptorProtoWithImports("plain.proto",
+                                            {"transitive_under_plain.proto"}));
+  db.Add(MakeFileDescriptorProtoWithImports("shim.proto", {"base.proto"},
+                                            {"plain.proto"}));
+  db.Add(MakeFileDescriptorProtoWithImports("top.proto", {"shim.proto"}));
+  // With lazy dependencies enabled, mutual public imports can exist in the
+  // database without being rejected up front.
+  db.Add(
+      MakeFileDescriptorProtoWithImports("cycle_a.proto", {"cycle_b.proto"}));
+  db.Add(
+      MakeFileDescriptorProtoWithImports("cycle_b.proto", {"cycle_a.proto"}));
+
+  DescriptorPool pool(&db);
+  pool.InternalSetLazilyBuildDependencies();
+
+  const FileDescriptor* top = pool.FindFileByName("top.proto");
+  ASSERT_NE(top, nullptr);
+  EXPECT_FALSE(pool.InternalIsFileLoaded("shim.proto"));
+  EXPECT_FALSE(pool.InternalIsFileLoaded("base.proto"));
+
+  EXPECT_THAT(ClosureNames(top),
+              ElementsAre("base.proto", "shim.proto", "top.proto"));
+  EXPECT_TRUE(pool.InternalIsFileLoaded("shim.proto"));
+  EXPECT_TRUE(pool.InternalIsFileLoaded("base.proto"));
+  EXPECT_FALSE(pool.InternalIsFileLoaded("transitive_under_plain.proto"));
+
+  const FileDescriptor* cycle_a = pool.FindFileByName("cycle_a.proto");
+  ASSERT_NE(cycle_a, nullptr);
+  EXPECT_THAT(ClosureNames(cycle_a),
+              ElementsAre("cycle_b.proto", "cycle_a.proto"));
+}
+
+TEST(PublicImportClosureTest, DeepChainDoesNotOverflowStack) {
+  constexpr int kChainLength = 4000;
+  DescriptorPool pool;
+  const FileDescriptor* prev = nullptr;
+  for (int i = 0; i < kChainLength; ++i) {
+    std::string name = absl::StrCat("f", i, ".proto");
+    FileDescriptorProto proto =
+        prev == nullptr
+            ? MakeFileDescriptorProtoWithImports(name, {})
+            : MakeFileDescriptorProtoWithImports(name, {prev->name()});
+    prev = pool.BuildFile(proto);
+    ASSERT_NE(prev, nullptr);
+  }
+
+  std::vector<const FileDescriptor*> closure;
+  closure = prev->GetPublicImportClosure();
+
+  ASSERT_THAT(closure, SizeIs(kChainLength));
+  for (int i = 0; i < kChainLength; ++i) {
+    EXPECT_EQ(closure[i]->name(), absl::StrCat("f", i, ".proto")) << i;
+  }
+  EXPECT_EQ(closure.back(), prev);
+}
+
+// ===================================================================
+
 // Test simple flat messages and fields.
 class DescriptorTest : public testing::Test {
  protected:

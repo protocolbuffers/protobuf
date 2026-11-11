@@ -7,6 +7,7 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <utility>
@@ -252,6 +253,55 @@ TEST_P(PythonGeneratorTest, PyiMessageFieldsUseFullyTypedMappingInitType) {
       "def __init__(self, x: _Optional[_Union[X, _Mapping[_Any, _Any]]] = ..., "
       "xs: _Optional[_Iterable[_Union[X, _Mapping[_Any, _Any]]]] = ...)"
       " -> None: ...");
+}
+
+TEST_P(PythonGeneratorTest, PublicImportDiamondCopiesAliasesOnce) {
+  CreateTempFile("base.proto", R"schema(
+    syntax = "proto3";
+    package pkg;
+    message Base {}
+  )schema");
+  CreateTempFile("left.proto", R"schema(
+    syntax = "proto3";
+    package pkg;
+    import public "base.proto";
+  )schema");
+  CreateTempFile("right.proto", R"schema(
+    syntax = "proto3";
+    package pkg;
+    import public "base.proto";
+  )schema");
+  CreateTempFile("shim.proto", R"schema(
+    syntax = "proto3";
+    package pkg;
+    import public "left.proto";
+    import public "right.proto";
+  )schema");
+  CreateTempFile("consumer.proto", R"schema(
+    syntax = "proto3";
+    package pkg;
+    import "shim.proto";
+    message Consumer {
+      Base b = 1;
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --python_out=$tmpdir "
+      "base.proto left.proto right.proto shim.proto consumer.proto");
+
+  ExpectNoErrors();
+  std::string consumer_py = FileContents("consumer_pb2.py");
+  size_t base_pos = consumer_py.find("base__pb2\n");
+  size_t left_pos = consumer_py.find("left__pb2\n");
+  size_t right_pos = consumer_py.find("right__pb2\n");
+  ASSERT_NE(base_pos, std::string::npos) << consumer_py;
+  ASSERT_NE(left_pos, std::string::npos) << consumer_py;
+  ASSERT_NE(right_pos, std::string::npos) << consumer_py;
+  EXPECT_LT(base_pos, left_pos) << consumer_py;
+  EXPECT_LT(base_pos, right_pos) << consumer_py;
+  EXPECT_EQ(consumer_py.find("base__pb2\n", base_pos + 1), std::string::npos)
+      << consumer_py;
 }
 
 INSTANTIATE_TEST_SUITE_P(PythonGeneratorTest, PythonGeneratorTest,

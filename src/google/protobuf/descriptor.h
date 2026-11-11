@@ -2084,6 +2084,14 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   // These are returned in the order they were defined in the .proto file.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const FileDescriptor* public_dependency(
       int index) const;
+  // Returns this file together with every file it re-exports via
+  // `import public`, directly or transitively, each appearing once. Plain
+  // (non-public), weak, and option imports are not followed.
+  //
+  // Files are ordered so that each file's public dependencies (visited in
+  // declaration order, recursively) precede the file itself, with `this` last.
+  [[nodiscard]] std::vector<const FileDescriptor*> GetPublicImportClosure()
+      const;
 
   // The number of files that are imported for weak fields.
   // The weak dependency list is a subset of the dependency list.
