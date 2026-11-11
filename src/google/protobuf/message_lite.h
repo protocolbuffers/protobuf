@@ -910,14 +910,32 @@ class PROTOBUF_EXPORT MessageLite {
     ::absl::PrefetchToLocalCache(data);
     return data;
   }
+  const internal::ClassDataPrefix* class_data_prefix() const {
+    return class_data();
+  }
+  const internal::ClassDataPrefix* GetClassDataPrefix() const {
+    return GetClassData();
+  }
 #elif defined(PROTOBUF_CUSTOM_VTABLE)
   const internal::ClassData* class_data() const { return _class_data_; }
   const internal::ClassData* GetClassData() const {
     ::absl::PrefetchToLocalCache(_class_data_);
     return class_data();
   }
+  const internal::ClassDataPrefix* class_data_prefix() const {
+    return class_data();
+  }
+  const internal::ClassDataPrefix* GetClassDataPrefix() const {
+    return GetClassData();
+  }
 #else   // PROTOBUF_CUSTOM_VTABLE
   virtual const internal::ClassData* GetClassData() const = 0;
+  const internal::ClassDataPrefix* class_data_prefix() const {
+    return GetClassData();
+  }
+  const internal::ClassDataPrefix* GetClassDataPrefix() const {
+    return GetClassData();
+  }
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
   // NOLINTBEGIN(google3-readability-class-member-naming)
