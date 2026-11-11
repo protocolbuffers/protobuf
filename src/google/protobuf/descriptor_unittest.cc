@@ -15842,6 +15842,7 @@ TEST_F(DescriptorPoolFeaturesTest, ConcurrentSetFeatureSetDefaultsAndLookup) {
   }
 }
 
+
 class DescriptorPoolMemoizationTest : public ::testing::Test {
  protected:
   template <typename Desc, typename Func>
