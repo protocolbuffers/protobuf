@@ -347,8 +347,8 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fjava_2fjava_
     "\002\"F\n\016Utf8Validation\022\033\n\027UTF8_VALIDATION_U"
     "NKNOWN\020\000\022\013\n\007DEFAULT\020\001\022\n\n\006VERIFY\020\002J\004\010\006\020\007:"
     "<\n\004java\022\033.google.protobuf.FeatureSet\030\351\007 "
-    "\001(\0132\020.pb.JavaFeaturesB(\n\023com.google.prot"
-    "obufB\021JavaFeaturesProto"
+    "\001(\0132\020.pb.JavaFeaturesB8\n\023com.google.prot"
+    "obufB\021JavaFeaturesProto\252\003\rPROTOC_EXPORT"
 };
 static const ::_pbi::DescriptorTable* PROTOBUF_NONNULL const
     descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_deps[1] = {
@@ -358,7 +358,7 @@ static ::absl::once_flag descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2f
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto = {
     false,
     false,
-    1223,
+    1239,
     descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
     "google/protobuf/compiler/java/java_features.proto",
     &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_once,

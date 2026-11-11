@@ -236,6 +236,11 @@ bool OptionInterpreter::InterpretSingleOption(
       options->GetDescriptor()->full_name());
   options_descriptor = symbol.descriptor();
   if (options_descriptor == nullptr) {
+    symbol = builder_->FindSymbolNotEnforcingDeps(
+        absl::StrCat("google.protobuf.", options->GetDescriptor()->name()));
+    options_descriptor = symbol.descriptor();
+  }
+  if (options_descriptor == nullptr) {
     // The options message's descriptor was not in the builder's pool, so use
     // the standard version from the generated pool. We're not holding the
     // generated pool's mutex, so we can search it the straightforward way.

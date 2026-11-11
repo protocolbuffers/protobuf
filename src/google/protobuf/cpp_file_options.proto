@@ -11,6 +11,8 @@ package pb.file;
 
 import "google/protobuf/descriptor.proto";
 
+option dllexport_decl = "PROTOBUF_EXPORT";
+
 extend google.protobuf.FileOptions {
   CppFileOptions cpp = 990
       [feature_support = { edition_introduced: EDITION_2026 }];

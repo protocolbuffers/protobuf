@@ -124,15 +124,15 @@ def _generated_hdrs_and_srcs(protos, stage, generator):
         ret += _generated_files(protos, stage, generator, "c")
     return ret
 
-def _stage0_proto_staleness_test(name, src_files, src_rules, strip_prefix, third_party_dir = "3rd_party"):
+def _stage0_proto_staleness_test(name, src_files, src_rules, strip_prefix, third_party_dir = "3rd_party", protoc = _protoc):
     native.genrule(
         name = name + "_generate_bootstrap",
         srcs = src_rules,
         outs = ["bootstrap_generated_sources/" + f.replace("third_party", third_party_dir) for f in _generated_hdrs_and_srcs(src_files, "stage0", "upb")],
-        tools = [_protoc, _upbc("upb", 0)],
+        tools = [protoc, _upbc("upb", 0)],
         cmd =
             _extra_proto_path_setup +
-            "$(location " + _protoc + ") " +
+            "$(execpath " + protoc + ") " +
             "-I. -I$(GENDIR)/" + strip_prefix + " " + _extra_proto_path +
             "--plugin=protoc-gen-upb=$(location " + _upbc("upb", 0) + ") " +
             "--upb_out=bootstrap_stage=0:$(@D)/bootstrap_generated_sources/stage0 " +
@@ -168,7 +168,7 @@ def _stage1_proto_impl(ctx):
     args.add("--" + generator + "_out=bootstrap_stage=1:" + package_dir + "stage1")
     args.add_all(ctx.attr.proto_names)
     ctx.actions.run(
-        executable = ctx.executable._protoc,
+        executable = ctx.executable.protoc,
         tools = [ctx.attr.plugin[DefaultInfo].files_to_run],
         inputs = ctx.files.srcs + [ctx.file._descriptor],
         outputs = ctx.outputs.outs,
@@ -183,9 +183,9 @@ _stage1_proto = rule(
         "outs": attr.output_list(mandatory = True),
         "plugin": attr.label(cfg = "exec", executable = True, mandatory = True),
         "proto_names": attr.string_list(mandatory = True),
+        "protoc": attr.label(default = _protoc, cfg = "exec", executable = True),
         "srcs": attr.label_list(allow_files = [".proto"]),
         "_descriptor": attr.label(default = "//:descriptor_proto_srcs", allow_single_file = True),
-        "_protoc": attr.label(default = _protoc, cfg = "exec", executable = True),
     },
 )
 
@@ -233,6 +233,7 @@ def bootstrap_upb_proto_library(
         deps = [],
         strip_prefix = "",
         third_party_dir = "3rd_party",
+        protoc = _protoc,
         **kwargs):
     """A version of upb_proto_library() that is augmented to allow for bootstrapping the compiler.
 
@@ -252,10 +253,11 @@ def bootstrap_upb_proto_library(
         strip_prefix: Prefix that should be stripped from file names.
         third_party_dir: Subdirectory name to use instead of "third_party" for stage0 checked-in
           files to comply with repository structure rules.
+        protoc: The protoc binary to use for bootstrapping.
         **kwargs: Other arguments that will be passed through to cc_library(), genrule(), and
           upb_proto_library().
     """
-    _stage0_proto_staleness_test(name, src_files, src_rules, strip_prefix, third_party_dir)
+    _stage0_proto_staleness_test(name, src_files, src_rules, strip_prefix, third_party_dir, protoc = protoc)
 
     # stage0 uses checked-in protos, and has no MiniTable.
     _c_library_with_default_copts(
@@ -280,6 +282,7 @@ def bootstrap_upb_proto_library(
             generator = generator,
             plugin = _upbc(generator, 0),
             proto_names = src_files,
+            protoc = protoc,
             visibility = _bootstrap_visibility,
             **kwargs
         )

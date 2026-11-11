@@ -222,7 +222,8 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcpp_5ffeatures_2eproto[
     "\004VIEW\020\001\022\010\n\004CORD\020\002\022\n\n\006STRING\020\003\"@\n\014Repeate"
     "dType\022\031\n\025REPEATED_TYPE_UNKNOWN\020\000\022\n\n\006LEGA"
     "CY\020\001\022\t\n\005PROXY\020\002::\n\003cpp\022\033.google.protobuf"
-    ".FeatureSet\030\350\007 \001(\0132\017.pb.CppFeatures"
+    ".FeatureSet\030\350\007 \001(\0132\017.pb.CppFeaturesB\022\252\003\017"
+    "PROTOBUF_EXPORT"
 };
 static const ::_pbi::DescriptorTable* PROTOBUF_NONNULL const
     descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto_deps[1] = {
@@ -232,7 +233,7 @@ static ::absl::once_flag descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2ep
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto = {
     false,
     false,
-    795,
+    815,
     descriptor_table_protodef_google_2fprotobuf_2fcpp_5ffeatures_2eproto,
     "google/protobuf/cpp_features.proto",
     &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto_once,

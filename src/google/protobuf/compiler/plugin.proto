@@ -28,6 +28,7 @@ import "google/protobuf/descriptor.proto";
 
 option csharp_namespace = "Google.Protobuf.Compiler";
 option go_package = "google.golang.org/protobuf/types/pluginpb";
+option dllexport_decl = "PROTOC_EXPORT";
 
 // The version number of protocol compiler.
 message Version {

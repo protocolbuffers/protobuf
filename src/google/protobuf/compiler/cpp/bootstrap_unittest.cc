@@ -106,9 +106,9 @@ class MockGeneratorContext : public GeneratorContext {
   absl::flat_hash_map<std::string, std::unique_ptr<std::string>> files_;
 };
 
-const char kDescriptorParameter[] = "dllexport_decl=PROTOBUF_EXPORT";
-const char kCppFeaturesParameter[] = "dllexport_decl=PROTOBUF_EXPORT";
-const char kPluginParameter[] = "dllexport_decl=PROTOC_EXPORT";
+const char kDescriptorParameter[] = "";
+const char kCppFeaturesParameter[] = "";
+const char kPluginParameter[] = "";
 
 
 const char* test_protos[][2] = {
