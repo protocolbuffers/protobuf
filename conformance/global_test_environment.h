@@ -5,28 +5,48 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-// Declares the process-wide state that the Yields() matcher depends on (see
-// matchers.h).  The definition is deliberately not provided here.  It is the
-// link-time seam between the matchers and the process that hosts them.  The
-// conformance test binary provides it from its global test environment,
+// Declares the process-wide state the Yields() matcher works against (see
+// matchers.h).  The definitions are deliberately not provided here.  They are
+// the link-time seam between the matchers and the process that hosts them.
+// The conformance test binary provides them from its global test environment,
 // populated from command-line flags and the failure list on disk.  Unit tests
 // of the matchers provide a lightweight in-memory stand-in.
 
 #ifndef GOOGLE_PROTOBUF_CONFORMANCE_GLOBAL_TEST_ENVIRONMENT_H__
 #define GOOGLE_PROTOBUF_CONFORMANCE_GLOBAL_TEST_ENVIRONMENT_H__
 
-#include "conformance/result_ledger.h"
+#include "absl/status/status.h"
+#include "absl/strings/string_view.h"
+#include "conformance/testee.h"
 
 namespace google {
 namespace protobuf {
 namespace conformance {
 namespace internal {
 
-// Returns the process-wide ResultLedger that records test results against the
-// expected-failure list.  Yields() reports the outcome of every test here.
-// That lets the failure list be validated and regenerated, and the enforcement
-// level be applied (see ResultLedger::set_enforcement_level()).
-ResultLedger& GetGlobalResultLedger();
+// Report the outcome Yields() decided for the conformance test `test_name` to
+// the process-wide ResultLedger, which counts it, and return the failure
+// list's verdict on it; they mirror the ledger's Report*() methods (see
+// result_ledger.h).  This is the one way the matchers change anything.  The
+// ledger counts each test once: reporting it again with the same outcome
+// changes nothing (gtest does evaluate a failing matcher a second time to
+// explain the failure), and a different outcome is an error.
+//
+// A process-wide ledger is safe because gtest runs the tests of a binary one
+// after the other; a sharded run is several processes, each with its own
+// environment and ledger, and the environment knows it only saw a subset (see
+// ConformanceEnvironment::TearDown()).  Checking results from several threads
+// at once is not supported, and neither is running them: a testee connection
+// is a single pipe (see Testee in testee.h).
+absl::Status ReportSuccess(absl::string_view test_name);
+absl::Status ReportFailure(absl::string_view test_name, TestPriority priority,
+                           absl::string_view failure_message);
+absl::Status ReportSkip(absl::string_view test_name,
+                        absl::string_view skip_reason);
+// A test the runner filtered out with --test never ran; it is only marked as
+// existing (see ResultLedger::ReportNotSelected()).
+// TODO: Remove with conformance_test_runner.
+void ReportNotSelected(absl::string_view test_name);
 
 }  // namespace internal
 }  // namespace conformance
