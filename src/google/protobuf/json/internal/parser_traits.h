@@ -281,8 +281,8 @@ struct ParseProto3Type : Proto3Type {
           RETURN_IF_ERROR(body(desc, new_msg));
 
           new_msg.stream_.Trim();  // Should probably be called "Flush()".
-          absl::string_view written(
-              out.data(), static_cast<size_t>(new_msg.stream_.ByteCount()));
+          absl::string_view written = absl::string_view(out).substr(
+              0, static_cast<size_t>(new_msg.stream_.ByteCount()));
           SetString(f, msg, written);
           return absl::OkStatus();
         });
