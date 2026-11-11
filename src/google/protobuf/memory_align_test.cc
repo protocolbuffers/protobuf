@@ -18,7 +18,7 @@ namespace {
 
 TEST(ArenaAlignDefault, Align) {
   auto align_default = ArenaAlignDefault();
-  EXPECT_EQ(align_default.align, 8);
+  EXPECT_EQ(align_default.align(), 8);
 }
 
 TEST(ArenaAlignDefault, Floor) {
@@ -145,8 +145,8 @@ TEST(MemoryAlign, Ceil) {
 
 TEST(MemoryAlign, Padded) {
   auto align_64 = ArenaAlignAs(64);
-  EXPECT_EQ(align_64.Padded(64), 64 + 64 - ArenaAlignDefault{}.align);
-  EXPECT_EQ(align_64.Padded(128), 128 + 64 - ArenaAlignDefault{}.align);
+  EXPECT_EQ(align_64.Padded(64), 64 + 64 - ArenaAlignDefault{}.align());
+  EXPECT_EQ(align_64.Padded(128), 128 + 64 - ArenaAlignDefault{}.align());
 #if GTEST_HAS_DEATH_TEST
   EXPECT_DEBUG_DEATH(align_64.Padded(2), ".*");
   EXPECT_DEBUG_DEATH(ArenaAlignAs(2).Padded(8), ".*");

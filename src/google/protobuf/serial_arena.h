@@ -40,7 +40,7 @@ namespace internal {
 
 // Arena blocks are variable length malloc-ed objects.  The following structure
 // describes the common header for all blocks.
-struct alignas(ArenaAlignDefault::align) ArenaBlock {
+struct alignas(ArenaAlignDefault::kAlign) ArenaBlock {
   // For the sentry block with zero-size where ptr_/limit_ both point to `this`.
   constexpr ArenaBlock() : next(nullptr), size(0) {}
 
@@ -146,7 +146,7 @@ class PROTOBUF_EXPORT SerialArena {
   }
 
   static PROTOBUF_ALWAYS_INLINE void* AlignTo(void* p, size_t a) {
-    return (a <= ArenaAlignDefault{}.align)
+    return (a <= ArenaAlignDefault{}.align())
                ? ArenaAlignDefault{}.CeilDefaultAligned(p)
                : ArenaAlignAs(a).CeilDefaultAligned(p);
   }
@@ -231,7 +231,7 @@ class PROTOBUF_EXPORT SerialArena {
   PROTOBUF_ALWAYS_INLINE
   void* AllocateAlignedWithCleanup(size_t n, size_t align,
                                    void (*destructor)(void*)) {
-    auto align_as = ArenaAlignAs(std::max(align, ArenaAlignDefault::align));
+    auto align_as = ArenaAlignAs(std::max(align, ArenaAlignDefault{}.align()));
     n = align_as.Ceil(n);
     char* ret = align_as.CeilDefaultAligned(ptr());
     // See the comment in MaybeAllocateAligned re uintptr_t.

@@ -64,7 +64,7 @@ MemoryAllocationFailure() noexcept {
   ABSL_LOG(FATAL) << "Failed to allocate memory.";
 }
 
-static_assert(__STDCPP_DEFAULT_NEW_ALIGNMENT__ >= ArenaAlignDefault{}.align,
+static_assert(__STDCPP_DEFAULT_NEW_ALIGNMENT__ >= ArenaAlignDefault{}.align(),
               "operator new does not guarantee the arena's block alignment");
 
 SizedPtr AllocateMemory(const AllocationPolicy& policy, size_t size) {
