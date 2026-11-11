@@ -29,23 +29,25 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - name: 8.2 Optimized
-            version: "8.2.2"
-            version-short: "8.2"
+          - name: 8.3 Optimized
+            version: "8.3.1"
+            version-short: "8.3"
             command: composer test; composer test_c
-          - name: 8.2 Debug
-            version: 8.2.2-dbg
-            version-short: "8.2"
+          # Debug builds use a later 8.3 patch release because PHP 8.3.1 crashes
+          # during startup when run under valgrind.
+          - name: 8.3 Debug
+            version: 8.3.36-dbg
+            version-short: "8.3"
             command: composer test; composer test_c
-          - name: 8.2 Memory Leak
-            version: 8.2.2-dbg
-            version-short: "8.2"
+          - name: 8.3 Memory Leak
+            version: 8.3.36-dbg
+            version-short: "8.3"
             # Run specialized memory leak & multirequest tests.
             command: composer test_c; tests/multirequest.sh; tests/memory_leak_test.sh
             continuous-only: true
-          - name: 8.2 Valgrind
-            version: 8.2.2-dbg
-            version-short: "8.2"
+          - name: 8.3 Valgrind
+            version: 8.3.36-dbg
+            version-short: "8.3"
             command: composer test_valgrind
             continuous-only: true
           - name: 8.5 Optimized
@@ -65,7 +67,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v7
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:9.2.0-${{ matrix.version }}-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:9.2.0-${{ matrix.version }}-844d9c8d477b547072bfd35582983db52618b108
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_linux/${{ matrix.version }}
           bash: |
@@ -83,7 +85,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        version: ['8.2', '8.5']
+        version: ['8.3', '8.5']
         suffix: [ '', '-zts']
         test: ['test', 'test_c']
         exclude:
@@ -102,7 +104,7 @@ jobs:
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux 32-bit ${{ matrix.version}}${{ matrix.suffix_name }}${{ matrix.test_name }}
     runs-on: ubuntu-22-4core
     env:
-      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:60f8ce4a5b28c9d017468a8ff39f2b1aacb711b8a6f27bcd8f5bc463674e78b1
+      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:68c52641061ffeeada105875242190c163cd8612aaa62a9d0c37cf8f40a1d047
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
@@ -154,7 +156,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v7
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-aarch64@sha256:77ff9fdec867bbfb290ee0b10d8b7a3e5e434155daa5ec93de7341c7592b858d
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-aarch64@sha256:444346b6e916d9d7c6f220161d76f34aad0ba8e2c9cd76f98193b0f8dcf28dbe
           platform: linux/arm64
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           extra-flags: -e COMPOSER_HOME=/workspace/composer-cache -e PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
