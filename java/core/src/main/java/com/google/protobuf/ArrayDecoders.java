@@ -951,9 +951,8 @@ final class ArrayDecoders {
               final int endTag = (fieldNumber << 3) | WireFormat.WIRETYPE_END_GROUP;
               final Schema<?> fieldSchema =
                   Protobuf.getInstance()
-                      .schemaFor(
-                          ((GeneratedMessageLite<?, ?>) extension.getMessageDefaultInstance())
-                              .getClass());
+                      .schemaForDefaultInstance(
+                          (GeneratedMessageLite<?, ?>) extension.getMessageDefaultInstance());
               if (extension.isRepeated()) {
                 position = decodeGroupField(fieldSchema, data, position, limit, endTag, registers);
                 extensions.addRepeatedField(extension.descriptor, registers.object1);
@@ -973,9 +972,8 @@ final class ArrayDecoders {
             {
               final Schema<?> fieldSchema =
                   Protobuf.getInstance()
-                      .schemaFor(
-                          ((GeneratedMessageLite<?, ?>) extension.getMessageDefaultInstance())
-                              .getClass());
+                      .schemaForDefaultInstance(
+                          (GeneratedMessageLite<?, ?>) extension.getMessageDefaultInstance());
               if (extension.isRepeated()) {
                 position = decodeMessageField(fieldSchema, data, position, limit, registers);
                 extensions.addRepeatedField(extension.descriptor, registers.object1);

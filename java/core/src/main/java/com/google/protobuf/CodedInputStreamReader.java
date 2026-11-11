@@ -1217,10 +1217,7 @@ final class CodedInputStreamReader {
               key = (K) readField(metadata.keyType, null, null);
               break;
             case 2:
-              value =
-                  (V)
-                      readField(
-                          metadata.valueType, metadata.defaultValue.getClass(), extensionRegistry);
+              value = (V) readField(metadata.valueType, metadata.defaultValue, extensionRegistry);
               break;
             default:
               if (!skipField()) {
@@ -1246,7 +1243,9 @@ final class CodedInputStreamReader {
   }
 
   private Object readField(
-      WireFormat.FieldType fieldType, Class<?> messageType, ExtensionRegistryLite extensionRegistry)
+      WireFormat.FieldType fieldType,
+      Object messageDefaultValue,
+      ExtensionRegistryLite extensionRegistry)
       throws IOException {
     switch (fieldType) {
       case BOOL:
@@ -1268,7 +1267,10 @@ final class CodedInputStreamReader {
       case INT64:
         return readInt64();
       case MESSAGE:
-        return readMessage(messageType, extensionRegistry);
+        return readMessage(
+            Protobuf.getInstance()
+                .schemaForDefaultInstance((GeneratedMessageLite<?, ?>) messageDefaultValue),
+            extensionRegistry);
       case SFIXED32:
         return readSFixed32();
       case SFIXED64:

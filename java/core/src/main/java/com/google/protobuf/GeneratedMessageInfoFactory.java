@@ -37,12 +37,22 @@ class GeneratedMessageInfoFactory implements MessageInfoFactory {
       throw new IllegalArgumentException("Unsupported message type: " + messageType.getName());
     }
 
+    return messageInfoForDefaultInstance(
+        GeneratedMessageLite.getDefaultInstance(
+            messageType.asSubclass(GeneratedMessageLite.class)));
+  }
+
+  /**
+   * Returns the message info of the message type whose default instance is {@code defaultInstance}.
+   * Unlike {@link #messageInfoFor(Class)}, this does not assume that the class identifies the
+   * message type.
+   */
+  static MessageInfo messageInfoForDefaultInstance(GeneratedMessageLite<?, ?> defaultInstance) {
     try {
-      return (MessageInfo) GeneratedMessageLite.getDefaultInstance(
-          messageType.asSubclass(GeneratedMessageLite.class))
-          .buildMessageInfo();
+      return (MessageInfo) defaultInstance.buildMessageInfo();
     } catch (Exception e) {
-      throw new RuntimeException("Unable to get message info for " + messageType.getName(), e);
+      throw new RuntimeException(
+          "Unable to get message info for " + defaultInstance.getClass().getName(), e);
     }
   }
 }
