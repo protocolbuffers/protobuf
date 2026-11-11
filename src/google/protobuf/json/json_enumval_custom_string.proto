@@ -25,10 +25,28 @@ enum Armor {
   ARMOR_SOLLERET = 7 [(pb.enumvalue.json).string = "sabaton"];
   ARMOR_HACHI_MAI_DO = 8 [(pb.enumvalue.json).string = "8"];
   ARMOR_GREAVES = 9 [(pb.enumvalue.json).string = "ARMOR_GREAVES"];
+  ARMOR_VAMBRACE = 10 [(pb.enumvalue.json) = {}];
+  ARMOR_BRACERS = 11 [(pb.enumvalue.json) = {}];
+  ARMOR_CUIRASS = 12 [(pb.enumvalue.json) = {}];
+  ARMOR_BREASTPLATE = 12;
+}
+
+enum Weapon {
+  WEAPON_UNKNOWN = 0 [(pb.enumvalue.json) = {}];
+  WEAPON_SWORD = 1 [(pb.enumvalue.json) = {}];
+  WEAPON_MACE = 2 [(pb.enumvalue.json) = {}];
+}
+
+enum EmptyOptionOrder {
+  VAL_UNSPECIFIED = 0;
+  VAL_EMPTY_OPT = 1 [(pb.enumvalue.json) = {}];
+  VAL_EMPTY_STR = 2 [(pb.enumvalue.json).string = ""];
 }
 
 message Knight {
   Armor armor = 1;
   repeated Armor armors = 2;
   map<string, Armor> armor_map = 3;
+  Weapon weapon = 4;
+  EmptyOptionOrder empty_option_order = 5;
 }

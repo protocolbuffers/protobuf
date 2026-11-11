@@ -157,7 +157,7 @@ add_test(NAME conformance_cpp_test
     --failure_list ${protobuf_SOURCE_DIR}/conformance/failure_list_cpp.txt
     --text_format_failure_list ${protobuf_SOURCE_DIR}/conformance/text_format_failure_list_cpp.txt
     --output_dir ${protobuf_TEST_XML_OUTDIR}
-    --maximum_edition 2023
+    --maximum_edition 2026
     $<TARGET_FILE:conformance_cpp>
   DEPENDS conformance_test_runner conformance_cpp)
 

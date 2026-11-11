@@ -529,6 +529,102 @@ void BinaryAndJsonConformanceSuite::RunEdition2026Tests() {
       [](const Json::Value& value) {
         return value["optionalForeignEnum"].asString() == "customBar";
       });
+
+  // An empty (pb.enumvalue.json) = {} submessage leaves the custom JSON string
+  // unset and must behave identically to omitting the option.
+  RunValidProtobufTest<TestAllTypesEdition2026>(
+      "ValidEnumEmptyJsonOption", RECOMMENDED,
+      absl::StrCat(field(2, WireFormatLite::WIRETYPE_VARINT, varint(7)),
+                   field(6, WireFormatLite::WIRETYPE_VARINT, varint(1)),
+                   field(7, WireFormatLite::WIRETYPE_VARINT, varint(1))),
+      R"pb(
+        optional_foreign_enum: FOREIGN_ENUM_EDITION2026_EMPTY_OPTION
+        optional_empty_option_enum: ENUM_ONLY_EMPTY_OPTION_EDITION2026_FOO
+        optional_empty_option_before_empty_string:
+            ENUM_EMPTY_OPTION_BEFORE_EMPTY_STRING_EDITION2026_EMPTY_OPTION_FIRST
+      )pb");
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "EnumValueEmptyJsonOption", RECOMMENDED,
+      R"({"optionalForeignEnum": "FOREIGN_ENUM_EDITION2026_EMPTY_OPTION"})",
+      "optional_foreign_enum: FOREIGN_ENUM_EDITION2026_EMPTY_OPTION");
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "EnumValueEmptyJsonOptionSecond", RECOMMENDED,
+      R"({"optionalForeignEnum": "FOREIGN_ENUM_EDITION2026_EMPTY_OPTION_TWO"})",
+      "optional_foreign_enum: FOREIGN_ENUM_EDITION2026_EMPTY_OPTION_TWO");
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "EnumValueEmptyJsonOptionInt", RECOMMENDED,
+      R"({"optionalForeignEnum": 7})",
+      "optional_foreign_enum: FOREIGN_ENUM_EDITION2026_EMPTY_OPTION");
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "EnumValueAliasedEmptyJsonOption", RECOMMENDED,
+      R"({"optionalForeignEnum": "FOREIGN_ENUM_EDITION2026_ALIAS_EMPTY_OPTION"})",
+      "optional_foreign_enum: FOREIGN_ENUM_EDITION2026_ALIAS_EMPTY_OPTION");
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "EnumValueAliasedOmittedWithEmptyJsonOption", RECOMMENDED,
+      R"({"optionalForeignEnum": "FOREIGN_ENUM_EDITION2026_ALIAS_OMITTED"})",
+      "optional_foreign_enum: FOREIGN_ENUM_EDITION2026_ALIAS_EMPTY_OPTION");
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "EnumValueAliasedOmittedFirstWithEmptyJsonOption", RECOMMENDED,
+      R"({"optionalForeignEnum": "FOREIGN_ENUM_EDITION2026_ALIAS_OMITTED_FIRST"})",
+      "optional_foreign_enum: FOREIGN_ENUM_EDITION2026_ALIAS_OMITTED_FIRST");
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "EnumValueAliasedEmptyJsonOptionSecond", RECOMMENDED,
+      R"({"optionalForeignEnum": "FOREIGN_ENUM_EDITION2026_ALIAS_EMPTY_OPTION_SECOND"})",
+      "optional_foreign_enum: FOREIGN_ENUM_EDITION2026_ALIAS_OMITTED_FIRST");
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "RepeatedEnumValueEmptyJsonOption", RECOMMENDED,
+      R"({"repeatedForeignEnum": ["", "FOREIGN_ENUM_EDITION2026_EMPTY_OPTION", "FOREIGN_ENUM_EDITION2026_EMPTY_OPTION_TWO"]})",
+      R"(
+        repeated_foreign_enum: FOREIGN_ENUM_EDITION2026_EMPTY
+        repeated_foreign_enum: FOREIGN_ENUM_EDITION2026_EMPTY_OPTION
+        repeated_foreign_enum: FOREIGN_ENUM_EDITION2026_EMPTY_OPTION_TWO
+      )");
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "MapEnumValueEmptyJsonOption", RECOMMENDED,
+      R"({"mapStringForeignEnum": {"a": "", "b": "FOREIGN_ENUM_EDITION2026_EMPTY_OPTION", "c": "FOREIGN_ENUM_EDITION2026_EMPTY_OPTION_TWO"}})",
+      R"(
+        map_string_foreign_enum {
+          key: "a"
+          value: FOREIGN_ENUM_EDITION2026_EMPTY
+        }
+        map_string_foreign_enum {
+          key: "b"
+          value: FOREIGN_ENUM_EDITION2026_EMPTY_OPTION
+        }
+        map_string_foreign_enum {
+          key: "c"
+          value: FOREIGN_ENUM_EDITION2026_EMPTY_OPTION_TWO
+        }
+      )");
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "EnumOnlyEmptyOptionZeroDefaultName", RECOMMENDED,
+      R"({"optionalEmptyOptionEnum": "ENUM_ONLY_EMPTY_OPTION_EDITION2026_UNSPECIFIED"})",
+      "optional_empty_option_enum: "
+      "ENUM_ONLY_EMPTY_OPTION_EDITION2026_UNSPECIFIED");
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "EnumOnlyEmptyOptionDefaultName", RECOMMENDED,
+      R"({"optionalEmptyOptionEnum": "ENUM_ONLY_EMPTY_OPTION_EDITION2026_FOO"})",
+      "optional_empty_option_enum: ENUM_ONLY_EMPTY_OPTION_EDITION2026_FOO");
+  ExpectParseFailureForJson<TestAllTypesEdition2026>(
+      "EnumValueEmptyJsonOptionRejectsEmptyString", RECOMMENDED,
+      R"({"optionalEmptyOptionEnum": ""})");
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "EnumEmptyOptionBeforeEmptyString", RECOMMENDED,
+      R"({"optionalEmptyOptionBeforeEmptyString": ""})",
+      "optional_empty_option_before_empty_string: "
+      "ENUM_EMPTY_OPTION_BEFORE_EMPTY_STRING_EDITION2026_EMPTY_STRING_SECOND");
+  RunValidJsonTestWithValidator<TestAllTypesEdition2026>(
+      "EnumEmptyOptionBeforeEmptyStringOutput", RECOMMENDED,
+      R"({"optionalEmptyOptionBeforeEmptyString": "ENUM_EMPTY_OPTION_BEFORE_EMPTY_STRING_EDITION2026_EMPTY_STRING_SECOND"})",
+      [](const Json::Value& value) {
+        return value["optionalEmptyOptionBeforeEmptyString"].isString() &&
+               value["optionalEmptyOptionBeforeEmptyString"].asString().empty();
+      });
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "EnumEmptyOptionBeforeEmptyStringFirstValue", RECOMMENDED,
+      R"({"optionalEmptyOptionBeforeEmptyString": "ENUM_EMPTY_OPTION_BEFORE_EMPTY_STRING_EDITION2026_EMPTY_OPTION_FIRST"})",
+      "optional_empty_option_before_empty_string: "
+      "ENUM_EMPTY_OPTION_BEFORE_EMPTY_STRING_EDITION2026_EMPTY_OPTION_FIRST");
   // A value without the option keeps using its declared name in JSON.
   RunValidJsonTestWithValidator<TestAllTypesEdition2026>(
       "EnumValueWithoutCustomJsonNameOutput", REQUIRED,

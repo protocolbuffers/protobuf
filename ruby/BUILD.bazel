@@ -252,7 +252,7 @@ filegroup(
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_ruby.txt",
-    maximum_edition = "2023",
+    maximum_edition = "2026",
     target_compatible_with = select({
         ":ruby_native": [],
         "//conditions:default": ["@platforms//:incompatible"],
@@ -266,7 +266,7 @@ conformance_test(
         "PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION": "ffi",
     },
     failure_list = "//conformance:failure_list_ruby.txt",
-    maximum_edition = "2023",
+    maximum_edition = "2026",
     target_compatible_with = select({
         ":ruby_ffi": [],
         "//conditions:default": ["@platforms//:incompatible"],
@@ -280,6 +280,7 @@ conformance_test(
         "JRUBY_OPTS": "--dev",
     },
     failure_list = "//conformance:failure_list_jruby.txt",
+    # TODO: Register JsonEnumvalueOptionsProto in RubyDescriptorPool before bumping to 2026.
     maximum_edition = "2023",
     target_compatible_with = select({
         ":jruby_native": [],
@@ -295,7 +296,7 @@ conformance_test(
         "JRUBY_OPTS": "--dev",
     },
     failure_list = "//conformance:failure_list_jruby_ffi.txt",
-    maximum_edition = "2023",
+    maximum_edition = "2026",
     target_compatible_with = select({
         ":jruby_ffi": [],
         "//conditions:default": ["@platforms//:incompatible"],

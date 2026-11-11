@@ -17,6 +17,7 @@
 
 #include "conformance/conformance.upb.h"
 #include "conformance/conformance.upbdefs.h"
+#include "conformance/test_protos/test_messages_edition2026.upbdefs.h"
 #include "editions/golden/test_messages_proto2_editions.upbdefs.h"
 #include "editions/golden/test_messages_proto3_editions.upbdefs.h"
 #include "google/protobuf/test_messages_proto2.upbdefs.h"
@@ -254,12 +255,18 @@ upb_ConformanceHarness* upb_ConformanceHarness_New(bool rebuild_minitables) {
         harness->symtab,
         &editions_golden_test_messages_proto3_editions_proto_upbdefinit,
         true);
+    _upb_DefPool_LoadDefInitEx(
+        harness->symtab,
+        &conformance_test_protos_test_messages_edition2026_proto_upbdefinit,
+        true);
   } else {
     protobuf_test_messages_proto2_TestAllTypesProto2_getmsgdef(harness->symtab);
     protobuf_test_messages_editions_proto2_TestAllTypesProto2_getmsgdef(
         harness->symtab);
     protobuf_test_messages_proto3_TestAllTypesProto3_getmsgdef(harness->symtab);
     protobuf_test_messages_editions_proto3_TestAllTypesProto3_getmsgdef(
+        harness->symtab);
+    protobuf_test_messages_editions_TestAllTypesEdition2026_getmsgdef(
         harness->symtab);
   }
   return harness;
