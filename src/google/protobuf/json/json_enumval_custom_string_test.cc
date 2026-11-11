@@ -7,17 +7,23 @@
 
 #include <cstddef>
 #include <iterator>
+#include <memory>
 #include <string>
 
+#include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/status/status.h"
 #include "absl/status/status_matchers.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/json/json.h"
 #include "google/protobuf/json/json_enumval_custom_string.pb.h"
+#include "google/protobuf/message.h"
 
 
 #ifndef EXPECT_OK
@@ -31,6 +37,7 @@ namespace {
 using ::absl_testing::StatusIs;
 using json_enumval_custom_string::Armor;
 using json_enumval_custom_string::Knight;
+using json_enumval_custom_string::Weapon;
 using ::testing::HasSubstr;
 
 // Gorget does not have a custom json enumval string set, so it defaults to
@@ -266,6 +273,292 @@ TEST(JsonEnumvalCustomStringTest, ParserSingleElementArrayEnumName) {
       R"json({"armor":["ARMOR_GREAT_HELM"]})json", &msg);
   EXPECT_THAT(status, StatusIs(absl::StatusCode::kInvalidArgument,
                                HasSubstr("invalid JSON")));
+}
+
+class DynamicEmptyOptionSchema {
+ public:
+  DynamicEmptyOptionSchema() {
+    const FieldDescriptor* json_ext =
+        DescriptorPool::generated_pool()->FindExtensionByName(
+            "pb.enumvalue.json");
+    ABSL_CHECK_NE(json_ext, nullptr);
+    const FieldDescriptor* string_field =
+        json_ext->message_type()->FindFieldByName("string");
+    ABSL_CHECK_NE(string_field, nullptr);
+
+    FileDescriptorProto file;
+    file.set_name("dynamic_empty_json_option.proto");
+    file.set_package("json_enumval_custom_string_dynamic");
+    file.set_edition(Edition::EDITION_2026);
+    file.add_dependency(json_ext->file()->name());
+
+    const auto add_val = [&](EnumDescriptorProto* enm, absl::string_view name,
+                             int number, bool has_json_opt,
+                             absl::optional<absl::string_view> custom_str) {
+      EnumValueDescriptorProto* ev = enm->add_value();
+      ev->set_name(name);
+      ev->set_number(number);
+      if (has_json_opt) {
+        EnumValueOptions* opts = ev->mutable_options();
+        Message* sub = opts->GetReflection()->MutableMessage(opts, json_ext);
+        if (custom_str.has_value()) {
+          sub->GetReflection()->SetString(sub, string_field,
+                                          std::string(*custom_str));
+        }
+      }
+    };
+
+    // DynamicArmor: explicit empty string (5) followed by multiple empty
+    // options (10, 11) and aliased empty option + omitted (12).
+    EnumDescriptorProto* armor = file.add_enum_type();
+    armor->set_name("DynamicArmor");
+    armor->mutable_options()->set_allow_alias(true);
+    add_val(armor, "ARMOR_UNKNOWN", 0, false, absl::nullopt);
+    add_val(armor, "ARMOR_COIF", 5, true, "");
+    add_val(armor, "ARMOR_VAMBRACE", 10, true, absl::nullopt);
+    add_val(armor, "ARMOR_BRACERS", 11, true, absl::nullopt);
+    add_val(armor, "ARMOR_CUIRASS", 12, true, absl::nullopt);
+    add_val(armor, "ARMOR_BREASTPLATE", 12, false, absl::nullopt);
+
+    // DynamicWeapon: all values have empty (pb.enumvalue.json) = {} (including
+    // default 0) and no explicit empty string.
+    EnumDescriptorProto* weapon = file.add_enum_type();
+    weapon->set_name("DynamicWeapon");
+    add_val(weapon, "WEAPON_UNKNOWN", 0, true, absl::nullopt);
+    add_val(weapon, "WEAPON_SWORD", 1, true, absl::nullopt);
+    add_val(weapon, "WEAPON_MACE", 2, true, absl::nullopt);
+
+    // EmptyOptionOrder: empty option (1) declared BEFORE explicit empty string
+    // (2).
+    EnumDescriptorProto* order = file.add_enum_type();
+    order->set_name("EmptyOptionOrder");
+    add_val(order, "VAL_UNSPECIFIED", 0, false, absl::nullopt);
+    add_val(order, "VAL_EMPTY_OPT", 1, true, absl::nullopt);
+    add_val(order, "VAL_EMPTY_STR", 2, true, "");
+
+    DescriptorProto* msg = file.add_message_type();
+    msg->set_name("DynamicKnight");
+    FieldDescriptorProto* f1 = msg->add_field();
+    f1->set_name("armor");
+    f1->set_number(1);
+    f1->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+    f1->set_type(FieldDescriptorProto::TYPE_ENUM);
+    f1->set_type_name("DynamicArmor");
+
+    FieldDescriptorProto* f2 = msg->add_field();
+    f2->set_name("weapon");
+    f2->set_number(2);
+    f2->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+    f2->set_type(FieldDescriptorProto::TYPE_ENUM);
+    f2->set_type_name("DynamicWeapon");
+
+    FieldDescriptorProto* f3 = msg->add_field();
+    f3->set_name("empty_option_order");
+    f3->set_number(3);
+    f3->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+    f3->set_type(FieldDescriptorProto::TYPE_ENUM);
+    f3->set_type_name("EmptyOptionOrder");
+
+    const FileDescriptor* built = pool_.BuildFile(file);
+    ABSL_CHECK_NE(built, nullptr);
+    holder_desc_ = built->FindMessageTypeByName("DynamicKnight");
+    ABSL_CHECK_NE(holder_desc_, nullptr);
+    armor_field_ = holder_desc_->FindFieldByName("armor");
+    weapon_field_ = holder_desc_->FindFieldByName("weapon");
+    order_field_ = holder_desc_->FindFieldByName("empty_option_order");
+  }
+
+  DynamicEmptyOptionSchema(const DynamicEmptyOptionSchema&) = delete;
+  DynamicEmptyOptionSchema& operator=(const DynamicEmptyOptionSchema&) = delete;
+
+  std::unique_ptr<Message> NewMessage() {
+    return std::unique_ptr<Message>(
+        factory_.GetPrototype(holder_desc_)->New());
+  }
+
+  const FieldDescriptor* armor_field() const { return armor_field_; }
+  const FieldDescriptor* weapon_field() const { return weapon_field_; }
+  const FieldDescriptor* order_field() const { return order_field_; }
+
+ private:
+  DescriptorPool pool_{DescriptorPool::generated_pool()};
+  DynamicMessageFactory factory_{&pool_};
+  const Descriptor* holder_desc_ = nullptr;
+  const FieldDescriptor* armor_field_ = nullptr;
+  const FieldDescriptor* weapon_field_ = nullptr;
+  const FieldDescriptor* order_field_ = nullptr;
+};
+
+void SetEnumValue(Message* msg, const FieldDescriptor* field, int number) {
+  msg->GetReflection()->SetEnumValue(msg, field, number);
+}
+
+int GetEnumValue(const Message& msg, const FieldDescriptor* field) {
+  return msg.GetReflection()->GetEnumValue(msg, field);
+}
+
+bool HasField(const Message& msg, const FieldDescriptor* field) {
+  return msg.GetReflection()->HasField(msg, field);
+}
+
+TEST(JsonEnumvalCustomStringTest, EmptyJsonOptionUsesDefaultIdentifier) {
+  DynamicEmptyOptionSchema schema;
+  {
+    std::unique_ptr<Message> msg = schema.NewMessage();
+    SetEnumValue(msg.get(), schema.armor_field(), 10);
+    std::string json_res;
+    EXPECT_OK(json::MessageToJsonString(*msg, &json_res));
+    EXPECT_EQ(json_res, R"json({"armor":"ARMOR_VAMBRACE"})json");
+
+    std::unique_ptr<Message> parsed = schema.NewMessage();
+    EXPECT_OK(json::JsonStringToMessage(json_res, parsed.get()));
+    EXPECT_EQ(GetEnumValue(*parsed, schema.armor_field()), 10);
+  }
+  {
+    std::unique_ptr<Message> msg = schema.NewMessage();
+    SetEnumValue(msg.get(), schema.armor_field(), 11);
+    std::string json_res;
+    EXPECT_OK(json::MessageToJsonString(*msg, &json_res));
+    EXPECT_EQ(json_res, R"json({"armor":"ARMOR_BRACERS"})json");
+
+    std::unique_ptr<Message> parsed = schema.NewMessage();
+    EXPECT_OK(json::JsonStringToMessage(json_res, parsed.get()));
+    EXPECT_EQ(GetEnumValue(*parsed, schema.armor_field()), 11);
+  }
+  {
+    Knight msg;
+    msg.set_weapon(Weapon::WEAPON_SWORD);
+    std::string json_res;
+    EXPECT_OK(json::MessageToJsonString(msg, &json_res));
+    EXPECT_EQ(json_res, R"json({"weapon":"WEAPON_SWORD"})json");
+
+    Knight parsed;
+    EXPECT_OK(json::JsonStringToMessage(json_res, &parsed));
+    EXPECT_EQ(parsed.weapon(), Weapon::WEAPON_SWORD);
+  }
+  {
+    std::unique_ptr<Message> msg = schema.NewMessage();
+    SetEnumValue(msg.get(), schema.order_field(), 1);
+    std::string json_res;
+    EXPECT_OK(json::MessageToJsonString(*msg, &json_res));
+    EXPECT_EQ(json_res, R"json({"emptyOptionOrder":"VAL_EMPTY_OPT"})json");
+
+    std::unique_ptr<Message> parsed = schema.NewMessage();
+    EXPECT_OK(json::JsonStringToMessage(json_res, parsed.get()));
+    EXPECT_EQ(GetEnumValue(*parsed, schema.order_field()), 1);
+  }
+}
+
+TEST(JsonEnumvalCustomStringTest, EmptyJsonOptionCaseInsensitiveParsing) {
+  DynamicEmptyOptionSchema schema;
+  json::ParseOptions parse_options;
+  parse_options.case_insensitive_enum_parsing = true;
+
+  std::unique_ptr<Message> msg = schema.NewMessage();
+  EXPECT_OK(json::JsonStringToMessage(
+      R"json({"armor":"armor_VAMbrace","weapon":"WeApOn_SwOrD","emptyOptionOrder":"val_empty_opt"})json",
+      msg.get(), parse_options));
+  EXPECT_EQ(GetEnumValue(*msg, schema.armor_field()), 10);
+  EXPECT_EQ(GetEnumValue(*msg, schema.weapon_field()), 1);
+  EXPECT_EQ(GetEnumValue(*msg, schema.order_field()), 1);
+}
+
+TEST(JsonEnumvalCustomStringTest,
+     EmptyStringResolvesToExplicitEmptyCustomStringNotEmptyOption) {
+  DynamicEmptyOptionSchema schema;
+  json::ParseOptions caseless_options;
+  caseless_options.case_insensitive_enum_parsing = true;
+
+  // ARMOR_COIF (5) precedes ARMOR_VAMBRACE (10) / ARMOR_BRACERS (11), catching
+  // last-wins map overwrites.
+  {
+    std::unique_ptr<Message> strict_msg = schema.NewMessage();
+    EXPECT_OK(json::JsonStringToMessage(R"json({"armor":""})json",
+                                        strict_msg.get()));
+    EXPECT_EQ(GetEnumValue(*strict_msg, schema.armor_field()), 5);
+
+    std::unique_ptr<Message> caseless_msg = schema.NewMessage();
+    EXPECT_OK(json::JsonStringToMessage(
+        R"json({"armor":""})json", caseless_msg.get(), caseless_options));
+    EXPECT_EQ(GetEnumValue(*caseless_msg, schema.armor_field()), 5);
+  }
+
+  // VAL_EMPTY_OPT (1) precedes VAL_EMPTY_STR (2), catching first-wins map
+  // hijacking.
+  {
+    std::unique_ptr<Message> strict_msg = schema.NewMessage();
+    EXPECT_OK(json::JsonStringToMessage(R"json({"emptyOptionOrder":""})json",
+                                        strict_msg.get()));
+    EXPECT_EQ(GetEnumValue(*strict_msg, schema.order_field()), 2);
+
+    std::string json_res;
+    EXPECT_OK(json::MessageToJsonString(*strict_msg, &json_res));
+    EXPECT_EQ(json_res, R"json({"emptyOptionOrder":""})json");
+
+    std::unique_ptr<Message> caseless_msg = schema.NewMessage();
+    EXPECT_OK(json::JsonStringToMessage(R"json({"emptyOptionOrder":""})json",
+                                        caseless_msg.get(), caseless_options));
+    EXPECT_EQ(GetEnumValue(*caseless_msg, schema.order_field()), 2);
+  }
+}
+
+TEST(JsonEnumvalCustomStringTest, EmptyJsonOptionRejectsEmptyStringInput) {
+  DynamicEmptyOptionSchema schema;
+  std::unique_ptr<Message> strict_msg = schema.NewMessage();
+  EXPECT_THAT(
+      json::JsonStringToMessage(R"json({"weapon":""})json", strict_msg.get()),
+      StatusIs(absl::StatusCode::kInvalidArgument));
+
+  json::ParseOptions caseless_options;
+  caseless_options.case_insensitive_enum_parsing = true;
+  std::unique_ptr<Message> caseless_msg = schema.NewMessage();
+  EXPECT_THAT(json::JsonStringToMessage(R"json({"weapon":""})json",
+                                        caseless_msg.get(), caseless_options),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+
+  json::ParseOptions lenient_options;
+  lenient_options.ignore_unknown_fields = true;
+  std::unique_ptr<Message> lenient_msg = schema.NewMessage();
+  EXPECT_OK(json::JsonStringToMessage(R"json({"weapon":""})json",
+                                      lenient_msg.get(), lenient_options));
+  EXPECT_FALSE(HasField(*lenient_msg, schema.weapon_field()));
+
+  std::unique_ptr<Message> default_zero_msg = schema.NewMessage();
+  SetEnumValue(default_zero_msg.get(), schema.weapon_field(), 0);
+  std::string json_res;
+  EXPECT_OK(json::MessageToJsonString(*default_zero_msg, &json_res));
+  EXPECT_EQ(json_res, R"json({"weapon":"WEAPON_UNKNOWN"})json");
+}
+
+TEST(JsonEnumvalCustomStringTest, AliasedEmptyOptionAndOmitted) {
+  Knight msg;
+  msg.set_weapon(Weapon::WEAPON_SWORD);
+  std::string json_res;
+  EXPECT_OK(json::MessageToJsonString(msg, &json_res));
+  EXPECT_EQ(json_res, R"json({"weapon":"WEAPON_SWORD"})json");
+
+  for (absl::string_view payload :
+       {R"json({"weapon":"WEAPON_SWORD"})json",
+        R"json({"weapon":"WEAPON_BLADE"})json"}) {
+    Knight parsed;
+    EXPECT_OK(json::JsonStringToMessage(payload, &parsed));
+    EXPECT_EQ(parsed.weapon(), Weapon::WEAPON_SWORD);
+  }
+
+  DynamicEmptyOptionSchema schema;
+  std::unique_ptr<Message> dyn_msg = schema.NewMessage();
+  SetEnumValue(dyn_msg.get(), schema.armor_field(), 12);
+  json_res.clear();
+  EXPECT_OK(json::MessageToJsonString(*dyn_msg, &json_res));
+  EXPECT_EQ(json_res, R"json({"armor":"ARMOR_CUIRASS"})json");
+
+  for (absl::string_view payload :
+       {R"json({"armor":"ARMOR_CUIRASS"})json",
+        R"json({"armor":"ARMOR_BREASTPLATE"})json"}) {
+    std::unique_ptr<Message> parsed = schema.NewMessage();
+    EXPECT_OK(json::JsonStringToMessage(payload, parsed.get()));
+    EXPECT_EQ(GetEnumValue(*parsed, schema.armor_field()), 12);
+  }
 }
 
 }  // namespace

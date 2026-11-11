@@ -15,8 +15,10 @@ import struct
 import unittest
 
 from absl.testing import parameterized
+from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor_pool
 from google.protobuf import json_format
+from google.protobuf import message_factory
 from google.protobuf.internal import more_messages_pb2
 from google.protobuf.internal import test_proto2_pb2
 from google.protobuf.internal import test_proto3_optional_pb2
@@ -1955,6 +1957,11 @@ class JsonFormatTest(JsonFormatBase):
           json_enumval_custom_string_pb2.Armor.ARMOR_PAULDRON,
           'p\taul\ndron',
       ),
+      (
+          'SameAsName',
+          json_enumval_custom_string_pb2.Armor.ARMOR_GREAVES,
+          'ARMOR_GREAVES',
+      ),
   )
   def testEnumValue(self, enum_value, expected_string):
     msg = json_enumval_custom_string_pb2.Knight(armor=enum_value)
@@ -2110,6 +2117,82 @@ class JsonFormatTest(JsonFormatBase):
         json_enumval_custom_string_pb2.Armor.ARMOR_HACHI_MAI_DO,
     )
 
+  @classmethod
+  def _GetDynamicEmptyOptionKnightClass(cls):
+    pool = descriptor_pool.Default()
+    try:
+      desc = pool.FindMessageTypeByName(
+          'json_enumval_custom_string_dynamic.DynamicKnight'
+      )
+      return message_factory.GetMessageClass(desc)
+    except KeyError:
+      pass
+
+    json_ext = pool.FindExtensionByName('pb.enumvalue.json')
+    file_proto = descriptor_pb2.FileDescriptorProto(
+        name='dynamic_empty_json_option.proto',
+        package='json_enumval_custom_string_dynamic',
+        syntax='editions',
+        edition=descriptor_pb2.Edition.EDITION_2026,
+        dependency=[json_ext.file.name],
+    )
+
+    def add_val(enum_proto, name, number, has_json_opt=False, custom_str=None):
+      ev = enum_proto.value.add(name=name, number=number)
+      if has_json_opt:
+        opt = ev.options.Extensions[json_ext]
+        if custom_str is not None:
+          opt.string = custom_str
+        else:
+          opt.SetInParent()
+
+    armor = file_proto.enum_type.add(name='DynamicArmor')
+    armor.options.allow_alias = True
+    add_val(armor, 'ARMOR_UNKNOWN', 0)
+    add_val(armor, 'ARMOR_COIF', 5, has_json_opt=True, custom_str='')
+    add_val(armor, 'ARMOR_VAMBRACE', 10, has_json_opt=True)
+    add_val(armor, 'ARMOR_BRACERS', 11, has_json_opt=True)
+    add_val(armor, 'ARMOR_CUIRASS', 12, has_json_opt=True)
+    add_val(armor, 'ARMOR_BREASTPLATE', 12)
+
+    weapon = file_proto.enum_type.add(name='DynamicWeapon')
+    add_val(weapon, 'WEAPON_UNKNOWN', 0, has_json_opt=True)
+    add_val(weapon, 'WEAPON_SWORD', 1, has_json_opt=True)
+    add_val(weapon, 'WEAPON_MACE', 2, has_json_opt=True)
+
+    order = file_proto.enum_type.add(name='EmptyOptionOrder')
+    add_val(order, 'VAL_UNSPECIFIED', 0)
+    add_val(order, 'VAL_EMPTY_OPT', 1, has_json_opt=True)
+    add_val(order, 'VAL_EMPTY_STR', 2, has_json_opt=True, custom_str='')
+
+    msg = file_proto.message_type.add(name='DynamicKnight')
+    msg.field.add(
+        name='armor',
+        number=1,
+        label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+        type=descriptor_pb2.FieldDescriptorProto.TYPE_ENUM,
+        type_name='DynamicArmor',
+    )
+    msg.field.add(
+        name='weapon',
+        number=2,
+        label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+        type=descriptor_pb2.FieldDescriptorProto.TYPE_ENUM,
+        type_name='DynamicWeapon',
+    )
+    msg.field.add(
+        name='empty_option_order',
+        number=3,
+        label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+        type=descriptor_pb2.FieldDescriptorProto.TYPE_ENUM,
+        type_name='EmptyOptionOrder',
+    )
+
+    file_desc = pool.AddSerializedFile(file_proto.SerializeToString())
+    return message_factory.GetMessageClass(
+        file_desc.message_types_by_name['DynamicKnight']
+    )
+
   def testGetCustomJsonEnumNames(self):
     enum_type = json_enumval_custom_string_pb2.Armor.DESCRIPTOR
     cache = {}
@@ -2117,6 +2200,9 @@ class JsonFormatTest(JsonFormatBase):
     self.assertIn('gr8 helm', names)
     self.assertEqual(names['gr8 helm'].name, 'ARMOR_GREAT_HELM')
     self.assertEqual(names['gr8 helm'].number, 1)
+    self.assertIn('', names)
+    self.assertEqual(names[''].name, 'ARMOR_COIF')
+    self.assertEqual(names[''].number, 5)
     self.assertIn('sabaton', names)
     self.assertEqual(names['sabaton'].number, 7)
     self.assertIn(names['sabaton'].name, ('ARMOR_SABATON', 'ARMOR_SOLLERET'))
@@ -2130,6 +2216,111 @@ class JsonFormatTest(JsonFormatBase):
     self.assertIs(cache[enum_type], names)
     cached_names = json_format._GetCustomJsonEnumNames(enum_type, cache)
     self.assertIs(cached_names, names)
+
+    # Also verify dynamic enum with both explicit "" and multiple {} options.
+    dyn_cls = self._GetDynamicEmptyOptionKnightClass()
+    dyn_armor_enum = dyn_cls.DESCRIPTOR.fields_by_name['armor'].enum_type
+    dyn_cache = {}
+    dyn_names = json_format._GetCustomJsonEnumNames(dyn_armor_enum, dyn_cache)
+    self.assertEqual(list(dyn_names.keys()), [''])
+    self.assertEqual(dyn_names[''].name, 'ARMOR_COIF')
+    self.assertEqual(dyn_names[''].number, 5)
+
+  def testGetCustomJsonEnumNamesOnlyEmptyOptions(self):
+    for enum_type in (
+        json_enumval_custom_string_pb2.Weapon.DESCRIPTOR,
+        self._GetDynamicEmptyOptionKnightClass()
+        .DESCRIPTOR.fields_by_name['weapon']
+        .enum_type,
+    ):
+      cache = {}
+      names = json_format._GetCustomJsonEnumNames(enum_type, cache)
+      self.assertEqual(names, {})
+      self.assertIn(enum_type, cache)
+      self.assertEqual(cache[enum_type], {})
+
+  def testEmptyJsonOptionWeaponAndOrder(self):
+    dyn_cls = self._GetDynamicEmptyOptionKnightClass()
+    for armor_num, expected_name in (
+        (10, 'ARMOR_VAMBRACE'),
+        (11, 'ARMOR_BRACERS'),
+    ):
+      dyn_msg = dyn_cls(armor=armor_num)
+      json_output = json_format.MessageToJson(dyn_msg)
+      self.assertEqual(json.loads(json_output), {'armor': expected_name})
+      parsed_dyn = dyn_cls()
+      json_format.Parse(json_output, parsed_dyn)
+      self.assertEqual(parsed_dyn.armor, armor_num)
+
+    msg = dyn_cls(weapon=1, empty_option_order=1)
+    json_output = json_format.MessageToJson(msg)
+    self.assertEqual(
+        json.loads(json_output),
+        {
+            'weapon': 'WEAPON_SWORD',
+            'emptyOptionOrder': 'VAL_EMPTY_OPT',
+        },
+    )
+    parsed = dyn_cls()
+    json_format.Parse(json_output, parsed)
+    self.assertEqual(parsed.weapon, 1)
+    self.assertEqual(parsed.empty_option_order, 1)
+
+    zero_msg = dyn_cls(weapon=0)
+    self.assertEqual(
+        json.loads(json_format.MessageToJson(zero_msg)),
+        {'weapon': 'WEAPON_UNKNOWN'},
+    )
+
+  def testEmptyStringResolvesToExplicitEmptyCustomString(self):
+    dyn_cls = self._GetDynamicEmptyOptionKnightClass()
+    msg = dyn_cls()
+    json_format.Parse('{"armor": "", "emptyOptionOrder": ""}', msg)
+    self.assertEqual(msg.armor, 5)
+    self.assertEqual(msg.empty_option_order, 2)
+    self.assertEqual(
+        json.loads(json_format.MessageToJson(msg)),
+        {'armor': '', 'emptyOptionOrder': ''},
+    )
+
+  def testEmptyJsonOptionRejectsEmptyString(self):
+    for cls in (
+        json_enumval_custom_string_pb2.Knight,
+        self._GetDynamicEmptyOptionKnightClass(),
+    ):
+      msg = cls()
+      with self.assertRaises(json_format.ParseError):
+        json_format.Parse('{"weapon": ""}', msg)
+
+      json_format.Parse('{"weapon": ""}', msg, ignore_unknown_fields=True)
+      self.assertFalse(msg.HasField('weapon'))
+
+  def testAliasedEmptyOptionAndOmitted(self):
+    gen_msg = json_enumval_custom_string_pb2.Knight(
+        weapon=json_enumval_custom_string_pb2.Weapon.WEAPON_SWORD
+    )
+    self.assertEqual(
+        json.loads(json_format.MessageToJson(gen_msg)),
+        {'weapon': 'WEAPON_SWORD'},
+    )
+    for raw_name in ('WEAPON_SWORD', 'WEAPON_BLADE'):
+      parsed_gen = json_enumval_custom_string_pb2.Knight()
+      json_format.Parse('{"weapon": "%s"}' % raw_name, parsed_gen)
+      self.assertEqual(
+          parsed_gen.weapon,
+          json_enumval_custom_string_pb2.Weapon.WEAPON_SWORD,
+      )
+
+    dyn_cls = self._GetDynamicEmptyOptionKnightClass()
+    msg = dyn_cls(armor=12)
+    self.assertEqual(
+        json.loads(json_format.MessageToJson(msg)),
+        {'armor': 'ARMOR_CUIRASS'},
+    )
+    for raw_name in ('ARMOR_CUIRASS', 'ARMOR_BREASTPLATE'):
+      parsed = dyn_cls()
+      json_format.Parse('{"armor": "%s"}' % raw_name, parsed)
+      self.assertEqual(parsed.armor, 12)
 
   def testGetCustomJsonEnumNamesNoCustomOptions(self):
     enum_type = unittest_pb2.ForeignEnum.DESCRIPTOR

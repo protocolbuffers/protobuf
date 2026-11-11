@@ -317,7 +317,7 @@ class _Printer(object):
       enum_value = field.enum_type.values_by_number.get(value, None)
       if enum_value is not None:
         option = self._GetJsonEnumValueOption(enum_value)
-        if option is not None:
+        if option is not None and option.HasField('string'):
           return option.string
         return enum_value.name
       else:

@@ -18538,6 +18538,544 @@ TEST_F(CopySourceCodeInfoToTest, CopySourceCodeInfoTo) {
   EXPECT_EQ(14, foo_location.span(2));     // Foo ends on column 14
 }
 
+
+TEST_F(ValidationErrorTest, CustomJsonStringEmbeddedNull) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        message_type {
+          name: "JsonEnumValueOptions"
+          field {
+            name: "string"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_STRING
+          }
+        }
+        extension {
+          name: "json"
+          number: 998
+          label: LABEL_OPTIONAL
+          type: TYPE_MESSAGE
+          type_name: "JsonEnumValueOptions"
+          extendee: "google.protobuf.EnumValueOptions"
+        }
+        enum_type {
+          name: "FooEnum"
+          value {
+            name: "BAR"
+            number: 1
+            options {
+              uninterpreted_option {
+                name { name_part: "json" is_extension: true }
+                name { name_part: "string" is_extension: false }
+                string_value: "embedded\000null"
+              }
+            }
+          }
+        }
+      )pb",
+      R"(foo.proto: BAR: OPTION_VALUE: Custom JSON strings cannot contain embedded null characters.
+)");
+}
+
+TEST_F(ValidationErrorTest, CustomJsonStringDuplicate) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        message_type {
+          name: "JsonEnumValueOptions"
+          field {
+            name: "string"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_STRING
+          }
+        }
+        extension {
+          name: "json"
+          number: 998
+          label: LABEL_OPTIONAL
+          type: TYPE_MESSAGE
+          type_name: "JsonEnumValueOptions"
+          extendee: "google.protobuf.EnumValueOptions"
+        }
+        enum_type {
+          name: "FooEnum"
+          value {
+            name: "BAR"
+            number: 1
+            options {
+              uninterpreted_option {
+                name { name_part: "json" is_extension: true }
+                name { name_part: "string" is_extension: false }
+                string_value: "duplicate"
+              }
+            }
+          }
+          value {
+            name: "BAZ"
+            number: 2
+            options {
+              uninterpreted_option {
+                name { name_part: "json" is_extension: true }
+                name { name_part: "string" is_extension: false }
+                string_value: "duplicate"
+              }
+            }
+          }
+        }
+      )pb",
+      R"(foo.proto: FooEnum: OPTION_VALUE: Custom JSON string "duplicate" conflicts with custom JSON string of "BAR".
+)");
+}
+
+TEST_F(ValidationErrorTest, CustomJsonStringConflictWithDefault) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        message_type {
+          name: "JsonEnumValueOptions"
+          field {
+            name: "string"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_STRING
+          }
+        }
+        extension {
+          name: "json"
+          number: 998
+          label: LABEL_OPTIONAL
+          type: TYPE_MESSAGE
+          type_name: "JsonEnumValueOptions"
+          extendee: "google.protobuf.EnumValueOptions"
+        }
+        enum_type {
+          name: "FooEnum"
+          value {
+            name: "BAR"
+            number: 1
+            options {
+              uninterpreted_option {
+                name { name_part: "json" is_extension: true }
+                name { name_part: "string" is_extension: false }
+                string_value: "BAZ"
+              }
+            }
+          }
+          value { name: "BAZ" number: 2 }
+        }
+      )pb",
+      R"(foo.proto: FooEnum: OPTION_VALUE: Default JSON string "BAZ" conflicts with custom JSON string of "BAR".
+)");
+}
+
+TEST_F(ValidationErrorTest, CustomJsonStringInvalidNumber) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        message_type {
+          name: "JsonEnumValueOptions"
+          field {
+            name: "string"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_STRING
+          }
+        }
+        extension {
+          name: "json"
+          number: 998
+          label: LABEL_OPTIONAL
+          type: TYPE_MESSAGE
+          type_name: "JsonEnumValueOptions"
+          extendee: "google.protobuf.EnumValueOptions"
+        }
+        enum_type {
+          name: "FooEnum"
+          value {
+            name: "BAR"
+            number: 1
+            options {
+              uninterpreted_option {
+                name { name_part: "json" is_extension: true }
+                name { name_part: "string" is_extension: false }
+                string_value: "2"
+              }
+            }
+          }
+        }
+      )pb",
+      R"(foo.proto: BAR: OPTION_VALUE: Custom JSON string "2" parses as integer 2, which does not match the enum value's number 1.
+)");
+}
+
+TEST_F(ValidationErrorTest, CustomJsonStringInconsistentAliases) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        message_type {
+          name: "JsonEnumValueOptions"
+          field {
+            name: "string"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_STRING
+          }
+        }
+        extension {
+          name: "json"
+          number: 998
+          label: LABEL_OPTIONAL
+          type: TYPE_MESSAGE
+          type_name: "JsonEnumValueOptions"
+          extendee: "google.protobuf.EnumValueOptions"
+        }
+        enum_type {
+          name: "FooEnum"
+          options { allow_alias: true }
+          value {
+            name: "A"
+            number: 1
+            options {
+              uninterpreted_option {
+                name { name_part: "json" is_extension: true }
+                name { name_part: "string" is_extension: false }
+                string_value: "X"
+              }
+            }
+          }
+          value {
+            name: "B"
+            number: 1
+            options {
+              uninterpreted_option {
+                name { name_part: "json" is_extension: true }
+                name { name_part: "string" is_extension: false }
+                string_value: "Y"
+              }
+            }
+          }
+        }
+      )pb",
+      R"(foo.proto: FooEnum: OPTION_VALUE: Alias values for number 1 must have the same custom JSON string. "B" has "Y" but primary alias "A" has "X".
+)");
+}
+
+TEST_F(ValidationErrorTest, CustomJsonStringInconsistentUnsetAliases) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        message_type {
+          name: "JsonEnumValueOptions"
+          field {
+            name: "string"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_STRING
+          }
+        }
+        extension {
+          name: "json"
+          number: 998
+          label: LABEL_OPTIONAL
+          type: TYPE_MESSAGE
+          type_name: "JsonEnumValueOptions"
+          extendee: "google.protobuf.EnumValueOptions"
+        }
+        enum_type {
+          name: "FooEnum"
+          options { allow_alias: true }
+          value {
+            name: "A"
+            number: 1
+            options {
+              uninterpreted_option {
+                name { name_part: "json" is_extension: true }
+                name { name_part: "string" is_extension: false }
+                string_value: "X"
+              }
+            }
+          }
+          value {
+            name: "B"
+            number: 1
+            # Missing custom JSON string.
+          }
+        }
+      )pb",
+      R"(foo.proto: FooEnum: OPTION_VALUE: Alias values for number 1 must have the same custom JSON string. "B" has unset but primary alias "A" has "X".
+)");
+}
+
+TEST_F(ValidationErrorTest,
+       CustomJsonStringDuplicateAllowedForConsistentAlias) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFile(R"pb(
+    name: "foo.proto"
+    dependency: "google/protobuf/descriptor.proto"
+    message_type {
+      name: "JsonEnumValueOptions"
+      field { name: "string" number: 1 label: LABEL_OPTIONAL type: TYPE_STRING }
+    }
+    extension {
+      name: "json"
+      number: 998
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: "JsonEnumValueOptions"
+      extendee: "google.protobuf.EnumValueOptions"
+    }
+    enum_type {
+      name: "FooEnum"
+      options { allow_alias: true }
+      value {
+        name: "BAR"
+        number: 1
+        options {
+          uninterpreted_option {
+            name { name_part: "json" is_extension: true }
+            name { name_part: "string" is_extension: false }
+            string_value: "alias_json"
+          }
+        }
+      }
+      value {
+        name: "BAZ"
+        number: 1
+        options {
+          uninterpreted_option {
+            name { name_part: "json" is_extension: true }
+            name { name_part: "string" is_extension: false }
+            string_value: "alias_json"
+          }
+        }
+      }
+    }
+  )pb");
+}
+
+TEST_F(ValidationErrorTest, CustomJsonStringEmptyOptionBehavesAsUnset) {
+  BuildDescriptorMessagesInTestPool();
+  const FieldDescriptor* json_ext =
+      DescriptorPool::generated_pool()->FindExtensionByName(
+          "pb.enumvalue.json");
+  ASSERT_NE(json_ext, nullptr);
+  const FieldDescriptor* string_field =
+      json_ext->message_type()->FindFieldByName("string");
+  ASSERT_NE(string_field, nullptr);
+  BuildFileInTestPool(json_ext->file());
+  const FileDescriptor* file = ParseAndBuildFile("foo.proto", R"schema(
+    edition = "2026";
+    package foo;
+    import "google/protobuf/json_enumvalue_options.proto";
+
+    enum FooEnum {
+      option allow_alias = true;
+      FOO_UNSPECIFIED = 0;
+      FOO_EMPTY_OPT_BEFORE = 1 [(pb.enumvalue.json) = {}];
+      FOO_EXPLICIT_EMPTY_STR = 2 [(pb.enumvalue.json).string = ""];
+      FOO_EMPTY_OPT_AFTER = 3 [(pb.enumvalue.json) = {}];
+      FOO_ALIAS_EMPTY_OPT_A = 4 [(pb.enumvalue.json) = {}];
+      FOO_ALIAS_OMITTED_B = 4;
+      FOO_ALIAS_OMITTED_C = 5;
+      FOO_ALIAS_EMPTY_OPT_D = 5 [(pb.enumvalue.json) = {}];
+      FOO_ALIAS_BOTH_EMPTY_OPT_E = 6 [(pb.enumvalue.json) = {}];
+      FOO_ALIAS_BOTH_EMPTY_OPT_F = 6 [(pb.enumvalue.json) = {}];
+    }
+  )schema");
+  ASSERT_NE(file, nullptr);
+  const EnumDescriptor* enm = file->FindEnumTypeByName("FooEnum");
+  ASSERT_NE(enm, nullptr);
+  ASSERT_EQ(enm->value_count(), 10);
+
+  const auto has_json_ext = [&](int idx) {
+    const EnumValueOptions& opts = enm->value(idx)->options();
+    return opts.GetReflection()->HasField(opts, json_ext);
+  };
+  const auto has_json_string = [&](int idx) {
+    const EnumValueOptions& opts = enm->value(idx)->options();
+    const Message& sub = opts.GetReflection()->GetMessage(opts, json_ext);
+    return sub.GetReflection()->HasField(sub, string_field);
+  };
+  const auto get_json_string = [&](int idx) {
+    const EnumValueOptions& opts = enm->value(idx)->options();
+    const Message& sub = opts.GetReflection()->GetMessage(opts, json_ext);
+    return sub.GetReflection()->GetString(sub, string_field);
+  };
+
+  EXPECT_FALSE(has_json_ext(0));
+
+  EXPECT_TRUE(has_json_ext(1));
+  EXPECT_FALSE(has_json_string(1));
+
+  EXPECT_TRUE(has_json_ext(2));
+  EXPECT_TRUE(has_json_string(2));
+  EXPECT_EQ(get_json_string(2), "");
+
+  EXPECT_TRUE(has_json_ext(3));
+  EXPECT_FALSE(has_json_string(3));
+}
+
+TEST_F(ValidationErrorTest, CustomJsonStringEmptyStringAndAliasConflicts) {
+  BuildDescriptorMessagesInTestPool();
+  const FieldDescriptor* json_ext =
+      DescriptorPool::generated_pool()->FindExtensionByName(
+          "pb.enumvalue.json");
+  ASSERT_NE(json_ext, nullptr);
+  BuildFileInTestPool(json_ext->file());
+
+  ParseAndBuildFileWithErrors(
+      "dup_empty.proto", R"schema(
+        edition = "2026";
+        import "google/protobuf/json_enumvalue_options.proto";
+        enum FooEnum {
+          FOO_UNSPECIFIED = 0;
+          BAR = 1 [(pb.enumvalue.json).string = ""];
+          BAZ = 2 [(pb.enumvalue.json).string = ""];
+        }
+      )schema",
+      "dup_empty.proto: FooEnum: OPTION_VALUE: Custom JSON string \"\" "
+      "conflicts with custom JSON string of \"BAR\".\n");
+
+  ParseAndBuildFileWithErrors(
+      "alias_mismatch_1.proto", R"schema(
+        edition = "2026";
+        import "google/protobuf/json_enumvalue_options.proto";
+        enum FooEnum {
+          option allow_alias = true;
+          FOO_UNSPECIFIED = 0;
+          A = 1 [(pb.enumvalue.json) = {}];
+          B = 1 [(pb.enumvalue.json).string = ""];
+        }
+      )schema",
+      "alias_mismatch_1.proto: FooEnum: OPTION_VALUE: Alias values for number "
+      "1 must have the same custom JSON string. \"B\" has \"\" but primary "
+      "alias \"A\" has unset.\n");
+
+  ParseAndBuildFileWithErrors(
+      "alias_mismatch_2.proto", R"schema(
+        edition = "2026";
+        import "google/protobuf/json_enumvalue_options.proto";
+        enum FooEnum {
+          option allow_alias = true;
+          FOO_UNSPECIFIED = 0;
+          A = 1 [(pb.enumvalue.json).string = ""];
+          B = 1 [(pb.enumvalue.json) = {}];
+        }
+      )schema",
+      "alias_mismatch_2.proto: FooEnum: OPTION_VALUE: Alias values for number "
+      "1 must have the same custom JSON string. \"B\" has unset but primary "
+      "alias \"A\" has \"\".\n");
+}
+
+TEST_F(ValidationErrorTest,
+       CustomJsonStringSubmessageWithOtherOrUnknownFieldsBehavesAsUnset) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFile(R"pb(
+    name: "foo.proto"
+    dependency: "google/protobuf/descriptor.proto"
+    message_type {
+      name: "JsonEnumValueOptions"
+      field { name: "string" number: 1 label: LABEL_OPTIONAL type: TYPE_STRING }
+      field { name: "other" number: 2 label: LABEL_OPTIONAL type: TYPE_INT32 }
+    }
+    extension {
+      name: "json"
+      number: 998
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: "JsonEnumValueOptions"
+      extendee: "google.protobuf.EnumValueOptions"
+    }
+    enum_type {
+      name: "FooEnum"
+      options { allow_alias: true }
+      value {
+        name: "BAR"
+        number: 1
+        options {
+          uninterpreted_option {
+            name { name_part: "json" is_extension: true }
+            aggregate_value: "other: 42"
+          }
+        }
+      }
+      value {
+        name: "BAZ"
+        number: 2
+        options {
+          uninterpreted_option {
+            name { name_part: "json" is_extension: true }
+            aggregate_value: "other: 99"
+          }
+        }
+      }
+      value {
+        name: "ALIAS_A"
+        number: 3
+        options {
+          uninterpreted_option {
+            name { name_part: "json" is_extension: true }
+            aggregate_value: "other: 7"
+          }
+        }
+      }
+      value { name: "ALIAS_B" number: 3 }
+    }
+  )pb");
+
+  const FieldDescriptor* json_ext =
+      DescriptorPool::generated_pool()->FindExtensionByName(
+          "pb.enumvalue.json");
+  ASSERT_NE(json_ext, nullptr);
+  const FieldDescriptor* string_field =
+      json_ext->message_type()->FindFieldByName("string");
+  ASSERT_NE(string_field, nullptr);
+  BuildFileInTestPool(json_ext->file());
+  FileDescriptorProto unknown_field_file;
+  unknown_field_file.set_name("bar.proto");
+  unknown_field_file.set_edition(Edition::EDITION_2026);
+  unknown_field_file.add_dependency(
+      "google/protobuf/json_enumvalue_options.proto");
+  EnumDescriptorProto* enm = unknown_field_file.add_enum_type();
+  enm->set_name("BarEnum");
+  AddEnumValue(enm, "BAR_UNSPECIFIED", 0);
+  EnumValueDescriptorProto* ev1 = AddEnumValue(enm, "BAR_ONE", 1);
+  Message* sub1 = ev1->mutable_options()->GetReflection()->MutableMessage(
+      ev1->mutable_options(), json_ext);
+  sub1->GetReflection()->MutableUnknownFields(sub1)->AddVarint(2, 42);
+  EnumValueDescriptorProto* ev2 = AddEnumValue(enm, "BAR_TWO", 2);
+  Message* sub2 = ev2->mutable_options()->GetReflection()->MutableMessage(
+      ev2->mutable_options(), json_ext);
+  sub2->GetReflection()->MutableUnknownFields(sub2)->AddVarint(2, 99);
+
+  const FileDescriptor* built = pool_.BuildFile(unknown_field_file);
+  ASSERT_NE(built, nullptr);
+  const EnumDescriptor* bar_enum = built->FindEnumTypeByName("BarEnum");
+  ASSERT_NE(bar_enum, nullptr);
+  const EnumValueOptions& built_opts1 = bar_enum->value(1)->options();
+  EXPECT_TRUE(built_opts1.GetReflection()->HasField(built_opts1, json_ext));
+  const Message& built_sub1 =
+      built_opts1.GetReflection()->GetMessage(built_opts1, json_ext);
+  EXPECT_FALSE(built_sub1.GetReflection()->HasField(built_sub1, string_field));
+  EXPECT_FALSE(
+      built_sub1.GetReflection()->GetUnknownFields(built_sub1).empty());
+}
+
 // ===================================================================
 
 // This is effectively a static_assert ensuring that the generated
