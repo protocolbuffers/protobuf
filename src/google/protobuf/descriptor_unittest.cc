@@ -15750,6 +15750,98 @@ TEST_F(DescriptorPoolFeaturesTest, ResolvesFeaturesForPartialDefaults) {
   EXPECT_FALSE(pool_.ResolvesFeaturesFor(pb::TestMessage::test_message));
 }
 
+TEST_F(DescriptorPoolFeaturesTest,
+       GeneratedPoolResolvesFeaturesDoesNotDeadlock) {
+  EXPECT_TRUE(DescriptorPool::generated_pool()->ResolvesFeaturesFor(pb::cpp));
+}
+
+TEST_F(DescriptorPoolFeaturesTest,
+       ResolvesFeaturesForBeforeSetFeatureSetDefaults) {
+  SimpleDescriptorDatabase database;
+  DescriptorPool pool(&database);
+  EXPECT_TRUE(pool.ResolvesFeaturesFor(pb::cpp));
+  EXPECT_FALSE(pool.ResolvesFeaturesFor(pb::test));
+
+  auto test_default_spec = FeatureResolver::CompileDefaults(
+      FeatureSet::descriptor(), {GetExtensionReflection(pb::test)},
+      EDITION_PROTO2, EDITION_99999_TEST_ONLY);
+  ASSERT_OK(test_default_spec);
+  ASSERT_OK(pool.SetFeatureSetDefaults(std::move(test_default_spec).value()));
+
+  EXPECT_TRUE(pool.ResolvesFeaturesFor(pb::test));
+  EXPECT_FALSE(pool.ResolvesFeaturesFor(pb::cpp));
+}
+
+TEST_F(DescriptorPoolFeaturesTest, SetFeatureSetDefaultsTwice) {
+  const auto compile_defaults = [](const FieldDescriptor* extension) {
+    return FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
+                                            {extension}, EDITION_PROTO2,
+                                            EDITION_99999_TEST_ONLY);
+  };
+
+  SimpleDescriptorDatabase database;
+  DescriptorPool db_pool(&database);
+  for (DescriptorPool* pool : {&pool_, &db_pool}) {
+    auto test_spec = compile_defaults(GetExtensionReflection(pb::test));
+    ASSERT_OK(test_spec);
+    ASSERT_OK(pool->SetFeatureSetDefaults(std::move(test_spec).value()));
+    EXPECT_TRUE(pool->ResolvesFeaturesFor(pb::test));
+    EXPECT_FALSE(pool->ResolvesFeaturesFor(pb::cpp));
+
+    auto cpp_spec = compile_defaults(GetExtensionReflection(pb::cpp));
+    ASSERT_OK(cpp_spec);
+    ASSERT_OK(pool->SetFeatureSetDefaults(std::move(cpp_spec).value()));
+    EXPECT_TRUE(pool->ResolvesFeaturesFor(pb::cpp));
+    EXPECT_FALSE(pool->ResolvesFeaturesFor(pb::test));
+  }
+}
+
+TEST_F(DescriptorPoolFeaturesTest, ConcurrentSetFeatureSetDefaultsAndLookup) {
+  auto test_default_spec = FeatureResolver::CompileDefaults(
+      FeatureSet::descriptor(), {GetExtensionReflection(pb::test)},
+      EDITION_PROTO2, EDITION_99999_TEST_ONLY);
+  ASSERT_OK(test_default_spec);
+  auto cpp_default_spec = FeatureResolver::CompileDefaults(
+      FeatureSet::descriptor(), {GetExtensionReflection(pb::cpp)},
+      EDITION_PROTO2, EDITION_99999_TEST_ONLY);
+  ASSERT_OK(cpp_default_spec);
+
+  FileDescriptorProto file_proto = ParseTextOrDie(R"pb(
+    name: "foo.proto"
+    message_type { name: "Foo" }
+  )pb");
+
+  for (int i = 0; i < 20; ++i) {
+    SimpleDescriptorDatabase database;
+    database.Add(file_proto);
+    DescriptorPool pool(&database);
+
+    absl::Notification start;
+    std::vector<std::thread> threads;
+    for (int t = 0; t < 2; ++t) {
+      threads.emplace_back([&, t] {
+        FeatureSetDefaults spec =
+            t == 0 ? *test_default_spec : *cpp_default_spec;
+        start.WaitForNotification();
+        (void)pool.SetFeatureSetDefaults(std::move(spec));
+      });
+      threads.emplace_back([&] {
+        start.WaitForNotification();
+        EXPECT_NE(pool.FindFileByName("foo.proto"), nullptr);
+      });
+      threads.emplace_back([&] {
+        start.WaitForNotification();
+        (void)pool.ResolvesFeaturesFor(pb::test);
+        (void)pool.ResolvesFeaturesFor(pb::cpp);
+      });
+    }
+    start.Notify();
+    for (auto& thread : threads) {
+      thread.join();
+    }
+  }
+}
+
 class DescriptorPoolMemoizationTest : public ::testing::Test {
  protected:
   template <typename Desc, typename Func>

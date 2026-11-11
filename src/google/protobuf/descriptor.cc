@@ -4357,11 +4357,6 @@ const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
 }
 
 absl::Status DescriptorPool::SetFeatureSetDefaults(FeatureSetDefaults spec) {
-  if (build_started_) {
-    return absl::FailedPreconditionError(
-        "Feature set defaults can't be changed once the pool has started "
-        "building.");
-  }
   if (spec.minimum_edition() > spec.maximum_edition()) {
     return absl::InvalidArgumentError(
         absl::StrCat("Invalid edition range ", spec.minimum_edition(), " to ",
@@ -4380,6 +4375,12 @@ absl::Status DescriptorPool::SetFeatureSetDefaults(FeatureSetDefaults spec) {
           edition_default.edition(), "."));
     }
     prev_edition = edition_default.edition();
+  }
+  absl::MutexLockMaybe lock(mutex());
+  if (build_started_) {
+    return absl::FailedPreconditionError(
+        "Feature set defaults can't be changed once the pool has started "
+        "building.");
   }
   feature_set_defaults_spec_ =
       std::make_unique<FeatureSetDefaults>(std::move(spec));
@@ -4417,6 +4418,7 @@ const FeatureSetDefaults& DescriptorPool::GetFeatureSetDefaults() const {
 }
 
 bool DescriptorPool::ResolvesFeaturesForImpl(int extension_number) const {
+  ReaderMutexLockMaybe lock(mutex());
   for (const auto& edition_default : GetFeatureSetDefaults().defaults()) {
     if (!internal::PrivateAccess::GetExtensionSet(
              edition_default.fixed_features())
