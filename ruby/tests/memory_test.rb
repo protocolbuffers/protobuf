@@ -6,6 +6,7 @@ $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)))
 require 'test/unit'
 require 'objspace'
 require 'test_import_pb'
+require 'generated_code_pb'
 
 return if defined?(JRUBY_VERSION) || Google::Protobuf::IMPLEMENTATION != :NATIVE
 
@@ -30,6 +31,19 @@ class MemoryTest < Test::Unit::TestCase
   def test_objspace_memsize_of_map
     if $is_64bit
       assert_operator 40, :<, ObjectSpace.memsize_of(Google::Protobuf::Map.new(:string, :int32))
+    end
+  end
+
+  def test_objspace_memsize_of_fused_arena
+    if $is_64bit
+      long_lived = A::B::C::TestMessage.new
+      arena = ObjectSpace.reachable_objects_from(long_lived).grep(Google::Protobuf::Internal::Arena).first
+      short_lived = Array.new(1_000) { A::B::C::TestMessage.new(optional_msg: long_lived) }
+      shared = ObjectSpace.memsize_of(arena)
+      short_lived.clear
+      GC.start
+
+      assert_operator shared * 10, :<, ObjectSpace.memsize_of(arena)
     end
   end
 end
