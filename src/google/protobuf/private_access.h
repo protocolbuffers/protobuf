@@ -60,6 +60,11 @@ struct PrivateAccess {
   static ExtensionSet* GetExtensionSet(MessageLite& msg);
   static const ExtensionSet* GetExtensionSet(const MessageLite& msg);
 
+  template <typename Ref, typename... Args>
+  static auto TryGetLazyField(Ref& reflection, const Args&... args) {
+    return reflection.TryGetLazyField(args...);
+  }
+
   template <typename T>
   static void TrackerOnGetMetadata() {
     T::Impl_::TrackerOnGetMetadata();

@@ -1248,6 +1248,7 @@ class PROTOBUF_EXPORT Reflection final {
   friend class FastReflectionBase;
   friend class FastReflectionMessageMutator;
   friend class internal::HasBitsTestPeer;
+  friend internal::PrivateAccess;
   template <typename MessageT>
   friend struct internal::MapDynamicFieldInfo;
   friend class internal::ReflectionVisit;
