@@ -22,6 +22,7 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/arena_alloc_result.h"
 #include "google/protobuf/port.h"
 
 // Must be included last.
@@ -96,9 +97,9 @@ class MessageCreator {
       void* PROTOBUF_NONNULL mem, Arena* PROTOBUF_NULLABLE arena) const;
 
   // Defined in arena.h
-  void* PROTOBUF_NONNULL AllocateMessage(Arena* PROTOBUF_NULLABLE arena) const;
-  void* PROTOBUF_NONNULL
-  AllocateMessage(SerialArena* PROTOBUF_NULLABLE arena) const;
+  MessageAllocationResult AllocateMessage(Arena* PROTOBUF_NULLABLE arena) const;
+  MessageAllocationResult AllocateMessage(
+      SerialArena* PROTOBUF_NULLABLE arena) const;
 
   Tag tag() const { return tag_; }
 

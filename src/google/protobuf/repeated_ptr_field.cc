@@ -23,10 +23,12 @@
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/class_data.h"
+#include "google/protobuf/memory_align.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/message_traits.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/serial_arena.h"
 #include "google/protobuf/type_id.h"
 
 // Must be included last.
@@ -86,9 +88,10 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount,
           return r->elements + current_size_;
         }
       }
-      auto* alloc =
-          arena->AllocateAligned<internal::AllocationClient::kArray>(bytes);
-      new_rep = reinterpret_cast<Rep*>(alloc);
+      auto res =
+          arena->AllocateDefaultAligned<internal::AllocationClient::kArray>(
+              bytes);
+      new_rep = reinterpret_cast<Rep*>(res.ptr);
     }
   }
 

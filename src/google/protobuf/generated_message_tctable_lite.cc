@@ -2654,8 +2654,13 @@ PROTOBUF_ALWAYS_INLINE std::string* TcParser::ParseRepeatedStringOnce(
   // For simplicity we allocate and add the object now, even though it is not
   // yet initialized.
   // We make sure below to not have early exits that leave it uninitialized.
-  auto* mem = serial_arena != nullptr ? serial_arena->AllocateFromStringBlock()
-                                      : ::operator new(sizeof(std::string));
+  void* mem;
+  if (serial_arena != nullptr) {
+    auto res = serial_arena->AllocateFromStringBlock();
+    mem = res.ptr;
+  } else {
+    mem = ::operator new(sizeof(std::string));
+  }
   field.AddAllocatedForParse(mem, serial_arena);
   int size = ReadSize(&ptr);
   if (ABSL_PREDICT_FALSE(!ptr)) {

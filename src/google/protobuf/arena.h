@@ -24,6 +24,7 @@
 #include "absl/base/macros.h"
 #include "absl/base/nullability.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/arena_alloc_result.h"
 #include "google/protobuf/class_data.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/private_access.h"
@@ -365,7 +366,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
       if (ABSL_PREDICT_FALSE(arena == nullptr)) {
         return new T(std::forward<Args>(args)...);
       }
-      return new (arena->AllocateInternal<T>()) T(std::forward<Args>(args)...);
+      auto res = arena->AllocateInternal<T>();
+      return new (res.ptr) T(std::forward<Args>(args)...);
     }
   }
 
@@ -419,15 +421,13 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD void* PROTOBUF_NONNULL
   AllocateAligned(size_t size, size_t align = 8) {
     if (align <= internal::ArenaAlignDefault{}.align()) {
-      return Allocate(internal::ArenaAlignDefault{}.Ceil(size));
+      auto res =
+          AllocateDefaultAligned(internal::ArenaAlignDefault{}.Ceil(size));
+      return res.ptr;
     } else {
-      // We are wasting space by over allocating align - 8 bytes. Compared
-      // to a dedicated function that takes current alignment in consideration.
-      // Such a scheme would only waste (align - 8)/2 bytes on average, but
-      // requires a dedicated function in the outline arena allocation
-      // functions. Possibly re-evaluate tradeoffs later.
-      auto align_as = internal::ArenaAlignAs(align);
-      return align_as.Ceil(Allocate(align_as.Padded(size)));
+      auto res =
+          AllocateOverAligned(internal::ArenaAlignAs(align).Ceil(size), align);
+      return res.ptr;
     }
   }
 
@@ -453,11 +453,22 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
         << "Requested size is too large to fit into size_t.";
     if (ABSL_PREDICT_FALSE(arena == nullptr)) {
       return new T[num_elements];
+    } else if constexpr (alignof(T) <= internal::ArenaAlignDefault{}.align()) {
+      const size_t n =
+          internal::ArenaAlignDefault{}.Ceil(sizeof(T) * num_elements);
+      auto res = arena->AllocateDefaultAlignedForArray(n);
+      return static_cast<T*>(res.ptr);
     } else {
-      // We count on compiler to realize that if sizeof(T) is a multiple of
-      // 8 AlignUpTo can be elided.
-      return static_cast<T*>(
-          arena->AllocateAlignedForArray(sizeof(T) * num_elements, alignof(T)));
+      // Since `alignof(T) > ArenaAlignDefault::align` and is a power of 2, we
+      // statically know `sizeof(T) * num_elements` to be aligned to
+      // `ArenaAlignDefault::align`.
+      static_assert(internal::ArenaAlignDefault{}.IsAligned(sizeof(T)));
+      // Don't attempt to use cached array blocks for over-aligned requests.
+      // That would require filtering the results, or asking for more bytes than
+      // actually needed to ensure we'd be able to align the result.
+      auto res =
+          arena->AllocateOverAligned(sizeof(T) * num_elements, alignof(T));
+      return static_cast<T*>(res.ptr);
     }
   }
 
@@ -726,8 +737,10 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
       } else {
         return new T(nullptr, static_cast<Args&&>(args)...);
       }
-    } else {
+    } else if constexpr (std::is_base_of_v<MessageLite, T>) {
       return arena->DoCreateMessage<T>(static_cast<Args&&>(args)...);
+    } else {
+      return arena->DoCreate<T>(static_cast<Args&&>(args)...);
     }
   }
 
@@ -743,18 +756,23 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
       // Generated arena constructor T(Arena*) is protected. Call via
       // InternalHelper.
       return InternalHelper<T>::New();
-    } else {
+    } else if constexpr (std::is_base_of_v<MessageLite, T>) {
       return arena->DoCreateMessage<T>();
+    } else {
+      return arena->DoCreate<T>();
     }
   }
 
   template <typename T>
-  PROTOBUF_NDEBUG_INLINE void* PROTOBUF_NONNULL AllocateInternal() {
+  PROTOBUF_NDEBUG_INLINE internal::AllocationResult AllocateInternal() {
     if constexpr (is_destructor_skippable<T>::value) {
-      return AllocateAligned(sizeof(T), alignof(T));
+      return {AllocateAligned(sizeof(T), alignof(T))};
     } else {
+      constexpr size_t align =
+          std::max(alignof(T), internal::ArenaAlignDefault{}.align());
+      constexpr size_t size = internal::ArenaAlignAs(align).Ceil(sizeof(T));
       return AllocateAlignedWithCleanup(
-          sizeof(T), alignof(T), &internal::cleanup::arena_destruct_object<T>);
+          size, align, &internal::cleanup::arena_destruct_object<T>);
     }
   }
 
@@ -778,9 +796,17 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE T* PROTOBUF_NONNULL DoCreateMessage(Args&&... args) {
+    auto res = AllocateMessage<T>();
+    return InternalHelper<T>::ConstructOnArena(res.ptr, *this,
+                                               std::forward<Args>(args)...);
+  }
+
+  template <typename T, typename... Args>
+  PROTOBUF_NDEBUG_INLINE T* PROTOBUF_NONNULL DoCreate(Args&&... args) {
     using ArenaRepT = typename internal::FieldArenaRep<T>::Type;
+    auto res = AllocateInternal<ArenaRepT>();
     auto* arena_repr = InternalHelper<ArenaRepT>::ConstructOnArena(
-        AllocateInternal<ArenaRepT>(), *this, std::forward<Args>(args)...);
+        res.ptr, *this, std::forward<Args>(args)...);
     // Note that we can't static_cast arena_repr to T* here, since T might be a
     // member of ArenaRepT.
     return internal::FieldArenaRep<T>::Get(arena_repr);
@@ -815,23 +841,18 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     return InternalHelper<T>::GetArena(value);
   }
 
-  void* PROTOBUF_NONNULL AllocateAlignedForArray(size_t n, size_t align) {
-    if (align <= internal::ArenaAlignDefault{}.align()) {
-      return AllocateForArray(internal::ArenaAlignDefault{}.Ceil(n));
-    } else {
-      // We are wasting space by over allocating align - 8 bytes. Compared
-      // to a dedicated function that takes current alignment in consideration.
-      // Such a scheme would only waste (align - 8)/2 bytes on average, but
-      // requires a dedicated function in the outline arena allocation
-      // functions. Possibly re-evaluate tradeoffs later.
-      auto align_as = internal::ArenaAlignAs(align);
-      return align_as.Ceil(AllocateForArray(align_as.Padded(n)));
-    }
+  template <typename T>
+  internal::MessageAllocationResult AllocateMessage() {
+    static_assert(std::is_base_of_v<MessageLite, T>);
+    static_assert(alignof(T) <= internal::ArenaAlignDefault{}.align());
+    return AllocateMessageImpl(internal::ArenaAlignDefault{}.Ceil(sizeof(T)));
   }
 
-  void* PROTOBUF_NONNULL Allocate(size_t n);
-  void* PROTOBUF_NONNULL AllocateForArray(size_t n);
-  void* PROTOBUF_NONNULL AllocateAlignedWithCleanup(
+  internal::MessageAllocationResult AllocateMessageImpl(size_t n);
+  internal::AllocationResult AllocateDefaultAligned(size_t n);
+  internal::AllocationResult AllocateOverAligned(size_t n, size_t align);
+  internal::AllocationResult AllocateDefaultAlignedForArray(size_t n);
+  internal::AllocationResult AllocateAlignedWithCleanup(
       size_t n, size_t align,
       void (*PROTOBUF_NONNULL destructor)(void* PROTOBUF_NONNULL));
 
@@ -858,6 +879,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   friend class internal::RepeatedPtrFieldBase;  // For ReturnArrayMemory
   friend class internal::UntypedMapBase;        // For ReturnArrayMemory
   friend class internal::ExtensionSet;          // For ReturnArrayMemory
+  friend internal::MessageCreator;              // For AllocateMessage
 
   friend struct internal::ArenaTestPeer;
 };
@@ -1152,8 +1174,14 @@ template <typename T>
 PROTOBUF_NOINLINE void* PROTOBUF_NONNULL
 Arena::DefaultConstruct(Arena* PROTOBUF_NULLABLE arena) {
   static_assert(is_destructor_skippable<T>::value);
-  void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
-                               : internal::Allocate(sizeof(T));
+  static_assert(alignof(T) <= internal::ArenaAlignDefault{}.align());
+  void* mem;
+  if (arena != nullptr) {
+    auto res = arena->AllocateMessage<T>();
+    mem = res.ptr;
+  } else {
+    mem = internal::Allocate(sizeof(T));
+  }
   if constexpr (internal::HasDeprecatedArenaConstructor<T>()) {
     return new (mem) T(internal::InternalVisibility(), arena);
   } else {
@@ -1164,6 +1192,7 @@ Arena::DefaultConstruct(Arena* PROTOBUF_NULLABLE arena) {
 template <typename T>
 PROTOBUF_NOINLINE void* PROTOBUF_NONNULL Arena::CopyConstruct(
     Arena* PROTOBUF_NULLABLE arena, const void* PROTOBUF_NONNULL from) {
+  static_assert(alignof(T) <= internal::ArenaAlignDefault{}.align());
   const auto* typed_from = static_cast<const T*>(from);
   // If the object is larger than half of a cache line, prefetch either the rest
   // of it or half of it, whichiver is smaller, starting at 1-cache-line offset.
@@ -1182,7 +1211,8 @@ PROTOBUF_NOINLINE void* PROTOBUF_NONNULL Arena::CopyConstruct(
   static_assert(is_destructor_skippable<T>::value, "");
   void* mem;
   if (arena != nullptr) {
-    mem = arena->AllocateAligned(sizeof(T));
+    auto res = arena->AllocateMessage<T>();
+    mem = res.ptr;
   } else {
     mem = internal::Allocate(sizeof(T));
   }
@@ -1190,7 +1220,7 @@ PROTOBUF_NOINLINE void* PROTOBUF_NONNULL Arena::CopyConstruct(
 }
 
 template <>
-inline void* PROTOBUF_NONNULL Arena::AllocateInternal<std::string>() {
+inline internal::AllocationResult Arena::AllocateInternal<std::string>() {
   return impl_.AllocateFromStringBlock();
 }
 
@@ -1239,21 +1269,23 @@ constexpr ThreadSafeArena& PrivateAccess::GetThreadSafeArena(Arena& arena) {
   return arena.impl_;
 }
 
-inline void* PROTOBUF_NONNULL
-MessageCreator::AllocateMessage(Arena* PROTOBUF_NULLABLE arena) const {
+inline MessageAllocationResult MessageCreator::AllocateMessage(
+    Arena* PROTOBUF_NULLABLE arena) const {
   if (arena != nullptr) {
-    return arena->AllocateAligned(allocation_size_);
+    return arena->AllocateMessageImpl(
+        internal::ArenaAlignDefault{}.Ceil(allocation_size_));
   } else {
-    return Allocate(allocation_size_);
+    return {Allocate(allocation_size_)};
   }
 }
 
-inline void* PROTOBUF_NONNULL
-MessageCreator::AllocateMessage(SerialArena* PROTOBUF_NULLABLE arena) const {
+inline MessageAllocationResult MessageCreator::AllocateMessage(
+    SerialArena* PROTOBUF_NULLABLE arena) const {
   if (arena != nullptr) {
-    return arena->AllocateAligned(ArenaAlignDefault{}.Ceil(allocation_size_));
+    return arena->AllocateMessageImpl<SerialArena::AllocationMode::kDefault>(
+        ArenaAlignDefault{}.Ceil(allocation_size_));
   } else {
-    return Allocate(allocation_size_);
+    return {Allocate(allocation_size_)};
   }
 }
 
