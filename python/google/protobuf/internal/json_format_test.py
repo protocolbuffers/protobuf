@@ -1005,6 +1005,34 @@ class JsonFormatTest(JsonFormatBase):
         r'Float value too large at TestMessage.repeatedFloatValue\[0\].',
     )
 
+  def testParseFloatMax(self):
+    # 3.4028235e+38 is the shortest repr of FLT_MAX, as printed by the JSON
+    # printers. Its nearest double is just above FLT_MAX but rounds to it.
+    float_max = float.fromhex('0x1.fffffep+127')
+    message = json_format_proto3_pb2.TestMessage()
+    message.float_value = float_max
+    message.repeated_float_value.append(-float_max)
+    text = json_format.MessageToJson(message)
+    self.assertIn('3.4028235e+38', text)
+    parsed_message = json_format_proto3_pb2.TestMessage()
+    json_format.Parse(text, parsed_message)
+    self.assertEqual(message, parsed_message)
+    json_format.Parse(
+        '{"floatValue": 3.4028235e+38, "repeatedFloatValue": [-3.4028235e+38]}',
+        parsed_message,
+    )
+    self.assertEqual(parsed_message.float_value, float_max)
+    self.assertEqual(parsed_message.repeated_float_value[-1], -float_max)
+    # Values that round to infinity in single precision are still rejected.
+    self.CheckError(
+        '{"floatValue": 3.4028236e+38}',
+        'Failed to parse floatValue field: Float value too large.',
+    )
+    self.CheckError(
+        '{"floatValue": -3.4028236e+38}',
+        'Failed to parse floatValue field: Float value too small.',
+    )
+
   def testFloatPrecision(self):
     message = json_format_proto3_pb2.TestMessage()
 
