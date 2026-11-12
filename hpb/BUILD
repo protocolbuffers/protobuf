@@ -162,6 +162,49 @@ cc_library(
 )
 
 cc_library(
+    name = "error",
+    srcs = ["error.cc"],
+    hdrs = ["error.h"],
+    visibility = [":hpb_users"],
+    deps = [
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+    ],
+)
+
+cc_library(
+    name = "expected",
+    srcs = ["expected.cc"],
+    hdrs = ["expected.h"],
+    visibility = [":hpb_users"],
+    deps = [
+        ":error",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+    ],
+)
+
+cc_test(
+    name = "expected_test",
+    srcs = ["expected_test.cc"],
+    deps = [
+        ":error",
+        ":expected",
+        ":ptr",
+        "//hpb/internal:error_access",
+        "//hpb_generator/tests:test_model_hpb_proto",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "status",
     srcs = ["status.cc"],
     hdrs = ["status.h"],
