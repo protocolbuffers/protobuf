@@ -911,10 +911,12 @@ class PROTOBUF_EXPORT MessageLite {
     return data;
   }
   const internal::ClassDataPrefix* class_data_prefix() const {
-    return class_data();
+    return _internal_metadata_.class_data_prefix();
   }
   const internal::ClassDataPrefix* GetClassDataPrefix() const {
-    return GetClassData();
+    auto* data = _internal_metadata_.class_data_prefix();
+    ::absl::PrefetchToLocalCache(data);
+    return data;
   }
 #elif defined(PROTOBUF_CUSTOM_VTABLE)
   const internal::ClassData* class_data() const { return _class_data_; }

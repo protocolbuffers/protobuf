@@ -433,7 +433,8 @@ namespace internal {
 
 // Add specialization of InternalMetadata::Container to provide arena support.
 template <>
-struct InternalMetadata::Container<UnknownFieldSet>
+struct alignas(InternalMetadata::kContainerAlignment)
+    InternalMetadata::Container<UnknownFieldSet>
     : public InternalMetadata::ContainerBase {
   UnknownFieldSet unknown_fields;
 

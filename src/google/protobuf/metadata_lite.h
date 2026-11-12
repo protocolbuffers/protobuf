@@ -8,6 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_METADATA_LITE_H__
 #define GOOGLE_PROTOBUF_METADATA_LITE_H__
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <type_traits>
@@ -48,6 +49,16 @@ namespace internal {
 class PROTOBUF_EXPORT InternalMetadata {
  public:
 #if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  // We use the same alignment as `ClassData` for `Container` since we plan to
+  // use all 6 available tag bits in `ptr_` under
+  // `PROTOBUF_SMALLER_MESSAGE_LITE`. All types `ptr_` can point to must be at
+  // least as aligned as `kClassDataAlignment`.
+  static constexpr size_t kContainerAlignment = kClassDataAlignment;
+#else
+  static constexpr size_t kContainerAlignment = alignof(void*);
+#endif
+
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
   constexpr explicit InternalMetadata(const ClassData* class_data)
       : ptr_(class_data) {}
 #else
@@ -77,6 +88,9 @@ class PROTOBUF_EXPORT InternalMetadata {
     } else {
       return PtrValue<const ClassData>();
     }
+  }
+  const ClassDataPrefix* class_data_prefix() const {
+    return PtrValue<const ClassDataPrefix>();
   }
 #else
   PROTOBUF_NDEBUG_INLINE Arena* arena() const {
@@ -163,8 +177,14 @@ class PROTOBUF_EXPORT InternalMetadata {
 
   template <typename U>
   U* PtrValue() const {
-    if constexpr (std::is_same_v<U, Arena> ||
-                  std::is_same_v<U, const ClassData>) {
+    if constexpr (std::is_same_v<U, const ClassDataPrefix>) {
+      // We can unconditionally return ptr_. If we are in the default state,
+      // ptr_ is a `ClassData*`. If we are in the fallback state with a
+      // `Container`, the first member is `ClassDataPrefix`. Either way, `ptr_`
+      // points to a `ClassDataPrefix`.
+      return reinterpret_cast<U*>(uptr() & kPtrValueMask);
+    } else if constexpr (std::is_same_v<U, Arena> ||
+                         std::is_same_v<U, const ClassData>) {
       // No mask to remove.
       ABSL_DCHECK_EQ(uptr() & kPtrTagMask, 0u);
       return reinterpret_cast<U*>(uptr());
@@ -186,10 +206,13 @@ class PROTOBUF_EXPORT InternalMetadata {
   // If ptr_'s tag is kTagContainer, it points to an instance of this struct.
   struct ContainerBase {
 #if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+    // We hold a copy of just the `ClassDataPrefix` here so
+    // `InternalMetadata::class_data_prefix()` is branchless.
+    ClassDataPrefix class_data_prefix;
     const ClassData* class_data;
 
     explicit ContainerBase(const ClassData* input_class_data)
-        : class_data(input_class_data) {}
+        : class_data_prefix(*input_class_data), class_data(input_class_data) {}
 #else
     Arena* arena;
 
@@ -224,7 +247,8 @@ class PROTOBUF_EXPORT InternalMetadata {
 // String Template specializations.
 
 template <>
-struct InternalMetadata::Container<std::string> : public ContainerBase {
+struct alignas(InternalMetadata::kContainerAlignment)
+    InternalMetadata::Container<std::string> : public ContainerBase {
   std::string unknown_fields;
 
 #if defined(PROTOBUF_SMALLER_MESSAGE_LITE)

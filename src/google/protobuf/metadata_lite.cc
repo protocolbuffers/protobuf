@@ -13,6 +13,7 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/class_data.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/unknown_field_set.h"
 
 // Must be included last.
@@ -61,12 +62,23 @@ void InternalMetadata::DeleteOutOfLineHelper<std::string>() {
 
 template <typename T>
 T* InternalMetadata::mutable_unknown_fields_slow() {
-  Container<T>* container = Arena::Create<Container<T>>(arena()
 #if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
-                                                            ,
-                                                        class_data()
+  static_assert(
+      sizeof(void*) != 8 || sizeof(Container<T>) == kClassDataAlignment,
+      "`Container<T>` should have size multiple of `kClassDataAlignment` "
+      "because we align `Container<T>` to `kClassDataAlignment`. If its size "
+      "is not a multiple of `kClassDataAlignment`, it will be padded to a "
+      "multiple of `kClassDataAlignment`.");
+  static_assert(
+      PROTOBUF_FIELD_OFFSET(Container<T>, class_data_prefix) == 0,
+      "Container<T> must have a zero-offset `ClassDataPrefix` member for "
+      "branchless access in `InternalMetadata::class_data_prefix()`.");
+  Container<T>* container = Arena::Create<Container<T>>(arena(), class_data());
+#else
+  Container<T>* container = Arena::Create<Container<T>>(arena());
 #endif
-  );
+  DebugAssertPtrIsAligned(container, InternalMetadata::kContainerAlignment);
+
   ptr_ = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(container) |
                                  kUnknownFieldsTagMask);
   return &(container->unknown_fields);
