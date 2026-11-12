@@ -21,6 +21,29 @@
 #include <stdint.h>
 #include <string.h>
 
+/* The SSE4.1 code is used directly when the compiler targets SSE4.1. Other x86
+ * builds (such as the default -march=x86-64, or MSVC x64) compile it anyway
+ * and pick it at run time with CPUID, so portable binaries can use it too.
+ */
+#if defined(__SSE4_1__) || defined(__AVX__)
+#define UTF8_RANGE_SSE4_1 1
+#elif (defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || \
+       defined(_M_IX86)) &&                                           \
+    !defined(_M_ARM64EC) &&                                           \
+    (defined(__GNUC__) || defined(__clang__) || defined(_MSC_VER))
+#define UTF8_RANGE_SSE4_1 1
+#define UTF8_RANGE_SSE4_1_DISPATCH 1
+#endif
+
+#if defined(UTF8_RANGE_SSE4_1_DISPATCH) && \
+    (defined(__GNUC__) || defined(__clang__))
+#define UTF8_RANGE_SSE4_1_TARGET __attribute__((target("ssse3,sse4.1")))
+#define UTF8_RANGE_NOINLINE __attribute__((noinline))
+#else
+#define UTF8_RANGE_SSE4_1_TARGET
+#define UTF8_RANGE_NOINLINE
+#endif
+
 #if defined(__GNUC__)
 #define FORCE_INLINE_ATTR __attribute__((always_inline)) inline
 #elif defined(_MSC_VER)
@@ -137,7 +160,8 @@ static size_t utf8_range_ValidateUTF8Naive(const char* data, const char* end,
   return err_pos + (1 - return_position);
 }
 
-#if defined(__SSE4_1__) || (defined(__ARM_NEON) && defined(__ARM_64BIT_STATE))
+#if defined(UTF8_RANGE_SSE4_1) || \
+    (defined(__ARM_NEON) && defined(__ARM_64BIT_STATE))
 /* Returns the number of bytes needed to skip backwards to get to the first
    byte of codepoint.
  */
@@ -169,11 +193,70 @@ static inline const char* utf8_range_SkipAscii(const char* data,
   return data;
 }
 
-#if defined(__SSE4_1__)
+#if defined(UTF8_RANGE_SSE4_1)
 #include "utf8_range_sse.inc"
 #elif defined(__ARM_NEON) && defined(__ARM_64BIT_STATE)
 #include "utf8_range_neon.inc"
 #endif
+
+#if defined(UTF8_RANGE_SSE4_1_DISPATCH)
+#if defined(_MSC_VER)
+#include <intrin.h>
+#else
+#include <cpuid.h>
+#endif
+
+/* 0: not checked yet, 1: no SSE4.1, 2: SSE4.1. Threads that race on the first
+ * call all store the same value.
+ */
+static int utf8_range_sse4_1_state;
+
+/* Not inlined: CPUID overwrites EBX, and inlining it would make every call
+ * save and restore RBX, ASCII-only calls included.
+ */
+static UTF8_RANGE_NOINLINE int utf8_range_DetectSse4_1(void) {
+  unsigned int ecx;
+#if defined(_MSC_VER)
+  int regs[4];
+  __cpuid(regs, 1);
+  ecx = (unsigned int)regs[2];
+#else
+  unsigned int eax, ebx, edx;
+  if (!__get_cpuid(1, &eax, &ebx, &ecx, &edx)) return 1;
+#endif
+  /* SSSE3 is bit 9 and SSE4.1 is bit 19 of ECX. */
+  return (ecx & (1u << 9)) && (ecx & (1u << 19)) ? 2 : 1;
+}
+
+static inline int utf8_range_HasSse4_1(void) {
+#if defined(__GNUC__) || defined(__clang__)
+  int state = __atomic_load_n(&utf8_range_sse4_1_state, __ATOMIC_RELAXED);
+  if (state == 0) {
+    state = utf8_range_DetectSse4_1();
+    __atomic_store_n(&utf8_range_sse4_1_state, state, __ATOMIC_RELAXED);
+  }
+#else
+  int state = *(volatile int*)&utf8_range_sse4_1_state;
+  if (state == 0) {
+    state = utf8_range_DetectSse4_1();
+    *(volatile int*)&utf8_range_sse4_1_state = state;
+  }
+#endif
+  return state == 2;
+}
+
+/* Built for SSE4.1 even when its callers are not, so it can't be inlined into
+ * them. Each branch inlines the SIMD loop with a constant return_position.
+ */
+static UTF8_RANGE_SSE4_1_TARGET UTF8_RANGE_NOINLINE size_t
+utf8_range_ValidateUTF8SimdOutOfLine(const char* data_original,
+                                     const char* data, const char* end,
+                                     int return_position) {
+  return return_position
+             ? utf8_range_ValidateUTF8Simd(data_original, data, end, 1)
+             : utf8_range_ValidateUTF8Simd(data_original, data, end, 0);
+}
+#endif  // UTF8_RANGE_SSE4_1_DISPATCH
 
 static FORCE_INLINE_ATTR size_t utf8_range_Validate(
     const char* data, size_t len, int return_position) {
@@ -189,13 +272,18 @@ static FORCE_INLINE_ATTR size_t utf8_range_Validate(
     return (return_position ? (data - data_original) : 0) +
            utf8_range_ValidateUTF8Naive(data, end, return_position);
   }
-#if defined(__SSE4_1__) || (defined(__ARM_NEON) && defined(__ARM_64BIT_STATE))
+#if defined(UTF8_RANGE_SSE4_1_DISPATCH)
+  if (utf8_range_HasSse4_1()) {
+    return utf8_range_ValidateUTF8SimdOutOfLine(data_original, data, end,
+                                                return_position);
+  }
+#elif defined(UTF8_RANGE_SSE4_1) || \
+    (defined(__ARM_NEON) && defined(__ARM_64BIT_STATE))
   return utf8_range_ValidateUTF8Simd(
       data_original, data, end, return_position);
-#else
+#endif
   return (return_position ? (data - data_original) : 0) +
          utf8_range_ValidateUTF8Naive(data, end, return_position);
-#endif
 }
 
 bool utf8_range_IsValid(const char* data, size_t len) {

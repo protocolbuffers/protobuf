@@ -2,9 +2,9 @@
 #include <smmintrin.h>
 #include <tmmintrin.h>
 
-static FORCE_INLINE_ATTR size_t utf8_range_ValidateUTF8Simd(
-    const char* data_original, const char* data, const char* end,
-    int return_position) {
+static UTF8_RANGE_SSE4_1_TARGET FORCE_INLINE_ATTR size_t
+utf8_range_ValidateUTF8Simd(const char* data_original, const char* data,
+                            const char* end, int return_position) {
   /* This code checks that utf-8 ranges are structurally valid 16 bytes at once
    * using superscalar instructions.
    * The mapping between ranges of codepoint and their corresponding utf-8
