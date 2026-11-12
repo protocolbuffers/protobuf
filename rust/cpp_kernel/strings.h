@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <cstring>
 #include <string>
+#include <type_traits>
 
 #include "absl/strings/string_view.h"
 
@@ -47,15 +48,32 @@ struct PtrAndLen {
 //   * Rust and C++ versions of this struct are ABI compatible.
 //   * The data were allocated using the Rust allocator and are 1 byte aligned.
 //   * The data is valid UTF-8.
+//
+// This type is returned by value from `extern "C"` functions, so it must not
+// declare any constructors: the Microsoft C++ ABI returns a class with a
+// user-provided constructor through a hidden pointer, whereas Rust follows the
+// C rules for the equivalent `#[repr(C)]` struct. On 32-bit x86 and ARM64
+// Windows these two conventions differ.
 struct RustStringRawParts {
   // Owns the memory.
   const char* data;
   size_t len;
 
-  RustStringRawParts() = delete;
-  // Copies src.
-  explicit RustStringRawParts(std::string src);
+  // Copies src into a buffer allocated with the Rust allocator.
+  static RustStringRawParts CopyFrom(absl::string_view src);
 };
+
+// These types cross the FFI boundary by value, so C++ must pass and return them
+// the same way C would. The checks below reject constructors, non-public data
+// members and virtual functions. They cannot reject a public base class, which
+// the Microsoft C++ ABI also returns through a hidden pointer, so do not add
+// one.
+static_assert(std::is_aggregate_v<PtrAndLen> &&
+              std::is_trivially_copyable_v<PtrAndLen> &&
+              std::is_standard_layout_v<PtrAndLen>);
+static_assert(std::is_aggregate_v<RustStringRawParts> &&
+              std::is_trivially_copyable_v<RustStringRawParts> &&
+              std::is_standard_layout_v<RustStringRawParts>);
 
 }  // namespace rust
 }  // namespace protobuf

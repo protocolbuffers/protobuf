@@ -29,16 +29,13 @@ void PtrAndLen::PlacementNewString(void* location) {
   new (location) std::string(len == 0 ? nullptr : ptr, len);
 }
 
-RustStringRawParts::RustStringRawParts(std::string src) {
+RustStringRawParts RustStringRawParts::CopyFrom(absl::string_view src) {
   if (src.empty()) {
-    data = nullptr;
-    len = 0;
-  } else {
-    void* d = proto2_rust_alloc(src.length(), 1);
-    std::memcpy(d, src.data(), src.length());
-    data = static_cast<char*>(d);
-    len = src.length();
+    return RustStringRawParts{nullptr, 0};
   }
+  void* d = proto2_rust_alloc(src.length(), 1);
+  std::memcpy(d, src.data(), src.length());
+  return RustStringRawParts{static_cast<char*>(d), src.length()};
 }
 
 }  // namespace rust

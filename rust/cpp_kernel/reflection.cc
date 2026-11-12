@@ -35,7 +35,7 @@ google::protobuf::rust::RustStringRawParts proto2_rust_Message_print_to_text_for
   printer.SetHideUnknownFields(hide_unknown_fields);
   std::string text;
   ABSL_CHECK(printer.PrintToString(*msg, &text));
-  return google::protobuf::rust::RustStringRawParts(text);
+  return google::protobuf::rust::RustStringRawParts::CopyFrom(text);
 }
 
 // Parses a message from its TextFormat representation.
