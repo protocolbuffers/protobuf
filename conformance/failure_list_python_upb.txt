@@ -28,16 +28,10 @@ Recommended.*.JsonInput.FloatFieldNegativeInfinityLeadingWhitespace             
 Recommended.*.JsonInput.FloatFieldNegativeInfinityShort                                                            # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.FloatFieldNegativeInfinityShortAllCapital                                                  # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.FloatFieldNegativeInfinityTrailingWhitespace                                               # Should have failed to parse, but didn't.
-Required.*.JsonInput.DoubleFieldFalseValue                                                                         # Should have failed to parse, but didn't.
 Required.*.JsonInput.DoubleFieldStringValueArabicIndicDigits                                                       # Should have failed to parse, but didn't.
 Required.*.JsonInput.DoubleFieldStringValueFullwidthDigits                                                         # Should have failed to parse, but didn't.
-Required.*.JsonInput.DoubleFieldTrueValue                                                                          # Should have failed to parse, but didn't.
-Required.*.JsonInput.EnumFieldFalseValue                                                                           # Should have failed to parse, but didn't.
-Required.*.JsonInput.EnumFieldTrueValue                                                                            # Should have failed to parse, but didn't.
-Required.*.JsonInput.FloatFieldFalseValue                                                                          # Should have failed to parse, but didn't.
 Required.*.JsonInput.FloatFieldStringValueArabicIndicDigits                                                        # Should have failed to parse, but didn't.
 Required.*.JsonInput.FloatFieldStringValueFullwidthDigits                                                          # Should have failed to parse, but didn't.
-Required.*.JsonInput.FloatFieldTrueValue                                                                           # Should have failed to parse, but didn't.
 # TODO: Uncomment once conformance tests can express failures that are not expected to be fixed.
 # Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.MapKey   # Should have failed to parse, but didn't.
 # Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.MapValue # Should have failed to parse, but didn't.
