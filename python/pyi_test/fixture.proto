@@ -1,0 +1,57 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto3";
+
+package protobuf.pyi_test;
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+import "python/pyi_test/fixture_import.proto";
+
+enum State {
+  STATE_UNSPECIFIED = 0;
+  STATE_READY = 1;
+}
+
+message Child {
+  string value = 1;
+}
+
+message Step {
+  enum Kind {
+    KIND_UNSPECIFIED = 0;
+    KIND_VALUE = 1;
+  }
+
+  message Nested {
+    oneof event {
+      string started = 1;
+      string finished = 2;
+    }
+  }
+
+  oneof action {
+    string a = 1;
+    int32 b = 2;
+  }
+
+  oneof result {
+    bool ok = 3;
+    string error = 4;
+  }
+
+  optional string detail = 5;
+  repeated string labels = 6;
+  repeated Child children = 7;
+  map<string, Child> children_by_name = 8;
+  State state = 9;
+  bytes payload = 10;
+  Imported imported = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Duration elapsed = 13;
+}

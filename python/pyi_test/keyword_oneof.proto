@@ -1,0 +1,24 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto3";
+
+package protobuf.pyi_test;
+
+message KeywordOneof {
+  oneof choice {
+    string from = 1;
+    string class = 2;
+  }
+}
+
+message ShadowedOneof {
+  string WhichOneof = 1;
+  oneof action {
+    string a = 2;
+  }
+}

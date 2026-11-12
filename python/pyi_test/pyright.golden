@@ -1,0 +1,38 @@
+python/pyi_test/typing_test.py
+  python/pyi_test/typing_test.py:33:13 - information: Type of "step.ok" is "bool"
+  python/pyi_test/typing_test.py:34:13 - information: Type of "step.detail" is "str"
+  python/pyi_test/typing_test.py:35:13 - information: Type of "step.payload" is "bytes"
+  python/pyi_test/typing_test.py:36:13 - information: Type of "step.imported.value" is "str"
+  python/pyi_test/typing_test.py:37:13 - information: Type of "step.state" is "State"
+  python/pyi_test/typing_test.py:38:13 - information: Type of "step.WhichOneof("_detail")" is "Literal['detail'] | None"
+  python/pyi_test/typing_test.py:39:13 - information: Type of "step.WhichOneof("result")" is "Literal['ok', 'error'] | None"
+  python/pyi_test/typing_test.py:40:13 - information: Type of "step.WhichOneof(b"result")" is "Literal['ok', 'error'] | None"
+  python/pyi_test/typing_test.py:42:13 - information: Type of "nested.started" is "str"
+  python/pyi_test/typing_test.py:43:13 - information: Type of "nested.WhichOneof("event")" is "Literal['started', 'finished'] | None"
+  python/pyi_test/typing_test.py:45:13 - information: Type of "keyword.WhichOneof("choice")" is "Literal['from', 'class'] | None"
+  python/pyi_test/typing_test.py:47:13 - information: Type of "shadowed.WhichOneof" is "str"
+  python/pyi_test/typing_test.py:50:13 - information: Type of "action" is "Literal['a', 'b'] | None"
+  python/pyi_test/typing_test.py:52:17 - information: Type of "step.a" is "str"
+  python/pyi_test/typing_test.py:54:17 - information: Type of "step.b" is "int"
+  python/pyi_test/typing_test.py:65:13 - information: Type of "self_fields.something" is "int"
+  python/pyi_test/typing_test.py:66:13 - information: Type of "self_fields.self" is "str"
+  python/pyi_test/typing_test.py:67:13 - information: Type of "self_fields.self_" is "str"
+  python/pyi_test/typing_test.py:69:26 - error: Argument of type "Literal['not bytes']" cannot be assigned to parameter "payload" of type "bytes | None" in function "__init__"
+    Type "Literal['not bytes']" is not assignable to type "bytes | None"
+      "Literal['not bytes']" is not assignable to "bytes"
+      "Literal['not bytes']" is not assignable to "None" (reportArgumentType)
+  python/pyi_test/typing_test.py:70:16 - error: Cannot assign to attribute "payload" for class "Step"
+    "Literal['not bytes']" is not assignable to "bytes" (reportAttributeAccessIssue)
+  python/pyi_test/typing_test.py:71:18 - error: No parameter named "not_a_field" (reportCallIssue)
+  python/pyi_test/typing_test.py:72:1 - error: No overloads for "WhichOneof" match the provided arguments (reportCallIssue)
+  python/pyi_test/typing_test.py:72:17 - error: Argument of type "Literal['not_a_oneof']" cannot be assigned to parameter "oneof_group" of type "Literal['_detail', b"_detail"]" in function "WhichOneof"
+    Type "Literal['not_a_oneof']" is not assignable to type "Literal['_detail', b"_detail"]"
+      "Literal['not_a_oneof']" is not assignable to type "Literal['_detail']"
+      "Literal['not_a_oneof']" is not assignable to "Literal[b"_detail"]" (reportArgumentType)
+  python/pyi_test/typing_test.py:73:1 - error: No overloads for "WhichOneof" match the provided arguments
+    Argument types: (Literal['action']) (reportCallIssue)
+  python/pyi_test/typing_test.py:74:24 - error: Argument of type "Literal['not_a_oneof']" cannot be assigned to parameter "oneof_group" of type "NoReturn" in function "WhichOneof"
+    Type "Literal['not_a_oneof']" is not assignable to type "NoReturn" (reportArgumentType)
+  python/pyi_test/typing_test.py:81:18 - error: Argument of type "Literal['b']" cannot be assigned to parameter "arg" of type "Never" in function "assert_never"
+    Type "Literal['b']" is not assignable to type "Never" (reportArgumentType)
+8 errors, 0 warnings, 18 informations
