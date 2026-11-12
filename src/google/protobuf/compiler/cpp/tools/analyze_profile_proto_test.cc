@@ -58,6 +58,8 @@ TEST(AnalyzeProfileProtoTest, UnlikelyStringPresence) {
     message {
       name: "google::protobuf::compiler::tools::AnalyzeThis"
       count: 100
+      serialize_count: 60
+      parse_count: 40
       field { name: "optional_string" getters_count: 1 }
     }
   )pb");
@@ -73,6 +75,8 @@ TEST(AnalyzeProfileProtoTest, LikelyStringPresence) {
     message {
       name: "google::protobuf::compiler::tools::AnalyzeThis"
       count: 100
+      serialize_count: 60
+      parse_count: 40
       field { name: "optional_string" getters_count: 99 }
     }
   )pb");
@@ -92,6 +96,8 @@ TEST(AnalyzeProfileProtoTest, ChildLikelyPresentAndUsed) {
     message {
       name: "google::protobuf::compiler::tools::AnalyzeThis"
       count: 100
+      serialize_count: 60
+      parse_count: 40
       field { name: "id" getters_count: 1000 configs_count: 100 }
       field { name: "optional_string" getters_count: 100 configs_count: 100 }
       field { name: "optional_child" getters_count: 100 configs_count: 102 }
@@ -117,6 +123,8 @@ TEST(AnalyzeProfileProtoTest, UnlikelyPresent) {
     message {
       name: "google::protobuf::compiler::tools::AnalyzeThis"
       count: 100
+      serialize_count: 60
+      parse_count: 40
       field { name: "id" getters_count: 0 }
       field { name: "optional_string" getters_count: 0 }
       field { name: "optional_child" getters_count: 100 }
@@ -148,6 +156,8 @@ TEST(AnalyzeProfileProtoTest, ChildLikelyPresentAndRarelyUsed) {
     message {
       name: "google::protobuf::compiler::tools::AnalyzeThis"
       count: 100
+      serialize_count: 60
+      parse_count: 40
       field { name: "id" getters_count: 1 configs_count: 100 }
       field { name: "optional_string" getters_count: 1 configs_count: 100 }
       field { name: "optional_child" getters_count: 100 configs_count: 1 }
@@ -178,6 +188,8 @@ TEST(AnalyzeProfileProtoTest, RareStringInNestedMakesItTrivial) {
     message {
       name: "google::protobuf::compiler::tools::AnalyzeThis"
       count: 100
+      serialize_count: 60
+      parse_count: 40
       field { name: "id" getters_count: 1 configs_count: 100 }
       field { name: "optional_string" getters_count: 1 configs_count: 100 }
       field { name: "optional_child" getters_count: 100 configs_count: 1 }
@@ -188,6 +200,8 @@ TEST(AnalyzeProfileProtoTest, RareStringInNestedMakesItTrivial) {
     message {
       name: "google::protobuf::compiler::tools::AnalyzeThis_Nested"
       count: 100
+      serialize_count: 60
+      parse_count: 40
       field { name: "nexted_id" getters_count: 100 configs_count: 100 }
       field { name: "optional_string" getters_count: 0 configs_count: 0 }
     }
@@ -206,6 +220,8 @@ TEST(AnalyzeProfileProtoTest, NestedCppNameMatchedToPoolName) {
     message {
       name: "google::protobuf::compiler::tools::AnalyzeThis_Nested"
       count: 100
+      serialize_count: 60
+      parse_count: 40
       field { name: "id" getters_count: 100 }
       field { name: "optional_string" getters_count: 100 }
     }
@@ -227,6 +243,8 @@ TEST(AnalyzeProfileProtoTest, PrintStatistics) {
     message {
       name: "google::protobuf::compiler::tools::AnalyzeThis"
       count: 100
+      serialize_count: 60
+      parse_count: 40
       field { name: "id" getters_count: 1 configs_count: 100 }
       field { name: "optional_string" getters_count: 1 configs_count: 100 }
       field { name: "optional_child" getters_count: 100 configs_count: 1 }
@@ -286,6 +304,8 @@ TEST(AnalyzeProfileProtoTest, PrintStatisticsAll) {
     message {
       name: "google::protobuf::compiler::tools::AnalyzeThis"
       count: 100
+      serialize_count: 60
+      parse_count: 40
       field { name: "id" getters_count: 1 configs_count: 100 }
       field { name: "optional_string" getters_count: 1 configs_count: 100 }
       field { name: "optional_child" getters_count: 100 configs_count: 1 }
