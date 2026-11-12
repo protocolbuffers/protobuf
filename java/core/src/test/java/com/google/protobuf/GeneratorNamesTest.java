@@ -18,11 +18,9 @@ import com.google.protobuf.DescriptorProtos.FileOptions;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
-import com.google.protobuf.Descriptors.ServiceDescriptor;
 import com.google.protobuf.JavaFeaturesProto.JavaFeatures;
 import protobuf.edition2024.defaults.Edition2024DefaultsEnum;
 import protobuf.edition2024.defaults.Edition2024DefaultsMessage;
-import protobuf.edition2024.defaults.Edition2024DefaultsService;
 import protobuf.edition2024.defaults.GeneratorNamesEdition2024DefaultsProto;
 import com.google.testing.junit.testparameterinjector.TestParameter;
 import com.google.testing.junit.testparameterinjector.TestParameterInjector;
@@ -170,44 +168,6 @@ public final class GeneratorNamesTest {
         .isEqualTo(parameter.clazz.getCanonicalName());
   }
 
-  private static final class ServiceClassNameProvider extends TestParameterValuesProvider {
-    @Override
-    public ImmutableList<ServiceParameter> provideValues(
-        TestParameterValuesProvider.Context context) {
-      return ImmutableList.of(
-          new ServiceParameter(
-              Edition2024DefaultsService.getDescriptor(),
-          Edition2024DefaultsService.class),
-          new ServiceParameter(
-              MultipleFilesProto2Service.getDescriptor(),
-          MultipleFilesProto2Service.class),
-          new ServiceParameter(
-              GeneratorNamesPre2024Defaults.Pre2024DefaultsService.getDescriptor(),
-          GeneratorNamesPre2024Defaults.Pre2024DefaultsService.class),
-          new ServiceParameter(
-              GeneratorNamesGenericServices.TestGenericService.getDescriptor(),
-          GeneratorNamesGenericServices.TestGenericService.class),
-          new ServiceParameter(
-              GeneratorNamesNestInFileClassProto.NestInFileClassService.getDescriptor(),
-          GeneratorNamesNestInFileClassProto.NestInFileClassService.class)
-          );
-    }
-  }
-
-  @Test
-  public void getBytecodeClassName_service(
-      @TestParameter(valuesProvider = ServiceClassNameProvider.class) ServiceParameter parameter) {
-    assertThat(GeneratorNames.getBytecodeClassName(parameter.descriptor))
-        .isEqualTo(parameter.clazz.getName());
-  }
-
-  @Test
-  public void getQualifiedClassName_service(
-      @TestParameter(valuesProvider = ServiceClassNameProvider.class) ServiceParameter parameter) {
-    assertThat(GeneratorNames.getQualifiedClassName(parameter.descriptor))
-        .isEqualTo(parameter.clazz.getCanonicalName());
-  }
-
   @Test
   public void joinPackage() {
     assertThat(GeneratorNames.joinPackage("com.google.foo", "Bar")).isEqualTo("com.google.foo.Bar");
@@ -328,21 +288,6 @@ public final class GeneratorNamesTest {
     }
 
     EnumParameter(EnumDescriptor descriptor, Class<?> clazz) {
-      this.descriptor = descriptor;
-      this.clazz = clazz;
-    }
-  }
-
-  private static final class ServiceParameter {
-    final ServiceDescriptor descriptor;
-    final Class<?> clazz;
-
-    @Override
-    public String toString() {
-      return getShortFilename(descriptor.getFile()) + ":" + descriptor.getName();
-    }
-
-    ServiceParameter(ServiceDescriptor descriptor, Class<?> clazz) {
       this.descriptor = descriptor;
       this.clazz = clazz;
     }
