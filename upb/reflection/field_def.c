@@ -27,6 +27,7 @@
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
+#include "upb/port/overflow.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/descriptor_bootstrap.h"
@@ -46,7 +47,7 @@
 
 typedef struct {
   size_t len;
-  char str[1];  // Null-terminated string data follows.
+  char str[];  // Null-terminated string data follows.
 } str_t;
 
 struct upb_FieldDef {
@@ -384,9 +385,18 @@ static char* make_json_name(const char* name, size_t size, upb_Arena* a) {
   return out;
 }
 
+// Allocates a str_t with room for `len` bytes plus a null terminator.
+static str_t* alloc_str(upb_DefBuilder* ctx, size_t len) {
+  size_t count;
+  if (upb_AddOverflow(len, (size_t)1, &count) ||
+      UPB_SIZEOF_FLEX_WOULD_OVERFLOW(str_t, str, count)) {
+    _upb_DefBuilder_OomErr(ctx);
+  }
+  return _upb_DefBuilder_Alloc(ctx, UPB_SIZEOF_FLEX(str_t, str, count));
+}
+
 static str_t* newstr(upb_DefBuilder* ctx, const char* data, size_t len) {
-  str_t* ret = _upb_DefBuilder_Alloc(ctx, sizeof(*ret) + len);
-  if (!ret) _upb_DefBuilder_OomErr(ctx);
+  str_t* ret = alloc_str(ctx, len);
   ret->len = len;
   if (len) memcpy(ret->str, data, len);
   ret->str[len] = '\0';
@@ -396,7 +406,7 @@ static str_t* newstr(upb_DefBuilder* ctx, const char* data, size_t len) {
 static str_t* unescape(upb_DefBuilder* ctx, const upb_FieldDef* f,
                        const char* data, size_t len) {
   // Size here is an upper bound; escape sequences could ultimately shrink it.
-  str_t* ret = _upb_DefBuilder_Alloc(ctx, sizeof(*ret) + len);
+  str_t* ret = alloc_str(ctx, len);
   char* dst = &ret->str[0];
   const char* src = data;
   const char* end = UPB_PTRADD(data, len);
@@ -411,6 +421,7 @@ static str_t* unescape(upb_DefBuilder* ctx, const upb_FieldDef* f,
   }
 
   ret->len = dst - &ret->str[0];
+  *dst = '\0';
   return ret;
 }
 
