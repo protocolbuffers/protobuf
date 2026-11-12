@@ -172,6 +172,8 @@ cc_dist_library(
         "//conditions:default": ["-lpthread"],
     }),
     tags = ["manual"],
+    # Header sets for //cmake:protobuf_cmake_bazel (see cmake/cmake_bazel.bzl).
+    visibility = ["//cmake:__pkg__"],
     deps = [
         "//src/google/protobuf:memory_align",
         "//src/google/protobuf:protobuf_lite",
@@ -188,6 +190,8 @@ cc_dist_library(
         ],
     }),
     tags = ["manual"],
+    # Header sets for //cmake:protobuf_cmake_bazel (see cmake/cmake_bazel.bzl).
+    visibility = ["//cmake:__pkg__"],
     deps = [
         "//src/google/protobuf",
         "//src/google/protobuf:cmake_wkt_cc_proto",
@@ -211,6 +215,8 @@ cc_dist_library(
         ":upb",
     ],
     tags = ["manual"],
+    # Header sets for //cmake:protobuf_cmake_bazel (see cmake/cmake_bazel.bzl).
+    visibility = ["//cmake:__pkg__"],
     deps = [
         "//src/google/protobuf/compiler:command_line_interface",
         "//src/google/protobuf/compiler/cpp",
@@ -246,6 +252,8 @@ cc_dist_library(
 cc_dist_library(
     name = "upb",
     tags = ["manual"],
+    # Header sets for //cmake:protobuf_cmake_bazel (see cmake/cmake_bazel.bzl).
+    visibility = ["//cmake:__pkg__"],
     deps = [
         "//upb:generated_code_support",
         "//upb/json",
@@ -272,6 +280,8 @@ cc_dist_library(
         ":protobuf",
     ],
     tags = ["manual"],
+    # Header sets for //cmake:protobuf_cmake_bazel (see cmake/cmake_bazel.bzl).
+    visibility = ["//cmake:__pkg__"],
     deps = [
         "//upb_generator/c:protoc-gen-upb",
     ],
@@ -284,6 +294,8 @@ cc_dist_library(
         ":protobuf",
     ],
     tags = ["manual"],
+    # Header sets for //cmake:protobuf_cmake_bazel (see cmake/cmake_bazel.bzl).
+    visibility = ["//cmake:__pkg__"],
     deps = [
         "//upb_generator/reflection:protoc-gen-upbdefs",
     ],
@@ -296,6 +308,8 @@ cc_dist_library(
         ":upb",
     ],
     tags = ["manual"],
+    # Header sets for //cmake:protobuf_cmake_bazel (see cmake/cmake_bazel.bzl).
+    visibility = ["//cmake:__pkg__"],
     deps = [
         "//upb_generator/minitable:protoc-gen-upb_minitable",
     ],

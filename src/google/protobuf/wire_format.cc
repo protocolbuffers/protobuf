@@ -47,6 +47,12 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+namespace {
+// DO NOT SUBMIT: unused variable to probe cmake_bazel() warm-cache rebuilds.
+[[maybe_unused]] constexpr int kCmakeBazelCacheProbe = 1;
+[[maybe_unused]] constexpr int kCmakeBazelCacheProbe2 = 2;
+}  // namespace
+
 // Forward declare static functions
 static size_t MapValueRefDataOnlyByteSize(const FieldDescriptor* field,
                                           const MapValueConstRef& value);

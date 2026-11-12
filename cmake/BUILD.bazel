@@ -1,5 +1,7 @@
 load("@rules_python//python:defs.bzl", "py_binary")
 load("//upb/cmake:build_defs.bzl", "staleness_test")
+load(":cmake_bazel.bzl", "cmake_bazel")
+load(":protobuf_cmake_bazel.bzl", "protobuf_cmake_bazel_config")
 
 py_binary(
     name = "dependencies_generator",
@@ -22,4 +24,115 @@ staleness_test(
     ],
     generated_pattern = "generated-in/%s",
     tags = ["manual"],
+)
+
+################################################################################
+# protobuf's CMake build under Bazel, split into fine-grained actions with
+# cmake_bazel() (see cmake_bazel.bzl): one configure action that only reads
+# the CMake files, one compile action per source file running the exact
+# command CMake generated for it, one link and one install action. Editing a
+# source file recompiles that file and relinks; everything else stays cached.
+#
+# The dependencies are built the same way, from the module repos pinned in
+# MODULE.bazel, and found by protobuf through CMAKE_PREFIX_PATH with
+# protobuf_LOCAL_DEPENDENCIES_ONLY=ON.
+#
+# Everything here is tagged `manual`; run with
+# `bazel test //cmake:cmake_bazel_tests` (and `//cmake:cmake_bazel_cxx20_tests`).
+################################################################################
+
+# Cache entries shared by every CMake build below. CMAKE_BUILD_TYPE is empty,
+# as in the current CMake CI: a Debug build would add the "d" library postfix.
+_COMMON_CACHE_ENTRIES = {
+    "CMAKE_BUILD_TYPE": "",
+    "CMAKE_CXX_STANDARD": "17",
+}
+
+_CMAKE_TAGS = ["manual"]
+
+py_binary(
+    name = "cmake_bazel_runner",
+    srcs = ["cmake_bazel_runner.py"],
+)
+
+# GoogleTest, needed by Abseil's test helpers and by protobuf's tests.
+cmake_bazel(
+    name = "googletest_cmake",
+    srcs = ["@googletest-cmake-src//:srcs"],
+    cache_entries = _COMMON_CACHE_ENTRIES | {
+        "BUILD_GMOCK": "ON",
+        "INSTALL_GTEST": "ON",
+    },
+    cmake_srcs = ["@googletest-cmake-src//:cmake_files"],
+    tags = _CMAKE_TAGS,
+    textual_srcs = ["@googletest-cmake-src//:textual_srcs"],
+)
+
+# Abseil, with the test helper libraries protobuf's tests link
+# (absl::scoped_mock_log, absl::status_matchers). Building one Abseil for both
+# the libraries and the tests means a GoogleTest bump also rebuilds protobuf's
+# libraries once, but avoids two different Abseil packages in one build.
+cmake_bazel(
+    name = "absl_cmake",
+    srcs = [
+        "@abseil-cpp-cmake-src//:lib_srcs",
+        "@abseil-cpp-cmake-src//:test_helper_srcs",
+    ],
+    cache_entries = _COMMON_CACHE_ENTRIES | {
+        "ABSL_BUILD_TESTING": "OFF",
+        "ABSL_BUILD_TEST_HELPERS": "ON",
+        "ABSL_ENABLE_INSTALL": "ON",
+        "ABSL_FIND_GOOGLETEST": "ON",
+        "ABSL_PROPAGATE_CXX_STD": "ON",
+        "ABSL_USE_EXTERNAL_GOOGLETEST": "ON",
+    },
+    cmake_srcs = ["@abseil-cpp-cmake-src//:cmake_files"],
+    tags = _CMAKE_TAGS,
+    deps = [":googletest_cmake"],
+)
+
+# jsoncpp, for the conformance suite (protobuf_BUILD_CONFORMANCE). Mirrors
+# cmake/conformance.cmake.
+cmake_bazel(
+    name = "jsoncpp_cmake",
+    srcs = ["@jsoncpp-cmake-src//:srcs"],
+    cache_entries = _COMMON_CACHE_ENTRIES | {
+        "BUILD_OBJECT_LIBS": "OFF",
+        "BUILD_SHARED_LIBS": "OFF",
+        "BUILD_STATIC_LIBS": "ON",
+        "JSONCPP_WITH_CMAKE_PACKAGE": "ON",
+        "JSONCPP_WITH_EXAMPLE": "OFF",
+        "JSONCPP_WITH_PKGCONFIG_SUPPORT": "OFF",
+        "JSONCPP_WITH_POST_BUILD_UNITTEST": "OFF",
+        "JSONCPP_WITH_TESTS": "OFF",
+    },
+    cmake_srcs = ["@jsoncpp-cmake-src//:cmake_files"],
+    tags = _CMAKE_TAGS,
+)
+
+# protobuf's libraries, its tests built against the installed libraries, and
+# one Bazel test per ctest entry, for the `linux-cmake` CI configurations
+# (see cmake/protobuf_cmake_bazel.bzl):
+#   * "" -- C++17, static libraries, conformance on; covers the default,
+#     Package and Ninja entries. `bazel test //cmake:cmake_bazel_tests`.
+#   * "_cxx20" -- CMAKE_CXX_STANDARD=20, conformance off, as that entry.
+#     `bazel test //cmake:cmake_bazel_cxx20_tests`.
+# Abseil, GoogleTest and jsoncpp are shared by both.
+protobuf_cmake_bazel_config(
+    conformance = True,
+    cxx_standard = "17",
+    suffix = "",
+    test_deps = [
+        ":googletest_cmake",
+        ":jsoncpp_cmake",
+    ],
+    deps = [":absl_cmake"],
+)
+
+protobuf_cmake_bazel_config(
+    conformance = False,
+    cxx_standard = "20",
+    suffix = "_cxx20",
+    test_deps = [":googletest_cmake"],
+    deps = [":absl_cmake"],
 )
