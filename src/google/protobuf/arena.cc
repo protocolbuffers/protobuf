@@ -345,7 +345,8 @@ void* SerialArena::AllocateFromStringBlockFallback() {
 PROTOBUF_NOINLINE
 void* SerialArena::AllocateAlignedWithCleanupFallback(
     size_t n, size_t align, void (*destructor)(void*)) {
-  size_t required = AlignUpTo(n, align);
+  size_t required =
+      MemoryAlign{std::max(align, ArenaAlignDefault{}.align())}.Ceil(n);
   AllocateNewBlock(required);
   return AllocateAlignedWithCleanup(n, align, destructor);
 }
