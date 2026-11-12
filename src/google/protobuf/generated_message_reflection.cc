@@ -43,6 +43,7 @@
 #include "absl/synchronization/mutex.h"
 #include "absl/types/span.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/btree_split.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/cpp_file_options.pb.h"
 #include "google/protobuf/descriptor.h"
@@ -117,6 +118,10 @@ Message* MaybeForceCopy(Arena* arena, Message* msg) {
 }  // anonymous namespace
 
 namespace internal {
+
+// Make sure that btree's addressing scheme fits in our reflection address slot.
+static_assert((BtreeSplitAddress::kAddressMask & kAllOffsetTags) == 0);
+
 ReflectionSchema::ReflectionSchema(const Message* default_instance,
                                    const uint32_t* offsets,
                                    const uint32_t* has_bit_indices,

@@ -738,6 +738,7 @@ cc_library(
         "any_lite.cc",
         "arenastring.cc",
         "arenaz_sampler.cc",
+        "btree_split.cc",
         "extension_set.cc",
         "generated_enum_util.cc",
         "generated_message_tctable_lite.cc",
@@ -762,6 +763,7 @@ cc_library(
         "arena.h",
         "arenastring.h",
         "arenaz_sampler.h",
+        "btree_split.h",
         "descriptor_lite.h",
         "endian.h",
         "explicitly_constructed.h",
@@ -1012,6 +1014,22 @@ cc_test(
         ":protobuf",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:status_matchers",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "btree_split_test",
+    srcs = ["btree_split_test.cc"],
+    deps = [
+        ":arena",
+        ":cc_test_protos",
+        ":port",
+        ":protobuf_lite",
+        "//src/google/protobuf/testing:protobuf_test",
+        "@abseil-cpp//absl/types:optional",
+        "@abseil-cpp//absl/types:span",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
