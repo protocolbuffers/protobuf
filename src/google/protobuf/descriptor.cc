@@ -2526,36 +2526,33 @@ const FieldDescriptor* DescriptorPool::FindExtensionByPrintableName(
 void DescriptorPool::FindAllExtensions(
     const Descriptor* extendee,
     std::vector<const FieldDescriptor*>* out) const {
-  DeferredValidation deferred_validation(this);
   std::vector<const FieldDescriptor*> extensions;
-  {
-    absl::MutexLockMaybe lock(mutex());
-
-    // Initialize tables_->extensions_ from the fallback database first
-    // (but do this only once per descriptor).
-    if (fallback_database_ != nullptr &&
-        tables_->extensions_loaded_from_db_.count(extendee) == 0) {
-      std::vector<int> numbers;
-      if (fallback_database_->FindAllExtensionNumbers(
-              std::string(extendee->full_name()), &numbers)) {
-        Tables::ScopedBuildState build_state(*tables_, deferred_validation);
-        for (int number : numbers) {
-          if (tables_->FindExtension(extendee, number) == nullptr) {
-            TryFindExtensionInFallbackDatabase(extendee, number);
+  if (fallback_database_ != nullptr) {
+    if (!WithBuildTransaction(default_error_collector_, [&] {
+          if (tables_->extensions_loaded_from_db_.insert(extendee).second) {
+            std::vector<int> numbers;
+            if (fallback_database_->FindAllExtensionNumbers(
+                    extendee->full_name(), &numbers)) {
+              for (int number : numbers) {
+                if (tables_->FindExtension(extendee, number) == nullptr) {
+                  TryFindExtensionInFallbackDatabase(extendee, number);
+                }
+              }
+            }
           }
-        }
-        tables_->extensions_loaded_from_db_.insert(extendee);
-      }
+          tables_->FindAllExtensions(extendee, &extensions);
+        })) {
+      extensions.clear();
     }
-
+  } else {
+    ReaderMutexLockMaybe lock(mutex());
     tables_->FindAllExtensions(extendee, &extensions);
   }
+
   if (underlay_ != nullptr) {
     underlay_->FindAllExtensions(extendee, &extensions);
   }
-  if (deferred_validation.Validate()) {
-    out->insert(out->end(), extensions.begin(), extensions.end());
-  }
+  out->insert(out->end(), extensions.begin(), extensions.end());
 }
 
 
