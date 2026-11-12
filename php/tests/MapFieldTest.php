@@ -487,6 +487,17 @@ class MapFieldTest extends TestBase {
         $this->assertSame(10, self::countEntries($arr));
     }
 
+    public function testIteratorWithMaterializedPropertiesIsFreedOnce() {
+        $arr = new MapField(GPBType::INT32, GPBType::INT32);
+        $arr[1] = 1;
+        $iter = $arr->getIterator();
+        // Reading the properties allocates the object's property table, which
+        // must be released exactly once when the iterator is freed.
+        $this->assertSame([], get_object_vars($iter));
+        unset($iter);
+        $this->assertCount(1, $arr);
+    }
+
     public function testIteratorPastEnd() {
         $arr = new MapField(GPBType::INT32, GPBType::INT32);
         $arr[1] = 1;

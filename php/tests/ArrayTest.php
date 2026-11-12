@@ -757,4 +757,16 @@ class ArrayTest extends TestBase
             $this->assertStringContainsString("1", $triggeredErrstr);
         }
     }
+
+    public function testIteratorWithMaterializedPropertiesIsFreedOnce()
+    {
+        $arr = new RepeatedField(GPBType::INT32);
+        $arr[] = 1;
+        $it = $arr->getIterator();
+        // Reading the properties allocates the object's property table, which
+        // must be released exactly once when the iterator is freed.
+        $this->assertSame([], get_object_vars($it));
+        unset($it);
+        $this->assertCount(1, $arr);
+    }
 }
