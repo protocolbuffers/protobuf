@@ -4580,43 +4580,39 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
   std::vector<const Descriptor::ExtensionRange*> sorted_extensions =
       SortExtensionRanges(descriptor_);
 
-  int num_fields = ordered_fields.size() + sorted_extensions.size();
-  constexpr int kLargePrime = 1000003;
-  ABSL_CHECK_LT(num_fields, kLargePrime)
-      << "Prime offset must be greater than the number of fields to ensure "
-         "those are coprime.";
+  // Emit the fields in reverse order (extension ranges last-to-first, then
+  // fields last-to-first) as straight-line code. Previously this was emitted as
+  // `for (i = last; i >= 0; --i) switch (i) {...}`, which nests every inlined
+  // helper loop inside a single huge outer loop and makes LLVM's loop passes
+  // scale quadratically for messages with thousands of fields.
   p->Emit(
       {
-          {"last_field", num_fields - 1},
-
-          {"ordered_cases",
+          {"reversed_extensions",
            [&] {
-             size_t index = 0;
-             for (const auto* f : ordered_fields) {
-               p->Emit({{"index", index++},
-                        {"body", [&] { GenerateSerializeOneField(p, f, -1); }}},
-                       R"cc(
-                         case $index$: {
-                           $body$;
-                           break;
-                         }
-                       )cc");
-             }
-           }},
-          {"extension_cases",
-           [&] {
-             size_t index = ordered_fields.size();
-             for (const auto* r : sorted_extensions) {
-               p->Emit({{"index", index++},
-                        {"body",
+             for (auto it = sorted_extensions.rbegin();
+                  it != sorted_extensions.rend(); ++it) {
+               const auto* r = *it;
+               p->Emit({{"body",
                          [&] {
                            GenerateSerializeOneExtensionRange(
                                p, r->start_number(), r->end_number());
                          }}},
                        R"cc(
-                         case $index$: {
+                         {
                            $body$;
-                           break;
+                         }
+                       )cc");
+             }
+           }},
+          {"reversed_fields",
+           [&] {
+             for (auto it = ordered_fields.rbegin();
+                  it != ordered_fields.rend(); ++it) {
+               const auto* f = *it;
+               p->Emit({{"body", [&] { GenerateSerializeOneField(p, f, -1); }}},
+                       R"cc(
+                         {
+                           $body$;
                          }
                        )cc");
              }
@@ -4639,15 +4635,8 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
            }},
       },
       R"cc(
-        for (int i = $last_field$; i >= 0; i--) {
-          switch (i) {
-            $ordered_cases$;
-            $extension_cases$;
-            default: {
-              $DCHK$(false) << "Unexpected index: " << i;
-            }
-          }
-        }
+        $reversed_extensions$;
+        $reversed_fields$;
         if (ABSL_PREDICT_FALSE(this_.$have_unknown_fields$)) {
           $handle_unknown_fields$;
         }
