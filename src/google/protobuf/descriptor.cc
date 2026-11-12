@@ -100,6 +100,7 @@
 #include "google/protobuf/symbol.h"
 #include "google/protobuf/symbol_checker.h"
 #include "google/protobuf/text_format.h"
+#include "google/protobuf/transparent_ptr.h"
 #include "google/protobuf/unknown_field_set.h"
 
 
@@ -916,41 +917,19 @@ using SymbolsByParentSet = absl::flat_hash_set<
     internal::BasePointer<const internal::SymbolBase, false>,
     SymbolByParentHash, SymbolByParentEq>;
 
-template <typename Projection>
-struct ProjectedHash {
-  using is_transparent = void;
-
-  template <typename T>
-  size_t operator()(const T& value) const {
-    return absl::HashOf(Projection{}(value));
-  }
-};
-
-template <typename Projection>
-struct ProjectedEq {
-  using is_transparent = void;
-
-  template <typename T, typename U>
-  bool operator()(const T& lhs, const U& rhs) const {
-    return Projection{}(lhs) == Projection{}(rhs);
-  }
-};
-
-template <typename T, typename Projection>
-using ProjectedSet =
-    absl::flat_hash_set<T, ProjectedHash<Projection>, ProjectedEq<Projection>>;
-
+// Wrapper around const DescriptorT* for transparent hashing and equality by
+// name().
 template <typename DescriptorT>
-struct DescriptorNameProjection {
-  absl::string_view operator()(const DescriptorT* descriptor) const {
-    return descriptor->name();
-  }
-  absl::string_view operator()(absl::string_view name) const { return name; }
+struct DescriptorByName
+    : internal::TransparentPtr<DescriptorByName<DescriptorT>, DescriptorT> {
+  using Base = typename DescriptorByName::TransparentPtr;
+  using Base::Base;
+  absl::string_view key() const { return this->ptr->name(); }
 };
 
 template <typename DescriptorT>
 using DescriptorsByNameSet =
-    ProjectedSet<const DescriptorT*, DescriptorNameProjection<DescriptorT>>;
+    internal::TransparentPtrSet<DescriptorByName<DescriptorT>>;
 
 static const void* GetFieldParent(const FieldDescriptor* field) {
   if (field->is_extension()) {
@@ -964,31 +943,29 @@ static const void* GetFieldParent(const FieldDescriptor* field) {
   }
 }
 
-struct LowercaseNameProjection {
-  std::pair<const void*, absl::string_view> operator()(
-      const FieldDescriptor* field) const {
-    return {GetFieldParent(field), field->lowercase_name()};
-  }
-  auto operator()(std::pair<const void*, absl::string_view> query) const {
-    return query;
+using FieldNameKey = std::pair<const void*, absl::string_view>;
+
+struct FieldByLowercaseName
+    : internal::TransparentPtr<FieldByLowercaseName, FieldDescriptor> {
+  using TransparentPtr::TransparentPtr;
+  FieldNameKey key() const {
+    return {GetFieldParent(ptr), ptr->lowercase_name()};
   }
 };
 
 using FieldsByLowercaseNameSet =
-    ProjectedSet<const FieldDescriptor*, LowercaseNameProjection>;
+    internal::TransparentPtrSet<FieldByLowercaseName>;
 
-struct CamelcaseNameProjection {
-  std::pair<const void*, absl::string_view> operator()(
-      const FieldDescriptor* field) const {
-    return {GetFieldParent(field), field->camelcase_name()};
-  }
-  auto operator()(std::pair<const void*, absl::string_view> query) const {
-    return query;
+struct FieldByCamelcaseName
+    : internal::TransparentPtr<FieldByCamelcaseName, FieldDescriptor> {
+  using TransparentPtr::TransparentPtr;
+  FieldNameKey key() const {
+    return {GetFieldParent(ptr), ptr->camelcase_name()};
   }
 };
 
 using FieldsByCamelcaseNameSet =
-    ProjectedSet<const FieldDescriptor*, CamelcaseNameProjection>;
+    internal::TransparentPtrSet<FieldByCamelcaseName>;
 
 struct ParentNumberQuery {
   std::pair<const void*, int> query;
@@ -1004,26 +981,17 @@ std::pair<const void*, int> ObjectToParentNumber(ParentNumberQuery query,
                                                  const void* = nullptr) {
   return query.query;
 }
-struct ParentNumberHash {
-  using is_transparent = void;
 
-  template <typename T>
-  size_t operator()(const T& t) const {
-    return absl::HashOf(ObjectToParentNumber(t));
-  }
-};
-struct ParentNumberEq {
-  using is_transparent = void;
+using ParentNumberKey = std::pair<const void*, int>;
 
-  template <typename T, typename U>
-  bool operator()(const T& a, const U& b) const {
-    return ObjectToParentNumber(a) == ObjectToParentNumber(b);
-  }
+struct EnumValueByParentNumber
+    : internal::TransparentPtr<EnumValueByParentNumber, EnumValueDescriptor> {
+  using TransparentPtr::TransparentPtr;
+  ParentNumberKey key() const { return ObjectToParentNumber(ptr); }
 };
 
 using EnumValuesByNumberSet =
-    absl::flat_hash_set<const EnumValueDescriptor*, ParentNumberHash,
-                        ParentNumberEq>;
+    internal::TransparentPtrSet<EnumValueByParentNumber>;
 
 template <typename T>
 std::pair<const void*, int> ObjectToParentNumber(
@@ -1886,7 +1854,7 @@ inline const FileDescriptor* DescriptorPool::Tables::FindFile(
     absl::string_view key) const {
   auto it = files_by_name_.find(key);
   if (it == files_by_name_.end()) return nullptr;
-  return *it;
+  return it->ptr;
 }
 
 inline const FieldDescriptor* FileDescriptorTables::FindFieldByNumber(
@@ -1935,7 +1903,7 @@ inline const FieldDescriptor* FileDescriptorTables::FindFieldByLowercaseName(
   auto it = fields->find(
       std::pair<const void*, absl::string_view>(parent, lowercase_name));
   if (it == fields->end()) return nullptr;
-  return *it;
+  return it->ptr;
 }
 
 void FileDescriptorTables::FieldsByCamelcaseNamesLazyInitStatic(
@@ -1969,7 +1937,7 @@ inline const FieldDescriptor* FileDescriptorTables::FindFieldByCamelcaseName(
   auto it = fields->find(
       std::pair<const void*, absl::string_view>(parent, camelcase_name));
   if (it == fields->end()) return nullptr;
-  return *it;
+  return it->ptr;
 }
 
 inline const EnumValueDescriptor* FileDescriptorTables::FindEnumValueByNumber(
@@ -1998,14 +1966,14 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
     }
   }
 
-  const ParentNumberQuery query{{parent, number}};
+  const ParentNumberKey query{parent, number};
 
   // Second try, with reader lock held on unknown enum values: common case.
   {
     absl::ReaderMutexLock l(unknown_enum_values_mu_);
     auto it = unknown_enum_values_by_number_.find(query);
     if (it != unknown_enum_values_by_number_.end()) {
-      return *it;
+      return it->ptr;
     }
   }
   // If not found, try again with writer lock held, and create new descriptor if
@@ -2014,7 +1982,7 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
     absl::WriterMutexLock l(unknown_enum_values_mu_);
     auto it = unknown_enum_values_by_number_.find(query);
     if (it != unknown_enum_values_by_number_.end()) {
-      return *it;
+      return it->ptr;
     }
 
     // Create an EnumValueDescriptor dynamically. We don't insert it into the

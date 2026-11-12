@@ -57,6 +57,7 @@
 #include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/reflection_visit_fields.h"
 #include "google/protobuf/text_format.h"
+#include "google/protobuf/transparent_ptr.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format.h"
 
@@ -492,6 +493,15 @@ MessageFactory::~MessageFactory() = default;
 
 namespace {
 
+// Wrapper around DescriptorTable* for transparent hashing and equality by
+// filename.
+struct DescriptorTableByName
+    : internal::TransparentPtr<DescriptorTableByName,
+                               google::protobuf::internal::DescriptorTable> {
+  using TransparentPtr::TransparentPtr;
+  absl::string_view key() const { return ptr->filename; }
+};
+
 class GeneratedMessageFactory final : public MessageFactory {
  public:
   static GeneratedMessageFactory* singleton();
@@ -521,42 +531,11 @@ class GeneratedMessageFactory final : public MessageFactory {
       absl::string_view name) {
     auto it = files_.find(name);
     if (it == files_.end()) return nullptr;
-    return *it;
+    return it->ptr;
   }
 
-  struct DescriptorByNameHash {
-    using is_transparent = void;
-    size_t operator()(const google::protobuf::internal::DescriptorTable* t) const {
-      return absl::HashOf(absl::string_view{t->filename});
-    }
-
-    size_t operator()(absl::string_view name) const {
-      return absl::HashOf(name);
-    }
-  };
-  struct DescriptorByNameEq {
-    using is_transparent = void;
-    bool operator()(const google::protobuf::internal::DescriptorTable* lhs,
-                    const google::protobuf::internal::DescriptorTable* rhs) const {
-      return lhs == rhs || (*this)(lhs->filename, rhs->filename);
-    }
-    bool operator()(absl::string_view lhs,
-                    const google::protobuf::internal::DescriptorTable* rhs) const {
-      return (*this)(lhs, rhs->filename);
-    }
-    bool operator()(const google::protobuf::internal::DescriptorTable* lhs,
-                    absl::string_view rhs) const {
-      return (*this)(lhs->filename, rhs);
-    }
-    bool operator()(absl::string_view lhs, absl::string_view rhs) const {
-      return lhs == rhs;
-    }
-  };
-
   // Only written at static init time, so does not require locking.
-  absl::flat_hash_set<const google::protobuf::internal::DescriptorTable*,
-                      DescriptorByNameHash, DescriptorByNameEq>
-      files_;
+  internal::TransparentPtrSet<DescriptorTableByName> files_;
   DynamicMessageFactory dropped_defaults_factory_;
 
   absl::Mutex mutex_;

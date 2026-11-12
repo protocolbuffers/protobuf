@@ -31,6 +31,7 @@
 #include "absl/base/config.h"
 #include "absl/base/dynamic_annotations.h"
 #include "absl/base/optimization.h"
+#include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/numeric/int128.h"
@@ -1012,6 +1013,20 @@ PROTOBUF_EXPORT constexpr BoundsCheckMode GetBoundsCheckMode() {
   return BoundsCheckMode::kAbort;
 }
 
+
+#if PROTOBUF_ABSL_MIN(20260902, 0)
+template <typename T, typename U>
+using TransparentHash = absl::TransparentHash<T, U>;
+#else
+// Fallback for Abseil LTS releases prior to 2026-09-02 that lack
+// absl::TransparentHash.
+template <typename T, typename U>
+struct TransparentHash {
+  using is_transparent = void;
+  size_t operator()(const T& v) const { return absl::Hash<T>{}(v); }
+  size_t operator()(const U& v) const { return absl::Hash<U>{}(v); }
+};
+#endif
 
 // Check minimum Protobuf support defined at:
 // https://github.com/google/oss-policies-info/blob/main/foundational-cxx-support-matrix.md
