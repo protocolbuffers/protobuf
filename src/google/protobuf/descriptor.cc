@@ -50,11 +50,9 @@
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/ascii.h"
-#include "absl/strings/charset.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
@@ -916,43 +914,64 @@ using SymbolsByParentSet = absl::flat_hash_set<
     internal::BasePointer<const internal::SymbolBase, false>,
     SymbolByParentHash, SymbolByParentEq>;
 
-template <typename Projection>
-struct ProjectedHash {
-  using is_transparent = void;
+// Wrapper around T that projects it to Key using Projection for transparent
+// hashing and equality in Abseil hash containers.
+template <typename T, typename Key, typename Projection>
+struct ProjectedKey {
+  T value;
 
-  template <typename T>
-  size_t operator()(const T& value) const {
-    return absl::HashOf(Projection{}(value));
+  Key key() const { return Projection{}(value); }
+
+  friend bool operator==(const ProjectedKey& a, const ProjectedKey& b) {
+    return a.key() == b.key();
   }
+  friend bool operator==(const ProjectedKey& a, const Key& b) {
+    return a.key() == b;
+  }
+  friend bool operator==(const Key& a, const ProjectedKey& b) {
+    return a == b.key();
+  }
+  friend bool operator!=(const ProjectedKey& a, const ProjectedKey& b) {
+    return !(a == b);
+  }
+  friend bool operator!=(const ProjectedKey& a, const Key& b) {
+    return !(a == b);
+  }
+  friend bool operator!=(const Key& a, const ProjectedKey& b) {
+    return !(a == b);
+  }
+
+  template <typename H>
+  friend H AbslHashValue(H h, const ProjectedKey& v) {
+    return H::combine(std::move(h), v.key());
+  }
+
+  using absl_container_hash = internal::TransparentHash<ProjectedKey, Key>;
 };
 
-template <typename Projection>
-struct ProjectedEq {
-  using is_transparent = void;
-
-  template <typename T, typename U>
-  bool operator()(const T& lhs, const U& rhs) const {
-    return Projection{}(lhs) == Projection{}(rhs);
-  }
-};
-
-template <typename T, typename Projection>
-using ProjectedSet =
-    absl::flat_hash_set<T, ProjectedHash<Projection>, ProjectedEq<Projection>>;
+template <typename T, typename Key, typename Projection>
+using ProjectedSet = absl::flat_hash_set<
+    ProjectedKey<T, Key, Projection>,
+    internal::TransparentHash<ProjectedKey<T, Key, Projection>, Key>,
+    std::equal_to<void>>;
 
 template <typename DescriptorT>
 struct DescriptorNameProjection {
   absl::string_view operator()(const DescriptorT* descriptor) const {
     return descriptor->name();
   }
-  absl::string_view operator()(absl::string_view name) const { return name; }
 };
 
 template <typename DescriptorT>
-using DescriptorsByNameSet =
-    ProjectedSet<const DescriptorT*, DescriptorNameProjection<DescriptorT>>;
+using DescriptorByName = ProjectedKey<const DescriptorT*, absl::string_view,
+                                      DescriptorNameProjection<DescriptorT>>;
 
-static const void* GetFieldParent(const FieldDescriptor* field) {
+template <typename DescriptorT>
+using DescriptorsByNameSet =
+    ProjectedSet<const DescriptorT*, absl::string_view,
+                 DescriptorNameProjection<DescriptorT>>;
+
+const void* GetFieldParent(const FieldDescriptor* field) {
   if (field->is_extension()) {
     if (field->extension_scope() == nullptr) {
       return field->file();
@@ -969,30 +988,67 @@ struct LowercaseNameProjection {
       const FieldDescriptor* field) const {
     return {GetFieldParent(field), field->lowercase_name()};
   }
-  auto operator()(std::pair<const void*, absl::string_view> query) const {
-    return query;
-  }
 };
 
+using FieldByLowercaseName =
+    ProjectedKey<const FieldDescriptor*,
+                 std::pair<const void*, absl::string_view>,
+                 LowercaseNameProjection>;
+
 using FieldsByLowercaseNameSet =
-    ProjectedSet<const FieldDescriptor*, LowercaseNameProjection>;
+    ProjectedSet<const FieldDescriptor*,
+                 std::pair<const void*, absl::string_view>,
+                 LowercaseNameProjection>;
 
 struct CamelcaseNameProjection {
   std::pair<const void*, absl::string_view> operator()(
       const FieldDescriptor* field) const {
     return {GetFieldParent(field), field->camelcase_name()};
   }
-  auto operator()(std::pair<const void*, absl::string_view> query) const {
-    return query;
-  }
 };
 
+using FieldByCamelcaseName =
+    ProjectedKey<const FieldDescriptor*,
+                 std::pair<const void*, absl::string_view>,
+                 CamelcaseNameProjection>;
+
 using FieldsByCamelcaseNameSet =
-    ProjectedSet<const FieldDescriptor*, CamelcaseNameProjection>;
+    ProjectedSet<const FieldDescriptor*,
+                 std::pair<const void*, absl::string_view>,
+                 CamelcaseNameProjection>;
 
 struct ParentNumberQuery {
   std::pair<const void*, int> query;
+
+  friend bool operator==(const ParentNumberQuery& a,
+                         const ParentNumberQuery& b) {
+    return a.query == b.query;
+  }
+  friend bool operator!=(const ParentNumberQuery& a,
+                         const ParentNumberQuery& b) {
+    return !(a == b);
+  }
+
+  template <typename H>
+  friend H AbslHashValue(H h, const ParentNumberQuery& q) {
+    return H::combine(std::move(h), q.query);
+  }
 };
+
+struct EnumValueParentNumberProjection {
+  ParentNumberQuery operator()(const EnumValueDescriptor* enum_value) const {
+    return {{enum_value->type(), enum_value->number()}};
+  }
+};
+
+using EnumValueByParentNumber =
+    ProjectedKey<const EnumValueDescriptor*, ParentNumberQuery,
+                 EnumValueParentNumberProjection>;
+
+using EnumValuesByNumberSet =
+    ProjectedSet<const EnumValueDescriptor*, ParentNumberQuery,
+                 EnumValueParentNumberProjection>;
+
 std::pair<const void*, int> ObjectToParentNumber(const FieldDescriptor* field) {
   return {field->containing_type(), field->number()};
 }
@@ -1004,26 +1060,6 @@ std::pair<const void*, int> ObjectToParentNumber(ParentNumberQuery query,
                                                  const void* = nullptr) {
   return query.query;
 }
-struct ParentNumberHash {
-  using is_transparent = void;
-
-  template <typename T>
-  size_t operator()(const T& t) const {
-    return absl::HashOf(ObjectToParentNumber(t));
-  }
-};
-struct ParentNumberEq {
-  using is_transparent = void;
-
-  template <typename T, typename U>
-  bool operator()(const T& a, const U& b) const {
-    return ObjectToParentNumber(a) == ObjectToParentNumber(b);
-  }
-};
-
-using EnumValuesByNumberSet =
-    absl::flat_hash_set<const EnumValueDescriptor*, ParentNumberHash,
-                        ParentNumberEq>;
 
 template <typename T>
 std::pair<const void*, int> ObjectToParentNumber(
@@ -1764,12 +1800,13 @@ void DescriptorPool::Tables::RollbackToLastCheckpoint() {
 
   for (size_t i = checkpoint.pending_symbols_before_checkpoint;
        i < state.symbols_after_checkpoint.size(); i++) {
-    symbols_by_name_.erase(state.symbols_after_checkpoint[i]);
+    symbols_by_name_.erase(
+        internal::SymbolByFullName{state.symbols_after_checkpoint[i]});
   }
   for (size_t i = checkpoint.pending_files_before_checkpoint;
        i < state.files_after_checkpoint.size(); i++) {
     state.deferred_validation.RollbackFile(state.files_after_checkpoint[i]);
-    files_by_name_.erase(state.files_after_checkpoint[i]);
+    files_by_name_.erase({state.files_after_checkpoint[i]});
   }
   for (size_t i = checkpoint.pending_extensions_before_checkpoint;
        i < state.extensions_after_checkpoint.size(); i++) {
@@ -1791,8 +1828,8 @@ void DescriptorPool::Tables::RollbackToLastCheckpoint() {
 // -------------------------------------------------------------------
 
 inline Symbol DescriptorPool::Tables::FindSymbol(absl::string_view key) const {
-  auto it = symbols_by_name_.find(internal::FullNameQuery{key});
-  return it == symbols_by_name_.end() ? Symbol() : *it;
+  auto it = symbols_by_name_.find(key);
+  return it == symbols_by_name_.end() ? Symbol() : it->symbol;
 }
 
 template <typename K>
@@ -1886,7 +1923,7 @@ inline const FileDescriptor* DescriptorPool::Tables::FindFile(
     absl::string_view key) const {
   auto it = files_by_name_.find(key);
   if (it == files_by_name_.end()) return nullptr;
-  return *it;
+  return it->value;
 }
 
 inline const FieldDescriptor* FileDescriptorTables::FindFieldByNumber(
@@ -1913,13 +1950,13 @@ void FileDescriptorTables::FieldsByLowercaseNamesLazyInitInternal() const {
   for (auto symbol : symbols_by_parent_) {
     const FieldDescriptor* field = Resolve(symbol).field_descriptor();
     if (!field) continue;
-    auto [it, inserted] = set->insert(field);
+    auto [it, inserted] = set->insert({field});
     if (!inserted) {
       // If we already have a field with this lowercase name, keep the last one.
       // Since conflicts are rare, we resolve this inline by erasing and
       // inserting.
       set->erase(it);
-      set->insert(field);
+      set->insert({field});
     }
   }
   fields_by_lowercase_name_.store(set, std::memory_order_release);
@@ -1935,7 +1972,7 @@ inline const FieldDescriptor* FileDescriptorTables::FindFieldByLowercaseName(
   auto it = fields->find(
       std::pair<const void*, absl::string_view>(parent, lowercase_name));
   if (it == fields->end()) return nullptr;
-  return *it;
+  return it->value;
 }
 
 void FileDescriptorTables::FieldsByCamelcaseNamesLazyInitStatic(
@@ -1948,13 +1985,13 @@ void FileDescriptorTables::FieldsByCamelcaseNamesLazyInitInternal() const {
   for (auto symbol : symbols_by_parent_) {
     const FieldDescriptor* field = Resolve(symbol).field_descriptor();
     if (!field) continue;
-    auto [it, inserted] = set->insert(field);
-    if (!inserted && (*it)->number() > field->number()) {
+    auto [it, inserted] = set->insert({field});
+    if (!inserted && it->value->number() > field->number()) {
       // If we already have a field with this camelCase name, keep the field
       // with the smallest field number. This way we get a deterministic
       // mapping.
       set->erase(it);
-      set->insert(field);
+      set->insert({field});
     }
   }
   fields_by_camelcase_name_.store(set, std::memory_order_release);
@@ -1969,7 +2006,7 @@ inline const FieldDescriptor* FileDescriptorTables::FindFieldByCamelcaseName(
   auto it = fields->find(
       std::pair<const void*, absl::string_view>(parent, camelcase_name));
   if (it == fields->end()) return nullptr;
-  return *it;
+  return it->value;
 }
 
 inline const EnumValueDescriptor* FileDescriptorTables::FindEnumValueByNumber(
@@ -2005,7 +2042,7 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
     absl::ReaderMutexLock l(unknown_enum_values_mu_);
     auto it = unknown_enum_values_by_number_.find(query);
     if (it != unknown_enum_values_by_number_.end()) {
-      return *it;
+      return it->value;
     }
   }
   // If not found, try again with writer lock held, and create new descriptor if
@@ -2014,7 +2051,7 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
     absl::WriterMutexLock l(unknown_enum_values_mu_);
     auto it = unknown_enum_values_by_number_.find(query);
     if (it != unknown_enum_values_by_number_.end()) {
-      return *it;
+      return it->value;
     }
 
     // Create an EnumValueDescriptor dynamically. We don't insert it into the
@@ -2041,7 +2078,7 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
     result->number_ = number;
     result->type_ = parent;
     result->options_ = nullptr;
-    unknown_enum_values_by_number_.insert(result);
+    unknown_enum_values_by_number_.insert({result});
     return result;
   }
 }
@@ -2068,7 +2105,7 @@ inline void DescriptorPool::Tables::FindAllExtensions(
 bool DescriptorPool::Tables::AddSymbol(absl::string_view full_name,
                                        Symbol symbol) {
   ABSL_DCHECK_EQ(full_name, symbol.full_name());
-  if (symbols_by_name_.insert(symbol).second) {
+  if (symbols_by_name_.insert(internal::SymbolByFullName{symbol}).second) {
     build_state().symbols_after_checkpoint.push_back(symbol);
     return true;
   } else {
@@ -2088,7 +2125,7 @@ bool FileDescriptorTables::AddAliasUnderParent(const void* parent,
 }
 
 bool DescriptorPool::Tables::AddFile(const FileDescriptor* file) {
-  if (files_by_name_.insert(file).second) {
+  if (files_by_name_.insert({file}).second) {
     build_state().files_after_checkpoint.push_back(file);
     return true;
   } else {
@@ -8555,10 +8592,10 @@ void internal::DescriptorBuilder::DetectMapConflicts(
   DescriptorsByNameSet<Descriptor> seen_types;
   for (int i = 0; i < message->nested_type_count(); ++i) {
     const Descriptor* nested = message->nested_type(i);
-    auto insert_result = seen_types.insert(nested);
+    auto insert_result = seen_types.insert({nested});
     bool inserted = insert_result.second;
     if (!inserted) {
-      if ((*insert_result.first)->options().map_entry() ||
+      if (insert_result.first->value->options().map_entry() ||
           nested->options().map_entry()) {
         AddError(message->full_name(), proto,
                  DescriptorPool::ErrorCollector::NAME, [&] {
@@ -8576,11 +8613,11 @@ void internal::DescriptorBuilder::DetectMapConflicts(
   for (int i = 0; i < message->field_count(); ++i) {
     const FieldDescriptor* field = message->field(i);
     auto iter = seen_types.find(field->name());
-    if (iter != seen_types.end() && (*iter)->options().map_entry()) {
+    if (iter != seen_types.end() && iter->value->options().map_entry()) {
       AddError(message->full_name(), proto,
                DescriptorPool::ErrorCollector::NAME, [&] {
                  return absl::StrCat("Expanded map entry type ",
-                                     (*iter)->name(),
+                                     iter->value->name(),
                                      " conflicts with an existing field.");
                });
     }
@@ -8589,11 +8626,11 @@ void internal::DescriptorBuilder::DetectMapConflicts(
   for (int i = 0; i < message->enum_type_count(); ++i) {
     const EnumDescriptor* enum_desc = message->enum_type(i);
     auto iter = seen_types.find(enum_desc->name());
-    if (iter != seen_types.end() && (*iter)->options().map_entry()) {
+    if (iter != seen_types.end() && iter->value->options().map_entry()) {
       AddError(message->full_name(), proto,
                DescriptorPool::ErrorCollector::NAME, [&] {
                  return absl::StrCat("Expanded map entry type ",
-                                     (*iter)->name(),
+                                     iter->value->name(),
                                      " conflicts with an existing enum type.");
                });
     }
@@ -8602,11 +8639,11 @@ void internal::DescriptorBuilder::DetectMapConflicts(
   for (int i = 0; i < message->oneof_decl_count(); ++i) {
     const OneofDescriptor* oneof_desc = message->oneof_decl(i);
     auto iter = seen_types.find(oneof_desc->name());
-    if (iter != seen_types.end() && (*iter)->options().map_entry()) {
+    if (iter != seen_types.end() && iter->value->options().map_entry()) {
       AddError(message->full_name(), proto,
                DescriptorPool::ErrorCollector::NAME, [&] {
                  return absl::StrCat("Expanded map entry type ",
-                                     (*iter)->name(),
+                                     iter->value->name(),
                                      " conflicts with an existing oneof type.");
                });
     }

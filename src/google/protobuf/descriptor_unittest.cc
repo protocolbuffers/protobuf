@@ -41,6 +41,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/flags/flag.h"
 #include "absl/functional/any_invocable.h"
+#include "absl/hash/hash_testing.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/log/die_if_null.h"
@@ -70,6 +71,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/symbol.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
@@ -18536,6 +18538,80 @@ TEST_F(CopySourceCodeInfoToTest, CopySourceCodeInfoTo) {
   EXPECT_EQ(1, foo_location.span(0));      // Foo is declared on line 1
   EXPECT_EQ(0, foo_location.span(1));      // Foo starts at column 0
   EXPECT_EQ(14, foo_location.span(2));     // Foo ends on column 14
+}
+
+TEST(DescriptorHashTest, SymbolByFullNameHashingWorks) {
+  FileDescriptorProto file_proto_1;
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "shared.proto" package: "pkg.sub"
+      )pb",
+      &file_proto_1));
+
+  FileDescriptorProto file_proto_2;
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "other.proto" package: "other"
+      )pb",
+      &file_proto_2));
+
+  DescriptorPool pool_a;
+  const FileDescriptor* file_a = pool_a.BuildFile(file_proto_1);
+  ASSERT_NE(file_a, nullptr);
+  const FileDescriptor* other_file = pool_a.BuildFile(file_proto_2);
+  ASSERT_NE(other_file, nullptr);
+
+  DescriptorPool pool_b;
+  const FileDescriptor* file_b = pool_b.BuildFile(file_proto_1);
+  ASSERT_NE(file_b, nullptr);
+
+  internal::Symbol::Subpackage subpkg_a;
+  subpkg_a.name_size = 3;
+  subpkg_a.file = file_a;
+  internal::Symbol::Subpackage subpkg_b;
+  subpkg_b.name_size = 3;
+  subpkg_b.file = file_b;
+  internal::Symbol::Subpackage subpkg_full_a;
+  subpkg_full_a.name_size = 7;
+  subpkg_full_a.file = file_a;
+  internal::Symbol::Subpackage subpkg_full_b;
+  subpkg_full_b.name_size = 7;
+  subpkg_full_b.file = file_b;
+  internal::Symbol::Subpackage subpkg_other;
+  subpkg_other.name_size = 5;
+  subpkg_other.file = other_file;
+  internal::Symbol::Subpackage subpkg_empty;
+  subpkg_empty.name_size = 0;
+  subpkg_empty.file = file_a;
+
+  const internal::SymbolByFullName sym_subpkg_a{internal::Symbol(&subpkg_a)};
+  const internal::SymbolByFullName sym_subpkg_b{internal::Symbol(&subpkg_b)};
+  const internal::SymbolByFullName sym_full_a{internal::Symbol(&subpkg_full_a)};
+  const internal::SymbolByFullName sym_full_b{internal::Symbol(&subpkg_full_b)};
+  const internal::SymbolByFullName sym_other{internal::Symbol(&subpkg_other)};
+  const internal::SymbolByFullName sym_empty{internal::Symbol(&subpkg_empty)};
+
+  EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly(std::make_tuple(
+      sym_subpkg_a, sym_subpkg_b, absl::string_view("pkg"), sym_full_a,
+      sym_full_b, absl::string_view("pkg.sub"), sym_other,
+      absl::string_view("other"), sym_empty, absl::string_view(""))));
+
+  internal::SymbolsByNameSet set;
+  EXPECT_TRUE(set.insert(sym_subpkg_a).second);
+  EXPECT_FALSE(set.insert(sym_subpkg_b).second);
+  EXPECT_TRUE(set.insert(sym_full_a).second);
+  EXPECT_FALSE(set.insert(sym_full_b).second);
+  EXPECT_TRUE(set.insert(sym_other).second);
+  EXPECT_EQ(
+      set.find(absl::string_view("pkg"))->symbol.sub_package_file_descriptor(),
+      &subpkg_a);
+  EXPECT_EQ(set.find(absl::string_view("pkg.sub"))
+                ->symbol.sub_package_file_descriptor(),
+            &subpkg_full_a);
+  EXPECT_TRUE(set.contains(absl::string_view("other")));
+  EXPECT_FALSE(set.contains(absl::string_view("missing")));
+  EXPECT_EQ(set.erase(absl::string_view("pkg.sub")), 1);
+  EXPECT_FALSE(set.contains(absl::string_view("pkg.sub")));
 }
 
 // ===================================================================
