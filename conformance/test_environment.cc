@@ -7,6 +7,12 @@
 
 #include "conformance/test_environment.h"
 
+#ifdef _WIN32
+#include <direct.h>  // for _getcwd
+#else
+#include <unistd.h>  // for getcwd
+#endif
+
 #include <algorithm>
 #include <cstdlib>
 #include <memory>
@@ -24,9 +30,11 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "conformance/fork_pipe_runner.h"
 #include "conformance/global_test_environment.h"
 #include "conformance/result_ledger.h"
+#include "conformance/result_listener.h"
 #include "conformance/test_runner.h"
 #include "conformance/testee.h"
 
@@ -35,6 +43,21 @@ namespace protobuf {
 namespace conformance {
 namespace internal {
 namespace {
+
+// The current working directory, or "" if it can't be determined.
+std::string CurrentWorkingDirectory() {
+  // Both glibc/macOS (as an extension) and the MSVC CRT malloc() a buffer of
+  // the right size when given a null one.
+#ifdef _WIN32
+  char* cwd = _getcwd(nullptr, 0);
+#else
+  char* cwd = getcwd(nullptr, 0);
+#endif
+  if (cwd == nullptr) return "";
+  std::string result = cwd;
+  std::free(cwd);
+  return result;
+}
 
 // Whether `path` is absolute on this platform.  Only paths that start with a
 // slash are absolute on POSIX; Windows also has drive letters ("C:\\...",
@@ -112,54 +135,42 @@ class ForwardingEnvironment : public testing::Environment {
 
 }  // namespace
 
-Statistics Statistics::From(const ResultLedger& ledger) {
-  Statistics statistics;
-  statistics.skipped_tests = ledger.skipped();
-  statistics.listed_skips = ledger.listed_skips();
-  statistics.tolerated_failures = ledger.tolerated_failures();
-  statistics.expected_failures = ledger.expected_failures();
-  statistics.unexpected_failures = ledger.unexpected_failures();
-  statistics.expected_successes = ledger.expected_successes();
-  statistics.unexpected_successes = ledger.unexpected_successes();
-  return statistics;
+// Hooks ReportUncheckedResults() into the end of every gtest test.  gtest
+// still attributes failures to the test at that point (it forgets the current
+// test only after the listeners ran).
+class ConformanceEnvironment::UncheckedResultReporter
+    : public testing::EmptyTestEventListener {
+ public:
+  explicit UncheckedResultReporter(
+      ConformanceEnvironment* absl_nonnull environment)
+      : environment_(environment) {}
+
+  void OnTestEnd(const testing::TestInfo& test_info) override {
+    environment_->ReportUncheckedResults(&test_info);
+  }
+
+ private:
+  ConformanceEnvironment* const absl_nonnull environment_;
+};
+
+absl::Status ReportSuccess(absl::string_view test_name) {
+  return ConformanceEnvironment::Get().ledger().ReportSuccess(test_name);
 }
 
-Statistics Statistics::operator-(const Statistics& other) const {
-  Statistics delta;
-  delta.skipped_tests = skipped_tests - other.skipped_tests;
-  delta.listed_skips = listed_skips - other.listed_skips;
-  delta.tolerated_failures = tolerated_failures - other.tolerated_failures;
-  delta.expected_failures = expected_failures - other.expected_failures;
-  delta.unexpected_failures = unexpected_failures - other.unexpected_failures;
-  delta.expected_successes = expected_successes - other.expected_successes;
-  delta.unexpected_successes =
-      unexpected_successes - other.unexpected_successes;
-  return delta;
+absl::Status ReportFailure(absl::string_view test_name, TestPriority priority,
+                           absl::string_view failure_message) {
+  return ConformanceEnvironment::Get().ledger().ReportFailure(
+      test_name, priority, failure_message);
 }
 
-Statistics& Statistics::operator+=(const Statistics& other) {
-  skipped_tests += other.skipped_tests;
-  listed_skips += other.listed_skips;
-  tolerated_failures += other.tolerated_failures;
-  expected_failures += other.expected_failures;
-  unexpected_failures += other.unexpected_failures;
-  expected_successes += other.expected_successes;
-  unexpected_successes += other.unexpected_successes;
-  return *this;
+absl::Status ReportSkip(absl::string_view test_name,
+                        absl::string_view skip_reason) {
+  return ConformanceEnvironment::Get().ledger().ReportSkip(test_name,
+                                                           skip_reason);
 }
 
-void Statistics::RecordProperties() const {
-  testing::Test::RecordProperty("skipped_tests", skipped_tests);
-  testing::Test::RecordProperty("listed_skips", listed_skips);
-  testing::Test::RecordProperty("tolerated_failures", tolerated_failures);
-  testing::Test::RecordProperty("expected_failures", expected_failures);
-  testing::Test::RecordProperty("unexpected_failures", unexpected_failures);
-  testing::Test::RecordProperty("expected_successes", expected_successes);
-  testing::Test::RecordProperty("unexpected_successes", unexpected_successes);
-}
-
-ResultLedger& GetGlobalResultLedger() {
-  return ConformanceEnvironment::Get().ledger();
+void ReportNotSelected(absl::string_view test_name) {
+  ConformanceEnvironment::Get().ledger().ReportNotSelected(test_name);
 }
 
 ConformanceEnvironment::ConformanceEnvironment(
@@ -167,7 +178,9 @@ ConformanceEnvironment::ConformanceEnvironment(
     : options_(std::move(options)),
       owned_runner_(TakeOwnedRunner(options_)),
       testee_(std::make_unique<Testee>(
-          options_.runner != nullptr ? options_.runner : owned_runner_.get())) {
+          options_.runner != nullptr ? options_.runner : owned_runner_.get())),
+      result_listener_(new ResultListener(&ledger_)),
+      unchecked_result_reporter_(new UncheckedResultReporter(this)) {
   ABSL_CHECK(global_environment == nullptr)
       << "A global ConformanceEnvironment is already set.";
   global_environment = this;
@@ -176,9 +189,17 @@ ConformanceEnvironment::ConformanceEnvironment(
   // the one place the maximum edition is clamped; see the option's comment.
   options_.maximum_edition = std::max(options_.maximum_edition, EDITION_PROTO3);
   ledger_.set_enforcement_level(options_.enforcement_level);
+  testing::TestEventListeners& listeners =
+      testing::UnitTest::GetInstance()->listeners();
+  listeners.Append(result_listener_);
+  listeners.Append(unchecked_result_reporter_);
 }
 
 ConformanceEnvironment::~ConformanceEnvironment() {
+  testing::TestEventListeners& listeners =
+      testing::UnitTest::GetInstance()->listeners();
+  delete listeners.Release(unchecked_result_reporter_);
+  delete listeners.Release(result_listener_);
   // ResultLedger insists on being finalized before destruction.  An installed
   // environment is never destroyed (see Install()), so this only runs for
   // environments constructed by ScopedGlobalConformanceEnvironment in unit
@@ -214,6 +235,32 @@ ConformanceEnvironment& ConformanceEnvironment::Get() {
   return *global_environment;
 }
 
+void ConformanceEnvironment::ReportUncheckedResults(
+    const testing::TestInfo* absl_nullable test_info) {
+  if (testee_ == nullptr) {
+    return;  // TearDown() has already run.
+  }
+  absl::Span<const std::string> tests_run = testee_->tests_run();
+  absl::Span<const std::string> new_tests =
+      tests_run.subspan(results_reconciled_);
+  results_reconciled_ = tests_run.size();
+  // Don't pile a second failure onto a test that bailed out before it could
+  // check its results.
+  if (testing::Test::HasFatalFailure() || testing::Test::IsSkipped()) {
+    return;
+  }
+  // Blame the test that ran the testee rather than this file.
+  const char* file = test_info != nullptr ? test_info->file() : __FILE__;
+  int line = test_info != nullptr ? test_info->line() : __LINE__;
+  for (const std::string& test_name : new_tests) {
+    if (!ledger_.WasReported(test_name)) {
+      ADD_FAILURE_AT(file, line)
+          << "TestResult for " << test_name
+          << " was never checked; wrap the matcher in Yields()";
+    }
+  }
+}
+
 Testee& ConformanceEnvironment::testee() {
   ABSL_CHECK(testee_ != nullptr)
       << "The testee has already been shut down by "
@@ -232,6 +279,9 @@ void ConformanceEnvironment::SetUp() {
 }
 
 void ConformanceEnvironment::TearDown() {
+  // Results run after the last test (e.g. in a TearDownTestSuite()) are only
+  // checked here.
+  ReportUncheckedResults();
   Statistics::From(ledger_).RecordProperties();
   for (const std::string& entry : ledger_.OverexpandedWildcards()) {
     ADD_FAILURE() << "The failure list entry " << entry << " matched more than "
@@ -252,6 +302,7 @@ void ConformanceEnvironment::TearDown() {
              "run.  Rerun with --fix and without the filter.";
     } else {
       std::string output_file = options_.fix_output_file;
+      const char* workspace = std::getenv("BUILD_WORKSPACE_DIRECTORY");
       if (output_file.empty()) {
         if (options_.failure_list_files.empty()) {
           ADD_FAILURE() << "--fix needs --fix_output_file when no "
@@ -261,9 +312,7 @@ void ConformanceEnvironment::TearDown() {
                            "--failure_list is given.";
         } else if (IsAbsolutePath(options_.failure_list_files[0])) {
           output_file = options_.failure_list_files[0];
-        } else if (const char* workspace =
-                       std::getenv("BUILD_WORKSPACE_DIRECTORY");
-                   workspace != nullptr) {
+        } else if (workspace != nullptr) {
           output_file =
               absl::StrCat(workspace, "/", options_.failure_list_files[0]);
         } else {
@@ -271,15 +320,43 @@ void ConformanceEnvironment::TearDown() {
                            "$BUILD_WORKSPACE_DIRECTORY (which `bazel run` "
                            "sets) to locate the failure list to rewrite.";
         }
+      } else if (!IsAbsolutePath(output_file) && workspace != nullptr) {
+        // Like a relative --failure_list, a relative --fix_output_file names a
+        // source file: under `bazel run` the working directory is the
+        // runfiles tree, so resolve it against the workspace instead.  This is
+        // how conformance_test() (conformance.bzl) lets --fix create a failure
+        // list that doesn't exist yet.
+        output_file = absl::StrCat(workspace, "/", output_file);
       }
       if (!output_file.empty()) {
+        const bool relative = !IsAbsolutePath(output_file);
         absl::Status status = ledger_.SaveFailureList(output_file);
         if (status.ok()) {
-          ABSL_LOG(INFO) << "Wrote updated failure list to " << output_file;
-          fixed_list = output_file;
+          // Report where the file actually landed: a relative path outside
+          // `bazel run` is relative to whatever the working directory is.
+          std::string absolute_path = output_file;
+          if (relative) {
+            std::string cwd = CurrentWorkingDirectory();
+            if (!cwd.empty()) {
+              absolute_path = absl::StrCat(cwd, "/", output_file);
+            }
+          }
+          ABSL_LOG(INFO) << "Wrote updated failure list to " << absolute_path;
+          if (relative && workspace == nullptr &&
+              (std::getenv("TEST_SRCDIR") != nullptr ||
+               std::getenv("TEST_TMPDIR") != nullptr)) {
+            ABSL_LOG(WARNING)
+                << "The updated failure list was written inside the test "
+                   "sandbox, not into the source tree, because "
+                   "$BUILD_WORKSPACE_DIRECTORY is unset.  To update the "
+                   "checked-in list use `bazel run <target> -- --fix` instead "
+                   "of `bazel test`.";
+          }
+          fixed_list = absolute_path;
         } else {
           ADD_FAILURE() << "Failed to write updated failure list to "
-                        << output_file << ": " << status;
+                        << output_file << ": " << status
+                        << " (does the directory exist?)";
         }
       }
     }
