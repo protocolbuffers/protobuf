@@ -2255,48 +2255,29 @@ absl::string_view DescriptorPool::ErrorCollector::ErrorLocationName(
   return "UNKNOWN";
 }
 
-DescriptorPool::DescriptorPool()
-    : fallback_database_(nullptr),
-      default_error_collector_(nullptr),
-      underlay_(nullptr),
-      tables_(new Tables),
-      enforce_dependencies_(true),
-      lazily_build_dependencies_(false),
-      allow_unknown_(false),
-      enforce_weak_(false),
-      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
-      disallow_enforce_utf8_(false),
-      deprecated_legacy_json_field_conflicts_(false),
-      enforce_naming_style_(false) {}
+DescriptorPool::DescriptorPool() : DescriptorPool(Options{}) {}
 
 DescriptorPool::DescriptorPool(DescriptorDatabase* fallback_database,
                                ErrorCollector* error_collector)
-    : fallback_database_(fallback_database),
-      default_error_collector_(error_collector),
-      underlay_(nullptr),
-      tables_(new Tables),
-      enforce_dependencies_(true),
-      lazily_build_dependencies_(false),
-      allow_unknown_(false),
-      enforce_weak_(false),
-      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
-      disallow_enforce_utf8_(false),
-      deprecated_legacy_json_field_conflicts_(false),
-      enforce_naming_style_(false) {}
+    : DescriptorPool([&] {
+        Options options;
+        options.fallback_database = fallback_database;
+        options.error_collector = error_collector;
+        return options;
+      }()) {}
 
 DescriptorPool::DescriptorPool(const DescriptorPool* underlay)
-    : fallback_database_(nullptr),
-      default_error_collector_(nullptr),
-      underlay_(underlay),
-      tables_(new Tables),
-      enforce_dependencies_(true),
-      lazily_build_dependencies_(false),
-      allow_unknown_(false),
-      enforce_weak_(false),
-      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
-      disallow_enforce_utf8_(false),
-      deprecated_legacy_json_field_conflicts_(false),
-      enforce_naming_style_(false) {}
+    : DescriptorPool([&] {
+        Options options;
+        options.underlay = underlay;
+        return options;
+      }()) {}
+
+DescriptorPool::DescriptorPool(const Options& options)
+    : fallback_database_(options.fallback_database),
+      default_error_collector_(options.error_collector),
+      underlay_(options.underlay),
+      tables_(new Tables) {}
 
 DescriptorPool::~DescriptorPool() = default;
 

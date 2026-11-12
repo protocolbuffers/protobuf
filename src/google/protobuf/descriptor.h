@@ -2350,6 +2350,72 @@ class PROTOBUF_EXPORT DescriptorPool {
   // Create a normal, empty DescriptorPool.
   DescriptorPool();
 
+  class ErrorCollector;
+
+  // Options for configuring a DescriptorPool.
+  struct Options {
+    // An optional database used to populate the pool on demand.
+    //
+    // If set, whenever any Find*By*() method fails to find a descriptor in this
+    // pool (or its underlay chain), the pool searches this database for the
+    // missing file and builds it dynamically. Consequently:
+    // - You may NOT call BuildFile*() directly (doing so will assert-fail);
+    //   all descriptors must be loaded on demand via Find*By*().
+    // - Calling any Find*By*() method -- or parsing a message, which looks up
+    //   extensions -- may block if the database blocks.
+    //
+    // Not owned; must outlive this pool and must NOT be mutated during the
+    // pool's lifetime.
+    DescriptorDatabase* fallback_database = nullptr;
+
+    // An optional parent pool queried as a backup whenever a file or
+    // descriptor is not found in this pool, before consulting
+    // fallback_database. If the underlay itself has an underlay, lookups
+    // proceed recursively.
+    //
+    // Files built in this pool -- either via BuildFile*() or loaded on demand
+    // from fallback_database -- may cross-link with descriptors from the
+    // underlay. For example, DescriptorPool::generated_pool() can be used as
+    // an underlay so the pool can work with both compiled-in descriptors and
+    // dynamically loaded ones.
+    //
+    // WARNING: Use of underlays can lead to many subtle gotchas. Instead, try
+    // to formulate what you want to do in terms of DescriptorDatabases when
+    // possible.
+    //
+    // Not owned; must remain valid for the lifetime of this pool.
+    const DescriptorPool* underlay = nullptr;
+
+    // An optional error collector to receive validation and error messages
+    // when files are built on demand from fallback_database. Ignored when
+    // fallback_database is nullptr (BuildFileCollectingErrors() takes its own
+    // ErrorCollector). If nullptr, errors are logged to ABSL_LOG(ERROR).
+    //
+    // Because files are loaded on demand, this ErrorCollector may be called
+    // concurrently from any thread calling Find*By*().
+    //
+    // Not owned; must remain valid for the lifetime of this pool.
+    ErrorCollector* error_collector = nullptr;
+  };
+
+  // Constructs a DescriptorPool configured by options.
+  //
+  // This constructor subsumes the legacy DescriptorPool constructors:
+  // - With default Options{}, constructs a normal, empty, mutable pool that
+  //   you populate via BuildFile*().
+  // - Lookups first check descriptors built in this pool, then recursively
+  //   check options.underlay (if set), and finally load missing files on
+  //   demand from options.fallback_database (if set). Files built in this pool
+  //   (via BuildFile*() or from options.fallback_database) may cross-link
+  //   with descriptors in options.underlay.
+  // - None of the pointers in options are owned by this pool; any non-null
+  //   pointer must remain valid for the lifetime of this pool.
+  //
+  // See the field comments on Options for detailed semantics, restrictions
+  // (such as BuildFile*() prohibition when fallback_database is set and
+  // warnings about underlay), and thread-safety requirements.
+  explicit DescriptorPool(const Options& options);
+
   // Constructs a DescriptorPool that, when it can't find something among the
   // descriptors already in the pool, looks for it in the given
   // DescriptorDatabase.
@@ -2373,7 +2439,6 @@ class PROTOBUF_EXPORT DescriptorPool {
   //   the DescriptorPool. Even if the client takes care to avoid data races,
   //   changes to the content of the DescriptorDatabase may not be reflected
   //   in subsequent lookups in the DescriptorPool.
-  class ErrorCollector;
   explicit DescriptorPool(DescriptorDatabase* fallback_database,
                           ErrorCollector* error_collector = nullptr);
 
@@ -2874,9 +2939,9 @@ class PROTOBUF_EXPORT DescriptorPool {
   void AssertReaderHeld() const;
 
   // See constructor.
-  DescriptorDatabase* fallback_database_;
-  ErrorCollector* default_error_collector_;
-  const DescriptorPool* underlay_;
+  DescriptorDatabase* fallback_database_ = nullptr;
+  ErrorCollector* default_error_collector_ = nullptr;
+  const DescriptorPool* underlay_ = nullptr;
 
 #ifndef SWIG
   // Dispatcher for recursive calls during builds.
@@ -2889,14 +2954,15 @@ class PROTOBUF_EXPORT DescriptorPool {
   class Tables;
   std::unique_ptr<Tables> tables_;
 
-  bool enforce_dependencies_;
-  bool lazily_build_dependencies_;
-  bool allow_unknown_;
-  bool enforce_weak_;
-  ExtDeclEnforcementLevel enforce_extension_declarations_;
-  bool disallow_enforce_utf8_;
-  bool deprecated_legacy_json_field_conflicts_;
-  bool enforce_naming_style_;
+  bool enforce_dependencies_ = true;
+  bool lazily_build_dependencies_ = false;
+  bool allow_unknown_ = false;
+  bool enforce_weak_ = false;
+  ExtDeclEnforcementLevel enforce_extension_declarations_ =
+      ExtDeclEnforcementLevel::kNoEnforcement;
+  bool disallow_enforce_utf8_ = false;
+  bool deprecated_legacy_json_field_conflicts_ = false;
+  bool enforce_naming_style_ = false;
   bool enforce_proto_limits_ = false;
   bool enforce_feature_support_validation_ = false;
   bool enforce_symbol_visibility_ = false;
