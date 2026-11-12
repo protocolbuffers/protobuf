@@ -119,11 +119,11 @@ class PROTOBUF_EXPORT SerialArena {
   // the right size. We can statically know if the allocation size can benefit
   // from it.
   template <AllocationClient alloc_client = AllocationClient::kDefault>
-  void* AllocateAligned(size_t n) {
+  void* AllocateDefaultAligned(size_t n) {
     ABSL_DCHECK(internal::ArenaAlignDefault{}.IsAligned(n));
     ABSL_DCHECK_GE(limit_, ptr());
 
-    if (alloc_client == AllocationClient::kArray) {
+    if constexpr (alloc_client == AllocationClient::kArray) {
       if (void* res = TryAllocateFromCachedBlock(n)) {
         return res;
       }
@@ -221,11 +221,10 @@ class PROTOBUF_EXPORT SerialArena {
                   std::is_same_v<Align, MemoryAlign>);
     static_assert(std::is_same_v<Cleanup, NoCleanup> ||
                   std::is_same_v<Cleanup, WithCleanup>);
-
+    ABSL_DCHECK(align.IsAligned(n));
     ABSL_DCHECK_GE(limit_, ptr());
-    char* ret = ptr();
 
-    n = align.CeilDefaultAligned(n);
+    char* ret = ptr();
 
     // Comparing `limit_` to aligned `ret` is precarious because aligning `ret`
     // may overflow. Instead, we conservatively compare the total remaining
