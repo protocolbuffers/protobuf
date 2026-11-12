@@ -117,6 +117,20 @@ TEST(JsonTest, RejectsBadTrailingCharacters) {
   EXPECT_EQ(box, nullptr);
 }
 
+TEST(JsonTest, ErrorReportsLineAndColumn) {
+  upb::Arena a;
+  upb::DefPool defpool;
+  const upb_MessageDef* m = upb_test_Box_getmsgdef(defpool.ptr());
+  upb_test_Box* box = upb_test_Box_new(a.ptr());
+  upb::Status status;
+  const std::string json = "{\n\n  \"no_such_field\": 1}";
+
+  EXPECT_FALSE(upb_JsonDecode(json.data(), json.size(), UPB_UPCAST(box), m,
+                              defpool.ptr(), 0, a.ptr(), status.ptr()));
+  EXPECT_STREQ(status.error_message(),
+               "Error parsing JSON @3:19: No such field: no_such_field");
+}
+
 TEST(JsonTest, AcceptsTrailingWhitespace) {
   upb::Arena a;
   std::string json_string = "{} \n \r\n \t\t";

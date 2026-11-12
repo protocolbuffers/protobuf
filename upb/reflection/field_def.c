@@ -429,7 +429,8 @@ static void parse_default(upb_DefBuilder* ctx, const char* str, size_t len,
     case kUpb_CType_Float:
       // Standard C number parsing functions expect null-terminated strings.
       if (len >= sizeof(nullz) - 1) {
-        _upb_DefBuilder_Errf(ctx, "Default too long: %.*s", (int)len, str);
+        _upb_DefBuilder_Errf(ctx, "Default too long: %.*s",
+                             _upb_StringView_FormatPrecision(len), str);
       }
       memcpy(nullz, str, len);
       nullz[len] = '\0';
@@ -524,8 +525,8 @@ static void parse_default(upb_DefBuilder* ctx, const char* str, size_t len,
 
 invalid:
   _upb_DefBuilder_Errf(ctx, "Invalid default '%.*s' for field %s of type %d",
-                       (int)len, str, upb_FieldDef_FullName(f),
-                       (int)upb_FieldDef_Type(f));
+                       _upb_StringView_FormatPrecision(len), str,
+                       upb_FieldDef_FullName(f), (int)upb_FieldDef_Type(f));
 }
 
 static void set_default_default(upb_DefBuilder* ctx, upb_FieldDef* f,

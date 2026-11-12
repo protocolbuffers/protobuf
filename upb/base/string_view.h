@@ -7,6 +7,8 @@
 #ifndef UPB_BASE_STRING_VIEW_H_
 #define UPB_BASE_STRING_VIEW_H_
 
+#include <limits.h>
+#include <stddef.h>
 #include <string.h>
 
 // Must be last.
@@ -16,7 +18,8 @@
   { ptr, len }
 
 #define UPB_STRINGVIEW_FORMAT "%.*s"
-#define UPB_STRINGVIEW_ARGS(view) (int)(view).size, (view).data
+#define UPB_STRINGVIEW_ARGS(view) \
+  _upb_StringView_FormatPrecision((view).size), (view).data
 
 typedef struct {
   const char* data;
@@ -26,6 +29,17 @@ typedef struct {
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// Returns the precision to pass for UPB_STRINGVIEW_FORMAT ("%.*s").
+//
+// printf() takes this precision as an int and treats a negative value as if no
+// precision was given, in which case it reads the data up to the first NUL
+// byte.  String views are not NUL-terminated, so a size above INT_MAX must not
+// wrap around to a negative int.  It is clamped instead, which only shortens
+// the printed text.
+UPB_INLINE int _upb_StringView_FormatPrecision(size_t size) {
+  return size < (size_t)INT_MAX ? (int)size : INT_MAX;
+}
 
 UPB_API_INLINE upb_StringView upb_StringView_FromDataAndSize(const char* data,
                                                              size_t size) {

@@ -7,6 +7,9 @@
 
 #include "upb/base/string_view.h"
 
+#include <climits>
+#include <cstddef>
+#include <cstdint>
 #include <string>
 
 #include <gtest/gtest.h>
@@ -71,6 +74,31 @@ TEST(upb_StringView, Compare_Greater_Shorter) {
   upb_StringView h2 = upb_StringView_FromDataAndSize(s2.data(), s2.size());
 
   ASSERT_GT(upb_StringView_Compare(h1, h2), 0);
+}
+
+int FormatPrecision(int precision, const char* data) {
+  (void)data;
+  return precision;
+}
+
+TEST(upb_StringView, FormatArgsKeepSmallSize) {
+  std::string s("12345");
+  upb_StringView h = upb_StringView_FromDataAndSize(s.data(), s.size());
+
+  EXPECT_EQ(FormatPrecision(UPB_STRINGVIEW_ARGS(h)), 5);
+}
+
+// The precision of "%.*s" is an int.  A larger size must not wrap around to a
+// negative precision, because printf() then reads up to the first NUL byte,
+// past the end of the view.
+TEST(upb_StringView, FormatArgsClampLargeSize) {
+  std::string s("12345");
+  upb_StringView h =
+      upb_StringView_FromDataAndSize(s.data(), (size_t)INT_MAX + 1);
+  EXPECT_EQ(FormatPrecision(UPB_STRINGVIEW_ARGS(h)), INT_MAX);
+
+  h.size = SIZE_MAX;
+  EXPECT_EQ(FormatPrecision(UPB_STRINGVIEW_ARGS(h)), INT_MAX);
 }
 
 }  // namespace

@@ -46,7 +46,7 @@ typedef struct {
   int result;
   upb_Status* status;
   jmp_buf err;
-  int line;
+  size_t line;
   const char* line_begin;
   bool is_first;
   int options;
@@ -86,9 +86,15 @@ static bool jsondec_isvalue(const upb_FieldDef* f) {
          jsondec_isnullvalue(f);
 }
 
+// The input may be larger than INT_MAX bytes, so the position is reported with
+// size_t rather than int.
+static size_t jsondec_column(const jsondec* d) {
+  return (size_t)(d->ptr - d->line_begin);
+}
+
 static void jsondec_seterrmsg(jsondec* d, const char* msg) {
-  upb_Status_SetErrorFormat(d->status, "Error parsing JSON @%d:%d: %s", d->line,
-                            (int)(d->ptr - d->line_begin), msg);
+  upb_Status_SetErrorFormat(d->status, "Error parsing JSON @%zu:%zu: %s",
+                            d->line, jsondec_column(d), msg);
 }
 
 UPB_NORETURN static void jsondec_err(jsondec* d, const char* msg) {
@@ -105,8 +111,8 @@ static void jsondec_checkoom(jsondec* d, bool ok) {
 UPB_PRINTF(2, 3)
 UPB_NORETURN static void jsondec_errf(jsondec* d, const char* fmt, ...) {
   va_list argp;
-  upb_Status_SetErrorFormat(d->status, "Error parsing JSON @%d:%d: ", d->line,
-                            (int)(d->ptr - d->line_begin));
+  upb_Status_SetErrorFormat(d->status, "Error parsing JSON @%zu:%zu: ", d->line,
+                            jsondec_column(d));
   va_start(argp, fmt);
   upb_Status_VAppendErrorFormat(d->status, fmt, argp);
   va_end(argp);

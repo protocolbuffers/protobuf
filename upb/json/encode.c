@@ -389,7 +389,8 @@ static const upb_MessageDef* jsonenc_getanymsg(jsonenc* e,
   ret = upb_DefPool_FindMessageByNameWithSize(e->ext_pool, ptr, end - ptr);
 
   if (!ret) {
-    jsonenc_errf(e, "Couldn't find Any type: %.*s", (int)(end - ptr), ptr);
+    jsonenc_errf(e, "Couldn't find Any type: %.*s",
+                 _upb_StringView_FormatPrecision((size_t)(end - ptr)), ptr);
   }
 
   return ret;
