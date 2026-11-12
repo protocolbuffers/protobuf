@@ -71,6 +71,7 @@ function test_def_readers()
   assert_nil(f:containing_oneof())
   assert_equal(m, f:containing_type())
   assert_equal(0, f:default())
+  assert_equal("", m:field("repeated_string"):default())
   local message_field_count = 0
   for field in m:fields() do
     message_field_count = message_field_count + 1

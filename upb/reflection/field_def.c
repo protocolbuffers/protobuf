@@ -167,38 +167,42 @@ const upb_OneofDef* upb_FieldDef_RealContainingOneof(const upb_FieldDef* f) {
 }
 
 upb_MessageValue upb_FieldDef_Default(const upb_FieldDef* f) {
-  upb_MessageValue ret;
+  upb_MessageValue ret = upb_MessageValue_Zero();
 
   if (upb_FieldDef_IsRepeated(f) || upb_FieldDef_IsSubMessage(f)) {
-    return (upb_MessageValue){.msg_val = NULL};
+    return ret;
   }
 
   switch (upb_FieldDef_CType(f)) {
     case kUpb_CType_Bool:
-      return (upb_MessageValue){.bool_val = f->defaultval.boolean};
+      ret.bool_val = f->defaultval.boolean;
+      break;
     case kUpb_CType_Int64:
-      return (upb_MessageValue){.int64_val = f->defaultval.sint};
+      ret.int64_val = f->defaultval.sint;
+      break;
     case kUpb_CType_UInt64:
-      return (upb_MessageValue){.uint64_val = f->defaultval.uint};
+      ret.uint64_val = f->defaultval.uint;
+      break;
     case kUpb_CType_Enum:
     case kUpb_CType_Int32:
-      return (upb_MessageValue){.int32_val = (int32_t)f->defaultval.sint};
+      ret.int32_val = (int32_t)f->defaultval.sint;
+      break;
     case kUpb_CType_UInt32:
-      return (upb_MessageValue){.uint32_val = (uint32_t)f->defaultval.uint};
+      ret.uint32_val = (uint32_t)f->defaultval.uint;
+      break;
     case kUpb_CType_Float:
-      return (upb_MessageValue){.float_val = f->defaultval.flt};
+      ret.float_val = f->defaultval.flt;
+      break;
     case kUpb_CType_Double:
-      return (upb_MessageValue){.double_val = f->defaultval.dbl};
+      ret.double_val = f->defaultval.dbl;
+      break;
     case kUpb_CType_String:
     case kUpb_CType_Bytes: {
       str_t* str = f->defaultval.str;
       if (str) {
-        return (upb_MessageValue){
-            .str_val = (upb_StringView){.data = str->str, .size = str->len}};
-      } else {
-        return (upb_MessageValue){
-            .str_val = (upb_StringView){.data = NULL, .size = 0}};
+        ret.str_val = (upb_StringView){.data = str->str, .size = str->len};
       }
+      break;
     }
     default:
       UPB_UNREACHABLE();
