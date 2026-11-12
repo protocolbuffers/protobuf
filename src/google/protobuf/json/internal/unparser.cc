@@ -16,6 +16,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
@@ -46,6 +47,42 @@ namespace google {
 namespace protobuf {
 namespace json_internal {
 namespace {
+// Writes a JSON object, calling `body(first)` one nesting level deeper to write
+// its contents. `body` must set `first` to false once it writes anything.
+absl::Status WriteNestedObject(JsonWriter& writer,
+                               absl::FunctionRef<absl::Status(bool&)> body) {
+  bool first = true;
+  {
+    absl::StatusOr<JsonWriter::NestingGuard> nested = writer.Push();
+    RETURN_IF_ERROR(nested.status());
+    writer.Write("{");
+    RETURN_IF_ERROR(body(first));
+  }
+  if (!first) {
+    writer.NewLine();
+  }
+  writer.Write("}");
+  return absl::OkStatus();
+}
+
+// Writes a JSON array, calling `body(first)` one nesting level deeper to write
+// its contents. `body` must set `first` to false once it writes anything.
+absl::Status WriteNestedArray(JsonWriter& writer,
+                              absl::FunctionRef<absl::Status(bool&)> body) {
+  bool first = true;
+  {
+    absl::StatusOr<JsonWriter::NestingGuard> nested = writer.Push();
+    RETURN_IF_ERROR(nested.status());
+    writer.Write("[");
+    RETURN_IF_ERROR(body(first));
+  }
+  if (!first) {
+    writer.NewLine();
+  }
+  writer.Write("]");
+  return absl::OkStatus();
+}
+
 template <typename Traits>
 bool IsEmpty(const Msg<Traits>& msg, const Desc<Traits>& desc) {
   size_t count = Traits::FieldCount(desc);
@@ -241,38 +278,31 @@ absl::Status WriteSingular(JsonWriter& writer, Field<Traits> field,
 template <typename Traits>
 absl::Status WriteRepeated(JsonWriter& writer, const Msg<Traits>& msg,
                            Field<Traits> field) {
-  writer.Write("[");
-  writer.Push();
+  return WriteNestedArray(writer, [&](bool& first) -> absl::Status {
+    size_t count = Traits::GetSize(field, msg);
+    for (size_t i = 0; i < count; ++i) {
+      if (ClassifyMessage(Traits::FieldTypeName(field)) ==
+          MessageType::kValue) {
+        bool empty = false;
+        RETURN_IF_ERROR(Traits::WithFieldType(
+            field, [&](const Desc<Traits>& desc) -> absl::Status {
+              auto inner = Traits::GetMessage(field, msg, i);
+              RETURN_IF_ERROR(inner.status());
+              empty = IsEmpty<Traits>(**inner, desc);
+              return absl::OkStatus();
+            }));
 
-  size_t count = Traits::GetSize(field, msg);
-  bool first = true;
-  for (size_t i = 0; i < count; ++i) {
-    if (ClassifyMessage(Traits::FieldTypeName(field)) == MessageType::kValue) {
-      bool empty = false;
-      RETURN_IF_ERROR(Traits::WithFieldType(
-          field, [&](const Desc<Traits>& desc) -> absl::Status {
-            auto inner = Traits::GetMessage(field, msg, i);
-            RETURN_IF_ERROR(inner.status());
-            empty = IsEmpty<Traits>(**inner, desc);
-            return absl::OkStatus();
-          }));
-
-      // Empty google.protobuf.Values are silently discarded.
-      if (empty) {
-        continue;
+        // Empty google.protobuf.Values are silently discarded.
+        if (empty) {
+          continue;
+        }
       }
+      writer.WriteComma(first);
+      writer.NewLine();
+      RETURN_IF_ERROR(WriteSingular<Traits>(writer, field, msg, i));
     }
-    writer.WriteComma(first);
-    writer.NewLine();
-    RETURN_IF_ERROR(WriteSingular<Traits>(writer, field, msg, i));
-  }
-
-  writer.Pop();
-  if (!first) {
-    writer.NewLine();
-  }
-  writer.Write("]");
-  return absl::OkStatus();
+    return absl::OkStatus();
+  });
 }
 
 template <typename Traits, typename Entry>
@@ -363,33 +393,29 @@ absl::StatusOr<bool> IsEmptyValue(const MapValueConstRef& value,
 template <typename Traits>
 absl::Status WriteMap(JsonWriter& writer, const Msg<Traits>& msg,
                       Field<Traits> field) {
-  writer.Write("{");
-  writer.Push();
+  return WriteNestedObject(writer, [&](bool& first) -> absl::Status {
+    if (Traits::MapFieldUseMapReflection(field, msg)) {
+      return Traits::ForEachMapEntry(
+          field, msg, [&](auto entry, const auto& type) -> absl::Status {
+            auto is_empty =
+                IsEmptyValue<Traits>(entry.value(), Traits::ValueField(type));
+            RETURN_IF_ERROR(is_empty.status());
+            if (*is_empty) {
+              // Empty google.protobuf.Values are silently discarded.
+              return absl::OkStatus();
+            }
 
-  bool first = true;
+            writer.WriteComma(first);
+            writer.NewLine();
+            RETURN_IF_ERROR(WriteMapKey<Traits>(writer, entry.key(),
+                                                Traits::KeyField(type)));
+            writer.Write(":");
+            writer.Whitespace(" ");
+            return WriteSingular<Traits>(writer, Traits::ValueField(type),
+                                         entry.value());
+          });
+    }
 
-  if (Traits::MapFieldUseMapReflection(field, msg)) {
-    RETURN_IF_ERROR(Traits::ForEachMapEntry(
-        field, msg, [&](auto entry, const auto& type) -> absl::Status {
-          auto is_empty =
-              IsEmptyValue<Traits>(entry.value(), Traits::ValueField(type));
-          RETURN_IF_ERROR(is_empty.status());
-          if (*is_empty) {
-            // Empty google.protobuf.Values are silently discarded.
-            return absl::OkStatus();
-          }
-
-          writer.WriteComma(first);
-          writer.NewLine();
-          RETURN_IF_ERROR(
-              WriteMapKey<Traits>(writer, entry.key(), Traits::KeyField(type)));
-          writer.Write(":");
-          writer.Whitespace(" ");
-          RETURN_IF_ERROR(WriteSingular<Traits>(
-              writer, Traits::ValueField(type), entry.value()));
-          return absl::OkStatus();
-        }));
-  } else {
     const size_t count = Traits::GetSize(field, msg);
     for (size_t i = 0; i < count; ++i) {
       absl::StatusOr<const Msg<Traits>*> entry =
@@ -413,14 +439,8 @@ absl::Status WriteMap(JsonWriter& writer, const Msg<Traits>& msg,
       RETURN_IF_ERROR(
           WriteSingular<Traits>(writer, Traits::ValueField(type), **entry));
     }
-  }
-
-  writer.Pop();
-  if (!first) {
-    writer.NewLine();
-  }
-  writer.Write("}");
-  return absl::OkStatus();
+    return absl::OkStatus();
+  });
 }
 
 template <typename Traits>
@@ -775,63 +795,52 @@ absl::Status WriteAny(JsonWriter& writer, const Msg<Traits>& msg,
   bool has_type_url = Traits::GetSize(type_url_field, msg) > 0;
   bool has_value = Traits::GetSize(value_field, msg) > 0;
   if (!has_type_url && !has_value) {
-    writer.Write("{}");
-    return absl::OkStatus();
+    return WriteNestedObject(writer, [](bool&) { return absl::OkStatus(); });
   } else if (!has_type_url) {
     return absl::InvalidArgumentError("broken Any: missing type URL");
   }
 
-  writer.Write("{");
-  writer.Push();
+  return WriteNestedObject(writer, [&](bool& first) -> absl::Status {
+    auto type_url = Traits::GetString(type_url_field, writer.ScratchBuf(), msg);
+    RETURN_IF_ERROR(type_url.status());
+    writer.NewLine();
+    writer.Write("\"@type\":");
+    writer.Whitespace(" ");
+    writer.Write(MakeQuoted(*type_url));
+    first = false;
 
-  auto type_url = Traits::GetString(type_url_field, writer.ScratchBuf(), msg);
-  RETURN_IF_ERROR(type_url.status());
-  writer.NewLine();
-  writer.Write("\"@type\":");
-  writer.Whitespace(" ");
-  writer.Write(MakeQuoted(*type_url));
+    return Traits::WithDynamicType(
+        desc, std::string(*type_url),
+        [&](const Desc<Traits>& any_desc) -> absl::Status {
+          absl::string_view any_bytes;
+          if (has_value) {
+            absl::StatusOr<absl::string_view> bytes =
+                Traits::GetString(value_field, writer.ScratchBuf(), msg);
+            RETURN_IF_ERROR(bytes.status());
+            any_bytes = *bytes;
+          }
 
-  return Traits::WithDynamicType(
-      desc, std::string(*type_url),
-      [&](const Desc<Traits>& any_desc) -> absl::Status {
-        absl::string_view any_bytes;
-        if (has_value) {
-          absl::StatusOr<absl::string_view> bytes =
-              Traits::GetString(value_field, writer.ScratchBuf(), msg);
-          RETURN_IF_ERROR(bytes.status());
-          any_bytes = *bytes;
-        }
-
-        return Traits::WithDecodedMessage(
-            any_desc, any_bytes,
-            [&](const Msg<Traits>& unerased) -> absl::Status {
-              bool first = false;
-              if (ClassifyMessage(Traits::TypeName(any_desc)) !=
-                  MessageType::kNotWellKnown) {
+          return Traits::WithDecodedMessage(
+              any_desc, any_bytes,
+              [&](const Msg<Traits>& unerased) -> absl::Status {
+                if (ClassifyMessage(Traits::TypeName(any_desc)) ==
+                    MessageType::kNotWellKnown) {
+                  return WriteFields<Traits>(writer, unerased, any_desc, first);
+                }
                 if (ClassifyMessage(Traits::TypeName(any_desc)) ==
                         MessageType::kValue &&
                     IsEmpty<Traits>(unerased, any_desc)) {
                   // Omit "value" field for empty Value.
-                } else {
-                  writer.WriteComma(first);
-                  writer.NewLine();
-                  writer.Write("\"value\":");
-                  writer.Whitespace(" ");
-                  RETURN_IF_ERROR(
-                      WriteMessage<Traits>(writer, unerased, any_desc));
+                  return absl::OkStatus();
                 }
-              } else {
-                RETURN_IF_ERROR(
-                    WriteFields<Traits>(writer, unerased, any_desc, first));
-              }
-              writer.Pop();
-              if (!first) {
+                writer.WriteComma(first);
                 writer.NewLine();
-              }
-              writer.Write("}");
-              return absl::OkStatus();
-            });
-      });
+                writer.Write("\"value\":");
+                writer.Whitespace(" ");
+                return WriteMessage<Traits>(writer, unerased, any_desc);
+              });
+        });
+  });
 }
 
 template <typename Traits>
@@ -859,18 +868,10 @@ absl::Status WriteMessage(JsonWriter& writer, const Msg<Traits>& msg,
       return WriteDuration<Traits>(writer, msg, desc);
     case MessageType::kFieldMask:
       return WriteFieldMask<Traits>(writer, msg, desc);
-    default: {
-      writer.Write("{");
-      writer.Push();
-      bool first = true;
-      RETURN_IF_ERROR(WriteFields<Traits>(writer, msg, desc, first));
-      writer.Pop();
-      if (!first) {
-        writer.NewLine();
-      }
-      writer.Write("}");
-      return absl::OkStatus();
-    }
+    default:
+      return WriteNestedObject(writer, [&](bool& first) -> absl::Status {
+        return WriteFields<Traits>(writer, msg, desc, first);
+      });
   }
 }
 }  // namespace

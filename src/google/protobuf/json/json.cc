@@ -39,6 +39,7 @@ absl::Status BinaryToJsonStream(google::protobuf::util::TypeResolver* resolver,
   opts.always_print_fields_with_no_presence =
       options.always_print_fields_with_no_presence;
   opts.unquote_int64_if_possible = options.unquote_int64_if_possible;
+  opts.recursion_limit = options.recursion_limit;
 
   // TODO: Drop this setting.
   opts.allow_legacy_nonconformant_behavior =
@@ -103,6 +104,7 @@ absl::Status MessageToJsonStream(const Message& message,
   opts.always_print_fields_with_no_presence =
       options.always_print_fields_with_no_presence;
   opts.unquote_int64_if_possible = options.unquote_int64_if_possible;
+  opts.recursion_limit = options.recursion_limit;
 
   // TODO: Drop this setting.
   opts.allow_legacy_nonconformant_behavior =
