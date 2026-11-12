@@ -28,6 +28,7 @@ def _impl(ctx):
                 protoc_opts = list(ctx.attr._protocopt[BuildSettingInfo].value),
                 progress_message = ctx.attr.progress_message,
                 mnemonic = ctx.attr.mnemonic,
+                host_path_separator = ctx.configuration.host_path_separator,
                 **(dict(toolchain_type = toolchains.PROTO_TOOLCHAIN) if proto_common.INCOMPATIBLE_PASS_TOOLCHAIN_TYPE else {})
             ),
         ),
