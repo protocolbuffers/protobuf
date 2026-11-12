@@ -1224,8 +1224,13 @@ class GenericTypeHandler<std::string> {
   }
   static constexpr auto GetSerialArenaNewFunc() {
     return [](SerialArena* arena, void*& ptr) {
-      void* mem = arena == nullptr ? Allocate(sizeof(Type))
-                                   : arena->AllocateFromStringBlock();
+      void* mem;
+      if (arena == nullptr) {
+        mem = Allocate(sizeof(Type));
+      } else {
+        auto res = arena->AllocateFromStringBlock();
+        mem = res.ptr;
+      }
       ptr = new (mem) Type();
     };
   }
