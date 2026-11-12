@@ -40,7 +40,7 @@ namespace internal {
 
 // Arena blocks are variable length malloc-ed objects.  The following structure
 // describes the common header for all blocks.
-struct alignas(ArenaAlignDefault::align) ArenaBlock {
+struct alignas(ArenaAlignDefault::kAlign) ArenaBlock {
   // For the sentry block with zero-size where ptr_/limit_ both point to `this`.
   constexpr ArenaBlock() : next(nullptr), size(0) {}
 
@@ -85,6 +85,7 @@ class PROTOBUF_EXPORT SerialArena {
  public:
   static constexpr size_t kBlockHeaderSize =
       ArenaAlignDefault{}.Ceil(sizeof(ArenaBlock));
+  static constexpr size_t kMinimumReturnedArraySize = 16;
 
   void CleanupList() { cleanup_list_.Cleanup(*this); }
   uint64_t SpaceAllocated() const {
@@ -134,25 +135,6 @@ class PROTOBUF_EXPORT SerialArena {
     }
     return AllocateAlignedFallback(n);
   }
-
- private:
-  static PROTOBUF_ALWAYS_INLINE constexpr size_t AlignUpTo(size_t n, size_t a) {
-    // We are wasting space by over allocating align - 8 bytes. Compared to a
-    // dedicated function that takes current alignment in consideration.  Such a
-    // scheme would only waste (align - 8)/2 bytes on average, but requires a
-    // dedicated function in the outline arena allocation functions. Possibly
-    // re-evaluate tradeoffs later.
-    return a <= 8 ? ArenaAlignDefault{}.Ceil(n) : ArenaAlignAs(a).Padded(n);
-  }
-
-  static PROTOBUF_ALWAYS_INLINE void* AlignTo(void* p, size_t a) {
-    return (a <= ArenaAlignDefault{}.align)
-               ? ArenaAlignDefault{}.CeilDefaultAligned(p)
-               : ArenaAlignAs(a).CeilDefaultAligned(p);
-  }
-
- public:
-  static constexpr size_t kMinimumReturnedArraySize = 16;
 
   // See comments on `cached_blocks_` member for details.
   void ReturnArrayMemory(void* p, size_t size) {
@@ -231,7 +213,7 @@ class PROTOBUF_EXPORT SerialArena {
   PROTOBUF_ALWAYS_INLINE
   void* AllocateAlignedWithCleanup(size_t n, size_t align,
                                    void (*destructor)(void*)) {
-    auto align_as = ArenaAlignAs(std::max(align, ArenaAlignDefault::align));
+    auto align_as = ArenaAlignAs(std::max(align, ArenaAlignDefault{}.align()));
     n = align_as.Ceil(n);
     char* ret = align_as.CeilDefaultAligned(ptr());
     // See the comment in MaybeAllocateAligned re uintptr_t.

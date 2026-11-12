@@ -64,7 +64,7 @@ MemoryAllocationFailure() noexcept {
   ABSL_LOG(FATAL) << "Failed to allocate memory.";
 }
 
-static_assert(__STDCPP_DEFAULT_NEW_ALIGNMENT__ >= ArenaAlignDefault{}.align,
+static_assert(__STDCPP_DEFAULT_NEW_ALIGNMENT__ >= ArenaAlignDefault{}.align(),
               "operator new does not guarantee the arena's block alignment");
 
 SizedPtr AllocateMemory(const AllocationPolicy& policy, size_t size) {
@@ -345,7 +345,8 @@ void* SerialArena::AllocateFromStringBlockFallback() {
 PROTOBUF_NOINLINE
 void* SerialArena::AllocateAlignedWithCleanupFallback(
     size_t n, size_t align, void (*destructor)(void*)) {
-  size_t required = AlignUpTo(n, align);
+  size_t required =
+      MemoryAlign{std::max(align, ArenaAlignDefault{}.align())}.Ceil(n);
   AllocateNewBlock(required);
   return AllocateAlignedWithCleanup(n, align, destructor);
 }

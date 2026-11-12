@@ -112,8 +112,7 @@ struct MemoryAlignImpl {
 };
 
 struct ArenaAlignDefault : MemoryAlignImpl<std::integral_constant<size_t, 8>> {
-  static constexpr size_t align = 8;  // NOLINT
-
+  static constexpr size_t kAlign = 8;
   constexpr ArenaAlignDefault() : MemoryAlignImpl{{}} {}
 };
 
@@ -138,7 +137,7 @@ constexpr size_t MemoryAlignImpl<AlignT>::Padded(size_t n) const {
       << "`Padded` is only meant to be used for arena allocations with an "
          "alignment >= `kMinArenaAlignment`.";
   ABSL_DCHECK(ArenaAlignDefault{}.IsAligned(n));
-  return n + align() - ArenaAlignDefault{}.align;
+  return n + align() - ArenaAlignDefault{}.align();
 }
 
 template <typename AlignT>

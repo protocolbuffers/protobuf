@@ -47,9 +47,9 @@ bool ascii_isnewline(char c) { return c == '\n' || c == '\r'; }
 bool ReadLine(absl::string_view* input, absl::string_view* line) {
   for (size_t len = 0; len < input->size(); ++len) {
     if (ascii_isnewline((*input)[len])) {
-      *line = absl::string_view(input->data(), len);
+      *line = input->substr(0, len);
       ++len;  // advance over the newline
-      *input = absl::string_view(input->data() + len, input->size() - len);
+      *input = input->substr(len);
       return true;
     }
   }

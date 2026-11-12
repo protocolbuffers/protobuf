@@ -125,7 +125,22 @@ void RepeatedPtrFieldBase::ReserveWithArena(Arena* arena, int capacity) {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-void RepeatedPtrFieldBase::DestroyMessageLites(const ClassData* class_data) {
+void RepeatedPtrFieldBase::DebugAssertAllSameType(
+    const ClassData* class_data) const {
+  using H = GenericTypeHandler<MessageLite>;
+  const int n = allocated_size();
+  void* const* elems = elements();
+  for (int i = 0; i < n; ++i) {
+    const auto* ptr = cast<H>(elems[i]);
+    ABSL_DCHECK_EQ(GetClassData(*ptr), class_data)
+        << "Type mismatch in RepeatedPtrField: found element of type "
+        << GetClassData(*ptr)->DebugName() << " at index " << i
+        << " in a repeated field of " << class_data->DebugName();
+  }
+}
+
+void RepeatedPtrFieldBase::DestroyMessageLites(
+    const ClassDataPrefix* class_data) {
   ABSL_DCHECK(NeedsDestroy());
   ABSL_DCHECK_EQ(GetArena(), nullptr);
 
@@ -140,13 +155,6 @@ void RepeatedPtrFieldBase::DestroyMessageLites(const ClassData* class_data) {
       absl::PrefetchToLocalCacheNta(elems[i + 5]);
     }
     auto* ptr = cast<H>(elems[i]);
-
-    ABSL_DCHECK_EQ(GetClassData(*ptr), class_data)
-        << "Type mismatch in RepeatedPtrFieldBase::DestroyMessageLites: found "
-           "element of type "
-        << GetClassData(*ptr)->DebugName() << " at index " << i
-        << " in a repeated field of " << class_data->DebugName();
-
     destroy(*ptr);
     internal::SizedDelete(ptr, allocation_size);
   }
@@ -160,7 +168,11 @@ void RepeatedPtrFieldBase::DestroyProtos() {
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   if (allocated_size() > 0) {
     using H = GenericTypeHandler<MessageLite>;
-    const ClassData* class_data = cast<H>(elements()[0])->GetClassData();
+    const auto* first = cast<H>(elements()[0]);
+#ifndef NDEBUG
+    DebugAssertAllSameType(first->GetClassData());
+#endif
+    const ClassDataPrefix* class_data = first->GetClassDataPrefix();
     PROTOBUF_ALWAYS_INLINE_CALL DestroyMessageLites(class_data);
   } else if (!using_sso()) {
     internal::SizedDelete(rep(), Capacity() * sizeof(void*) + kRepHeaderSize);

@@ -341,6 +341,236 @@ void AddEmptyEnum(FileDescriptorProto* file, absl::string_view name) {
 
 // ===================================================================
 
+TEST(DescriptorPoolTest, OptionsConstructor) {
+  // 1. Default options: pool can build files directly.
+  {
+    DescriptorPool pool((DescriptorPool::Options()));
+    FileDescriptorProto proto;
+    proto.set_name("default.proto");
+    AddMessage(&proto, "DefaultMsg");
+    const FileDescriptor* file = pool.BuildFile(proto);
+    ASSERT_NE(file, nullptr);
+    EXPECT_EQ(pool.FindFileByName("default.proto"), file);
+    EXPECT_NE(pool.FindMessageTypeByName("DefaultMsg"), nullptr);
+  }
+
+  // 2. Underlay option: lookups find types from the underlay pool.
+  {
+    DescriptorPool underlay;
+    FileDescriptorProto proto;
+    proto.set_name("underlay.proto");
+    AddMessage(&proto, "UnderlayMsg");
+    ASSERT_NE(underlay.BuildFile(proto), nullptr);
+
+    DescriptorPool::Options options;
+    options.underlay = &underlay;
+    DescriptorPool pool(options);
+
+    const Descriptor* desc = pool.FindMessageTypeByName("UnderlayMsg");
+    ASSERT_NE(desc, nullptr);
+    EXPECT_EQ(desc->name(), "UnderlayMsg");
+    EXPECT_EQ(desc->file()->pool(), &underlay);
+    EXPECT_EQ(pool.FindFileByName("underlay.proto"), desc->file());
+  }
+
+  // 3. Fallback database option: loads files on demand from the database.
+  {
+    SimpleDescriptorDatabase db;
+    FileDescriptorProto proto;
+    proto.set_name("db.proto");
+    AddMessage(&proto, "DbMsg");
+    db.Add(proto);
+
+    DescriptorPool::Options options;
+    options.fallback_database = &db;
+    DescriptorPool pool(options);
+
+    const Descriptor* desc = pool.FindMessageTypeByName("DbMsg");
+    ASSERT_NE(desc, nullptr);
+    EXPECT_EQ(desc->name(), "DbMsg");
+    EXPECT_EQ(pool.FindFileByName("db.proto"), desc->file());
+  }
+
+  // 4. Error collector option: captures errors when building from database.
+  {
+    SimpleDescriptorDatabase db;
+    FileDescriptorProto proto;
+    proto.set_name("invalid.proto");
+    DescriptorProto* msg = AddMessage(&proto, "InvalidMsg");
+    AddField(msg, "field1", 1, FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_INT32);
+    AddField(msg, "field2", 1, FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_INT32);
+    db.Add(proto);
+
+    MockErrorCollector error_collector;
+    DescriptorPool::Options options;
+    options.fallback_database = &db;
+    options.error_collector = &error_collector;
+    DescriptorPool pool(options);
+
+    EXPECT_EQ(pool.FindFileByName("invalid.proto"), nullptr);
+    EXPECT_FALSE(error_collector.text_.empty());
+  }
+
+  // 5. Combined underlay and fallback database.
+  {
+    DescriptorPool underlay;
+    FileDescriptorProto underlay_proto;
+    underlay_proto.set_name("underlay_combo.proto");
+    AddMessage(&underlay_proto, "UnderlayComboMsg");
+    ASSERT_NE(underlay.BuildFile(underlay_proto), nullptr);
+
+    SimpleDescriptorDatabase db;
+    FileDescriptorProto db_proto;
+    db_proto.set_name("db_combo.proto");
+    AddMessage(&db_proto, "DbComboMsg");
+    db.Add(db_proto);
+
+    DescriptorPool::Options options;
+    options.underlay = &underlay;
+    options.fallback_database = &db;
+    DescriptorPool pool(options);
+
+    const Descriptor* u_desc = pool.FindMessageTypeByName("UnderlayComboMsg");
+    ASSERT_NE(u_desc, nullptr);
+    EXPECT_EQ(u_desc->file()->pool(), &underlay);
+
+    const Descriptor* db_desc = pool.FindMessageTypeByName("DbComboMsg");
+    ASSERT_NE(db_desc, nullptr);
+    EXPECT_EQ(db_desc->file()->pool(), &pool);
+  }
+}
+
+TEST(DescriptorPoolTest, OptionsUnderlayAndFallbackDatabase) {
+  const auto make_msg_file = [](const std::string& file_name,
+                                const std::string& msg_name,
+                                const std::string& field_name) {
+    FileDescriptorProto proto;
+    proto.set_name(file_name);
+    DescriptorProto* msg = AddMessage(&proto, msg_name);
+    AddField(msg, field_name, 1, FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_INT32);
+    return proto;
+  };
+
+  // Precedence chain: pool -> mid_underlay -> root_underlay -> db.
+  DescriptorPool root_underlay;
+  ASSERT_NE(root_underlay.BuildFile(
+                make_msg_file("root.proto", "RootMsg", "from_root")),
+            nullptr);
+  ASSERT_NE(root_underlay.BuildFile(
+                make_msg_file("shadow.proto", "ShadowMsg", "from_root")),
+            nullptr);
+
+  DescriptorPool::Options mid_options;
+  mid_options.underlay = &root_underlay;
+  DescriptorPool mid_underlay(mid_options);
+  {
+    FileDescriptorProto mid_file =
+        make_msg_file("mid.proto", "MidMsg", "from_mid");
+    AddExtensionRange(mid_file.mutable_message_type(0), 100, 200);
+    AddExtension(&mid_file, "MidMsg", "mid_ext", 100,
+                 FieldDescriptorProto::LABEL_OPTIONAL,
+                 FieldDescriptorProto::TYPE_INT32);
+    ASSERT_NE(mid_underlay.BuildFile(mid_file), nullptr);
+    ASSERT_NE(mid_underlay.BuildFile(
+                  make_msg_file("shadow.proto", "ShadowMsg", "from_mid")),
+              nullptr);
+  }
+
+  SimpleDescriptorDatabase db;
+  // Conflicting definitions in db are shadowed by the underlay chain.
+  ASSERT_TRUE(db.Add(make_msg_file("root.proto", "RootMsg", "from_db")));
+  ASSERT_TRUE(db.Add(make_msg_file("shadow.proto", "ShadowMsg", "from_db")));
+  {
+    FileDescriptorProto db_ext_shadow;
+    db_ext_shadow.set_name("db_ext_shadow.proto");
+    db_ext_shadow.add_dependency("mid.proto");
+    AddExtension(&db_ext_shadow, ".MidMsg", "db_shadow_ext", 100,
+                 FieldDescriptorProto::LABEL_OPTIONAL,
+                 FieldDescriptorProto::TYPE_INT32);
+    ASSERT_TRUE(db.Add(db_ext_shadow));
+  }
+  {
+    // Loaded on demand from db, cross-linking into both underlays.
+    FileDescriptorProto dependent_file;
+    dependent_file.set_name("dependent.proto");
+    dependent_file.add_dependency("root.proto");
+    dependent_file.add_dependency("mid.proto");
+    dependent_file.add_dependency("shadow.proto");
+    DescriptorProto* dep_msg = AddMessage(&dependent_file, "DbDependentMsg");
+    AddField(dep_msg, "root_field", 1, FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_MESSAGE)
+        ->set_type_name("RootMsg");
+    AddField(dep_msg, "mid_field", 2, FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_MESSAGE)
+        ->set_type_name("MidMsg");
+    AddField(dep_msg, "shadow_field", 3, FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_MESSAGE)
+        ->set_type_name("ShadowMsg");
+    ASSERT_TRUE(db.Add(dependent_file));
+  }
+  {
+    // Separate db file so FindExtensionByNumber independently triggers
+    // on-demand loading for an extendee owned by mid_underlay.
+    FileDescriptorProto db_ext_file;
+    db_ext_file.set_name("db_ext.proto");
+    db_ext_file.add_dependency("mid.proto");
+    AddExtension(&db_ext_file, ".MidMsg", "db_ext", 101,
+                 FieldDescriptorProto::LABEL_OPTIONAL,
+                 FieldDescriptorProto::TYPE_INT32);
+    ASSERT_TRUE(db.Add(db_ext_file));
+  }
+
+  DescriptorPool::Options pool_options;
+  pool_options.underlay = &mid_underlay;
+  pool_options.fallback_database = &db;
+  DescriptorPool pool(pool_options);
+
+  // Underlay chain takes precedence over both deeper underlays and db.
+  const Descriptor* root_msg = pool.FindMessageTypeByName("RootMsg");
+  ASSERT_NE(root_msg, nullptr);
+  EXPECT_EQ(root_msg->file()->pool(), &root_underlay);
+  EXPECT_NE(root_msg->FindFieldByName("from_root"), nullptr);
+  EXPECT_EQ(root_msg->FindFieldByName("from_db"), nullptr);
+  EXPECT_EQ(pool.FindFileByName("root.proto"), root_msg->file());
+
+  const Descriptor* shadow_msg = pool.FindMessageTypeByName("ShadowMsg");
+  ASSERT_NE(shadow_msg, nullptr);
+  EXPECT_EQ(shadow_msg->file()->pool(), &mid_underlay);
+  EXPECT_NE(shadow_msg->FindFieldByName("from_mid"), nullptr);
+  EXPECT_EQ(shadow_msg->FindFieldByName("from_root"), nullptr);
+  EXPECT_EQ(shadow_msg->FindFieldByName("from_db"), nullptr);
+  EXPECT_EQ(pool.FindFileByName("shadow.proto"), shadow_msg->file());
+
+  const Descriptor* mid_msg = pool.FindMessageTypeByName("MidMsg");
+  ASSERT_NE(mid_msg, nullptr);
+  EXPECT_EQ(mid_msg->file()->pool(), &mid_underlay);
+
+  const FieldDescriptor* ext100 = pool.FindExtensionByNumber(mid_msg, 100);
+  ASSERT_NE(ext100, nullptr);
+  EXPECT_EQ(ext100->name(), "mid_ext");
+  EXPECT_EQ(ext100->file()->pool(), &mid_underlay);
+
+  // On-demand files loaded from db cross-link with winning underlay symbols.
+  const Descriptor* dep_msg = pool.FindMessageTypeByName("DbDependentMsg");
+  ASSERT_NE(dep_msg, nullptr);
+  EXPECT_EQ(dep_msg->file()->pool(), &pool);
+  EXPECT_EQ(pool.FindFileByName("dependent.proto"), dep_msg->file());
+  EXPECT_EQ(dep_msg->FindFieldByName("root_field")->message_type(), root_msg);
+  EXPECT_EQ(dep_msg->FindFieldByName("mid_field")->message_type(), mid_msg);
+  EXPECT_EQ(dep_msg->FindFieldByName("shadow_field")->message_type(),
+            shadow_msg);
+
+  // On-demand extension loaded from db extending an underlay-owned message.
+  const FieldDescriptor* ext101 = pool.FindExtensionByNumber(mid_msg, 101);
+  ASSERT_NE(ext101, nullptr);
+  EXPECT_EQ(ext101->name(), "db_ext");
+  EXPECT_EQ(ext101->file()->pool(), &pool);
+  EXPECT_EQ(ext101->containing_type(), mid_msg);
+}
+
 // Test simple files.
 class FileDescriptorTest : public testing::Test {
  protected:
@@ -15748,6 +15978,98 @@ TEST_F(DescriptorPoolFeaturesTest, ResolvesFeaturesForPartialDefaults) {
   EXPECT_TRUE(pool_.ResolvesFeaturesFor(pb::test));
   EXPECT_FALSE(pool_.ResolvesFeaturesFor(pb::cpp));
   EXPECT_FALSE(pool_.ResolvesFeaturesFor(pb::TestMessage::test_message));
+}
+
+TEST_F(DescriptorPoolFeaturesTest,
+       GeneratedPoolResolvesFeaturesDoesNotDeadlock) {
+  EXPECT_TRUE(DescriptorPool::generated_pool()->ResolvesFeaturesFor(pb::cpp));
+}
+
+TEST_F(DescriptorPoolFeaturesTest,
+       ResolvesFeaturesForBeforeSetFeatureSetDefaults) {
+  SimpleDescriptorDatabase database;
+  DescriptorPool pool(&database);
+  EXPECT_TRUE(pool.ResolvesFeaturesFor(pb::cpp));
+  EXPECT_FALSE(pool.ResolvesFeaturesFor(pb::test));
+
+  auto test_default_spec = FeatureResolver::CompileDefaults(
+      FeatureSet::descriptor(), {GetExtensionReflection(pb::test)},
+      EDITION_PROTO2, EDITION_99999_TEST_ONLY);
+  ASSERT_OK(test_default_spec);
+  ASSERT_OK(pool.SetFeatureSetDefaults(std::move(test_default_spec).value()));
+
+  EXPECT_TRUE(pool.ResolvesFeaturesFor(pb::test));
+  EXPECT_FALSE(pool.ResolvesFeaturesFor(pb::cpp));
+}
+
+TEST_F(DescriptorPoolFeaturesTest, SetFeatureSetDefaultsTwice) {
+  const auto compile_defaults = [](const FieldDescriptor* extension) {
+    return FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
+                                            {extension}, EDITION_PROTO2,
+                                            EDITION_99999_TEST_ONLY);
+  };
+
+  SimpleDescriptorDatabase database;
+  DescriptorPool db_pool(&database);
+  for (DescriptorPool* pool : {&pool_, &db_pool}) {
+    auto test_spec = compile_defaults(GetExtensionReflection(pb::test));
+    ASSERT_OK(test_spec);
+    ASSERT_OK(pool->SetFeatureSetDefaults(std::move(test_spec).value()));
+    EXPECT_TRUE(pool->ResolvesFeaturesFor(pb::test));
+    EXPECT_FALSE(pool->ResolvesFeaturesFor(pb::cpp));
+
+    auto cpp_spec = compile_defaults(GetExtensionReflection(pb::cpp));
+    ASSERT_OK(cpp_spec);
+    ASSERT_OK(pool->SetFeatureSetDefaults(std::move(cpp_spec).value()));
+    EXPECT_TRUE(pool->ResolvesFeaturesFor(pb::cpp));
+    EXPECT_FALSE(pool->ResolvesFeaturesFor(pb::test));
+  }
+}
+
+TEST_F(DescriptorPoolFeaturesTest, ConcurrentSetFeatureSetDefaultsAndLookup) {
+  auto test_default_spec = FeatureResolver::CompileDefaults(
+      FeatureSet::descriptor(), {GetExtensionReflection(pb::test)},
+      EDITION_PROTO2, EDITION_99999_TEST_ONLY);
+  ASSERT_OK(test_default_spec);
+  auto cpp_default_spec = FeatureResolver::CompileDefaults(
+      FeatureSet::descriptor(), {GetExtensionReflection(pb::cpp)},
+      EDITION_PROTO2, EDITION_99999_TEST_ONLY);
+  ASSERT_OK(cpp_default_spec);
+
+  FileDescriptorProto file_proto = ParseTextOrDie(R"pb(
+    name: "foo.proto"
+    message_type { name: "Foo" }
+  )pb");
+
+  for (int i = 0; i < 20; ++i) {
+    SimpleDescriptorDatabase database;
+    database.Add(file_proto);
+    DescriptorPool pool(&database);
+
+    absl::Notification start;
+    std::vector<std::thread> threads;
+    for (int t = 0; t < 2; ++t) {
+      threads.emplace_back([&, t] {
+        FeatureSetDefaults spec =
+            t == 0 ? *test_default_spec : *cpp_default_spec;
+        start.WaitForNotification();
+        (void)pool.SetFeatureSetDefaults(std::move(spec));
+      });
+      threads.emplace_back([&] {
+        start.WaitForNotification();
+        EXPECT_NE(pool.FindFileByName("foo.proto"), nullptr);
+      });
+      threads.emplace_back([&] {
+        start.WaitForNotification();
+        (void)pool.ResolvesFeaturesFor(pb::test);
+        (void)pool.ResolvesFeaturesFor(pb::cpp);
+      });
+    }
+    start.Notify();
+    for (auto& thread : threads) {
+      thread.join();
+    }
+  }
 }
 
 class DescriptorPoolMemoizationTest : public ::testing::Test {
