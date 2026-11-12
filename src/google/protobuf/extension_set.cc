@@ -12,11 +12,11 @@
 #include "google/protobuf/extension_set.h"
 
 #include <algorithm>
-#include <atomic>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <functional>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -86,33 +86,76 @@ inline WireFormatLite::CppType cpp_type(FieldType type) {
 struct ExtensionInfoKey {
   const MessageLite* message;
   int number;
+
+  friend bool operator==(const ExtensionInfoKey& lhs,
+                         const ExtensionInfoKey& rhs) {
+    return lhs.message == rhs.message && lhs.number == rhs.number;
+  }
+  friend bool operator!=(const ExtensionInfoKey& lhs,
+                         const ExtensionInfoKey& rhs) {
+    return !(lhs == rhs);
+  }
+
+  template <typename H>
+  friend H AbslHashValue(H h, const ExtensionInfoKey& key) {
+    return H::combine(std::move(h), key.message, key.number);
+  }
 };
 
-struct ExtensionEq {
-  using is_transparent = void;
-  bool operator()(const ExtensionInfo& lhs, const ExtensionInfo& rhs) const {
-    return lhs.message == rhs.message && lhs.number == rhs.number;
-  }
-  bool operator()(const ExtensionInfo& lhs, const ExtensionInfoKey& rhs) const {
-    return lhs.message == rhs.message && lhs.number == rhs.number;
-  }
-  bool operator()(const ExtensionInfoKey& lhs, const ExtensionInfo& rhs) const {
-    return lhs.message == rhs.message && lhs.number == rhs.number;
-  }
-};
+struct ExtensionInfoByKey {
+  ExtensionInfo info;
 
-struct ExtensionHasher {
-  using is_transparent = void;
-  std::size_t operator()(const ExtensionInfo& info) const {
-    return absl::HashOf(info.message, info.number);
+  ExtensionInfoKey key() const { return {info.message, info.number}; }
+
+  friend bool operator==(const ExtensionInfoByKey& lhs,
+                         const ExtensionInfoByKey& rhs) {
+    return lhs.key() == rhs.key();
   }
-  std::size_t operator()(const ExtensionInfoKey& info) const {
-    return absl::HashOf(info.message, info.number);
+  friend bool operator==(const ExtensionInfoByKey& lhs,
+                         const ExtensionInfoKey& rhs) {
+    return lhs.key() == rhs;
   }
+  friend bool operator==(const ExtensionInfoKey& lhs,
+                         const ExtensionInfoByKey& rhs) {
+    return lhs == rhs.key();
+  }
+  friend bool operator!=(const ExtensionInfoByKey& lhs,
+                         const ExtensionInfoByKey& rhs) {
+    return !(lhs == rhs);
+  }
+  friend bool operator!=(const ExtensionInfoByKey& lhs,
+                         const ExtensionInfoKey& rhs) {
+    return !(lhs == rhs);
+  }
+  friend bool operator!=(const ExtensionInfoKey& lhs,
+                         const ExtensionInfoByKey& rhs) {
+    return !(lhs == rhs);
+  }
+
+  template <typename H>
+  friend H AbslHashValue(H h, const ExtensionInfoByKey& entry) {
+    return H::combine(std::move(h), entry.key());
+  }
+
+#if PROTOBUF_ABSL_MIN(20260902, 0)
+  using Hash = absl::TransparentHash<ExtensionInfoByKey, ExtensionInfoKey>;
+#else
+  struct Hash {
+    using is_transparent = void;
+    size_t operator()(const ExtensionInfoByKey& entry) const {
+      return absl::Hash<ExtensionInfoByKey>{}(entry);
+    }
+    size_t operator()(const ExtensionInfoKey& key) const {
+      return absl::Hash<ExtensionInfoKey>{}(key);
+    }
+  };
+#endif
+  using absl_container_hash = Hash;
 };
 
 using ExtensionRegistry =
-    absl::flat_hash_set<ExtensionInfo, ExtensionHasher, ExtensionEq>;
+    absl::flat_hash_set<ExtensionInfoByKey, ExtensionInfoByKey::Hash,
+                        std::equal_to<void>>;
 
 static const ExtensionRegistry* global_registry = nullptr;
 
@@ -121,7 +164,7 @@ static const ExtensionRegistry* global_registry = nullptr;
 void Register(const ExtensionInfo& info) {
   static auto local_static_registry = OnShutdownDelete(new ExtensionRegistry);
   global_registry = local_static_registry;
-  if (!local_static_registry->insert(info).second) {
+  if (!local_static_registry->insert({info}).second) {
     ABSL_LOG(FATAL) << "Multiple extension registrations for type \""
                     << info.message->GetTypeName() << "\", field number "
                     << info.number << ".";
@@ -132,15 +175,13 @@ const ExtensionInfo* FindRegisteredExtension(const MessageLite* extendee,
                                              int number) {
   if (!global_registry) return nullptr;
 
-  ExtensionInfoKey info;
-  info.message = extendee;
-  info.number = number;
+  ExtensionInfoKey info{extendee, number};
 
   auto it = global_registry->find(info);
   if (it == global_registry->end()) {
     return nullptr;
   } else {
-    return &*it;
+    return &it->info;
   }
 }
 

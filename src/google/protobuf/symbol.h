@@ -9,14 +9,13 @@
 #define GOOGLE_PROTOBUF_SYMBOL_H__
 
 #include <cstddef>
-#include <cstdint>
+#include <functional>
 #include <string>
 #include <utility>
 
-#include "absl/base/optimization.h"
+#include "absl/base/config.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/hash/hash.h"
-#include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -193,35 +192,61 @@ class Symbol {
 //
 // The keys to these hash-maps are (parent, name) or (parent, number) pairs.
 
-// A query object used to find a Symbol given its fully qualified name.
-struct FullNameQuery {
-  absl::string_view query;
-  absl::string_view full_name() const { return query; }
-};
-
-// Hash functor for Symbol, based on its fully qualified name.
-struct SymbolByFullNameHash {
+#if !defined(ABSL_LTS_RELEASE_VERSION) || ABSL_LTS_RELEASE_VERSION >= 20260902
+template <typename Wrapper, typename Key>
+using TransparentHash = absl::TransparentHash<Wrapper, Key>;
+#else
+// Fallback for Abseil LTS releases prior to 2026-09-02 that lack
+// absl::TransparentHash.
+template <typename Wrapper, typename Key>
+struct TransparentHash {
   using is_transparent = void;
-
-  template <typename T>
-  size_t operator()(const T& s) const {
-    return absl::HashOf(s.full_name());
+  size_t operator()(const Wrapper& wrapper) const {
+    return absl::Hash<Wrapper>{}(wrapper);
   }
+  size_t operator()(const Key& key) const { return absl::Hash<Key>{}(key); }
 };
+#endif
 
-// Equality functor for Symbol, based on its fully qualified name.
-struct SymbolByFullNameEq {
-  using is_transparent = void;
+// Wrapper around Symbol for transparent hashing and equality by full_name().
+struct SymbolByFullName {
+  Symbol symbol;
 
-  template <typename T, typename U>
-  bool operator()(const T& a, const U& b) const {
+  absl::string_view full_name() const { return symbol.full_name(); }
+
+  friend bool operator==(const SymbolByFullName& a, const SymbolByFullName& b) {
     return a.full_name() == b.full_name();
   }
+  friend bool operator==(const SymbolByFullName& a, absl::string_view b) {
+    return a.full_name() == b;
+  }
+  friend bool operator==(absl::string_view a, const SymbolByFullName& b) {
+    return a == b.full_name();
+  }
+  friend bool operator!=(const SymbolByFullName& a, const SymbolByFullName& b) {
+    return !(a == b);
+  }
+  friend bool operator!=(const SymbolByFullName& a, absl::string_view b) {
+    return !(a == b);
+  }
+  friend bool operator!=(absl::string_view a, const SymbolByFullName& b) {
+    return !(a == b);
+  }
+
+  template <typename H>
+  friend H AbslHashValue(H h, const SymbolByFullName& s) {
+    return H::combine(std::move(h), s.full_name());
+  }
+
+  using absl_container_hash =
+      TransparentHash<SymbolByFullName, absl::string_view>;
 };
 
 // A set of Symbols, hashed and compared by their fully qualified name.
 using SymbolsByNameSet =
-    absl::flat_hash_set<Symbol, SymbolByFullNameHash, SymbolByFullNameEq>;
+    absl::flat_hash_set<SymbolByFullName,
+                        TransparentHash<SymbolByFullName, absl::string_view>,
+                        std::equal_to<void>>;
 
 }  // namespace internal
 }  // namespace protobuf

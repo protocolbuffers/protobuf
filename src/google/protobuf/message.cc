@@ -11,9 +11,11 @@
 
 #include "google/protobuf/message.h"
 
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <functional>
 #include <initializer_list>
 #include <new>  // IWYU pragma: keep for operator new().
 #include <queue>
@@ -492,6 +494,53 @@ MessageFactory::~MessageFactory() = default;
 
 namespace {
 
+// Wrapper around DescriptorTable* for transparent hashing and equality by
+// filename.
+struct DescriptorTableByName {
+  const google::protobuf::internal::DescriptorTable* table;
+
+  absl::string_view filename() const { return table->filename; }
+
+  friend bool operator==(DescriptorTableByName lhs, DescriptorTableByName rhs) {
+    return lhs.table == rhs.table || lhs.filename() == rhs.filename();
+  }
+  friend bool operator==(DescriptorTableByName lhs, absl::string_view rhs) {
+    return lhs.filename() == rhs;
+  }
+  friend bool operator==(absl::string_view lhs, DescriptorTableByName rhs) {
+    return lhs == rhs.filename();
+  }
+  friend bool operator!=(DescriptorTableByName lhs, DescriptorTableByName rhs) {
+    return !(lhs == rhs);
+  }
+  friend bool operator!=(DescriptorTableByName lhs, absl::string_view rhs) {
+    return !(lhs == rhs);
+  }
+  friend bool operator!=(absl::string_view lhs, DescriptorTableByName rhs) {
+    return !(lhs == rhs);
+  }
+
+  template <typename H>
+  friend H AbslHashValue(H h, DescriptorTableByName entry) {
+    return H::combine(std::move(h), entry.filename());
+  }
+
+#if PROTOBUF_ABSL_MIN(20260902, 0)
+  using Hash = absl::TransparentHash<DescriptorTableByName, absl::string_view>;
+#else
+  struct Hash {
+    using is_transparent = void;
+    size_t operator()(DescriptorTableByName entry) const {
+      return absl::Hash<DescriptorTableByName>{}(entry);
+    }
+    size_t operator()(absl::string_view name) const {
+      return absl::Hash<absl::string_view>{}(name);
+    }
+  };
+#endif
+  using absl_container_hash = Hash;
+};
+
 class GeneratedMessageFactory final : public MessageFactory {
  public:
   static GeneratedMessageFactory* singleton();
@@ -521,41 +570,12 @@ class GeneratedMessageFactory final : public MessageFactory {
       absl::string_view name) {
     auto it = files_.find(name);
     if (it == files_.end()) return nullptr;
-    return *it;
+    return it->table;
   }
 
-  struct DescriptorByNameHash {
-    using is_transparent = void;
-    size_t operator()(const google::protobuf::internal::DescriptorTable* t) const {
-      return absl::HashOf(absl::string_view{t->filename});
-    }
-
-    size_t operator()(absl::string_view name) const {
-      return absl::HashOf(name);
-    }
-  };
-  struct DescriptorByNameEq {
-    using is_transparent = void;
-    bool operator()(const google::protobuf::internal::DescriptorTable* lhs,
-                    const google::protobuf::internal::DescriptorTable* rhs) const {
-      return lhs == rhs || (*this)(lhs->filename, rhs->filename);
-    }
-    bool operator()(absl::string_view lhs,
-                    const google::protobuf::internal::DescriptorTable* rhs) const {
-      return (*this)(lhs, rhs->filename);
-    }
-    bool operator()(const google::protobuf::internal::DescriptorTable* lhs,
-                    absl::string_view rhs) const {
-      return (*this)(lhs->filename, rhs);
-    }
-    bool operator()(absl::string_view lhs, absl::string_view rhs) const {
-      return lhs == rhs;
-    }
-  };
-
   // Only written at static init time, so does not require locking.
-  absl::flat_hash_set<const google::protobuf::internal::DescriptorTable*,
-                      DescriptorByNameHash, DescriptorByNameEq>
+  absl::flat_hash_set<DescriptorTableByName, DescriptorTableByName::Hash,
+                      std::equal_to<void>>
       files_;
   DynamicMessageFactory dropped_defaults_factory_;
 
@@ -582,7 +602,7 @@ GeneratedMessageFactory* GeneratedMessageFactory::singleton() {
 
 void GeneratedMessageFactory::RegisterFile(
     const google::protobuf::internal::DescriptorTable* table) {
-  if (!files_.insert(table).second) {
+  if (!files_.insert({table}).second) {
     ABSL_LOG(FATAL) << "File is already registered: " << table->filename;
   }
 }
