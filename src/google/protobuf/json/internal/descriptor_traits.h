@@ -288,9 +288,10 @@ struct Proto2Descriptor {
 
   static absl::StatusOr<std::string> EnumNameByNumber(Field f, int32_t number) {
     if (const auto* ev = f->enum_type()->FindValueByNumber(number)) {
-      if (ev->options().HasExtension(pb::enumvalue::json)) {
-        return std::string(
-            ev->options().GetExtension(pb::enumvalue::json).string());
+      if (absl::optional<absl::string_view> custom_name =
+              CustomEnumJsonName(ev);
+          custom_name.has_value()) {
+        return std::string(*custom_name);
       }
       return std::string(ev->name());
     }
@@ -332,16 +333,34 @@ struct Proto2Descriptor {
   }
 
  private:
+  // Returns the custom JSON name configured via `(pb.enumvalue.json).string`
+  // on `ev`, or `absl::nullopt` if unset. The returned view borrows from
+  // `ev->options()` and remains valid for `ev`'s lifetime.
+  static absl::optional<absl::string_view> CustomEnumJsonName(
+      const EnumValueDescriptor* ev) {
+    const EnumValueOptions& options = ev->options();
+    if (&options == &EnumValueOptions::default_instance() ||
+        !options.HasExtension(pb::enumvalue::json)) {
+      return absl::nullopt;
+    }
+    const pb::enumvalue::JsonEnumValueOptions& opts =
+        options.GetExtension(pb::enumvalue::json);
+    if (!opts.has_string()) {
+      return absl::nullopt;
+    }
+    return opts.string();
+  }
+
   static absl::flat_hash_map<std::string, int32_t> MakeEnumJsonNameMap(
       const EnumDescriptor* e) {
     absl::flat_hash_map<std::string, int32_t> alternate_names;
 
     for (int i = 0; i < e->value_count(); ++i) {
       const EnumValueDescriptor* ev = e->value(i);
-      if (ev->options().HasExtension(pb::enumvalue::json)) {
-        const pb::enumvalue::JsonEnumValueOptions opts =
-            ev->options().GetExtension(pb::enumvalue::json);
-        alternate_names[opts.string()] = ev->number();
+      if (absl::optional<absl::string_view> custom_name =
+              CustomEnumJsonName(ev);
+          custom_name.has_value()) {
+        alternate_names[*custom_name] = ev->number();
       }
     }
 
@@ -354,10 +373,10 @@ struct Proto2Descriptor {
 
     for (int i = 0; i < e->value_count(); ++i) {
       const EnumValueDescriptor* ev = e->value(i);
-      if (ev->options().HasExtension(pb::enumvalue::json)) {
-        const pb::enumvalue::JsonEnumValueOptions opts =
-            ev->options().GetExtension(pb::enumvalue::json);
-        alternate_names[absl::AsciiStrToLower(opts.string())] = ev->number();
+      if (absl::optional<absl::string_view> custom_name =
+              CustomEnumJsonName(ev);
+          custom_name.has_value()) {
+        alternate_names[absl::AsciiStrToLower(*custom_name)] = ev->number();
       }
       alternate_names[absl::AsciiStrToLower(ev->name())] = ev->number();
     }

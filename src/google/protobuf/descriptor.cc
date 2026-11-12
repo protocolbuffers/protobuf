@@ -6775,6 +6775,28 @@ void internal::DescriptorBuilder::CheckEnumValueUniqueness(
   }
 }
 
+namespace {
+
+// Returns the custom JSON string configured via `(pb.enumvalue.json).string`
+// on `ev`, or `absl::nullopt` if unset. The returned view borrows from
+// `ev->options()` and remains valid for `ev`'s lifetime.
+absl::optional<absl::string_view> GetCustomEnumJsonString(
+    const EnumValueDescriptor* ev) {
+  const EnumValueOptions& options = ev->options();
+  if (&options == &EnumValueOptions::default_instance() ||
+      !options.HasExtension(pb::enumvalue::json)) {
+    return absl::nullopt;
+  }
+  const pb::enumvalue::JsonEnumValueOptions& ext =
+      options.GetExtension(pb::enumvalue::json);
+  if (!ext.has_string()) {
+    return absl::nullopt;
+  }
+  return ext.string();
+}
+
+}  // namespace
+
 void internal::DescriptorBuilder::CheckEnumCustomStringUniqueness(
     const EnumDescriptorProto& proto, const EnumDescriptor* result) {
   absl::flat_hash_map<absl::string_view, const EnumValueDescriptor*>
@@ -6783,26 +6805,18 @@ void internal::DescriptorBuilder::CheckEnumCustomStringUniqueness(
 
   for (int i = 0; i < result->value_count(); ++i) {
     const EnumValueDescriptor* value = result->value(i);
+    absl::optional<absl::string_view> current_custom =
+        GetCustomEnumJsonString(value);
 
     // If we allow aliases and custom json strings are used, we need to ensure
     // that the custom json strings are the same for all aliases.
     if (result->options().allow_alias()) {
-      auto insert_num_result =
+      auto [it, inserted] =
           first_value_by_number.try_emplace(value->number(), value);
-      if (!insert_num_result.second) {
-        const EnumValueDescriptor* primary = insert_num_result.first->second;
-
-        auto get_custom_string = [](const EnumValueDescriptor* ev)
-            -> absl::optional<absl::string_view> {
-          const auto& ext = ev->options().GetExtension(pb::enumvalue::json);
-          if (ext.has_string()) {
-            return ext.string();
-          }
-          return absl::nullopt;
-        };
-
-        auto primary_custom = get_custom_string(primary);
-        auto current_custom = get_custom_string(value);
+      if (!inserted) {
+        const EnumValueDescriptor* primary = it->second;
+        absl::optional<absl::string_view> primary_custom =
+            GetCustomEnumJsonString(primary);
 
         if (primary_custom != current_custom) {
           AddError(result->full_name(), proto.value(i),
@@ -6852,10 +6866,8 @@ void internal::DescriptorBuilder::CheckEnumCustomStringUniqueness(
     check_and_insert(value->name(), false);
 
     // Ensure that custom JSON strings cannot collide with themselves.
-    if (value->options().HasExtension(pb::enumvalue::json)) {
-      absl::string_view custom_string =
-          value->options().GetExtension(pb::enumvalue::json).string();
-      check_and_insert(custom_string, true);
+    if (current_custom.has_value()) {
+      check_and_insert(*current_custom, true);
     }
   }
 }
@@ -8303,11 +8315,10 @@ void internal::DescriptorBuilder::ValidateOptions(
                   DescriptorPool::ErrorCollector::OPTION_NAME);
   }
 
-  if (enum_value->options().HasExtension(pb::enumvalue::json)) {
-    absl::string_view custom_string =
-        enum_value->options().GetExtension(pb::enumvalue::json).string();
-
-    if (absl::StrContains(custom_string, '\0')) {
+  if (absl::optional<absl::string_view> custom_string =
+          GetCustomEnumJsonString(enum_value);
+      custom_string.has_value()) {
+    if (absl::StrContains(*custom_string, '\0')) {
       AddError(enum_value->full_name(), proto,
                DescriptorPool::ErrorCollector::OPTION_VALUE,
                "Custom JSON strings cannot contain embedded null characters.");
@@ -8316,7 +8327,7 @@ void internal::DescriptorBuilder::ValidateOptions(
     // If the custom string is a number, it must match the enum value's number,
     // otherwise, there would be an ambiguity -- we'll block the possibility.
     int32_t parsed_val;
-    if (absl::SimpleAtoi(custom_string, &parsed_val)) {
+    if (absl::SimpleAtoi(*custom_string, &parsed_val)) {
       if (parsed_val != enum_value->number()) {
         AddError(enum_value->full_name(), proto,
                  DescriptorPool::ErrorCollector::OPTION_VALUE, [&] {
@@ -8324,7 +8335,7 @@ void internal::DescriptorBuilder::ValidateOptions(
                        "Custom JSON string \"%s\" parses as integer %d, which "
                        "does not match the "
                        "enum value's number %d.",
-                       custom_string, parsed_val, enum_value->number());
+                       *custom_string, parsed_val, enum_value->number());
                  });
       }
     }

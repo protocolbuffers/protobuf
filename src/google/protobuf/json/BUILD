@@ -347,11 +347,13 @@ cc_test(
     deps = [
         ":json",
         ":json_enumval_custom_string_cc_proto",
+        "//src/google/protobuf",
         "//src/google/protobuf:arena",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:status_matchers",
         "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
