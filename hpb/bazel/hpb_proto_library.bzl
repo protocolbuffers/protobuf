@@ -105,6 +105,7 @@ def _compile_hpb_protos(ctx, proto_info, proto_sources, generate_meta_data):
             mnemonic = toolchain.mnemonic,
             allowlist_different_package = getattr(toolchain, "allowlist_different_package", None),
             toolchain_type = getattr(toolchain, "toolchain_type", None),
+            host_path_separator = ctx.configuration.host_path_separator,
         )
 
     proto_common.compile(

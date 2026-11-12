@@ -11,7 +11,9 @@ load("@rules_testing//lib:analysis_test.bzl", "analysis_test", "test_suite")
 load("@rules_testing//lib:truth.bzl", "matching")
 load("@rules_testing//lib:util.bzl", "util")
 load("//bazel:proto_library.bzl", "proto_library")
+load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
+load("//bazel/private:proto_compile.bzl", "proto_compile")
 
 _STRIP_IMPORT_PREFIX = "/bazel"
 
@@ -21,6 +23,10 @@ def bazel_proto_library_test_suite(name):
         _test_descriptor_sets_rule_with_srcs_calls_protoc,
         _test_descriptor_sets_rule_without_srcs_writes_empty_file,
         _test_descriptor_sets_are_exposed_in_provider,
+        _test_internal_do_not_use_fields,
+        _test_compile_from_descriptors,
+        _test_proto_info_forwards_source_code_info,
+        _test_proto_info_rejects_invalid_source_code_info,
         _test_descriptor_set_output_strict_deps,
         _test_descriptor_set_output_strict_deps_multiple_srcs,
         _test_strip_import_prefix_without_deps,
@@ -96,6 +102,7 @@ def _test_descriptor_sets_rule_with_srcs_calls_protoc_impl(env, target):
         "--descriptor_set_out=" + action.actual.outputs.to_list()[0].path,
         "{package}/foo.proto",
     ])
+    action.argv().not_contains("--descriptor_set_in")
 
 # Asserts that we register a FileWriteAction with empty contents if there are no srcs.
 def _test_descriptor_sets_rule_without_srcs_writes_empty_file(name):
@@ -175,6 +182,248 @@ def _test_descriptor_sets_are_exposed_in_provider_impl(env, targets):
         package + "/" + name + "_no_srcs-descriptor-set.proto.bin",
     ])
 
+def _test_internal_do_not_use_fields(name):
+    util.helper_target(proto_library, name = name + "_opt_dep_dep", srcs = ["opt_dep_dep.proto"])
+    util.helper_target(proto_library, name = name + "_opt_inner_opt", srcs = ["opt_inner_opt.proto"])
+    util.helper_target(
+        proto_library,
+        name = name + "_direct_opt",
+        srcs = ["direct_opt.proto"],
+        deps = [name + "_opt_dep_dep"],
+        option_deps = [name + "_opt_inner_opt"],
+    )
+    util.helper_target(proto_library, name = name + "_dep_opt", srcs = ["dep_opt.proto"])
+    util.helper_target(
+        proto_library,
+        name = name + "_regular_dep",
+        srcs = ["regular_dep.proto"],
+        option_deps = [name + "_dep_opt"],
+    )
+    util.helper_target(
+        proto_library,
+        name = name + "_top",
+        srcs = ["top.proto"],
+        deps = [name + "_regular_dep"],
+        option_deps = [name + "_direct_opt"],
+    )
+
+    util.helper_target(
+        proto_library,
+        name = name + "_alias_empty",
+        deps = [name + "_regular_dep"],
+    )
+
+    analysis_test(
+        name = name,
+        target = [
+            name + "_top",
+            name + "_opt_dep_dep",
+            name + "_alias_empty",
+        ],
+        impl = _test_internal_do_not_use_fields_impl,
+    )
+
+def _test_internal_do_not_use_fields_impl(env, targets):
+    top = targets[0]
+    package = top.label.package
+    name = top.label.name[:-len("_top")]
+    provider = top[ProtoInfo]
+
+    env.expect.that_bool(hasattr(provider, "source_code_info")).equals(False)
+    env.expect.that_bool(hasattr(provider, "option_deps_descriptor_sets")).equals(False)
+    env.expect.that_bool(hasattr(provider, "transitive_protoc_descriptor_set")).equals(False)
+
+    internal = provider.internal_do_not_use
+
+    env.expect.that_bool(internal.source_code_info == None).equals(True)
+    env.expect.that_depset_of_files(provider.transitive_descriptor_sets).contains_exactly([
+        package + "/" + name + "_top-descriptor-set.proto.bin",
+        package + "/" + name + "_regular_dep-descriptor-set.proto.bin",
+    ])
+    env.expect.that_depset_of_files(internal.option_deps_descriptor_sets).contains_exactly([
+        package + "/" + name + "_direct_opt-descriptor-set.proto.bin",
+        package + "/" + name + "_opt_dep_dep-descriptor-set.proto.bin",
+    ])
+
+    no_opt = targets[1]
+    env.expect.that_depset_of_files(no_opt[ProtoInfo].internal_do_not_use.option_deps_descriptor_sets).contains_exactly([])
+
+    alias_empty = targets[2]
+    alias_internal = alias_empty[ProtoInfo].internal_do_not_use
+    env.expect.that_bool(alias_internal.source_code_info == None).equals(True)
+    env.expect.that_depset_of_files(alias_internal.option_deps_descriptor_sets).contains_exactly([])
+    env.expect.that_int(len(alias_empty.actions)).equals(1)
+
+def _compile_from_descriptors_rule_impl(ctx):
+    outfile = ctx.actions.declare_file(ctx.attr.name + ".out")
+    proto_compile.compile_from_descriptors(
+        ctx.actions,
+        ctx.attr.proto_dep[ProtoInfo],
+        ctx.attr.toolchain[proto_common.ProtoLangToolchainInfo],
+        [outfile],
+    )
+    return [DefaultInfo(files = depset([outfile]))]
+
+_compile_from_descriptors_rule = rule(
+    implementation = _compile_from_descriptors_rule_impl,
+    attrs = {
+        "proto_dep": attr.label(providers = [ProtoInfo]),
+        "toolchain": attr.label(
+            default = "//bazel/tests/testdata:toolchain",
+        ),
+    },
+)
+
+def _test_compile_from_descriptors(name):
+    util.helper_target(proto_library, name = name + "_opt_dep_dep", srcs = ["opt_dep_dep.proto"])
+    util.helper_target(proto_library, name = name + "_opt_inner_opt", srcs = ["opt_inner_opt.proto"])
+    util.helper_target(
+        proto_library,
+        name = name + "_direct_opt",
+        srcs = ["direct_opt.proto"],
+        deps = [name + "_opt_dep_dep"],
+        option_deps = [name + "_opt_inner_opt"],
+    )
+    util.helper_target(proto_library, name = name + "_dep_opt", srcs = ["dep_opt.proto"])
+    util.helper_target(
+        proto_library,
+        name = name + "_regular_dep",
+        srcs = ["regular_dep.proto"],
+        option_deps = [name + "_dep_opt"],
+    )
+    util.helper_target(
+        native.genrule,
+        name = name + "_gen",
+        outs = ["gen_from_desc.proto"],
+        cmd = "",
+    )
+    util.helper_target(
+        proto_library,
+        name = name + "_top",
+        srcs = ["top.proto", ":gen_from_desc.proto"],
+        deps = [name + "_regular_dep"],
+        option_deps = [name + "_direct_opt"],
+    )
+    util.helper_target(
+        _compile_from_descriptors_rule,
+        name = name + "_compile",
+        proto_dep = name + "_top",
+    )
+
+    analysis_test(
+        name = name,
+        target = name + "_compile",
+        impl = _test_compile_from_descriptors_impl,
+    )
+
+def _test_compile_from_descriptors_impl(env, target):
+    action = env.expect.that_target(target).action_named("MyMnemonic")
+    action.argv().not_contains("-I.")
+    action.argv().contains_at_least([
+        "{package}/top.proto",
+        "{package}/gen_from_desc.proto",
+        "--descriptor_set_in",
+    ])
+
+    expected_descriptor_sets_pattern = (
+        "*_regular_dep-descriptor-set.proto.bin" +
+        "*_top-descriptor-set.proto.bin" +
+        "*_opt_dep_dep-descriptor-set.proto.bin" +
+        "*_direct_opt-descriptor-set.proto.bin"
+    )
+    action.argv().contains_predicate(
+        matching.str_matches(expected_descriptor_sets_pattern),
+    )
+    action.argv().not_contains_predicate(matching.str_matches("*_dep_opt-descriptor-set.proto.bin*"))
+    action.argv().not_contains_predicate(matching.str_matches("*_opt_inner_opt-descriptor-set.proto.bin*"))
+    action.inputs().contains_at_least_predicates([
+        matching.file_basename_equals("test_compile_from_descriptors_regular_dep-descriptor-set.proto.bin"),
+        matching.file_basename_equals("test_compile_from_descriptors_top-descriptor-set.proto.bin"),
+        matching.file_basename_equals("test_compile_from_descriptors_opt_dep_dep-descriptor-set.proto.bin"),
+        matching.file_basename_equals("test_compile_from_descriptors_direct_opt-descriptor-set.proto.bin"),
+    ])
+    action.inputs().not_contains_predicate(
+        matching.file_basename_equals("test_compile_from_descriptors_dep_opt-descriptor-set.proto.bin"),
+    )
+    action.inputs().not_contains_predicate(
+        matching.file_basename_equals("test_compile_from_descriptors_opt_inner_opt-descriptor-set.proto.bin"),
+    )
+    action.inputs().not_contains_predicate(
+        matching.file_basename_equals("top.proto"),
+    )
+
+def _forward_proto_info_impl(ctx):
+    out = ctx.actions.declare_file(ctx.label.name + "-descriptor-set.proto.bin")
+    ctx.actions.write(out, "")
+    if ctx.attr.invalid_source_code_info:
+        sci = "not_a_file"
+    elif ctx.attr.dep:
+        sci = ctx.attr.dep[ProtoInfo].internal_do_not_use.source_code_info
+    else:
+        sci = ctx.actions.declare_file(ctx.label.name + "-source_code_info-set.proto.bin")
+        ctx.actions.write(sci, "")
+    return [
+        ProtoInfo(
+            srcs = ctx.files.srcs,
+            deps = [],
+            descriptor_set = out,
+            source_code_info = sci,
+            workspace_root = ctx.label.workspace_root,
+        ),
+    ]
+
+_forward_proto_info = rule(
+    implementation = _forward_proto_info_impl,
+    attrs = {
+        "srcs": attr.label_list(allow_files = [".proto"]),
+        "dep": attr.label(providers = [ProtoInfo]),
+        "invalid_source_code_info": attr.bool(default = False),
+    },
+    provides = [ProtoInfo],
+)
+
+def _test_proto_info_forwards_source_code_info(name):
+    util.helper_target(
+        _forward_proto_info,
+        name = name + "_custom",
+        srcs = ["custom.proto"],
+    )
+
+    analysis_test(
+        name = name,
+        target = [
+            name + "_custom",
+        ],
+        impl = _test_proto_info_forwards_source_code_info_impl,
+    )
+
+def _test_proto_info_forwards_source_code_info_impl(env, targets):
+    custom_target = targets[0]
+    prefix = custom_target.label.name[:-len("_custom")]
+    custom_sci = custom_target[ProtoInfo].internal_do_not_use.source_code_info
+    env.expect.that_file(custom_sci).basename().equals(
+        prefix + "_custom-source_code_info-set.proto.bin",
+    )
+
+def _test_proto_info_rejects_invalid_source_code_info(name):
+    util.helper_target(
+        _forward_proto_info,
+        name = name + "_bad",
+        srcs = ["bad.proto"],
+        invalid_source_code_info = True,
+    )
+    analysis_test(
+        name = name,
+        target = name + "_bad",
+        impl = _test_proto_info_rejects_invalid_source_code_info_impl,
+        expect_failure = True,
+    )
+
+def _test_proto_info_rejects_invalid_source_code_info_impl(env, target):
+    env.expect.that_target(target).failures().contains_predicate(
+        matching.str_matches("*source_code_info parameter expected to be a File*"),
+    )
+
 def _test_descriptor_set_output_strict_deps(name):
     util.helper_target(proto_library, name = name + "_nodeps", srcs = ["nodeps.proto"])
     util.helper_target(
@@ -214,6 +463,7 @@ def _test_descriptor_set_output_strict_deps_impl(env, targets):
     action = env.expect.that_target(target).action_generating(
         "{package}/{name}-descriptor-set.proto.bin",
     )
+    action.argv().not_contains("--descriptor_set_in")
     action.argv().contains_at_least([
         "--direct_dependencies",
         "{package}/nodeps.proto",
@@ -225,18 +475,28 @@ def _test_descriptor_set_output_strict_deps_impl(env, targets):
         "{package}/{name}-descriptor-set.proto.bin",
     )
     action.argv().contains_at_least([
+        "--descriptor_set_in",
         "--direct_dependencies",
         "{package}/dep1.proto:{package}/dep2.proto:{package}/withdeps.proto",
     ])
+    action.argv().contains_predicate(
+        matching.str_matches("*_dep1-descriptor-set.proto.bin*_*_dep2-descriptor-set.proto.bin"),
+    )
 
     target = targets[2]
     action = env.expect.that_target(target).action_generating(
         "{package}/{name}-descriptor-set.proto.bin",
     )
     action.argv().contains_at_least([
+        "--descriptor_set_in",
         "--direct_dependencies",
         "{package}/dep1.proto:{package}/dep2.proto:{package}/depends_on_alias.proto",
     ])
+    action.argv().contains_predicate(
+        matching.str_matches(
+            "*_dep1-descriptor-set.proto.bin*_dep2-descriptor-set.proto.bin*_alias-descriptor-set.proto.bin",
+        ),
+    )
 
 # When building a proto_library with multiple srcs (say foo.proto and bar.proto), we should allow
 # foo.proto to import bar.proto without tripping strict-deps checking. This means that
