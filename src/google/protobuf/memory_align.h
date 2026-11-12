@@ -100,6 +100,8 @@ struct MemoryAlignImpl {
     return reinterpret_cast<T*>((intptr + align() - 1) & ~(align() - 1));
   }
 
+  constexpr size_t CeilDefaultAligned(size_t n) const;
+
   template <typename T>
   T* CeilDefaultAligned(T* ptr) const;
 
@@ -114,6 +116,17 @@ struct MemoryAlignImpl {
 struct ArenaAlignDefault : MemoryAlignImpl<std::integral_constant<size_t, 8>> {
   static constexpr size_t kAlign = 8;
   constexpr ArenaAlignDefault() : MemoryAlignImpl{{}} {}
+
+  constexpr size_t CeilDefaultAligned(size_t n) const {
+    ABSL_DCHECK(IsAligned(n));
+    return n;
+  }
+
+  template <typename T>
+  constexpr T* CeilDefaultAligned(T* ptr) const {
+    ABSL_DCHECK(IsAligned(ptr));
+    return ptr;
+  }
 };
 
 struct MemoryAlign : MemoryAlignImpl<size_t> {
@@ -138,6 +151,12 @@ constexpr size_t MemoryAlignImpl<AlignT>::Padded(size_t n) const {
          "alignment >= `kMinArenaAlignment`.";
   ABSL_DCHECK(ArenaAlignDefault{}.IsAligned(n));
   return n + align() - ArenaAlignDefault{}.align();
+}
+
+template <typename AlignT>
+constexpr size_t MemoryAlignImpl<AlignT>::CeilDefaultAligned(size_t n) const {
+  ABSL_DCHECK(ArenaAlignDefault{}.IsAligned(n));
+  return Ceil(n);
 }
 
 template <typename AlignT>
