@@ -243,6 +243,14 @@ jobs:
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
     secrets: inherit
 
+  macos:
+    name: macOS
+    needs: [set-vars]
+    uses: ./.github/workflows/test_macos.yml
+    with:
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+    secrets: inherit
+
   staleness:
     name: Staleness
     needs: [set-vars]
@@ -257,7 +265,7 @@ jobs:
   # This test depends on all blocking tests and indicates whether they all suceeded.
   all-blocking-tests:
     name: All Blocking Tests${{ github.event_name == 'pull_request_target' && ' (fork)' || ''}}
-    needs: [set-vars, validate-yaml, bazel, cpp, java, python, ruby, php, php-ext, csharp, rust, upb, hpb, staleness]
+    needs: [set-vars, validate-yaml, bazel, cpp, java, python, ruby, php, php-ext, csharp, rust, upb, hpb, macos, staleness]
     runs-on: ubuntu-26.04
     steps:
       - name: Check test results
