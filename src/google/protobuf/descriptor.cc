@@ -1705,8 +1705,7 @@ DescriptorPool::Tables::Tables() = default;
 DescriptorPool::Tables::~Tables() { ABSL_DCHECK(build_state_ == nullptr); }
 
 absl::Mutex* DescriptorPool::mutex() const {
-  return fallback_database_ != nullptr ? &tables_->mutex_dont_use_directly_
-                                       : nullptr;
+  return thread_safe_ ? &tables_->mutex_dont_use_directly_ : nullptr;
 }
 
 void DescriptorPool::AssertHeld() const {
@@ -2277,7 +2276,9 @@ DescriptorPool::DescriptorPool(const Options& options)
     : fallback_database_(options.fallback_database),
       default_error_collector_(options.error_collector),
       underlay_(options.underlay),
-      tables_(new Tables) {}
+      tables_(new Tables),
+      thread_safe_(options.thread_safe ||
+                   options.fallback_database != nullptr) {}
 
 DescriptorPool::~DescriptorPool() = default;
 
