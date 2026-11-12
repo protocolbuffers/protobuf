@@ -415,6 +415,10 @@ const uint8_t* DecodeVarint64KnownSize(const uint8_t* buffer, uint64_t* value) {
   for (size_t i = 0, offset = 0; i < N - 1; i++, offset += 7) {
     result += static_cast<uint64_t>(buffer[i] - 0x80) << offset;
   }
+  // Hardening: Enforce canonical varint encoding (disallow non-canonical 10th byte overflow)
+  if constexpr (N == 10) {
+    if (buffer[9] > 1) return nullptr;
+  }
   *value = result;
   return buffer + N;
 }
