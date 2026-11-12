@@ -64,6 +64,19 @@ core::arch::global_asm!(
     "#
 );
 
+// lld-link drops an output section that ends up empty and then rejects every relocation against a
+// symbol in it ("relocation against symbol in discarded section"). linkme puts the slice's start
+// and stop symbols in the slice's own section, so a binary that links the registry but no
+// extension fails to link. Keep the section non-empty with a sentinel that sorts after the stop
+// symbol (`$c`), which keeps it out of the slice. The sentinel has the element type so that it
+// gets the same section flags as the rest of the slice; lld-link only merges sections whose
+// flags match.
+#[cfg(target_os = "windows")]
+#[used]
+#[unsafe(link_section = ".linkme_EXTENSIONS$d")]
+static LINKME_SENTINEL_EXTENSIONS: core::mem::MaybeUninit<LazyLock<MiniTableExtensionInitPtr>> =
+    core::mem::MaybeUninit::uninit();
+
 // Add the extension's MiniTable and the def_init of the file that declares it to the global
 // EXTENSION_MINI_TABLE_TO_DEF_INITS registry; this is used for reflection.
 //
@@ -92,6 +105,14 @@ core::arch::global_asm!(
     .size   LINKM2_SENTINEL_EXTENSION_MINI_TABLE_TO_DEF_INITS, 0
     "#
 );
+
+// See LINKME_SENTINEL_EXTENSIONS.
+#[cfg(all(not(lite_runtime), target_os = "windows"))]
+#[used]
+#[unsafe(link_section = ".linkme_EXTENSION_MINI_TABLE_TO_DEF_INITS$d")]
+static LINKME_SENTINEL_EXTENSION_MINI_TABLE_TO_DEF_INITS: core::mem::MaybeUninit<
+    ExtensionMiniTableToDefInit,
+> = core::mem::MaybeUninit::uninit();
 
 pub fn generated_extension_registry() -> RawExtensionRegistry {
     // SAFETY:

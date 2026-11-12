@@ -183,7 +183,16 @@ Error, UINTPTR_MAX is undefined
 
 #ifdef UPB_BUILD_API
 #define UPB_API UPB_EXPORT
+#if defined(_MSC_VER) && defined(__clang__)
+// On COFF a plain external definition here clashes ("duplicate symbol") with
+// the inline (COMDAT) definition that a C++ translation unit emits for the
+// same function when both end up in one binary. ELF accepts that pair because
+// the C++ definition is weak there. Make this definition the weak one instead,
+// so the linker uses it only when no other definition is present.
+#define UPB_API_INLINE UPB_EXPORT __attribute__((weak))
+#else
 #define UPB_API_INLINE UPB_EXPORT
+#endif
 #else
 #define UPB_API
 #define UPB_API_INLINE UPB_INLINE
