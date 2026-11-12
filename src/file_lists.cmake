@@ -27,6 +27,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_allocation_policy.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/btree_split.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/importer.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/parser.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/cpp_features.pb.cc
@@ -121,6 +122,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_cleanup.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/btree_split.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/class_data.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/importer.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/parser.h
@@ -249,6 +251,7 @@ set(libprotobuf_lite_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_allocation_policy.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/btree_split.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/extension_set.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_enum_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_lite.cc
@@ -285,6 +288,7 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_cleanup.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/btree_split.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/class_data.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/endian.h
@@ -1294,6 +1298,7 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler_test.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/btree_split_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/debug_counter_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_database_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_unittest.cc
