@@ -60,14 +60,3 @@ extend TestMessageSet {
 extend TestMessageSet {
   optional TestExtension max_number_extension = 2147483646;
 }
-
-// This message was used to generate
-// //net/proto2/python/internal/testdata/message_set_message, but is commented
-// out since it must not actually exist in code, to simulate an "unknown"
-// extension.
-// message TestMessageSetUnknownExtension {
-//   extend TestMessageSet {
-//     optional TestMessageSetUnknownExtension message_set_extension = 56141421;
-//   }
-//   optional int64 a = 1;
-// }
