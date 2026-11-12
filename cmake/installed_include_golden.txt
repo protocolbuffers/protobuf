@@ -5,8 +5,10 @@ google/protobuf/api.pb.h
 google/protobuf/api.proto
 google/protobuf/arena.h
 google/protobuf/arena_align.h
+google/protobuf/arena_alloc_result.h
 google/protobuf/arena_allocation_policy.h
 google/protobuf/arena_cleanup.h
+google/protobuf/arena_seed.h
 google/protobuf/arenastring.h
 google/protobuf/arenaz_sampler.h
 google/protobuf/btree_split.h

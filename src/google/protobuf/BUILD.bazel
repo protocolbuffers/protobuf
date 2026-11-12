@@ -558,6 +558,21 @@ cc_library(
 )
 
 cc_library(
+    name = "arena_alloc_result",
+    hdrs = ["arena_alloc_result.h"],
+    strip_include_prefix = "/src",
+)
+
+cc_library(
+    name = "arena_seed",
+    hdrs = ["arena_seed.h"],
+    strip_include_prefix = "/src",
+    deps = [
+        ":port",
+    ],
+)
+
+cc_library(
     name = "arena_cleanup",
     hdrs = ["arena_cleanup.h"],
     strip_include_prefix = "/src",
@@ -644,8 +659,10 @@ cc_library(
         "//src/google/protobuf:__subpackages__",
     ],
     deps = [
+        ":arena_alloc_result",
         ":arena_allocation_policy",
         ":arena_cleanup",
+        ":arena_seed",
         ":class_data",
         ":internal_visibility",
         ":memory_align",
@@ -814,6 +831,7 @@ cc_library(
         ":arena",
         ":arena_allocation_policy",
         ":arena_cleanup",
+        ":arena_seed",
         ":class_data",
         ":endian",
         ":internal_visibility",
@@ -1089,6 +1107,7 @@ cc_library(
     hdrs = ["class_data.h"],
     strip_include_prefix = "/src",
     deps = [
+        ":arena_alloc_result",
         ":port",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings:string_view",
@@ -2000,6 +2019,7 @@ cc_test(
     }),
     deps = [
         ":arena",
+        ":arena_alloc_result",
         ":arena_allocation_policy",
         ":arena_cleanup",
         ":cc_test_protos",

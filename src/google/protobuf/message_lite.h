@@ -1198,18 +1198,18 @@ T* OnShutdownDelete(T* p) {
 PROTOBUF_ALWAYS_INLINE MessageLite* ClassData::New(Arena* arena) const {
   // Allocate the memory first, to reduce the number of spills.
   // This way we only spill `this` and `arena`.
-  void* mem = message_creator.AllocateMessage(arena);
+  auto res = message_creator.AllocateMessage(arena);
   const MessageLite* def = default_instance();
-  return message_creator.PlacementNew(def, def, mem, arena);
+  return message_creator.PlacementNew(def, def, res.ptr, arena);
 }
 
 PROTOBUF_ALWAYS_INLINE MessageLite* ClassData::New(SerialArena* arena) const {
   // Allocate the memory first, to reduce the number of spills.
   // This way we only spill `this` and `parent_arena`.
   Arena* parent_arena = ParentArena(arena);
-  void* mem = message_creator.AllocateMessage(arena);
+  auto res = message_creator.AllocateMessage(arena);
   const MessageLite* def = default_instance();
-  return message_creator.PlacementNew(def, def, mem, parent_arena);
+  return message_creator.PlacementNew(def, def, res.ptr, parent_arena);
 }
 
 PROTOBUF_ALWAYS_INLINE MessageLite* ClassData::PlacementNew(

@@ -22,8 +22,10 @@
 #include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
+#include "google/protobuf/arena_alloc_result.h"
 #include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/arena_cleanup.h"
+#include "google/protobuf/arena_seed.h"
 #include "google/protobuf/memory_align.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/string_block.h"
@@ -94,21 +96,22 @@ class PROTOBUF_EXPORT SerialArena {
   uint64_t SpaceUsed() const;
 
   // See comments on `cached_blocks_` member for details.
-  PROTOBUF_ALWAYS_INLINE void* TryAllocateFromCachedBlock(size_t size) {
-    if (ABSL_PREDICT_FALSE(size < kMinimumReturnedArraySize)) return nullptr;
+  PROTOBUF_ALWAYS_INLINE AllocationResult
+  TryAllocateFromCachedBlock(size_t size) {
+    if (ABSL_PREDICT_FALSE(size < kMinimumReturnedArraySize)) return {nullptr};
     // We round up to the next larger block in case the memory doesn't match
     // the pattern we are looking for.
     const size_t index = absl::bit_width(size - 1) -
                          absl::bit_width(kMinimumReturnedArraySize - 1);
 
-    if (ABSL_PREDICT_FALSE(index >= cached_block_length_)) return nullptr;
+    if (ABSL_PREDICT_FALSE(index >= cached_block_length_)) return {nullptr};
     auto& cached_head = cached_blocks_[index];
-    if (cached_head == nullptr) return nullptr;
+    if (cached_head == nullptr) return {nullptr};
 
     void* ret = cached_head;
     internal::UnpoisonMemoryRegion(ret, size);
     cached_head = cached_head->next;
-    return ret;
+    return {ret};
   }
 
   // In kArray mode we look through cached blocks.
@@ -119,17 +122,17 @@ class PROTOBUF_EXPORT SerialArena {
   // the right size. We can statically know if the allocation size can benefit
   // from it.
   template <AllocationClient alloc_client = AllocationClient::kDefault>
-  void* AllocateAligned(size_t n) {
+  AllocationResult AllocateDefaultAligned(size_t n) {
     ABSL_DCHECK(internal::ArenaAlignDefault{}.IsAligned(n));
     ABSL_DCHECK_GE(limit_, ptr());
 
-    if (alloc_client == AllocationClient::kArray) {
-      if (void* res = TryAllocateFromCachedBlock(n)) {
+    if constexpr (alloc_client == AllocationClient::kArray) {
+      if (auto res = TryAllocateFromCachedBlock(n); res.ptr != nullptr) {
         return res;
       }
     }
 
-    return AllocateImpl<AllocationMode::kDefault>(n);
+    return AllocateNonMessageImpl<AllocationMode::kDefault>(n);
   }
 
   // See comments on `cached_blocks_` member for details.
@@ -211,31 +214,54 @@ class PROTOBUF_EXPORT SerialArena {
     static constexpr size_t MaxSize();
   };
 
+  template <typename Align = ArenaAlignDefault, typename Cleanup = NoCleanup>
+  PROTOBUF_ALWAYS_INLINE AllocationResult AllocateFast(char* ptr, size_t n,
+                                                       Align align,
+                                                       Cleanup cleanup) {
+    ABSL_DCHECK_EQ(ptr, this->ptr());
+    ABSL_DCHECK_LE(ptr + n, limit_);
+
+    ptr = align.CeilDefaultAligned(ptr);
+
+    internal::UnpoisonMemoryRegion(ptr, n);
+    char* next = ptr + n;
+
+    set_ptr(next);
+    cleanup.AddCleanup(*this, ptr);
+
+    MaybePrefetchData(next);
+    PROTOBUF_ASSUME(ptr != nullptr);
+    return {ptr};
+  }
+
   // Core arena allocation function. Configurable based on overflow handling,
   // alignment, and cleanup registration.
-  template <AllocationMode mode, typename Align = ArenaAlignDefault,
-            typename Cleanup = NoCleanup>
-  PROTOBUF_ALWAYS_INLINE void* AllocateImpl(size_t n, Align align = {},
-                                            Cleanup cleanup = {}) {
+  template <AllocationMode mode, bool needs_arena_ptr, typename Align,
+            typename Cleanup>
+  PROTOBUF_ALWAYS_INLINE AllocationResult AllocateImpl(size_t n, Align align,
+                                                       Cleanup cleanup) {
+    static_assert(ArenaSeedPolicy::kEnableArenaSeeding || !needs_arena_ptr,
+                  "needs_arena_ptr should always be false when "
+                  "PROTOBUF_SMALLER_MESSAGE_LITE is disabled to avoid "
+                  "instantiating more templates.");
     static_assert(std::is_same_v<Align, ArenaAlignDefault> ||
                   std::is_same_v<Align, MemoryAlign>);
     static_assert(std::is_same_v<Cleanup, NoCleanup> ||
                   std::is_same_v<Cleanup, WithCleanup>);
-
+    ABSL_DCHECK(align.IsAligned(n));
     ABSL_DCHECK_GE(limit_, ptr());
-    char* ret = ptr();
 
-    n = align.CeilDefaultAligned(n);
+    char* ptr = this->ptr();
 
-    // Comparing `limit_` to aligned `ret` is precarious because aligning `ret`
+    // Comparing `limit_` to aligned `ptr` is precarious because aligning `ptr`
     // may overflow. Instead, we conservatively compare the total remaining
     // space against `n` plus the maximum possible padding we might incur from
-    // aligning `ret`. Doing it this way is slightly faster than calculating how
+    // aligning `ptr`. Doing it this way is slightly faster than calculating how
     // much alignment padding we need before doing the comparison.
     const size_t max_alignment_padding =
         align.align() - ArenaAlignDefault{}.align();
     const bool enough_space =
-        n + max_alignment_padding <= static_cast<size_t>(limit_ - ret);
+        n + max_alignment_padding <= static_cast<size_t>(limit_ - ptr);
     switch (mode) {
       case AllocationMode::kDefault:
         if (ABSL_PREDICT_FALSE(!enough_space)) {
@@ -244,7 +270,7 @@ class PROTOBUF_EXPORT SerialArena {
         break;
       case AllocationMode::kNoFallback:
         if (ABSL_PREDICT_FALSE(!enough_space)) {
-          return nullptr;
+          return {nullptr};
         }
         break;
       case AllocationMode::kUnchecked:
@@ -252,15 +278,24 @@ class PROTOBUF_EXPORT SerialArena {
         break;
     }
 
-    ret = align.CeilDefaultAligned(ret);
+    return AllocateFast(ptr, n, align, cleanup);
+  }
 
-    internal::UnpoisonMemoryRegion(ret, n);
-    char* next = ret + n;
-    set_ptr(next);
-    cleanup.AddCleanup(*this, ret);
-    MaybePrefetchData(next);
-    PROTOBUF_ASSUME(ret != nullptr);
-    return ret;
+  template <AllocationMode mode>
+  PROTOBUF_ALWAYS_INLINE MessageAllocationResult AllocateMessageImpl(size_t n) {
+    auto res =
+        AllocateImpl<mode,
+                     /*needs_arena_ptr=*/ArenaSeedPolicy::kEnableArenaSeeding>(
+            n, ArenaAlignDefault{}, NoCleanup{});
+    return {res.ptr};
+  }
+
+  template <AllocationMode mode, typename Align = ArenaAlignDefault,
+            typename Cleanup = NoCleanup>
+  PROTOBUF_ALWAYS_INLINE AllocationResult
+  AllocateNonMessageImpl(size_t n, Align align = {}, Cleanup cleanup = {}) {
+    return AllocateImpl<mode, /*needs_arena_ptr=*/false, Align, Cleanup>(
+        n, align, cleanup);
   }
 
   PROTOBUF_ALWAYS_INLINE
@@ -269,7 +304,7 @@ class PROTOBUF_EXPORT SerialArena {
     MaybePrefetchCleanup();
   }
 
-  ABSL_ATTRIBUTE_RETURNS_NONNULL void* AllocateFromStringBlock();
+  ABSL_ATTRIBUTE_RETURNS_NONNULL AllocationResult AllocateFromStringBlock();
 
   std::vector<void*> PeekCleanupListForTesting();
 
@@ -336,8 +371,8 @@ class PROTOBUF_EXPORT SerialArena {
   inline SerialArena(FirstSerialArena, SizedPtr mem,
                      const AllocationPolicy& policy, ThreadSafeArena& parent);
 
-  void* MaybeAllocateString();
-  ABSL_ATTRIBUTE_RETURNS_NONNULL void* AllocateFromStringBlockFallback();
+  AllocationResult MaybeAllocateString();
+  AllocationResult AllocateFromStringBlockFallback();
 
   // Prefetch the next prefetch_degree bytes after `prefetch_ptr` and
   // up to `limit`, if `next` is within prefetch_degree bytes of `prefetch_ptr`.
@@ -424,7 +459,7 @@ class PROTOBUF_EXPORT SerialArena {
   }
 
   template <typename Align, typename Cleanup>
-  void* AllocateFallbackImpl(size_t n, Align align, Cleanup cleanup);
+  AllocationResult AllocateFallbackImpl(size_t n, Align align, Cleanup cleanup);
   inline void AllocateNewBlock(size_t n);
   inline void Init(ArenaBlock* b, size_t offset);
 
@@ -485,11 +520,11 @@ class PROTOBUF_EXPORT SerialArena {
   std::atomic<size_t> space_used_{0};  // Necessary for metrics.
 };
 
-PROTOBUF_ALWAYS_INLINE void* SerialArena::MaybeAllocateString() {
+PROTOBUF_ALWAYS_INLINE AllocationResult SerialArena::MaybeAllocateString() {
   // Check how many unused instances are in the current block.
   size_t unused_bytes = string_block_unused_.load(std::memory_order_relaxed);
   if (ABSL_PREDICT_FALSE(unused_bytes == 0)) {
-    return nullptr;
+    return {nullptr};
   }
 
   unused_bytes -= sizeof(std::string);
@@ -497,13 +532,12 @@ PROTOBUF_ALWAYS_INLINE void* SerialArena::MaybeAllocateString() {
   void* p =
       string_block_.load(std::memory_order_relaxed)->AtOffset(unused_bytes);
   PROTOBUF_ASSUME(p != nullptr);
-  return p;
+  return {p};
 }
 
-ABSL_ATTRIBUTE_RETURNS_NONNULL PROTOBUF_ALWAYS_INLINE void*
-SerialArena::AllocateFromStringBlock() {
-  if (void* p = MaybeAllocateString(); ABSL_PREDICT_TRUE(p != nullptr)) {
-    return p;
+PROTOBUF_ALWAYS_INLINE AllocationResult SerialArena::AllocateFromStringBlock() {
+  if (auto res = MaybeAllocateString(); ABSL_PREDICT_TRUE(res.ptr != nullptr)) {
+    return res;
   }
   return AllocateFromStringBlockFallback();
 }
@@ -513,13 +547,13 @@ inline Arena* ParentArena(SerialArena* arena) {
   return arena->parent();
 }
 
-extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE void*
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE AllocationResult
 SerialArena::AllocateFallbackImpl(size_t, ArenaAlignDefault, NoCleanup);
-extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE void*
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE AllocationResult
 SerialArena::AllocateFallbackImpl(size_t, MemoryAlign, NoCleanup);
-extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE void*
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE AllocationResult
 SerialArena::AllocateFallbackImpl(size_t, ArenaAlignDefault, WithCleanup);
-extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE void*
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE AllocationResult
 SerialArena::AllocateFallbackImpl(size_t, MemoryAlign, WithCleanup);
 
 }  // namespace internal
