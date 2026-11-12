@@ -8,6 +8,7 @@ build --@com_google_protobuf//bazel/toolchains:prefer_prebuilt_protoc=false
 
 # This flag works around some issues with Rust linking.
 build --@rules_rust//rust/settings:experimental_use_cc_common_link=True
+build --@rules_rust//rust/settings:experimental_use_allocator_libraries_with_mangled_symbols=True
 
 # Build with all --incompatible flags that we can. This helps us prepare for
 # upcoming breaking changes in Bazel. This list was generated for Bazel 6 by

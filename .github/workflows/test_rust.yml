@@ -28,10 +28,8 @@ jobs:
           - bazel_cmd: "test"
 
           # Override cases with custom images
-          - config: { name: Cargo }
-            # We need Rust 1.90 so that we can use the new workspace publishing
-            # feature.
-            image: "us-docker.pkg.dev/protobuf-build/containers/release/linux/rust:9.0.0-1.90.0-98863a45066747115144a8a8fb4818189d1e0761"
+          - config: { name: Cargo, flags: -- 1.92.0 }
+            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.2.0-4d8e80ef93b0219fb907af9dd4596b92946995d8"
             bazel_cmd: "run"
             targets: "//rust/release_crates:cargo_test"
 
@@ -50,6 +48,7 @@ jobs:
           bazel-cache: rust_linux
           bazel: >-
             ${{ matrix.bazel_cmd }} --crosstool_top=//toolchain:clang_suite --@rules_rust//rust/settings:experimental_use_cc_common_link=True
+            --test_env=KOKORO_RUST_VERSION=1.92.0
             ${{ matrix.targets }} ${{ matrix.config.flags }}
 
   windows:
@@ -67,13 +66,11 @@ jobs:
         run: echo "startup --output_user_root=C:/ --windows_enable_symlinks" >> .bazelrc
       - name: Install Rust
         shell: bash
-        # We need Rust 1.90 so that we can use the new workspace publishing
-        # feature.
-        run: rustup default 1.90
+        run: rustup default 1.92.0
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel@v7
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel: run //rust/release_crates:cargo_test
+          bazel: run //rust/release_crates:cargo_test -- 1.92.0
           bazel-cache: windows-cargo
           version: 9.2.0
