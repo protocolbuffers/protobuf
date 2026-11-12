@@ -835,8 +835,8 @@ absl::Status WriteAny(JsonWriter& writer, const Msg<Traits>& msg,
 }
 
 template <typename Traits>
-absl::Status WriteMessage(JsonWriter& writer, const Msg<Traits>& msg,
-                          const Desc<Traits>& desc, bool is_top_level) {
+absl::Status WriteMessageBody(JsonWriter& writer, const Msg<Traits>& msg,
+                              const Desc<Traits>& desc, bool is_top_level) {
   switch (ClassifyMessage(Traits::TypeName(desc))) {
     case MessageType::kAny:
       return WriteAny<Traits>(writer, msg, desc);
@@ -872,6 +872,20 @@ absl::Status WriteMessage(JsonWriter& writer, const Msg<Traits>& msg,
       return absl::OkStatus();
     }
   }
+}
+
+template <typename Traits>
+absl::Status WriteMessage(JsonWriter& writer, const Msg<Traits>& msg,
+                          const Desc<Traits>& desc, bool is_top_level) {
+  if (is_top_level) {
+    return WriteMessageBody<Traits>(writer, msg, desc, is_top_level);
+  }
+  if (!writer.IncrementRecursionDepth()) {
+    return absl::InvalidArgumentError("message was too deeply nested");
+  }
+  RETURN_IF_ERROR(WriteMessageBody<Traits>(writer, msg, desc, is_top_level));
+  writer.DecrementRecursionDepth();
+  return absl::OkStatus();
 }
 }  // namespace
 

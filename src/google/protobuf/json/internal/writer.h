@@ -53,6 +53,13 @@ struct WriterOptions {
   // in the unit tests; we intend to remove this setting eventually. See
   // b/234868512.
   bool allow_legacy_nonconformant_behavior = false;
+
+  static constexpr int kDefaultDepth = 100;
+
+  // The depth of nested messages, including those expanded from
+  // google.protobuf.Any, that may be printed before bailing out. The default
+  // matches the recursion limit of the JSON and binary parsers.
+  int recursion_depth = kDefaultDepth;
 };
 
 template <typename Tuple, typename F, size_t... i>
@@ -89,6 +96,19 @@ class JsonWriter {
 
   void Push() { ++indent_; }
   void Pop() { --indent_; }
+
+  // Called before writing a nested message, including one expanded from
+  // google.protobuf.Any. Returns false if the nesting is deeper than
+  // options().recursion_depth allows.
+  bool IncrementRecursionDepth() {
+    if (options_.recursion_depth == 0) {
+      return false;
+    }
+    --options_.recursion_depth;
+    return true;
+  }
+
+  void DecrementRecursionDepth() { ++options_.recursion_depth; }
 
   // The many overloads of Write() will write a value to the underlying stream.
   // Some values may want to be quoted; the Quoted<> type will automatically add

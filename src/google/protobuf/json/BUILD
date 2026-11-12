@@ -48,6 +48,7 @@ cc_test(
     copts = COPTS,
     deps = [
         ":json",
+        "//:any_cc_proto",
         "//:duration_cc_proto",
         "//:field_mask_cc_proto",
         "//:struct_cc_proto",
