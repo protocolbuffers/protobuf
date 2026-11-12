@@ -23,6 +23,15 @@ cc_library(
 )
 
 cc_library(
+    name = "error_access",
+    hdrs = ["error_access.h"],
+    visibility = ["//hpb:__subpackages__"],
+    deps = [
+        "//hpb:error",
+    ],
+)
+
+cc_library(
     name = "template_help",
     hdrs = ["template_help.h"],
     visibility = ["//hpb:__subpackages__"],

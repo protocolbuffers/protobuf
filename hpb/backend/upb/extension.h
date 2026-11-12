@@ -14,6 +14,8 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "hpb/backend/upb/interop.h"
+#include "hpb/expected.h"
+#include "hpb/internal/error_access.h"
 #include "hpb/internal/internal.h"
 #include "hpb/internal/message_lock.h"
 #include "hpb/internal/template_help.h"
@@ -36,13 +38,14 @@ namespace internal {
 template <typename Extendee, typename Extension>
 class ExtensionIdentifier;
 
-absl::Status MoveExtension(upb_Message* message, upb_Arena* message_arena,
-                           const upb_MiniTableExtension* ext,
-                           upb_Message* extension, upb_Arena* extension_arena);
+Expected<void> MoveExtension(upb_Message* message, upb_Arena* message_arena,
+                             const upb_MiniTableExtension* ext,
+                             upb_Message* extension,
+                             upb_Arena* extension_arena);
 
-absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
-                          const upb_MiniTableExtension* ext,
-                          const upb_Message* extension);
+Expected<void> SetExtension(upb_Message* message, upb_Arena* message_arena,
+                            const upb_MiniTableExtension* ext,
+                            const upb_Message* extension);
 
 void SetAliasExtension(upb_Message* message, upb_Arena* message_arena,
                        const upb_MiniTableExtension* ext,
@@ -72,26 +75,26 @@ struct UpbExtensionTrait<hpb::RepeatedField<T>> {
     return ReturnType(upb_arr, hpb::interop::upb::GetArena(message));
   }
 };
-#define UPB_EXT_PRIMITIVE(CppType, UpbFunc)                              \
-  template <>                                                            \
-  struct UpbExtensionTrait<CppType> {                                    \
-    using DefaultType = CppType;                                         \
-    using ReturnType = CppType;                                          \
-                                                                         \
-    template <typename Msg, typename Id>                                 \
-    static constexpr ReturnType Get(Msg message, const Id& id) {         \
-      auto default_val = internal::PrivateAccess::GetDefaultValue(id);   \
-      return upb_Message_GetExtension##UpbFunc(                          \
-          interop::upb::GetMessage(message), id.mini_table_ext(),        \
-          default_val);                                                  \
-    }                                                                    \
-    template <typename Msg, typename Id>                                 \
-    static absl::Status Set(Msg message, const Id& id, CppType value) {  \
-      bool res = upb_Message_SetExtension##UpbFunc(                      \
-          interop::upb::GetMessage(message), id.mini_table_ext(), value, \
-          interop::upb::GetArena(message));                              \
-      return res ? absl::OkStatus() : MessageAllocationError();          \
-    }                                                                    \
+#define UPB_EXT_PRIMITIVE(CppType, UpbFunc)                                 \
+  template <>                                                               \
+  struct UpbExtensionTrait<CppType> {                                       \
+    using DefaultType = CppType;                                            \
+    using ReturnType = CppType;                                             \
+                                                                            \
+    template <typename Msg, typename Id>                                    \
+    static constexpr ReturnType Get(Msg message, const Id& id) {            \
+      auto default_val = internal::PrivateAccess::GetDefaultValue(id);      \
+      return upb_Message_GetExtension##UpbFunc(                             \
+          interop::upb::GetMessage(message), id.mini_table_ext(),           \
+          default_val);                                                     \
+    }                                                                       \
+    template <typename Msg, typename Id>                                    \
+    static Expected<void> Set(Msg message, const Id& id, CppType value) {   \
+      bool res = upb_Message_SetExtension##UpbFunc(                         \
+          interop::upb::GetMessage(message), id.mini_table_ext(), value,    \
+          interop::upb::GetArena(message));                                 \
+      return res ? Expected<void>() : internal::ErrorAccess::OutOfMemory(); \
+    }                                                                       \
   }
 
 UPB_EXT_PRIMITIVE(bool, Bool);
@@ -119,12 +122,13 @@ struct UpbExtensionTrait<absl::string_view> {
   }
 
   template <typename Msg, typename Id>
-  static absl::Status Set(Msg message, const Id& id, absl::string_view value) {
+  static Expected<void> Set(Msg message, const Id& id,
+                            absl::string_view value) {
     auto upb_value = upb_StringView_FromDataAndSize(value.data(), value.size());
     bool res = upb_Message_SetExtensionString(interop::upb::GetMessage(message),
                                               id.mini_table_ext(), upb_value,
                                               interop::upb::GetArena(message));
-    return res ? absl::OkStatus() : MessageAllocationError();
+    return res ? Expected<void>() : internal::ErrorAccess::OutOfMemory();
   }
 };
 
@@ -135,13 +139,13 @@ struct UpbExtensionTrait<T> {
   using DefaultType = std::false_type;
   using ReturnType = Ptr<const T>;
   template <typename Msg, typename Id>
-  static constexpr absl::StatusOr<ReturnType> Get(Msg message, const Id& id) {
+  static constexpr Expected<ReturnType> Get(Msg message, const Id& id) {
     upb_MessageValue value;
     const bool ok = internal::GetOrPromoteExtension(
         interop::upb::GetMessage(message), id.mini_table_ext(),
         interop::upb::GetArena(message), &value);
     if (!ok) {
-      return ExtensionNotFoundError(
+      return internal::ErrorAccess::ExtensionNotFound(
           upb_MiniTableExtension_Number(id.mini_table_ext()));
     }
     return Ptr<const T>(interop::upb::MakeCHandle<T>(
@@ -149,12 +153,12 @@ struct UpbExtensionTrait<T> {
   }
 
   template <typename Msg, typename Id>
-  static absl::Status Set(Msg message, const Id& id, const T& value) {
+  static Expected<void> Set(Msg message, const Id& id, const T& value) {
     return Set(message, id, &value);
   }
 
   template <typename Msg, typename Id>
-  static absl::Status Set(Msg message, const Id& id, T&& value) {
+  static Expected<void> Set(Msg message, const Id& id, T&& value) {
     T local = std::move(value);
     return internal::MoveExtension(
         interop::upb::GetMessage(message), interop::upb::GetArena(message),
@@ -163,7 +167,7 @@ struct UpbExtensionTrait<T> {
   }
 
   template <typename Msg, typename Id>
-  static absl::Status Set(Msg message, const Id& id, Ptr<const T> value) {
+  static Expected<void> Set(Msg message, const Id& id, Ptr<const T> value) {
     return hpb::internal::SetExtension(
         interop::upb::GetMessage(message), interop::upb::GetArena(message),
         id.mini_table_ext(), interop::upb::GetMessage(value));

@@ -13,6 +13,7 @@
 
 #include "absl/base/attributes.h"
 #include "hpb/arena.h"
+#include "hpb/expected.h"
 #include "hpb/internal/message_lock.h"
 #include "hpb/internal/template_help.h"
 #include "hpb/multibackend.h"
@@ -173,7 +174,7 @@ void SetAliasExtension(
 
 template <typename T, typename Extendee, typename Extension,
           typename = hpb::internal::EnableIfHpbClassThatHasExtensions<T>>
-absl::StatusOr<typename internal::UpbExtensionTrait<Extension>::ReturnType>
+Expected<typename internal::UpbExtensionTrait<Extension>::ReturnType>
 GetExtension(
     Ptr<T> message,
     const ::hpb::internal::ExtensionIdentifier<Extendee, Extension>& id) {
@@ -182,7 +183,7 @@ GetExtension(
 
 template <typename T, typename Extendee, typename Extension,
           typename = hpb::internal::EnableIfHpbClassThatHasExtensions<T>>
-absl::StatusOr<typename internal::UpbExtensionTrait<Extension>::ReturnType>
+Expected<typename internal::UpbExtensionTrait<Extension>::ReturnType>
 GetExtension(
     const T* message,
     const hpb::internal::ExtensionIdentifier<Extendee, Extension>& id) {
