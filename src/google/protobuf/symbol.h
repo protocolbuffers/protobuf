@@ -193,35 +193,53 @@ class Symbol {
 //
 // The keys to these hash-maps are (parent, name) or (parent, number) pairs.
 
-// A query object used to find a Symbol given its fully qualified name.
-struct FullNameQuery {
-  absl::string_view query;
-  absl::string_view full_name() const { return query; }
-};
+// Wrapper around Symbol (or a stack absl::string_view* query) for hashing and
+// equality by full_name() in an 8-byte slot.
+struct SymbolByFullName {
+  // Stored symbols use bit 0 == 0; lookup queries tag bit 0 == 1 pointing to an
+  // absl::string_view.
+  uintptr_t ptr;
 
-// Hash functor for Symbol, based on its fully qualified name.
-struct SymbolByFullNameHash {
-  using is_transparent = void;
-
-  template <typename T>
-  size_t operator()(const T& s) const {
-    return absl::HashOf(s.full_name());
+  explicit SymbolByFullName(Symbol s)
+      : ptr(reinterpret_cast<uintptr_t>(s.ptr())) {
+    ABSL_DCHECK(!s.IsNull());
+    ABSL_DCHECK_EQ(ptr & 1, 0u);
   }
-};
+  explicit SymbolByFullName(const absl::string_view* full_name)
+      : ptr(reinterpret_cast<uintptr_t>(full_name) | 1) {
+    static_assert(alignof(absl::string_view) >= 2, "");
+    ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(full_name) & 1, 0u);
+  }
 
-// Equality functor for Symbol, based on its fully qualified name.
-struct SymbolByFullNameEq {
-  using is_transparent = void;
+  bool is_query() const { return (ptr & 1) != 0; }
 
-  template <typename T, typename U>
-  bool operator()(const T& a, const U& b) const {
-    return a.full_name() == b.full_name();
+  Symbol symbol() const {
+    ABSL_DCHECK(!is_query());
+    return Symbol(reinterpret_cast<const SymbolBase*>(ptr));
+  }
+
+  absl::string_view full_name() const {
+    if (is_query()) {
+      return *reinterpret_cast<const absl::string_view*>(ptr & ~uintptr_t{1});
+    }
+    return symbol().full_name();
+  }
+
+  friend bool operator==(SymbolByFullName a, SymbolByFullName b) {
+    return a.ptr == b.ptr || a.full_name() == b.full_name();
+  }
+  friend bool operator!=(SymbolByFullName a, SymbolByFullName b) {
+    return !(a == b);
+  }
+
+  template <typename H>
+  friend H AbslHashValue(H h, SymbolByFullName s) {
+    return H::combine(std::move(h), s.full_name());
   }
 };
 
 // A set of Symbols, hashed and compared by their fully qualified name.
-using SymbolsByNameSet =
-    absl::flat_hash_set<Symbol, SymbolByFullNameHash, SymbolByFullNameEq>;
+using SymbolsByNameSet = absl::flat_hash_set<SymbolByFullName>;
 
 }  // namespace internal
 }  // namespace protobuf

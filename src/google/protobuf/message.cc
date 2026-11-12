@@ -492,6 +492,51 @@ MessageFactory::~MessageFactory() = default;
 
 namespace {
 
+// Wrapper around DescriptorTable* (or a stack absl::string_view* query) for
+// hashing and equality by filename in an 8-byte slot.
+struct DescriptorTableByName {
+  // Stored tables use bit 0 == 0; lookup queries tag bit 0 == 1 pointing to an
+  // absl::string_view.
+  uintptr_t ptr;
+
+  explicit DescriptorTableByName(const google::protobuf::internal::DescriptorTable* table)
+      : ptr(reinterpret_cast<uintptr_t>(table)) {
+    static_assert(alignof(google::protobuf::internal::DescriptorTable) >= 2, "");
+    ABSL_DCHECK_EQ(ptr & 1, 0u);
+  }
+  explicit DescriptorTableByName(const absl::string_view* filename)
+      : ptr(reinterpret_cast<uintptr_t>(filename) | 1) {
+    static_assert(alignof(absl::string_view) >= 2, "");
+    ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(filename) & 1, 0u);
+  }
+
+  bool is_query() const { return (ptr & 1) != 0; }
+
+  const google::protobuf::internal::DescriptorTable* table() const {
+    ABSL_DCHECK(!is_query());
+    return reinterpret_cast<const google::protobuf::internal::DescriptorTable*>(ptr);
+  }
+
+  absl::string_view filename() const {
+    if (is_query()) {
+      return *reinterpret_cast<const absl::string_view*>(ptr & ~uintptr_t{1});
+    }
+    return table()->filename;
+  }
+
+  friend bool operator==(DescriptorTableByName lhs, DescriptorTableByName rhs) {
+    return lhs.ptr == rhs.ptr || lhs.filename() == rhs.filename();
+  }
+  friend bool operator!=(DescriptorTableByName lhs, DescriptorTableByName rhs) {
+    return !(lhs == rhs);
+  }
+
+  template <typename H>
+  friend H AbslHashValue(H h, DescriptorTableByName entry) {
+    return H::combine(std::move(h), entry.filename());
+  }
+};
+
 class GeneratedMessageFactory final : public MessageFactory {
  public:
   static GeneratedMessageFactory* singleton();
@@ -519,44 +564,13 @@ class GeneratedMessageFactory final : public MessageFactory {
 
   const google::protobuf::internal::DescriptorTable* FindInFileMap(
       absl::string_view name) {
-    auto it = files_.find(name);
+    auto it = files_.find(DescriptorTableByName(&name));
     if (it == files_.end()) return nullptr;
-    return *it;
+    return it->table();
   }
 
-  struct DescriptorByNameHash {
-    using is_transparent = void;
-    size_t operator()(const google::protobuf::internal::DescriptorTable* t) const {
-      return absl::HashOf(absl::string_view{t->filename});
-    }
-
-    size_t operator()(absl::string_view name) const {
-      return absl::HashOf(name);
-    }
-  };
-  struct DescriptorByNameEq {
-    using is_transparent = void;
-    bool operator()(const google::protobuf::internal::DescriptorTable* lhs,
-                    const google::protobuf::internal::DescriptorTable* rhs) const {
-      return lhs == rhs || (*this)(lhs->filename, rhs->filename);
-    }
-    bool operator()(absl::string_view lhs,
-                    const google::protobuf::internal::DescriptorTable* rhs) const {
-      return (*this)(lhs, rhs->filename);
-    }
-    bool operator()(const google::protobuf::internal::DescriptorTable* lhs,
-                    absl::string_view rhs) const {
-      return (*this)(lhs->filename, rhs);
-    }
-    bool operator()(absl::string_view lhs, absl::string_view rhs) const {
-      return lhs == rhs;
-    }
-  };
-
   // Only written at static init time, so does not require locking.
-  absl::flat_hash_set<const google::protobuf::internal::DescriptorTable*,
-                      DescriptorByNameHash, DescriptorByNameEq>
-      files_;
+  absl::flat_hash_set<DescriptorTableByName> files_;
   DynamicMessageFactory dropped_defaults_factory_;
 
   absl::Mutex mutex_;
@@ -582,7 +596,7 @@ GeneratedMessageFactory* GeneratedMessageFactory::singleton() {
 
 void GeneratedMessageFactory::RegisterFile(
     const google::protobuf::internal::DescriptorTable* table) {
-  if (!files_.insert(table).second) {
+  if (!files_.insert(DescriptorTableByName(table)).second) {
     ABSL_LOG(FATAL) << "File is already registered: " << table->filename;
   }
 }

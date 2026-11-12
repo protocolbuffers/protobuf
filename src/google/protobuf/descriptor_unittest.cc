@@ -41,6 +41,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/flags/flag.h"
 #include "absl/functional/any_invocable.h"
+#include "absl/hash/hash_testing.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/log/die_if_null.h"
@@ -70,6 +71,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/symbol.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
@@ -18536,6 +18538,70 @@ TEST_F(CopySourceCodeInfoToTest, CopySourceCodeInfoTo) {
   EXPECT_EQ(1, foo_location.span(0));      // Foo is declared on line 1
   EXPECT_EQ(0, foo_location.span(1));      // Foo starts at column 0
   EXPECT_EQ(14, foo_location.span(2));     // Foo ends on column 14
+}
+
+TEST(DescriptorHashTest, SymbolByFullNameHashingWorks) {
+  DescriptorPool pool;
+  FileDescriptorProto file_proto;
+  file_proto.set_name("hash_test.proto");
+  file_proto.set_package("alpha.beta.gamma");
+  const FileDescriptor* file = pool.BuildFile(file_proto);
+  ASSERT_NE(file, nullptr);
+
+  auto make_subpkg = [file](int name_size) {
+    internal::Symbol::Subpackage subpkg;
+    subpkg.name_size = name_size;
+    subpkg.file = file;
+    return subpkg;
+  };
+
+  alignas(8) internal::Symbol::Subpackage subpkg_empty = make_subpkg(0);
+  alignas(8) internal::Symbol::Subpackage subpkg_alpha = make_subpkg(5);
+  alignas(8) internal::Symbol::Subpackage subpkg_ab = make_subpkg(10);
+  alignas(8) internal::Symbol::Subpackage subpkg_ab_alias = make_subpkg(10);
+  alignas(8) internal::Symbol::Subpackage subpkg_abc = make_subpkg(16);
+
+  internal::Symbol sym_empty(&subpkg_empty);
+  internal::Symbol sym_alpha(&subpkg_alpha);
+  internal::Symbol sym_ab(&subpkg_ab);
+  internal::Symbol sym_ab_alias(&subpkg_ab_alias);
+  internal::Symbol sym_abc(&subpkg_abc);
+
+  const absl::string_view q_empty = "";
+  const absl::string_view q_alpha = "alpha";
+  const absl::string_view q_ab = "alpha.beta";
+  const absl::string_view q_abc = "alpha.beta.gamma";
+  const absl::string_view q_missing = "alpha.other";
+
+  EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly({
+      internal::SymbolByFullName(sym_empty),
+      internal::SymbolByFullName(&q_empty),
+      internal::SymbolByFullName(sym_alpha),
+      internal::SymbolByFullName(&q_alpha),
+      internal::SymbolByFullName(sym_ab),
+      internal::SymbolByFullName(sym_ab_alias),
+      internal::SymbolByFullName(&q_ab),
+      internal::SymbolByFullName(sym_abc),
+      internal::SymbolByFullName(&q_abc),
+      internal::SymbolByFullName(&q_missing),
+  }));
+
+  internal::SymbolsByNameSet set;
+  EXPECT_TRUE(set.insert(internal::SymbolByFullName(sym_ab)).second);
+  EXPECT_FALSE(set.insert(internal::SymbolByFullName(sym_ab_alias)).second);
+  EXPECT_TRUE(set.insert(internal::SymbolByFullName(sym_abc)).second);
+
+  auto it = set.find(internal::SymbolByFullName(&q_ab));
+  ASSERT_NE(it, set.end());
+  EXPECT_EQ(it->symbol().sub_package_file_descriptor(), &subpkg_ab);
+  EXPECT_TRUE(set.contains(internal::SymbolByFullName(&q_ab)));
+  EXPECT_FALSE(set.contains(internal::SymbolByFullName(&q_missing)));
+  EXPECT_EQ(set.find(internal::SymbolByFullName(&q_missing)), set.end());
+
+  EXPECT_EQ(set.erase(internal::SymbolByFullName(&q_ab)), 1u);
+  EXPECT_FALSE(set.contains(internal::SymbolByFullName(&q_ab)));
+  EXPECT_EQ(set.erase(internal::SymbolByFullName(sym_abc)), 1u);
+  EXPECT_TRUE(set.empty());
 }
 
 // ===================================================================
