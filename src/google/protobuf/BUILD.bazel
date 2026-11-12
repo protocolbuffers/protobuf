@@ -457,6 +457,7 @@ cc_library(
         "@abseil-cpp//absl/base:dynamic_annotations",
         "@abseil-cpp//absl/base:prefetch",
         "@abseil-cpp//absl/cleanup",
+        "@abseil-cpp//absl/hash",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/numeric:bits",
@@ -926,6 +927,9 @@ cc_library(
     ],
     hdrs = PROTOBUF_HEADERS,
     copts = COPTS,
+    implementation_deps = [
+        ":transparent_ptr",
+    ],
     linkopts = LINK_OPTS,
     strip_include_prefix = "/src",
     visibility = [
@@ -990,6 +994,17 @@ cc_library(
     visibility = ["//visibility:private"],
     deps = [
         "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "transparent_ptr",
+    hdrs = ["transparent_ptr.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:private"],
+    deps = [
+        ":port",
+        "@abseil-cpp//absl/container:flat_hash_set",
     ],
 )
 

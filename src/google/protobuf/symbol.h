@@ -20,6 +20,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/port.h"
 
 namespace google {
 namespace protobuf {
@@ -181,6 +182,11 @@ class Symbol {
 
   const SymbolBase* ptr() const { return ptr_; }
 
+  template <typename H>
+  friend H AbslHashValue(H h, const Symbol& s) {
+    return H::combine(std::move(h), s.full_name());
+  }
+
  private:
   const SymbolBase* ptr_;
 };
@@ -197,17 +203,14 @@ class Symbol {
 struct FullNameQuery {
   absl::string_view query;
   absl::string_view full_name() const { return query; }
-};
 
-// Hash functor for Symbol, based on its fully qualified name.
-struct SymbolByFullNameHash {
-  using is_transparent = void;
-
-  template <typename T>
-  size_t operator()(const T& s) const {
-    return absl::HashOf(s.full_name());
+  template <typename H>
+  friend H AbslHashValue(H h, const FullNameQuery& q) {
+    return H::combine(std::move(h), q.query);
   }
 };
+
+using SymbolByFullNameHash = TransparentHash<Symbol, FullNameQuery>;
 
 // Equality functor for Symbol, based on its fully qualified name.
 struct SymbolByFullNameEq {
