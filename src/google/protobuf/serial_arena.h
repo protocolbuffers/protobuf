@@ -263,14 +263,6 @@ class PROTOBUF_EXPORT SerialArena {
     return ret;
   }
 
-  // If there is enough space in the current block, allocate space for one
-  // std::string object and register for destruction. The object has not been
-  // constructed and the memory returned is uninitialized.
-  PROTOBUF_ALWAYS_INLINE void* MaybeAllocateStringWithCleanup() {
-    void* p;
-    return MaybeAllocateString(p) ? p : nullptr;
-  }
-
   PROTOBUF_ALWAYS_INLINE
   void AddCleanup(void* elem, void (*destructor)(void*)) {
     cleanup_list_.Add(elem, destructor, *this);
@@ -344,7 +336,7 @@ class PROTOBUF_EXPORT SerialArena {
   inline SerialArena(FirstSerialArena, SizedPtr mem,
                      const AllocationPolicy& policy, ThreadSafeArena& parent);
 
-  bool MaybeAllocateString(void*& p);
+  void* MaybeAllocateString();
   ABSL_ATTRIBUTE_RETURNS_NONNULL void* AllocateFromStringBlockFallback();
 
   // Prefetch the next prefetch_degree bytes after `prefetch_ptr` and
@@ -493,22 +485,26 @@ class PROTOBUF_EXPORT SerialArena {
   std::atomic<size_t> space_used_{0};  // Necessary for metrics.
 };
 
-PROTOBUF_ALWAYS_INLINE bool SerialArena::MaybeAllocateString(void*& p) {
+PROTOBUF_ALWAYS_INLINE void* SerialArena::MaybeAllocateString() {
   // Check how many unused instances are in the current block.
   size_t unused_bytes = string_block_unused_.load(std::memory_order_relaxed);
-  if (ABSL_PREDICT_TRUE(unused_bytes != 0)) {
-    unused_bytes -= sizeof(std::string);
-    string_block_unused_.store(unused_bytes, std::memory_order_relaxed);
-    p = string_block_.load(std::memory_order_relaxed)->AtOffset(unused_bytes);
-    return true;
+  if (ABSL_PREDICT_FALSE(unused_bytes == 0)) {
+    return nullptr;
   }
-  return false;
+
+  unused_bytes -= sizeof(std::string);
+  string_block_unused_.store(unused_bytes, std::memory_order_relaxed);
+  void* p =
+      string_block_.load(std::memory_order_relaxed)->AtOffset(unused_bytes);
+  PROTOBUF_ASSUME(p != nullptr);
+  return p;
 }
 
 ABSL_ATTRIBUTE_RETURNS_NONNULL PROTOBUF_ALWAYS_INLINE void*
 SerialArena::AllocateFromStringBlock() {
-  void* p;
-  if (ABSL_PREDICT_TRUE(MaybeAllocateString(p))) return p;
+  if (void* p = MaybeAllocateString(); ABSL_PREDICT_TRUE(p != nullptr)) {
+    return p;
+  }
   return AllocateFromStringBlockFallback();
 }
 
