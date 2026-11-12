@@ -11,18 +11,21 @@
 // Conformance suites should depend on the test_environment_main library
 // instead of a generic gtest main.
 //
-// Any positional arguments left after flag parsing are appended to
-// --testee_args, so `conformance_test --testee_binary=foo -- --bar` passes
-// `--bar` to the testee.
+// The testee is whatever the library defining MakeTesteeRunner() (see
+// testee_runner.h) makes of --testee_binary and --testee_args; the binary must
+// link exactly one such library, :forked_testee by default.  Any positional
+// arguments left after flag parsing are appended to --testee_args, so
+// `conformance_test --testee_binary=foo -- --bar` passes `--bar` to a forked
+// testee.
 
 #include <utility>
 #include <vector>
 
 #include <gtest/gtest.h>
-#include "absl/log/absl_check.h"
 #include "absl/types/span.h"
 #include "conformance/test_environment.h"
 #include "conformance/test_environment_flags.h"
+#include "conformance/testee_runner.h"
 
 #include "absl/flags/parse.h"
 #include "absl/log/initialize.h"
@@ -46,8 +49,13 @@ int main(int argc, char* argv[]) {
     google::protobuf::conformance::internal::ConformanceEnvironmentOptions options =
         google::protobuf::conformance::internal::OptionsFromFlags(
             absl::MakeConstSpan(positional_args).subspan(1));
-    ABSL_QCHECK(!options.testee_binary.empty())
-        << "--testee_binary is required.";
+    // The linked testee decides what the flags mean, and the environment
+    // takes its runner instead of the flags (it would otherwise spawn
+    // --testee_binary itself).
+    options.owned_runner = google::protobuf::conformance::MakeTesteeRunner(
+        options.testee_binary, options.testee_args);
+    options.testee_binary.clear();
+    options.testee_args.clear();
     google::protobuf::conformance::internal::ConformanceEnvironment::Install(
         std::move(options));
   }
