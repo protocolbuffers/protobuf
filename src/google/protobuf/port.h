@@ -21,6 +21,7 @@
 #include <string>
 #include <type_traits>
 #include <typeinfo>
+#include <utility>
 
 #if defined(__ARM_FEATURE_CRC32)
 #include <arm_acle.h>
@@ -31,6 +32,7 @@
 #include "absl/base/config.h"
 #include "absl/base/dynamic_annotations.h"
 #include "absl/base/optimization.h"
+#include "absl/cleanup/cleanup.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/numeric/int128.h"
@@ -802,6 +804,63 @@ constexpr T* Launder(T* p) {
   return p;
 #endif
 }
+
+// Wrapper around a trivially-copyable lock-free value that is accessed
+// non-atomically (via plain reads/writes when `std::atomic_ref` is available)
+// during exclusive ownership and atomically via `AsAtomic()` during
+// shared/const access. Callers must ensure that all `AsAtomic()` operations on
+// an instance happen-before or happen-after any exclusive (`GetExclusive`,
+// `SetExclusive`, `SwapExclusive`, `UpdateExclusive`) operations.
+template <typename T>
+class HybridAtomic {
+ public:
+  constexpr HybridAtomic() = default;
+  constexpr explicit HybridAtomic(T val) : val_(val) {}
+
+  HybridAtomic(const HybridAtomic&) = delete;
+  HybridAtomic& operator=(const HybridAtomic&) = delete;
+
+#if defined(__cpp_lib_atomic_ref)
+  // If available, we use atomic_ref for performance.
+  // This makes the non-atomic getter/setter optimizable by the compiler.
+  static_assert(std::atomic_ref<T>::is_always_lock_free);
+
+  using AtomicRef = std::atomic_ref<T>;
+
+  AtomicRef AsAtomic() const { return AtomicRef(val_); }
+
+  T GetExclusive() { return val_; }
+  void SetExclusive(T val) { val_ = val; }
+  void SwapExclusive(HybridAtomic& other) { std::swap(val_, other.val_); }
+#else
+  using AtomicRef = std::atomic<T>&;
+
+  AtomicRef AsAtomic() const { return val_; }
+
+  T GetExclusive() { return val_.load(std::memory_order_relaxed); }
+  void SetExclusive(T val) { val_.store(val, std::memory_order_relaxed); }
+  void SwapExclusive(HybridAtomic& other) {
+    T l = val_.load(std::memory_order_relaxed);
+    T r = other.val_.load(std::memory_order_relaxed);
+    val_.store(r, std::memory_order_relaxed);
+    other.val_.store(l, std::memory_order_relaxed);
+  }
+#endif  // __cpp_lib_atomic_ref
+
+  template <typename F>
+  decltype(auto) UpdateExclusive(F&& fn) {
+    T val = GetExclusive();
+    absl::Cleanup commit = [&] { SetExclusive(val); };
+    return std::forward<F>(fn)(val);
+  }
+
+ private:
+#if defined(__cpp_lib_atomic_ref)
+  alignas(std::atomic_ref<T>::required_alignment) mutable T val_{};
+#else
+  mutable std::atomic<T> val_{};
+#endif  // __cpp_lib_atomic_ref
+};
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 template <typename T>
