@@ -9,6 +9,10 @@
 
 namespace Google\Protobuf\Internal;
 
+use Google\Protobuf\Internal\Edition;
+use Google\Protobuf\Internal\FeatureSet\FieldPresence;
+use Google\Protobuf\Internal\FeatureSet\RepeatedFieldEncoding;
+
 class FieldDescriptor
 {
     use HasPublicDescriptorTrait;
@@ -25,6 +29,7 @@ class FieldDescriptor
     private $packed;
     private $oneof_index = -1;
     private $proto3_optional;
+    private $has_presence = false;
 
     /** @var OneofDescriptor $containing_oneof */
     private $containing_oneof;
@@ -159,12 +164,19 @@ class FieldDescriptor
         $this->proto3_optional = $proto3_optional;
     }
 
+    public function setHasPresence(bool $has_presence)
+    {
+        $this->has_presence = $has_presence;
+    }
+
     public function hasPresence()
     {
         if ($this->isRepeated()) {
             return false;
         }
-        return $this->getType() == GPBType::MESSAGE ||
+        return $this->has_presence ||
+               $this->getType() == GPBType::MESSAGE ||
+               $this->getType() == GPBType::GROUP ||
                !is_null($this->containing_oneof);
     }
 
@@ -235,6 +247,23 @@ class FieldDescriptor
      */
     public static function getFieldDescriptor($proto)
     {
+        return self::buildWithFeatures(
+            $proto,
+            FileDescriptor::defaultFeatures(Edition::EDITION_PROTO3),
+            Edition::EDITION_PROTO3);
+    }
+
+    /**
+     * @param FieldDescriptorProto $proto
+     * @param FeatureSet $parent_features
+     * @param int $edition
+     * @return FieldDescriptor
+     */
+    public static function buildWithFeatures(
+        $proto,
+        FeatureSet $parent_features,
+        int $edition
+    ) {
         $type_name = null;
         $type = $proto->getType();
         switch ($type) {
@@ -248,20 +277,36 @@ class FieldDescriptor
         }
 
         $oneof_index = $proto->hasOneofIndex() ? $proto->getOneofIndex() : -1;
-        // TODO: once proto2 is supported, this default should be false
-        // for proto2.
-        if ($proto->getLabel() === GPBLabel::REPEATED &&
-            $proto->getType() !== GPBType::MESSAGE &&
-            $proto->getType() !== GPBType::GROUP &&
-            $proto->getType() !== GPBType::STRING &&
-            $proto->getType() !== GPBType::BYTES) {
-          $packed = true;
-        } else {
-          $packed = false;
-        }
         $options = $proto->getOptions();
-        if ($options !== null) {
-            $packed = $options->getPacked();
+        $features = FileDescriptor::resolveFeatures(
+            $parent_features,
+            $options !== null ? $options->getFeatures() : null
+        );
+
+        $label = $proto->getLabel();
+        if ($edition === Edition::EDITION_PROTO2 ||
+            $edition === Edition::EDITION_PROTO3) {
+            if ($label === GPBLabel::REQUIRED) {
+                $features = clone $features;
+                $features->setFieldPresence(FieldPresence::LEGACY_REQUIRED);
+            }
+            if ($options !== null && $options->hasPacked()) {
+                $features = clone $features;
+                $features->setRepeatedFieldEncoding(
+                    $options->getPacked()
+                        ? RepeatedFieldEncoding::PACKED
+                        : RepeatedFieldEncoding::EXPANDED
+                );
+            }
+        } elseif ($label === GPBLabel::OPTIONAL &&
+                  $features->getFieldPresence() === FieldPresence::LEGACY_REQUIRED) {
+            $label = GPBLabel::REQUIRED;
+        }
+
+        if ($label === GPBLabel::REPEATED && self::isTypePackable($type)) {
+            $packed = ($features->getRepeatedFieldEncoding() === RepeatedFieldEncoding::PACKED);
+        } else {
+            $packed = false;
         }
 
         $field = new FieldDescriptor();
@@ -283,10 +328,14 @@ class FieldDescriptor
         $field->setSetter('set' . $camel_name);
         $field->setType($proto->getType());
         $field->setNumber($proto->getNumber());
-        $field->setLabel($proto->getLabel());
+        $field->setLabel($label);
         $field->setPacked($packed);
         $field->setOneofIndex($oneof_index);
         $field->setProto3Optional($proto->getProto3Optional());
+        $field->setHasPresence(
+            $label !== GPBLabel::REPEATED &&
+            $features->getFieldPresence() !== FieldPresence::IMPLICIT
+        );
 
         // At this time, the message/enum type may have not been added to pool.
         // So we use the type name as place holder and will replace it with the
