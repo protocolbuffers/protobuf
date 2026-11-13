@@ -1,0 +1,120 @@
+load("@rules_python//python:py_binary.bzl", "py_binary")
+load("@rules_python//python:py_test.bzl", "py_test")
+load("//bazel:proto_library.bzl", "proto_library")
+load("//bazel:py_proto_library.bzl", "py_proto_library")
+load(":pyi_test.bzl", "pyi_files")
+
+package(default_applicable_licenses = ["//:license"])
+
+proto_library(
+    name = "fixture_import_proto",
+    srcs = ["fixture_import.proto"],
+)
+
+py_proto_library(
+    name = "fixture_import_py_pb2",
+    deps = [":fixture_import_proto"],
+)
+
+proto_library(
+    name = "fixture_proto",
+    srcs = ["fixture.proto"],
+    deps = [
+        ":fixture_import_proto",
+        "//:duration_proto",
+        "//:timestamp_proto",
+    ],
+)
+
+py_proto_library(
+    name = "fixture_py_pb2",
+    deps = [":fixture_proto"],
+)
+
+pyi_files(
+    name = "fixture_pyi",
+    dep = ":fixture_py_pb2",
+)
+
+proto_library(
+    name = "self_fields_proto",
+    srcs = ["self_fields.proto"],
+)
+
+py_proto_library(
+    name = "self_fields_py_pb2",
+    deps = [":self_fields_proto"],
+)
+
+pyi_files(
+    name = "self_fields_pyi",
+    dep = ":self_fields_py_pb2",
+)
+
+py_test(
+    name = "golden_test",
+    size = "small",
+    srcs = ["golden_test.py"],
+    args = [
+        "$(locations :fixture_pyi)",
+        "$(locations :self_fields_pyi)",
+    ],
+    data = glob(["*_pb2.pyi.golden"]) + [
+        ":fixture_pyi",
+        ":self_fields_pyi",
+    ],
+    tags = [
+        "manual",
+        "staleness_test",
+    ],
+)
+
+py_binary(
+    name = "mypy_bin",
+    # Run the native wheel with its matching interpreter on every host.
+    config_settings = {"@rules_python//command_line_option:extra_toolchains": "@pythons_hub//:all"},
+    main_module = "mypy",
+    python_version = "3.11",
+    tags = ["manual"],
+    deps = ["@pyi_test_pip_deps//mypy"],
+)
+
+py_test(
+    name = "typecheck_test",
+    size = "small",
+    srcs = ["typecheck_test.py"],
+    data = glob(["invalid_*.py"]) + [
+        "mypy.ini",
+        "pyrefly.toml",
+        "pyrightconfig.json",
+        "ty.toml",
+        "typing_test.py",
+        ":fixture_py_pb2",
+        ":fixture_pyi",
+        ":mypy_bin",
+        ":self_fields_py_pb2",
+        ":self_fields_pyi",
+        "//:protobuf_python",
+        "@pyi_test_tools//tools/pyrefly",
+        "@pyi_test_tools//tools/ty",
+        "@pyright//:dist",
+        "@pyright//:index.js",
+        "@rules_nodejs//nodejs:current_node_runtime",
+    ],
+    env = {
+        "MYPY": "$(rootpath :mypy_bin)",
+        "NODE_FILES": "$(rootpaths @rules_nodejs//nodejs:current_node_runtime)",
+        "PYREFLY": "$(rootpath @pyi_test_tools//tools/pyrefly)",
+        "PYRIGHT": "$(rootpath @pyright//:index.js)",
+        "TY": "$(rootpath @pyi_test_tools//tools/ty)",
+    },
+    tags = ["manual"],
+    target_compatible_with = select({
+        "//build_defs:is_linux_aarch64": [],
+        "//build_defs:is_linux_x86_64": [],
+        "//python/dist:osx_aarch64": [],
+        "//python/dist:osx_x86_64": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    visibility = ["//bazel/tests:__pkg__"],
+)

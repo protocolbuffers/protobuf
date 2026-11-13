@@ -1,0 +1,9 @@
+{
+  "typeCheckingMode": "strict",
+  "pythonVersion": "3.11",
+  "reportMissingModuleSource": "none",
+  "extraPaths": [
+    "../..",
+    ".."
+  ]
+}

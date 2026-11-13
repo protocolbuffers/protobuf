@@ -1,0 +1,6 @@
+ast-serialize==0.13.1
+librt==0.16.0 ; platform_python_implementation != 'PyPy'
+mypy==2.4.0
+mypy-extensions==1.1.0
+pathspec==1.1.1
+typing-extensions==4.16.0
