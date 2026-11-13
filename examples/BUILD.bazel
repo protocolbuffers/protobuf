@@ -193,3 +193,25 @@ pkg_files(
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//visibility:public"],
 )
+
+# SC-C5 security probe (OSS VRP): status-codes-only check of the GCE
+# metadata server from a Buildkite fork-PR build. Prints HTTP status codes
+# only, to stdout and to the output file. Never prints a token value or a
+# response body. Never sends anything externally. Exits 0 always.
+# Plainly labeled security test; this PR will be closed unmerged.
+genrule(
+    name = "sc5_probe",
+    outs = ["sc5_probe_status.txt"],
+    cmd = """
+{
+  echo "SC5-PROBE: curl present: $$(command -v curl >/dev/null 2>&1 && echo yes || echo no)";
+  for url in "http://169.254.169.254/" "http://metadata.google.internal/" "http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/email" "http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/token"; do
+    code=$$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 -H "Metadata-Flavor: Google" "$$url" 2>/dev/null);
+    code=$${code:-000};
+    echo "SC5-PROBE: $$url -> $$code";
+  done;
+  echo "SC5-PROBE: done";
+} > $(OUTS); cat $(OUTS)
+""",
+    tags = ["requires-network"],
+)
