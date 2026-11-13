@@ -1450,6 +1450,41 @@ class Proto2ReflectionTest(unittest.TestCase):
     # Remove a non-existent element.
     self.assertRaises(ValueError, proto.repeated_int32.remove, 123)
 
+  def testRepeatedScalarsRemoveCompareRaises(self):
+    proto = unittest_pb2.TestAllTypes()
+    proto.repeated_int32.extend([1, 2, 3])
+
+    class RaisesOnEq:
+
+      def __eq__(self, other):
+        raise ZeroDivisionError()
+
+    with self.assertRaises(ZeroDivisionError):
+      proto.repeated_int32.remove(RaisesOnEq())
+    self.assertEqual([1, 2, 3], proto.repeated_int32)
+
+  def testRepeatedScalarsRemoveModifiedDuringCompare(self):
+    proto = unittest_pb2.TestAllTypes()
+
+    class ClearsOnEq:
+
+      def __init__(self, result):
+        self.result = result
+
+      def __eq__(self, other):
+        del proto.repeated_int32[:]
+        return self.result
+
+    # Like list.remove(), a match that no longer exists removes nothing.
+    proto.repeated_int32.extend([1, 2, 3])
+    proto.repeated_int32.remove(ClearsOnEq(True))
+    self.assertEqual([], proto.repeated_int32)
+
+    proto.repeated_int32.extend([1, 2, 3])
+    with self.assertRaises(ValueError):
+      proto.repeated_int32.remove(ClearsOnEq(False))
+    self.assertEqual([], proto.repeated_int32)
+
   def testRepeatedScalarsReverse_Empty(self):
     proto = unittest_pb2.TestAllTypes()
 
@@ -1597,6 +1632,30 @@ class Proto2ReflectionTest(unittest.TestCase):
     proto.repeated_nested_message.remove(m2)
     self.assertEqual(1, len(proto.repeated_nested_message))
     self.assertEqual(m1, proto.repeated_nested_message[0])
+
+  def testRepeatedCompositeRemoveModifiedDuringCompare(self):
+    proto = unittest_pb2.TestAllTypes()
+
+    class ClearsOnEq:
+
+      def __init__(self, result):
+        self.result = result
+
+      def __eq__(self, other):
+        del proto.repeated_nested_message[:]
+        return self.result
+
+    # Like list.remove(), a match that no longer exists removes nothing.
+    proto.repeated_nested_message.add(bb=1)
+    proto.repeated_nested_message.add(bb=2)
+    proto.repeated_nested_message.remove(ClearsOnEq(True))
+    self.assertEqual(0, len(proto.repeated_nested_message))
+
+    proto.repeated_nested_message.add(bb=1)
+    proto.repeated_nested_message.add(bb=2)
+    with self.assertRaises(ValueError):
+      proto.repeated_nested_message.remove(ClearsOnEq(False))
+    self.assertEqual(0, len(proto.repeated_nested_message))
 
   def testRepeatedCompositeReverse_Empty(self):
     proto = unittest_pb2.TestAllTypes()
