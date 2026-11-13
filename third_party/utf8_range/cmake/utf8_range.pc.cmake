@@ -7,5 +7,5 @@ Name: UTF8 Range
 Description: Google's UTF8 Library
 Version: 1.0
 Requires: absl_strings
-Libs: -L${libdir} -lutf8_validity -lutf8_range @CMAKE_THREAD_LIBS_INIT@
+Libs: -L${libdir} -l@LIB_PREFIX@utf8_validity -l@LIB_PREFIX@utf8_range @CMAKE_THREAD_LIBS_INIT@
 Cflags: -I${includedir}
