@@ -10,6 +10,7 @@
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
+load("@rules_rust//cargo:defs.bzl", "cargo_build_script")
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 
@@ -438,6 +439,23 @@ pkg_filegroup(
     ],
     prefix = "src",
     visibility = ["//rust/release_crates:__subpackages__"],
+)
+
+cargo_build_script(
+    name = "rust_version_test_build_script",
+    testonly = True,
+    srcs = ["rust_version_test_build.rs"],
+    edition = "2024",
+)
+
+rust_test(
+    name = "rust_version_test",
+    srcs = ["rust_version_test.rs"],
+    edition = "2024",
+    deps = [
+        ":rust_version_test_build_script",
+        "@crate_index//:googletest",
+    ],
 )
 
 pkg_files(

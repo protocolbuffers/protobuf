@@ -11,7 +11,7 @@ readme = "README.md"
 version = "{PROTOBUF_RUST_VERSION}"
 edition = "2021"  # The Rust edition (not to be confused with Protobuf Edition).
 license = "BSD-3-Clause"
-rust-version = "1.79"
+rust-version = "1.92"
 description = "Protobuf proc macro implementation (internal)"
 # Superseded by the google-protobuf-macros crate, which this crate re-exports.
 # No new versions are published to crates.io.

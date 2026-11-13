@@ -48,10 +48,41 @@ pushd "$WORKSPACE_ROOT"
 tar -xv < "$WORKSPACE_TAR"
 popd
 
-# Put the Bazel-built protoc at the beginning of $PATH
-PATH=$(dirname $(rlocation com_google_protobuf/protoc)):$PATH
+# Put the Bazel-downloaded Rust toolchain and Bazel-built protoc at the
+# beginning of $PATH.
+RUST_BIN_DIR="$(dirname "$(rlocation "${CARGO_RLOCATION}")")"
+PATH="${RUST_BIN_DIR}:$(dirname "$(rlocation com_google_protobuf/protoc)"):${PATH}"
 
-export RUSTFLAGS="-Dwarnings"
+rustc -vV
+cargo -V
+
+EXPECTED_RUST_VERSION="${KOKORO_RUST_VERSION:-${1:-}}"
+if [[ -n "${EXPECTED_RUST_VERSION}" ]]; then
+  ACTUAL_RUSTC_VERSION="$(rustc -V | tr -d '\r' | awk '{print $2}')"
+  if [[ "${ACTUAL_RUSTC_VERSION}" != "${EXPECTED_RUST_VERSION}" && "${ACTUAL_RUSTC_VERSION}" != "${EXPECTED_RUST_VERSION}."* ]]; then
+    echo >&2 "ERROR: Expected rustc version ${EXPECTED_RUST_VERSION}, got ${ACTUAL_RUSTC_VERSION}"
+    exit 1
+  fi
+  ACTUAL_CARGO_VERSION="$(cargo -V | tr -d '\r' | awk '{print $2}')"
+  if [[ "${ACTUAL_CARGO_VERSION}" != "${EXPECTED_RUST_VERSION}" && "${ACTUAL_CARGO_VERSION}" != "${EXPECTED_RUST_VERSION}."* ]]; then
+    echo >&2 "ERROR: Expected cargo version ${EXPECTED_RUST_VERSION}, got ${ACTUAL_CARGO_VERSION}"
+    exit 1
+  fi
+fi
+
+RUSTFLAGS="-Dwarnings"
+
+# On Linux with Clang, `google_protobuf/build.rs` compiles `upb` C sources with
+# `-flto=thin`. Route linking through the container's `clang` and `lld` rather
+# than Rust's bundled `rust-lld` so Clang and Rust LLVM major versions are
+# decoupled (leaving Windows MSVC untouched).
+if [[ "$(uname -s)" == "Linux" && "${CC:-}" == clang* ]]; then
+  HOST_TRIPLE="$(rustc -vV | sed -n 's/^host: //p')"
+  TRIPLE_UPPER="$(echo "${HOST_TRIPLE}" | tr '[:lower:]-' '[:upper:]_')"
+  export "CARGO_TARGET_${TRIPLE_UPPER}_LINKER=${CC}"
+  RUSTFLAGS="${RUSTFLAGS} -Clink-arg=-fuse-ld=lld"
+fi
+export RUSTFLAGS
 
 cd "$WORKSPACE_ROOT"
 CARGO_HOME=$CARGO_HOME cargo test
