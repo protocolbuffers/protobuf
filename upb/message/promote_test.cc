@@ -17,6 +17,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <string>
 
 #include <gtest/gtest.h>
@@ -418,6 +419,120 @@ TEST(GeneratedCode, PromoteUnknownMessageOld) {
                 (upb_test_ModelWithExtensions*)promoted_message),
             12);
   upb_Arena_Free(arena);
+}
+
+// Retains `wire` as unknown data in a message whose only field (number 5) is an
+// unlinked message field, links the sub-message table, and promotes the field.
+//
+// `wire` is copied into an exact-size heap buffer that the message aliases, so
+// any read past the end of the captured field is a heap-buffer-overflow under
+// ASan. `via_decode` selects between parsing `wire` (which only accepts
+// well-formed fields) and storing the raw bytes directly (which also allows
+// malformed ones).
+struct PromoteFieldFive {
+  PromoteFieldFive(const std::string& wire, bool via_decode)
+      : buf_(new char[wire.size()]) {
+    memcpy(buf_.get(), wire.data(), wire.size());
+    upb::MtDataEncoder e;
+    e.StartMessage(0);
+    e.PutField(kUpb_FieldType_Message, 5, 0);
+    upb_Status status;
+    upb_Status_Clear(&status);
+    mini_table_ = upb_MiniTable_Build(e.data().data(), e.data().size(),
+                                      arena_.ptr(), &status);
+    EXPECT_EQ(status.ok, true);
+    msg_ = _upb_Message_New(mini_table_, arena_.ptr());
+    if (via_decode) {
+      EXPECT_EQ(upb_Decode(buf_.get(), wire.size(), msg_, mini_table_, nullptr,
+                           kUpb_DecodeOption_AliasString, arena_.ptr()),
+                kUpb_DecodeStatus_Ok);
+    } else {
+      EXPECT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+          msg_, buf_.get(), wire.size(), arena_.ptr(), kUpb_AddUnknown_Alias));
+    }
+    EXPECT_EQ(wire.size(), GetUnknownLength(msg_));
+    field_ = upb_MiniTable_GetFieldByIndex(mini_table_, 0);
+    EXPECT_TRUE(upb_MiniTable_SetSubMessage(
+        mini_table_, const_cast<upb_MiniTableField*>(field_),
+        &upb_0test__ModelWithExtensions_msg_init));
+  }
+
+  upb_UnknownToMessageRet Promote() {
+    return upb_MiniTable_PromoteUnknownToMessage(
+        msg_, mini_table_, field_, &upb_0test__ModelWithExtensions_msg_init,
+        upb_DecodeOptions_MaxDepth(0), arena_.ptr());
+  }
+
+  upb::Arena arena_;
+  std::unique_ptr<char[]> buf_;
+  upb_MiniTable* mini_table_;
+  upb_Message* msg_;
+  const upb_MiniTableField* field_;
+};
+
+TEST(GeneratedCode, PromoteUnknownMessageDelimitedPositiveControl) {
+  upb::Arena arena;
+  upb_test_ModelWithExtensions* sub =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+  upb_test_ModelWithExtensions_set_random_int32(sub, 12);
+  size_t sub_size;
+  char* sub_bytes =
+      upb_test_ModelWithExtensions_serialize(sub, arena.ptr(), &sub_size);
+  ASSERT_LT(sub_size, 128);
+  // Field 5, wire type 2 (delimited).
+  std::string wire = {static_cast<char>((5 << 3) | 2),
+                      static_cast<char>(sub_size)};
+  wire.append(sub_bytes, sub_size);
+
+  PromoteFieldFive f(wire, /*via_decode=*/true);
+  upb_UnknownToMessageRet ret = f.Promote();
+  ASSERT_EQ(ret.status, kUpb_UnknownToMessage_Ok);
+  const upb_Message* promoted = upb_Message_GetMessage(f.msg_, f.field_);
+  ASSERT_NE(promoted, nullptr);
+  EXPECT_EQ(
+      upb_test_ModelWithExtensions_random_int32(
+          reinterpret_cast<const upb_test_ModelWithExtensions*>(promoted)),
+      12);
+  EXPECT_EQ(0, GetUnknownLength(f.msg_));
+}
+
+// A varint is not a message. Its value must not be read as a message length.
+TEST(GeneratedCode, PromoteUnknownMessageRejectsVarintWireType) {
+  // Field 5, wire type 0 (varint), value 0. The end of the field is the end of
+  // the buffer.
+  PromoteFieldFive f(std::string("\x28\x00", 2), /*via_decode=*/true);
+  EXPECT_EQ(f.Promote().status, kUpb_UnknownToMessage_ParseError);
+  EXPECT_EQ(upb_Message_GetMessage(f.msg_, f.field_), nullptr);
+  EXPECT_EQ(2, GetUnknownLength(f.msg_));
+}
+
+// Same, with a non-zero value: the value would be used as the length of a
+// message starting at the end of the captured field.
+TEST(GeneratedCode, PromoteUnknownMessageRejectsVarintValueAsLength) {
+  PromoteFieldFive f(std::string("\x28\x7f", 2), /*via_decode=*/true);
+  EXPECT_EQ(f.Promote().status, kUpb_UnknownToMessage_ParseError);
+  EXPECT_EQ(upb_Message_GetMessage(f.msg_, f.field_), nullptr);
+  EXPECT_EQ(2, GetUnknownLength(f.msg_));
+}
+
+// The wire type has to be checked before anything past the tag is read as a
+// varint. A fixed32 payload with every continuation bit set makes a varint read
+// run past the end of the captured field.
+TEST(GeneratedCode, PromoteUnknownMessageRejectsFixed32BeforeReadingLength) {
+  PromoteFieldFive f(std::string("\x2d\xff\xff\xff\xff", 5),
+                     /*via_decode=*/true);
+  EXPECT_EQ(f.Promote().status, kUpb_UnknownToMessage_ParseError);
+  EXPECT_EQ(upb_Message_GetMessage(f.msg_, f.field_), nullptr);
+  EXPECT_EQ(5, GetUnknownLength(f.msg_));
+}
+
+// A delimited field whose declared length exceeds the bytes captured for it.
+// This cannot come from upb_Decode, so the raw bytes are stored directly.
+TEST(GeneratedCode, PromoteUnknownMessageRejectsLengthPastCapturedSpan) {
+  PromoteFieldFive f(std::string("\x2a\x05\x08\x01", 4), /*via_decode=*/false);
+  EXPECT_EQ(f.Promote().status, kUpb_UnknownToMessage_ParseError);
+  EXPECT_EQ(upb_Message_GetMessage(f.msg_, f.field_), nullptr);
+  EXPECT_EQ(4, GetUnknownLength(f.msg_));
 }
 
 TEST(GeneratedCode, PromoteUnknownRepeatedMessageOld) {
