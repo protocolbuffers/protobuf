@@ -26,7 +26,6 @@ bootstrap_upb_proto_library(
         "//:descriptor_proto_srcs",
         "//src/google/protobuf/compiler:plugin_proto_src",
     ],
-    strip_prefix = "third_party/protobuf/github/bootstrap/src",
     deps = ["//upb/reflection:descriptor_upb_proto"],
 )
 

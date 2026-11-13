@@ -66,7 +66,6 @@ cc_library(
         "//hpb_generator:__pkg__",
         "//src/google/protobuf/compiler/interop:__pkg__",
         "//src/google/protobuf/compiler/rust:__pkg__",
-        "//third_party/kotlin/protobuf/generator/native:__pkg__",
         "//upb_generator:__subpackages__",
     ],
     deps = [
@@ -104,7 +103,6 @@ bootstrap_cc_binary(
     features = UPB_DEFAULT_FEATURES,
     visibility = [
         "//editions/codegen_tests:__pkg__",
-        "//net/proto2/contrib/protoc_explorer:__pkg__",
         "//pkg:__pkg__",
         "//rust:__subpackages__",
         "//third_party/prototiller/transformer:__pkg__",
