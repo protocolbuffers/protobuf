@@ -1696,332 +1696,204 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
   uint32_t fieldNumber = GPBFieldNumber(field);
 
   switch (GPBGetFieldDataType(field)) {
-      // clang-format off
-
-//%PDDM-DEFINE FIELD_CASE(TYPE, REAL_TYPE)
-//%FIELD_CASE_FULL(TYPE, REAL_TYPE, REAL_TYPE)
-//%PDDM-DEFINE FIELD_CASE_FULL(TYPE, REAL_TYPE, ARRAY_TYPE)
-//%    case GPBDataType##TYPE:
-//%      if (fieldType == GPBFieldTypeRepeated) {
-//%        uint32_t tag = field.isPackable ? GPBFieldTag(field) : 0;
-//%        GPB##ARRAY_TYPE##Array *array =
-//%            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
-//%        [output write##TYPE##Array:fieldNumber values:array tag:tag];
-//%      } else if (fieldType == GPBFieldTypeSingle) {
-//%        [output write##TYPE:fieldNumber
-//%              TYPE$S  value:GPBGetMessage##REAL_TYPE##Field(self, field)];
-//%      } else {  // fieldType == GPBFieldTypeMap
-//%        // Exact type here doesn't matter.
-//%        GPBInt32##ARRAY_TYPE##Dictionary *dict =
-//%            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
-//%        [dict writeToCodedOutputStream:output asField:field];
-//%      }
-//%      break;
-//%
-//%PDDM-DEFINE FIELD_CASE2(TYPE)
-//%    case GPBDataType##TYPE:
-//%      if (fieldType == GPBFieldTypeRepeated) {
-//%        NSArray *array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
-//%        [output write##TYPE##Array:fieldNumber values:array];
-//%      } else if (fieldType == GPBFieldTypeSingle) {
-//%        // GPBGetObjectIvarWithFieldNoAutocreate() avoids doing the has check
-//%        // again.
-//%        [output write##TYPE:fieldNumber
-//%              TYPE$S  value:GPBGetObjectIvarWithFieldNoAutocreate(self, field)];
-//%      } else {  // fieldType == GPBFieldTypeMap
-//%        // Exact type here doesn't matter.
-//%        id dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
-//%        GPBDataType mapKeyDataType = field.mapKeyDataType;
-//%        if (mapKeyDataType == GPBDataTypeString) {
-//%          GPBDictionaryWriteToStreamInternalHelper(output, dict, field);
-//%        } else {
-//%          [dict writeToCodedOutputStream:output asField:field];
-//%        }
-//%      }
-//%      break;
-//%
-//%PDDM-EXPAND FIELD_CASE(Bool, Bool)
-// This block of code is generated, do not edit it directly.
+      // @@protoc_objc_autogen: GPBMessage.m:write_field_cases
+      // This block of code is generated, do not edit it directly.
 
     case GPBDataTypeBool:
       if (fieldType == GPBFieldTypeRepeated) {
         uint32_t tag = field.isPackable ? GPBFieldTag(field) : 0;
-        GPBBoolArray *array =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBBoolArray *array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [output writeBoolArray:fieldNumber values:array tag:tag];
       } else if (fieldType == GPBFieldTypeSingle) {
-        [output writeBool:fieldNumber
-                    value:GPBGetMessageBoolField(self, field)];
+        [output writeBool:fieldNumber value:GPBGetMessageBoolField(self, field)];
       } else {  // fieldType == GPBFieldTypeMap
         // Exact type here doesn't matter.
-        GPBInt32BoolDictionary *dict =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBInt32BoolDictionary *dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [dict writeToCodedOutputStream:output asField:field];
       }
       break;
-
-//%PDDM-EXPAND FIELD_CASE(Fixed32, UInt32)
-// This block of code is generated, do not edit it directly.
 
     case GPBDataTypeFixed32:
       if (fieldType == GPBFieldTypeRepeated) {
         uint32_t tag = field.isPackable ? GPBFieldTag(field) : 0;
-        GPBUInt32Array *array =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBUInt32Array *array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [output writeFixed32Array:fieldNumber values:array tag:tag];
       } else if (fieldType == GPBFieldTypeSingle) {
-        [output writeFixed32:fieldNumber
-                       value:GPBGetMessageUInt32Field(self, field)];
+        [output writeFixed32:fieldNumber value:GPBGetMessageUInt32Field(self, field)];
       } else {  // fieldType == GPBFieldTypeMap
         // Exact type here doesn't matter.
-        GPBInt32UInt32Dictionary *dict =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBInt32UInt32Dictionary *dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [dict writeToCodedOutputStream:output asField:field];
       }
       break;
-
-//%PDDM-EXPAND FIELD_CASE(SFixed32, Int32)
-// This block of code is generated, do not edit it directly.
 
     case GPBDataTypeSFixed32:
       if (fieldType == GPBFieldTypeRepeated) {
         uint32_t tag = field.isPackable ? GPBFieldTag(field) : 0;
-        GPBInt32Array *array =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBInt32Array *array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [output writeSFixed32Array:fieldNumber values:array tag:tag];
       } else if (fieldType == GPBFieldTypeSingle) {
-        [output writeSFixed32:fieldNumber
-                        value:GPBGetMessageInt32Field(self, field)];
+        [output writeSFixed32:fieldNumber value:GPBGetMessageInt32Field(self, field)];
       } else {  // fieldType == GPBFieldTypeMap
         // Exact type here doesn't matter.
-        GPBInt32Int32Dictionary *dict =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBInt32Int32Dictionary *dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [dict writeToCodedOutputStream:output asField:field];
       }
       break;
-
-//%PDDM-EXPAND FIELD_CASE(Float, Float)
-// This block of code is generated, do not edit it directly.
 
     case GPBDataTypeFloat:
       if (fieldType == GPBFieldTypeRepeated) {
         uint32_t tag = field.isPackable ? GPBFieldTag(field) : 0;
-        GPBFloatArray *array =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBFloatArray *array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [output writeFloatArray:fieldNumber values:array tag:tag];
       } else if (fieldType == GPBFieldTypeSingle) {
-        [output writeFloat:fieldNumber
-                     value:GPBGetMessageFloatField(self, field)];
+        [output writeFloat:fieldNumber value:GPBGetMessageFloatField(self, field)];
       } else {  // fieldType == GPBFieldTypeMap
         // Exact type here doesn't matter.
-        GPBInt32FloatDictionary *dict =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBInt32FloatDictionary *dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [dict writeToCodedOutputStream:output asField:field];
       }
       break;
-
-//%PDDM-EXPAND FIELD_CASE(Fixed64, UInt64)
-// This block of code is generated, do not edit it directly.
 
     case GPBDataTypeFixed64:
       if (fieldType == GPBFieldTypeRepeated) {
         uint32_t tag = field.isPackable ? GPBFieldTag(field) : 0;
-        GPBUInt64Array *array =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBUInt64Array *array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [output writeFixed64Array:fieldNumber values:array tag:tag];
       } else if (fieldType == GPBFieldTypeSingle) {
-        [output writeFixed64:fieldNumber
-                       value:GPBGetMessageUInt64Field(self, field)];
+        [output writeFixed64:fieldNumber value:GPBGetMessageUInt64Field(self, field)];
       } else {  // fieldType == GPBFieldTypeMap
         // Exact type here doesn't matter.
-        GPBInt32UInt64Dictionary *dict =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBInt32UInt64Dictionary *dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [dict writeToCodedOutputStream:output asField:field];
       }
       break;
-
-//%PDDM-EXPAND FIELD_CASE(SFixed64, Int64)
-// This block of code is generated, do not edit it directly.
 
     case GPBDataTypeSFixed64:
       if (fieldType == GPBFieldTypeRepeated) {
         uint32_t tag = field.isPackable ? GPBFieldTag(field) : 0;
-        GPBInt64Array *array =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBInt64Array *array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [output writeSFixed64Array:fieldNumber values:array tag:tag];
       } else if (fieldType == GPBFieldTypeSingle) {
-        [output writeSFixed64:fieldNumber
-                        value:GPBGetMessageInt64Field(self, field)];
+        [output writeSFixed64:fieldNumber value:GPBGetMessageInt64Field(self, field)];
       } else {  // fieldType == GPBFieldTypeMap
         // Exact type here doesn't matter.
-        GPBInt32Int64Dictionary *dict =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBInt32Int64Dictionary *dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [dict writeToCodedOutputStream:output asField:field];
       }
       break;
-
-//%PDDM-EXPAND FIELD_CASE(Double, Double)
-// This block of code is generated, do not edit it directly.
 
     case GPBDataTypeDouble:
       if (fieldType == GPBFieldTypeRepeated) {
         uint32_t tag = field.isPackable ? GPBFieldTag(field) : 0;
-        GPBDoubleArray *array =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBDoubleArray *array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [output writeDoubleArray:fieldNumber values:array tag:tag];
       } else if (fieldType == GPBFieldTypeSingle) {
-        [output writeDouble:fieldNumber
-                      value:GPBGetMessageDoubleField(self, field)];
+        [output writeDouble:fieldNumber value:GPBGetMessageDoubleField(self, field)];
       } else {  // fieldType == GPBFieldTypeMap
         // Exact type here doesn't matter.
-        GPBInt32DoubleDictionary *dict =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBInt32DoubleDictionary *dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [dict writeToCodedOutputStream:output asField:field];
       }
       break;
-
-//%PDDM-EXPAND FIELD_CASE(Int32, Int32)
-// This block of code is generated, do not edit it directly.
 
     case GPBDataTypeInt32:
       if (fieldType == GPBFieldTypeRepeated) {
         uint32_t tag = field.isPackable ? GPBFieldTag(field) : 0;
-        GPBInt32Array *array =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBInt32Array *array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [output writeInt32Array:fieldNumber values:array tag:tag];
       } else if (fieldType == GPBFieldTypeSingle) {
-        [output writeInt32:fieldNumber
-                     value:GPBGetMessageInt32Field(self, field)];
+        [output writeInt32:fieldNumber value:GPBGetMessageInt32Field(self, field)];
       } else {  // fieldType == GPBFieldTypeMap
         // Exact type here doesn't matter.
-        GPBInt32Int32Dictionary *dict =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBInt32Int32Dictionary *dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [dict writeToCodedOutputStream:output asField:field];
       }
       break;
-
-//%PDDM-EXPAND FIELD_CASE(Int64, Int64)
-// This block of code is generated, do not edit it directly.
 
     case GPBDataTypeInt64:
       if (fieldType == GPBFieldTypeRepeated) {
         uint32_t tag = field.isPackable ? GPBFieldTag(field) : 0;
-        GPBInt64Array *array =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBInt64Array *array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [output writeInt64Array:fieldNumber values:array tag:tag];
       } else if (fieldType == GPBFieldTypeSingle) {
-        [output writeInt64:fieldNumber
-                     value:GPBGetMessageInt64Field(self, field)];
+        [output writeInt64:fieldNumber value:GPBGetMessageInt64Field(self, field)];
       } else {  // fieldType == GPBFieldTypeMap
         // Exact type here doesn't matter.
-        GPBInt32Int64Dictionary *dict =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBInt32Int64Dictionary *dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [dict writeToCodedOutputStream:output asField:field];
       }
       break;
-
-//%PDDM-EXPAND FIELD_CASE(SInt32, Int32)
-// This block of code is generated, do not edit it directly.
 
     case GPBDataTypeSInt32:
       if (fieldType == GPBFieldTypeRepeated) {
         uint32_t tag = field.isPackable ? GPBFieldTag(field) : 0;
-        GPBInt32Array *array =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBInt32Array *array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [output writeSInt32Array:fieldNumber values:array tag:tag];
       } else if (fieldType == GPBFieldTypeSingle) {
-        [output writeSInt32:fieldNumber
-                      value:GPBGetMessageInt32Field(self, field)];
+        [output writeSInt32:fieldNumber value:GPBGetMessageInt32Field(self, field)];
       } else {  // fieldType == GPBFieldTypeMap
         // Exact type here doesn't matter.
-        GPBInt32Int32Dictionary *dict =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBInt32Int32Dictionary *dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [dict writeToCodedOutputStream:output asField:field];
       }
       break;
-
-//%PDDM-EXPAND FIELD_CASE(SInt64, Int64)
-// This block of code is generated, do not edit it directly.
 
     case GPBDataTypeSInt64:
       if (fieldType == GPBFieldTypeRepeated) {
         uint32_t tag = field.isPackable ? GPBFieldTag(field) : 0;
-        GPBInt64Array *array =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBInt64Array *array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [output writeSInt64Array:fieldNumber values:array tag:tag];
       } else if (fieldType == GPBFieldTypeSingle) {
-        [output writeSInt64:fieldNumber
-                      value:GPBGetMessageInt64Field(self, field)];
+        [output writeSInt64:fieldNumber value:GPBGetMessageInt64Field(self, field)];
       } else {  // fieldType == GPBFieldTypeMap
         // Exact type here doesn't matter.
-        GPBInt32Int64Dictionary *dict =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBInt32Int64Dictionary *dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [dict writeToCodedOutputStream:output asField:field];
       }
       break;
-
-//%PDDM-EXPAND FIELD_CASE(UInt32, UInt32)
-// This block of code is generated, do not edit it directly.
 
     case GPBDataTypeUInt32:
       if (fieldType == GPBFieldTypeRepeated) {
         uint32_t tag = field.isPackable ? GPBFieldTag(field) : 0;
-        GPBUInt32Array *array =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBUInt32Array *array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [output writeUInt32Array:fieldNumber values:array tag:tag];
       } else if (fieldType == GPBFieldTypeSingle) {
-        [output writeUInt32:fieldNumber
-                      value:GPBGetMessageUInt32Field(self, field)];
+        [output writeUInt32:fieldNumber value:GPBGetMessageUInt32Field(self, field)];
       } else {  // fieldType == GPBFieldTypeMap
         // Exact type here doesn't matter.
-        GPBInt32UInt32Dictionary *dict =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBInt32UInt32Dictionary *dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [dict writeToCodedOutputStream:output asField:field];
       }
       break;
-
-//%PDDM-EXPAND FIELD_CASE(UInt64, UInt64)
-// This block of code is generated, do not edit it directly.
 
     case GPBDataTypeUInt64:
       if (fieldType == GPBFieldTypeRepeated) {
         uint32_t tag = field.isPackable ? GPBFieldTag(field) : 0;
-        GPBUInt64Array *array =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBUInt64Array *array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [output writeUInt64Array:fieldNumber values:array tag:tag];
       } else if (fieldType == GPBFieldTypeSingle) {
-        [output writeUInt64:fieldNumber
-                      value:GPBGetMessageUInt64Field(self, field)];
+        [output writeUInt64:fieldNumber value:GPBGetMessageUInt64Field(self, field)];
       } else {  // fieldType == GPBFieldTypeMap
         // Exact type here doesn't matter.
-        GPBInt32UInt64Dictionary *dict =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBInt32UInt64Dictionary *dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [dict writeToCodedOutputStream:output asField:field];
       }
       break;
-
-//%PDDM-EXPAND FIELD_CASE_FULL(Enum, Int32, Enum)
-// This block of code is generated, do not edit it directly.
 
     case GPBDataTypeEnum:
       if (fieldType == GPBFieldTypeRepeated) {
         uint32_t tag = field.isPackable ? GPBFieldTag(field) : 0;
-        GPBEnumArray *array =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBEnumArray *array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [output writeEnumArray:fieldNumber values:array tag:tag];
       } else if (fieldType == GPBFieldTypeSingle) {
-        [output writeEnum:fieldNumber
-                    value:GPBGetMessageInt32Field(self, field)];
+        [output writeEnum:fieldNumber value:GPBGetMessageInt32Field(self, field)];
       } else {  // fieldType == GPBFieldTypeMap
         // Exact type here doesn't matter.
-        GPBInt32EnumDictionary *dict =
-            GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        GPBInt32EnumDictionary *dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
         [dict writeToCodedOutputStream:output asField:field];
       }
       break;
-
-//%PDDM-EXPAND FIELD_CASE2(Bytes)
-// This block of code is generated, do not edit it directly.
 
     case GPBDataTypeBytes:
       if (fieldType == GPBFieldTypeRepeated) {
@@ -2030,8 +1902,7 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
       } else if (fieldType == GPBFieldTypeSingle) {
         // GPBGetObjectIvarWithFieldNoAutocreate() avoids doing the has check
         // again.
-        [output writeBytes:fieldNumber
-                     value:GPBGetObjectIvarWithFieldNoAutocreate(self, field)];
+        [output writeBytes:fieldNumber value:GPBGetObjectIvarWithFieldNoAutocreate(self, field)];
       } else {  // fieldType == GPBFieldTypeMap
         // Exact type here doesn't matter.
         id dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
@@ -2043,9 +1914,6 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
         }
       }
       break;
-
-//%PDDM-EXPAND FIELD_CASE2(String)
-// This block of code is generated, do not edit it directly.
 
     case GPBDataTypeString:
       if (fieldType == GPBFieldTypeRepeated) {
@@ -2054,8 +1922,7 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
       } else if (fieldType == GPBFieldTypeSingle) {
         // GPBGetObjectIvarWithFieldNoAutocreate() avoids doing the has check
         // again.
-        [output writeString:fieldNumber
-                      value:GPBGetObjectIvarWithFieldNoAutocreate(self, field)];
+        [output writeString:fieldNumber value:GPBGetObjectIvarWithFieldNoAutocreate(self, field)];
       } else {  // fieldType == GPBFieldTypeMap
         // Exact type here doesn't matter.
         id dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
@@ -2067,9 +1934,6 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
         }
       }
       break;
-
-//%PDDM-EXPAND FIELD_CASE2(Message)
-// This block of code is generated, do not edit it directly.
 
     case GPBDataTypeMessage:
       if (fieldType == GPBFieldTypeRepeated) {
@@ -2078,8 +1942,7 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
       } else if (fieldType == GPBFieldTypeSingle) {
         // GPBGetObjectIvarWithFieldNoAutocreate() avoids doing the has check
         // again.
-        [output writeMessage:fieldNumber
-                       value:GPBGetObjectIvarWithFieldNoAutocreate(self, field)];
+        [output writeMessage:fieldNumber value:GPBGetObjectIvarWithFieldNoAutocreate(self, field)];
       } else {  // fieldType == GPBFieldTypeMap
         // Exact type here doesn't matter.
         id dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
@@ -2091,9 +1954,6 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
         }
       }
       break;
-
-//%PDDM-EXPAND FIELD_CASE2(Group)
-// This block of code is generated, do not edit it directly.
 
     case GPBDataTypeGroup:
       if (fieldType == GPBFieldTypeRepeated) {
@@ -2102,8 +1962,7 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
       } else if (fieldType == GPBFieldTypeSingle) {
         // GPBGetObjectIvarWithFieldNoAutocreate() avoids doing the has check
         // again.
-        [output writeGroup:fieldNumber
-                     value:GPBGetObjectIvarWithFieldNoAutocreate(self, field)];
+        [output writeGroup:fieldNumber value:GPBGetObjectIvarWithFieldNoAutocreate(self, field)];
       } else {  // fieldType == GPBFieldTypeMap
         // Exact type here doesn't matter.
         id dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
@@ -2115,10 +1974,7 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
         }
       }
       break;
-
-//%PDDM-EXPAND-END (18 expansions)
-
-      // clang-format on
+      // @@protoc_objc_autogen_end
   }
 }
 
