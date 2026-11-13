@@ -64,18 +64,14 @@ void GPBClearMessageField(GPBMessage *self, GPBFieldDescriptor *field);
  **/
 void GPBClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof);
 
-// Disable clang-format for the macros.
-// clang-format off
-
-//%PDDM-EXPAND GPB_ACCESSORS()
-// This block of code is generated, do not edit it directly.
-
-
 //
 // Get/Set a given field from/to a message.
 //
 
 // Single Fields
+
+// @@protoc_objc_autogen: GPBUtilities.h:accessors
+// This block of code is generated, do not edit it directly.
 
 /**
  * Gets the value of a bytes field.
@@ -263,6 +259,7 @@ double GPBGetMessageDoubleField(GPBMessage *self, GPBFieldDescriptor *field);
  * @param value The to set in the field.
  **/
 void GPBSetMessageDoubleField(GPBMessage *self, GPBFieldDescriptor *field, double value);
+// @@protoc_objc_autogen_end
 
 /**
  * Gets the given enum field of a message. For proto3, if the value isn't a
@@ -285,9 +282,7 @@ int32_t GPBGetMessageEnumField(GPBMessage *self, GPBFieldDescriptor *field);
  * @param field The field to set.
  * @param value The enum value to set in the field.
  **/
-void GPBSetMessageEnumField(GPBMessage *self,
-                            GPBFieldDescriptor *field,
-                            int32_t value);
+void GPBSetMessageEnumField(GPBMessage *self, GPBFieldDescriptor *field, int32_t value);
 
 /**
  * Get the given enum field of a message. No check is done to ensure the value
@@ -308,9 +303,7 @@ int32_t GPBGetMessageRawEnumField(GPBMessage *self, GPBFieldDescriptor *field);
  * @param field The field to set.
  * @param value The raw enum value to set in the field.
  **/
-void GPBSetMessageRawEnumField(GPBMessage *self,
-                               GPBFieldDescriptor *field,
-                               int32_t value);
+void GPBSetMessageRawEnumField(GPBMessage *self, GPBFieldDescriptor *field, int32_t value);
 
 // Repeated Fields
 
@@ -331,9 +324,7 @@ id GPBGetMessageRepeatedField(GPBMessage *self, GPBFieldDescriptor *field);
  * @param field The field to set.
  * @param array A GPB*Array or NSMutableArray based on the field's type.
  **/
-void GPBSetMessageRepeatedField(GPBMessage *self,
-                                GPBFieldDescriptor *field,
-                                id array);
+void GPBSetMessageRepeatedField(GPBMessage *self, GPBFieldDescriptor *field, id array);
 
 // Map Fields
 
@@ -355,13 +346,7 @@ id GPBGetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field);
  * @param dictionary A GPB*Dictionary or NSMutableDictionary based on the
  *                   field's type.
  **/
-void GPBSetMessageMapField(GPBMessage *self,
-                           GPBFieldDescriptor *field,
-                           id dictionary);
-
-//%PDDM-EXPAND-END GPB_ACCESSORS()
-
-// clang-format on
+void GPBSetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field, id dictionary);
 
 /**
  * Returns an empty NSData to assign to byte fields when you wish to assign them
@@ -377,144 +362,3 @@ void GPBMessageDropUnknownFieldsRecursively(GPBMessage *message);
 NS_ASSUME_NONNULL_END
 
 CF_EXTERN_C_END
-
-// Disable clang-format for the macros.
-// clang-format off
-
-//%PDDM-DEFINE GPB_ACCESSORS()
-//%
-//%//
-//%// Get/Set a given field from/to a message.
-//%//
-//%
-//%// Single Fields
-//%
-//%GPB_ACCESSOR_SINGLE_FULL(Bytes, NSData, , *)
-//%GPB_ACCESSOR_SINGLE_FULL(String, NSString, , *)
-//%GPB_ACCESSOR_SINGLE_FULL(Message, GPBMessage, , *)
-//%GPB_ACCESSOR_SINGLE_FULL(Group, GPBMessage, , *)
-//%GPB_ACCESSOR_SINGLE(Bool, BOOL, )
-//%GPB_ACCESSOR_SINGLE(Int32, int32_t, n)
-//%GPB_ACCESSOR_SINGLE(UInt32, uint32_t, n)
-//%GPB_ACCESSOR_SINGLE(Int64, int64_t, n)
-//%GPB_ACCESSOR_SINGLE(UInt64, uint64_t, n)
-//%GPB_ACCESSOR_SINGLE(Float, float, )
-//%GPB_ACCESSOR_SINGLE(Double, double, )
-//%/**
-//% * Gets the given enum field of a message. For proto3, if the value isn't a
-//% * member of the enum, @c kGPBUnrecognizedEnumeratorValue will be returned.
-//% * GPBGetMessageRawEnumField will bypass the check and return whatever value
-//% * was set.
-//% *
-//% * @param self  The message from which to get the field.
-//% * @param field The field to get.
-//% *
-//% * @return The enum value for the given field.
-//% **/
-//%int32_t GPBGetMessageEnumField(GPBMessage *self, GPBFieldDescriptor *field);
-//%
-//%/**
-//% * Set the given enum field of a message. You can only set values that are
-//% * members of the enum.
-//% *
-//% * @param self  The message into which to set the field.
-//% * @param field The field to set.
-//% * @param value The enum value to set in the field.
-//% **/
-//%void GPBSetMessageEnumField(GPBMessage *self,
-//%                            GPBFieldDescriptor *field,
-//%                            int32_t value);
-//%
-//%/**
-//% * Get the given enum field of a message. No check is done to ensure the value
-//% * was defined in the enum.
-//% *
-//% * @param self  The message from which to get the field.
-//% * @param field The field to get.
-//% *
-//% * @return The raw enum value for the given field.
-//% **/
-//%int32_t GPBGetMessageRawEnumField(GPBMessage *self, GPBFieldDescriptor *field);
-//%
-//%/**
-//% * Set the given enum field of a message. You can set the value to anything,
-//% * even a value that is not a member of the enum.
-//% *
-//% * @param self  The message into which to set the field.
-//% * @param field The field to set.
-//% * @param value The raw enum value to set in the field.
-//% **/
-//%void GPBSetMessageRawEnumField(GPBMessage *self,
-//%                               GPBFieldDescriptor *field,
-//%                               int32_t value);
-//%
-//%// Repeated Fields
-//%
-//%/**
-//% * Gets the value of a repeated field.
-//% *
-//% * @param self  The message from which to get the field.
-//% * @param field The repeated field to get.
-//% *
-//% * @return A GPB*Array or an NSMutableArray based on the field's type.
-//% **/
-//%id GPBGetMessageRepeatedField(GPBMessage *self, GPBFieldDescriptor *field);
-//%
-//%/**
-//% * Sets the value of a repeated field.
-//% *
-//% * @param self  The message into which to set the field.
-//% * @param field The field to set.
-//% * @param array A GPB*Array or NSMutableArray based on the field's type.
-//% **/
-//%void GPBSetMessageRepeatedField(GPBMessage *self,
-//%                                GPBFieldDescriptor *field,
-//%                                id array);
-//%
-//%// Map Fields
-//%
-//%/**
-//% * Gets the value of a map<> field.
-//% *
-//% * @param self  The message from which to get the field.
-//% * @param field The repeated field to get.
-//% *
-//% * @return A GPB*Dictionary or NSMutableDictionary based on the field's type.
-//% **/
-//%id GPBGetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field);
-//%
-//%/**
-//% * Sets the value of a map<> field.
-//% *
-//% * @param self       The message into which to set the field.
-//% * @param field      The field to set.
-//% * @param dictionary A GPB*Dictionary or NSMutableDictionary based on the
-//% *                   field's type.
-//% **/
-//%void GPBSetMessageMapField(GPBMessage *self,
-//%                           GPBFieldDescriptor *field,
-//%                           id dictionary);
-//%
-
-//%PDDM-DEFINE GPB_ACCESSOR_SINGLE(NAME, TYPE, AN)
-//%GPB_ACCESSOR_SINGLE_FULL(NAME, TYPE, AN, )
-//%PDDM-DEFINE GPB_ACCESSOR_SINGLE_FULL(NAME, TYPE, AN, TisP)
-//%/**
-//% * Gets the value of a##AN NAME$L field.
-//% *
-//% * @param self  The message from which to get the field.
-//% * @param field The field to get.
-//% **/
-//%TYPE TisP##GPBGetMessage##NAME##Field(GPBMessage *self, GPBFieldDescriptor *field);
-//%
-//%/**
-//% * Sets the value of a##AN NAME$L field.
-//% *
-//% * @param self  The message into which to set the field.
-//% * @param field The field to set.
-//% * @param value The to set in the field.
-//% **/
-//%void GPBSetMessage##NAME##Field(GPBMessage *self, GPBFieldDescriptor *field, TYPE TisP##value);
-//%
-
-// clang-format on
