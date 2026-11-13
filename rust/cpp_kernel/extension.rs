@@ -118,8 +118,9 @@ unsafe extern "C" {
 }
 
 fn pin_extension<Extendee: Message, T: Proxied>(extension: &ExtensionId<Extendee, T>) {
+    let thunk = extension.inner.cpp_extension_id_thunk();
     unsafe {
-        std::ptr::read_volatile(extension.inner.cpp_extension_id_thunk() as *const u8);
+        std::ptr::read_volatile(&raw const thunk);
         // We could try to optimize this to the following at some point, but it's less portable.
         // std::arch::asm!("/* {0} */", in(reg) ($ptr as *const ()));
     }
