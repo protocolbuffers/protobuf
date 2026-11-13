@@ -35,18 +35,14 @@ namespace conformance {
 namespace internal {
 namespace {
 
+// Whether `value` is new to `set`.  A test reported more than once is judged
+// each time but counted once, so the Report*() functions stop here on a repeat.
 bool InsertUniqueTest(absl::flat_hash_set<std::string>& set,
                       absl::string_view value) {
   if (!set.emplace(value).second) {
     return false;
   }
   return true;
-}
-
-void IncrementIfUnique(bool unique, int& counter) {
-  if (unique) {
-    ++counter;
-  }
 }
 
 std::string ReformatLine(size_t alignment, absl::string_view line) {
@@ -182,47 +178,48 @@ absl::Status ResultLedger::SaveFailureList(absl::string_view filename) const {
 }
 
 absl::Status ResultLedger::ReportSuccess(absl::string_view test_name) {
-  bool unique = InsertUniqueTest(seen_tests_, test_name);
+  absl::Status verdict = failure_list_.VerdictOnSuccess(test_name);
+  if (!InsertUniqueTest(seen_tests_, test_name)) {
+    return verdict;
+  }
   absl::optional<std::string> failure_match = MarkMatched(test_name);
 
   if (failure_match.has_value()) {
     // This was expected to fail, but it succeeded.
-    IncrementIfUnique(unique, number_of_matches_[*failure_match]);
-    IncrementIfUnique(unique, unexpected_successes_);
-    if (unique) {
-      unexpected_success_matches_[test_name] = *failure_match;
-    }
+    ++number_of_matches_[*failure_match];
+    ++unexpected_successes_;
+    unexpected_success_matches_[test_name] = *failure_match;
     unseen_expected_failures_.erase(*failure_match);
     seen_unexpected_successes_.insert(*failure_match);
   } else {
     // This wasn't expected to fail.
-    IncrementIfUnique(unique, expected_successes_);
+    ++expected_successes_;
   }
-  return failure_list_.VerdictOnSuccess(test_name);
+  return verdict;
 }
 
 absl::Status ResultLedger::ReportFailure(absl::string_view test_name,
                                          TestPriority priority,
                                          absl::string_view failure_message) {
-  bool unique = InsertUniqueTest(seen_tests_, test_name);
-  absl::optional<std::string> failure_match = MarkMatched(test_name);
   absl::Status verdict =
       failure_list_.VerdictOnFailure(test_name, priority, failure_message);
+  if (!InsertUniqueTest(seen_tests_, test_name)) {
+    return verdict;
+  }
+  absl::optional<std::string> failure_match = MarkMatched(test_name);
 
   std::string formatted_failure_message = FormatFailureMessage(failure_message);
   // Counts the failure as unexpected and records it for UnexpectedFailures().
   auto record_unexpected_failure = [&] {
-    IncrementIfUnique(unique, unexpected_failures_);
-    if (unique) {
-      unexpected_failure_messages_[test_name] = formatted_failure_message;
-    }
+    ++unexpected_failures_;
+    unexpected_failure_messages_[test_name] = formatted_failure_message;
   };
 
   if (!failure_match.has_value()) {
     if (verdict.ok()) {
       // Tolerated: neither a failure nor a skip, and not written to the
       // failure list; only counted.
-      IncrementIfUnique(unique, tolerated_failures_);
+      ++tolerated_failures_;
       ABSL_LOG(WARNING) << "WARNING, test=" << test_name << ": "
                         << absl::StripTrailingAsciiWhitespace(failure_message);
     } else {
@@ -248,8 +245,8 @@ absl::Status ResultLedger::ReportFailure(absl::string_view test_name,
   }
 
   unseen_expected_failures_.erase(*failure_match);
-  IncrementIfUnique(unique, number_of_matches_[*failure_match]);
-  IncrementIfUnique(unique, expected_failures_);
+  ++number_of_matches_[*failure_match];
+  ++expected_failures_;
   ABSL_LOG(INFO) << "Ignoring expected failure for test " << test_name << ": "
                  << absl::StripTrailingAsciiWhitespace(failure_message);
   return verdict;
@@ -257,11 +254,15 @@ absl::Status ResultLedger::ReportFailure(absl::string_view test_name,
 
 absl::Status ResultLedger::ReportSkip(absl::string_view test_name,
                                       absl::string_view skip_reason) {
-  bool unique = InsertUniqueTest(seen_tests_, test_name);
-  IncrementIfUnique(unique, skipped_);
+  absl::Status verdict = failure_list_.VerdictOnSkip(test_name, skip_reason);
+  if (!InsertUniqueTest(seen_tests_, test_name)) {
+    return verdict;
+  }
+  ++skipped_;
+  ABSL_LOG(INFO) << "Skipping test " << test_name << ": " << skip_reason;
   absl::optional<std::string> failure_match = MarkMatched(test_name);
   if (!failure_match.has_value()) {
-    return absl::OkStatus();
+    return verdict;
   }
 
   // A skip says nothing about whether the entry is still needed, so it is
@@ -271,11 +272,9 @@ absl::Status ResultLedger::ReportSkip(absl::string_view test_name,
   // test a wildcard matched: the cap is about real outcomes hidden by a
   // wildcard, and a skip isn't one.
   unseen_expected_failures_.erase(*failure_match);
-  IncrementIfUnique(unique, listed_skips_);
-  if (unique) {
-    listed_skip_matches_[test_name] = *failure_match;
-  }
-  return failure_list_.VerdictOnSkip(test_name, skip_reason);
+  ++listed_skips_;
+  listed_skip_matches_[test_name] = *failure_match;
+  return verdict;
 }
 
 void ResultLedger::ReportNotSelected(absl::string_view test_name) {

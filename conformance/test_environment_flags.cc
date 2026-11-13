@@ -50,12 +50,16 @@ ABSL_FLAG(bool, performance, false,
 ABSL_FLAG(bool, fix, false,
           "Rewrite the failure list at the end of the run to match the "
           "observed results.  See --fix_output_file.  Refused when only some "
-          "of the tests run (--gtest_filter, sharding).");
+          "of the tests run (--gtest_filter, sharding).  Use it via `bazel run "
+          "<target> -- --fix`: under `bazel test` the file is written inside "
+          "the test sandbox and discarded.");
 ABSL_FLAG(std::string, fix_output_file, "",
           "Where --fix writes the updated failure list.  Required when more "
           "than one --failure_list is given; otherwise defaults to the "
-          "failure list itself under $BUILD_WORKSPACE_DIRECTORY, so that "
-          "`bazel run ... -- --fix` updates the file in your workspace.");
+          "failure list itself.  A relative path (this flag's or the failure "
+          "list's) is resolved under $BUILD_WORKSPACE_DIRECTORY when that is "
+          "set, so that `bazel run ... -- --fix` creates or updates the file "
+          "in your workspace.");
 
 namespace google {
 namespace protobuf {
