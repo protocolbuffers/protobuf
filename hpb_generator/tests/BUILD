@@ -198,6 +198,7 @@ cc_test(
         ":test_model_upb_proto",
         "//hpb",
         "//hpb:arena",
+        "//hpb:expected",
         "//hpb:extension",
         "//hpb:options",
         "//hpb:requires",
