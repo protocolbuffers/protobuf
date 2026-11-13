@@ -1005,6 +1005,33 @@ class JsonFormatTest(JsonFormatBase):
         r'Float value too large at TestMessage.repeatedFloatValue\[0\].',
     )
 
+  def testParseNonAsciiDigitsAreRejected(self):
+    # Non-ASCII decimal digits (e.g. Arabic-Indic, Devanagari) must be
+    # rejected in quoted numeric fields, matching the C++ JSON parser
+    # (see #29893). Python's int()/float() would otherwise accept them.
+    message = json_format_proto3_pb2.TestMessage()
+    for text in (
+        '{"int64Value": "١٢٣"}',
+        '{"int64Value": "1٢2"}',
+        '{"int32Value": "१२३"}',
+        '{"uint32Value": "١٢٣"}',
+        '{"doubleValue": "١٢٣"}',
+        '{"floatValue": "١٢٣"}',
+        '{"enumValue": "١٢٣"}',
+    ):
+      self.assertRaisesRegex(
+          json_format.ParseError,
+          'non-ASCII digits',
+          json_format.Parse,
+          text,
+          message,
+      )
+    # ASCII controls still parse, and string fields still accept the digits.
+    json_format.Parse('{"int64Value": "123"}', message)
+    self.assertEqual(message.int64_value, 123)
+    json_format.Parse('{"stringValue": "١٢٣"}', message)
+    self.assertEqual(message.string_value, '١٢٣')
+
   def testFloatPrecision(self):
     message = json_format_proto3_pb2.TestMessage()
 

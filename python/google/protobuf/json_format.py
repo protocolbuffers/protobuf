@@ -1090,6 +1090,7 @@ def _ConvertScalarFieldValue(
         enum_value = custom_names.get(value, None)
       # If not, try parsing it as an integer.
       if enum_value is None:
+        _CheckAsciiDigits(value)
         try:
           number = int(value)
           enum_value = field.enum_type.values_by_number.get(number, None)
@@ -1117,6 +1118,23 @@ def _ConvertScalarFieldValue(
     raise ParseError('{0} at {1}'.format(e, path)) from e
 
 
+def _CheckAsciiDigits(value):
+  """Reject string values containing non-ASCII decimal digits.
+
+  Python's int() and float() accept any character with the Unicode
+  Decimal_Number property (e.g. Arabic-Indic U+0661-U+0663, Devanagari
+  U+0966-U+096F), while the C++ JSON parser only accepts ASCII 0-9, so the
+  same document parses on Python and fails on C++ (see #29893). Only the
+  digit check is tightened here; every other accepted spelling is unchanged.
+  """
+  if isinstance(value, str):
+    for ch in value:
+      if ch.isdecimal() and not ch.isascii():
+        raise ParseError(
+            'Couldn\'t parse number with non-ASCII digits: "%s"' % value
+        )
+
+
 def _ConvertInteger(value):
   """Convert an integer.
 
@@ -1129,6 +1147,7 @@ def _ConvertInteger(value):
   Raises:
     ParseError: If an integer couldn't be consumed.
   """
+  _CheckAsciiDigits(value)
   if isinstance(value, float) and not value.is_integer():
     raise ParseError("Couldn't parse integer: {0}".format(value))
 
@@ -1158,6 +1177,7 @@ def _ConvertInteger(value):
 
 def _ConvertFloat(value, field):
   """Convert an floating point number."""
+  _CheckAsciiDigits(value)
   if isinstance(value, bool):
     raise ParseError(
         'Bool value {0} is not acceptable for float field'.format(value)
