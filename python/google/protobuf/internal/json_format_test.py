@@ -1216,6 +1216,15 @@ class JsonFormatTest(JsonFormatBase):
     )
     self.assertEqual(parsed_message.int32_map, {3: 4})
 
+  def testDuplicateFieldByFieldNumber(self):
+    # The duplicate-field check now uses field.number instead of the JSON key
+    # name, so two alternate spellings of the same field (camelCase vs
+    # snake_case) must be detected as duplicates.
+    self.CheckError(
+        '{"int32Value": 1, "int32_value": 2}',
+        'should not have multiple',
+    )
+
   def testInvalidBoolValue(self):
     self.CheckError(
         '{"boolValue": 1}',
