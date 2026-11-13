@@ -17640,12 +17640,15 @@ void _upb_ServiceDef_InsertMethod(upb_DefBuilder* ctx, upb_ServiceDef* s,
 }
 
 
+#include <float.h>
 #include <inttypes.h>
 #include <math.h>
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 
@@ -17800,7 +17803,13 @@ static upb_StringView default_string(upb_ToProto_Context* ctx,
       return printf_dup(ctx, "%" PRIu32, d.uint32_val);
     case kUpb_CType_Float: {
       char buf[kUpb_RoundTripBufferSize];
-      _upb_EncodeRoundTripFloat(d.float_val, buf, sizeof(buf));
+      for (int prec = FLT_DIG; prec <= FLT_DIG + 3; prec++) {
+        snprintf(buf, sizeof(buf), "%.*g", prec, d.float_val);
+        if (strtof(buf, NULL) == d.float_val) break;
+      }
+      for (char* p = buf; *p; p++) {
+        if (*p == ',') *p = '.';
+      }
       return strviewdup(ctx, buf);
     }
     case kUpb_CType_Double: {
