@@ -463,10 +463,12 @@ absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
   if (!stream.IncrementRecursionDepth()) {
     return MakeTooDeepError();
   }
-  auto limit = stream.ReadLengthAndPushLimit();
-  if (limit == 0) {
-    return MakeUnexpectedEofError();
+  int length;
+  if (!stream.ReadVarintSizeAsInt(&length)) {
+    stream.DecrementRecursionDepth();
+    return MakeMalformedLengthDelimError();
   }
+  auto limit = stream.PushLimit(length);
 
   switch (field.proto().kind()) {
     case Field::TYPE_STRING:
