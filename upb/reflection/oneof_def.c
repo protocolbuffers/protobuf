@@ -141,6 +141,11 @@ size_t _upb_OneofDefs_Finalize(upb_DefBuilder* ctx, upb_MessageDef* m) {
   for (int i = 0; i < upb_MessageDef_OneofCount(m); i++) {
     upb_OneofDef* o = (upb_OneofDef*)upb_MessageDef_Oneof(m, i);
 
+    if (o->field_count == 0) {
+      _upb_DefBuilder_Errf(ctx, "Oneof must have at least one field (%s)",
+                           o->full_name);
+    }
+
     if (o->synthetic && o->field_count != 1) {
       _upb_DefBuilder_Errf(ctx,
                            "Synthetic oneofs must have one field, not %d: %s",

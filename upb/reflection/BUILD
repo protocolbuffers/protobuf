@@ -281,6 +281,7 @@ cc_test(
         "//src/google/protobuf:unittest_upb_reflection_proto",
         "//upb/base",
         "//upb/mem",
+        "//upb/message",
         "//upb/test:parse_text_proto",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:check",

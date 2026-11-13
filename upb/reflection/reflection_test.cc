@@ -23,9 +23,11 @@
 #include "upb/base/string_view.h"
 #include "upb/mem/alloc.h"
 #include "upb/mem/arena.hpp"
+#include "upb/message/message.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
 #include "upb/reflection/internal/def_pool.h"
+#include "upb/reflection/message.h"
 #include "upb/test/parse_text_proto.h"
 
 namespace upb_test {
@@ -403,6 +405,131 @@ TEST(ReflectionTest, TooManyRequiredFieldsFailGracefully) {
   // 64 is too much.
   EXPECT_THAT(LoadDescriptorProto(make_desc(64)).status().message(),
               HasSubstr("Too many required fields"));
+}
+
+// Called only when a malformed oneof layout was unexpectedly accepted. Drives
+// the accepted def through the consumer so that a regression also surfaces
+// under a sanitizer, not only as a status mismatch.
+void ExerciseAcceptedOneof(const upb::DefPool& pool, const char* message_name) {
+  upb::MessageDefPtr message = pool.FindMessageByName(message_name);
+  ASSERT_TRUE(message);
+  ASSERT_GT(upb_MessageDef_OneofCount(message.ptr()), 0);
+  const upb_OneofDef* oneof = upb_MessageDef_Oneof(message.ptr(), 0);
+  ASSERT_THAT(oneof, NotNull());
+  upb::Arena arena;
+  upb_Message* instance =
+      upb_Message_New(upb_MessageDef_MiniTable(message.ptr()), arena.ptr());
+  ASSERT_THAT(instance, NotNull());
+  (void)upb_Message_WhichOneofByDef(instance, oneof);
+}
+
+TEST(ReflectionTest, ValidOneofMapEntryAndMessageSetAccepted) {
+  upb::DefPool pool = LoadDescriptorProto(
+                          R"pb(
+                            syntax: "proto2"
+                            name: "valid_defs.proto"
+                            message_type {
+                              name: "WithOneof"
+                              oneof_decl { name: "choice" }
+                              field {
+                                name: "a"
+                                number: 1
+                                label: LABEL_OPTIONAL
+                                type: TYPE_INT32
+                                oneof_index: 0
+                              }
+                            }
+                            message_type {
+                              name: "ValidEntry"
+                              options { map_entry: true }
+                              field {
+                                name: "key"
+                                number: 1
+                                label: LABEL_OPTIONAL
+                                type: TYPE_INT32
+                              }
+                              field {
+                                name: "value"
+                                number: 2
+                                label: LABEL_OPTIONAL
+                                type: TYPE_INT32
+                              }
+                            }
+                            message_type {
+                              name: "ValidMessageSet"
+                              options { message_set_wire_format: true }
+                              extension_range { start: 4 end: 100 }
+                            }
+                          )pb")
+                          .value();
+
+  upb::MessageDefPtr message = pool.FindMessageByName("WithOneof");
+  ASSERT_TRUE(message);
+  ASSERT_EQ(upb_MessageDef_OneofCount(message.ptr()), 1);
+  const upb_OneofDef* oneof = upb_MessageDef_Oneof(message.ptr(), 0);
+  ASSERT_THAT(oneof, NotNull());
+
+  upb::Arena arena;
+  upb_Message* instance =
+      upb_Message_New(upb_MessageDef_MiniTable(message.ptr()), arena.ptr());
+  ASSERT_THAT(instance, NotNull());
+  EXPECT_EQ(upb_Message_WhichOneofByDef(instance, oneof), nullptr);
+
+  const upb_FieldDef* field =
+      upb_MessageDef_FindFieldByName(message.ptr(), "a");
+  ASSERT_THAT(field, NotNull());
+  upb_MessageValue value;
+  value.int32_val = 42;
+  ASSERT_TRUE(upb_Message_SetFieldByDef(instance, field, value, arena.ptr()));
+  EXPECT_EQ(upb_Message_WhichOneofByDef(instance, oneof), field);
+}
+
+TEST(ReflectionTest, EmptyOneofInMessageSetRejected) {
+  absl::StatusOr<upb::DefPool> pool = LoadDescriptorProto(
+      R"pb(
+        syntax: "proto2"
+        name: "empty_oneof_msgset.proto"
+        message_type {
+          name: "EmptyOneofMsgSet"
+          options { message_set_wire_format: true }
+          extension_range { start: 4 end: 100 }
+          oneof_decl { name: "empty" }
+        }
+      )pb");
+  if (pool.ok()) ExerciseAcceptedOneof(*pool, "EmptyOneofMsgSet");
+  ASSERT_FALSE(pool.ok());
+  EXPECT_EQ(std::string_view(pool.status().message()),
+            "Oneof must have at least one field (EmptyOneofMsgSet.empty)");
+}
+
+TEST(ReflectionTest, MapEntryWithOneofRejected) {
+  absl::StatusOr<upb::DefPool> pool = LoadDescriptorProto(
+      R"pb(
+        syntax: "proto2"
+        name: "map_entry_oneof.proto"
+        message_type {
+          name: "BadEntry"
+          options { map_entry: true }
+          oneof_decl { name: "choice" }
+          field {
+            name: "key"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            oneof_index: 0
+          }
+          field {
+            name: "value"
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+        }
+      )pb");
+  if (pool.ok()) ExerciseAcceptedOneof(*pool, "BadEntry");
+  ASSERT_FALSE(pool.ok());
+  EXPECT_EQ(std::string_view(pool.status().message()),
+            "map_entry cannot have oneofs (BadEntry)");
 }
 
 #define STRING_AND_SIZE(string) string, strlen(string)
