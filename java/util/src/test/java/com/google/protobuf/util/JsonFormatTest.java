@@ -2536,7 +2536,7 @@ public class JsonFormatTest {
     JsonFormat.Parser parser = JsonFormat.parser().usingTypeRegistry(registry);
     Any.Builder builder = Any.newBuilder();
     parser.merge(input, builder); // Successfully parses with no default recursion limit.
-    Any unused = builder.build();
+    var _ = builder.build();
 
     parser = JsonFormat.parser().usingTypeRegistry(registry).usingRecursionLimit(3);
     builder = Any.newBuilder();
@@ -2580,7 +2580,7 @@ public class JsonFormatTest {
       JsonFormat.parser().merge(invalidJsonReader, builder);
       assertWithMessage("Exception is expected.").fail();
     } catch (InvalidProtocolBufferException e) {
-      assertThat(e.getCause()).isInstanceOf(JsonSyntaxException.class);
+      assertThat(e).hasCauseThat().isInstanceOf(JsonSyntaxException.class);
     }
   }
 

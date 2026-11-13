@@ -137,7 +137,7 @@ public class DurationsTest {
     };
 
     for (Duration d1 : durations) {
-      assertThat(d1).isNotEqualTo(null);
+      assertThat(d1).isNotNull();
       for (Duration d2 : durations) {
         assertThat(d1).isEqualTo(d2);
       }
@@ -483,22 +483,20 @@ public class DurationsTest {
 
   @Test
   public void testComparator() {
-    assertThat(Durations.comparator().compare(duration(3, 2), duration(3, 2))).isEqualTo(0);
-    assertThat(Durations.comparator().compare(duration(0, 0), duration(0, 0))).isEqualTo(0);
-    assertThat(Durations.comparator().compare(duration(3, 1), duration(1, 1))).isGreaterThan(0);
-    assertThat(Durations.comparator().compare(duration(3, 2), duration(3, 1))).isGreaterThan(0);
-    assertThat(Durations.comparator().compare(duration(1, 1), duration(3, 1))).isLessThan(0);
-    assertThat(Durations.comparator().compare(duration(3, 1), duration(3, 2))).isLessThan(0);
-    assertThat(Durations.comparator().compare(duration(-3, -1), duration(-1, -1))).isLessThan(0);
-    assertThat(Durations.comparator().compare(duration(-3, -2), duration(-3, -1))).isLessThan(0);
-    assertThat(Durations.comparator().compare(duration(-1, -1), duration(-3, -1))).isGreaterThan(0);
-    assertThat(Durations.comparator().compare(duration(-3, -1), duration(-3, -2))).isGreaterThan(0);
-    assertThat(Durations.comparator().compare(duration(-10, -1), duration(1, 1))).isLessThan(0);
-    assertThat(Durations.comparator().compare(duration(0, -1), duration(0, 1))).isLessThan(0);
-    assertThat(Durations.comparator().compare(duration(0x80000000L, 0), duration(0, 0)))
-        .isGreaterThan(0);
-    assertThat(Durations.comparator().compare(duration(0xFFFFFFFF00000000L, 0), duration(0, 0)))
-        .isLessThan(0);
+    assertThat(Durations.compare(duration(3, 2), duration(3, 2))).isEqualTo(0);
+    assertThat(Durations.compare(duration(0, 0), duration(0, 0))).isEqualTo(0);
+    assertThat(Durations.compare(duration(3, 1), duration(1, 1))).isGreaterThan(0);
+    assertThat(Durations.compare(duration(3, 2), duration(3, 1))).isGreaterThan(0);
+    assertThat(Durations.compare(duration(1, 1), duration(3, 1))).isLessThan(0);
+    assertThat(Durations.compare(duration(3, 1), duration(3, 2))).isLessThan(0);
+    assertThat(Durations.compare(duration(-3, -1), duration(-1, -1))).isLessThan(0);
+    assertThat(Durations.compare(duration(-3, -2), duration(-3, -1))).isLessThan(0);
+    assertThat(Durations.compare(duration(-1, -1), duration(-3, -1))).isGreaterThan(0);
+    assertThat(Durations.compare(duration(-3, -1), duration(-3, -2))).isGreaterThan(0);
+    assertThat(Durations.compare(duration(-10, -1), duration(1, 1))).isLessThan(0);
+    assertThat(Durations.compare(duration(0, -1), duration(0, 1))).isLessThan(0);
+    assertThat(Durations.compare(duration(0x80000000L, 0), duration(0, 0))).isGreaterThan(0);
+    assertThat(Durations.compare(duration(0xFFFFFFFF00000000L, 0), duration(0, 0))).isLessThan(0);
 
     Duration duration0 = duration(-50, -500);
     Duration duration1 = duration(-50, -400);
