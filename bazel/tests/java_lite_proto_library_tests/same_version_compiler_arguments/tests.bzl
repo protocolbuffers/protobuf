@@ -14,8 +14,8 @@ def _test_same_version_compiler_arguments(env, target):
     genproto.argv().contains("{package}/baz.proto")
     genproto.argv().contains_at_least([
         "--java_out=lite:{bindir}/{package}/baz_proto-lite-src.jar",
-        "-I.",
         "{package}/baz.proto",
+        "--descriptor_set_in",
     ]).in_order()
     genproto.argv().not_contains("--java_out=lite,immutable:{bindir}/{package}/foo_proto-lite-src.jar")
     java_info = env.expect.that_target(target).provider(JavaInfo)

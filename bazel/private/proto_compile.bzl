@@ -134,7 +134,7 @@ def _compile_internal(
         plugin_output = None,
         additional_args = None,
         additional_tools = [],
-        additional_inputs = depset(),
+        additional_inputs = None,
         resource_set = None,
         experimental_exec_group = None,
         experimental_progress_message = None,
@@ -242,15 +242,17 @@ def _compile_internal(
         # `proto_library` targets that do not run descriptor-only compilation.
         internal = proto_info.internal_do_not_use
         source_code_info = internal.source_code_info
-        dependencies_descriptor_sets = depset(
-            direct = [source_code_info] if source_code_info else None,
-            transitive = [
-                proto_info.transitive_descriptor_sets,
-                internal.option_deps_descriptor_sets,
-            ],
-        )
-        if dependencies_descriptor_sets:
-            transitive_inputs.append(dependencies_descriptor_sets)
+        if source_code_info or internal.option_deps_descriptor_sets:
+            dependencies_descriptor_sets = depset(
+                direct = [source_code_info] if source_code_info else None,
+                transitive = [
+                    proto_info.transitive_descriptor_sets,
+                    internal.option_deps_descriptor_sets,
+                ],
+            )
+        else:
+            dependencies_descriptor_sets = proto_info.transitive_descriptor_sets
+        transitive_inputs.append(dependencies_descriptor_sets)
 
         args.add_joined(
             "--descriptor_set_in",
@@ -287,6 +289,15 @@ def _compile_internal(
         resource_set = resource_set,
         exec_group = experimental_exec_group,
         toolchain = _toolchain_type(proto_lang_toolchain_info),
+        # Exclude "legacy" output_files (where callers pass pre-formatted
+        # ctx.bin_dir.path strings via plugin_output that path mapping cannot
+        # rewrite) and TreeArtifact directory outputs (not yet supported by
+        # Blaze path mapping).
+        execution_requirements = {"supports-path-mapping": "1"} if (
+            proto_lang_toolchain_info.mnemonic == "GenProto" and
+            output_files != "legacy" and
+            not any([f.is_directory for f in generated_files])
+        ) else None,
     )
 
 def _compile_from_transitive_sources(*args, **kwargs):
@@ -310,6 +321,58 @@ def _compile_from_descriptors(*args, **kwargs):
       **kwargs: See _compile_internal
     """
     _compile_internal(_COMPILE_TYPE.DESCRIPTOR_ONLY, *args, **kwargs)
+
+def _add_strict_deps_flags(
+        args,
+        target_label,
+        direct_dependencies,
+        direct_dependencies_flag_template,
+        option_dependencies,
+        option_dependencies_flag_template,
+        allowed_public_imports):
+    """Appends strict dependency and public import validation flags to `args`."""
+    if direct_dependencies != None:
+        if direct_dependencies:
+            args.add_joined(
+                "--direct_dependencies",
+                direct_dependencies,
+                map_each = _get_import_path,
+                join_with = ":",
+            )
+        else:
+            args.add("--direct_dependencies=")
+
+        # Pass `target_label` with `format` instead of formatting the violation
+        # string in Starlark so string expansion is deferred to execution time,
+        # saving per-target string allocations on `proto_library` during analysis.
+        if direct_dependencies_flag_template:
+            args.add(target_label, format = direct_dependencies_flag_template)
+
+    if option_dependencies != None:
+        if option_dependencies:
+            args.add_joined(
+                "--option_dependencies",
+                option_dependencies,
+                map_each = _get_import_path,
+                join_with = ":",
+            )
+        else:
+            args.add("--option_dependencies=")
+
+        # Deferred `target_label` formatting to save analysis-phase memory (see above).
+        if option_dependencies_flag_template:
+            args.add(target_label, format = option_dependencies_flag_template)
+
+    if allowed_public_imports != None:
+        if allowed_public_imports:
+            args.add_joined(
+                "--allowed_public_imports",
+                allowed_public_imports,
+                map_each = _get_import_path,
+                join_with = ":",
+            )
+        else:
+            args.add("--allowed_public_imports=")
 
 def _create_proto_descriptors(
         actions,
@@ -400,48 +463,15 @@ def _create_proto_descriptors(
             join_with = host_path_separator,
         )
 
-    if direct_dependencies != None:
-        if direct_dependencies:
-            args.add_joined(
-                "--direct_dependencies",
-                direct_dependencies,
-                map_each = _get_import_path,
-                join_with = ":",
-            )
-        else:
-            args.add("--direct_dependencies=")
-
-        # Pass `target_label` with `format` instead of formatting the violation
-        # string in Starlark so string expansion is deferred to execution time,
-        # saving per-target string allocations on `proto_library` during analysis.
-        if direct_dependencies_flag_template:
-            args.add(target_label, format = direct_dependencies_flag_template)
-
-    if option_dependencies != None:
-        if option_dependencies:
-            args.add_joined(
-                "--option_dependencies",
-                option_dependencies,
-                map_each = _get_import_path,
-                join_with = ":",
-            )
-        else:
-            args.add("--option_dependencies=")
-
-        # Deferred `target_label` formatting to save analysis-phase memory (see above).
-        if option_dependencies_flag_template:
-            args.add(target_label, format = option_dependencies_flag_template)
-
-    if allowed_public_imports != None:
-        if allowed_public_imports:
-            args.add_joined(
-                "--allowed_public_imports",
-                allowed_public_imports,
-                map_each = _get_import_path,
-                join_with = ":",
-            )
-        else:
-            args.add("--allowed_public_imports=")
+    _add_strict_deps_flags(
+        args = args,
+        target_label = target_label,
+        direct_dependencies = direct_dependencies,
+        direct_dependencies_flag_template = direct_dependencies_flag_template,
+        option_dependencies = option_dependencies,
+        option_dependencies_flag_template = option_dependencies_flag_template,
+        allowed_public_imports = allowed_public_imports,
+    )
 
     transitive_inputs = []
     if dependencies_descriptor_sets:
@@ -474,5 +504,6 @@ proto_compile = struct(
     compile_from_transitive_sources = _compile_from_transitive_sources,
     compile_from_descriptors = _compile_from_descriptors,
     create_proto_descriptors = _create_proto_descriptors,
+    get_import_path = _get_import_path,
     output_directory = _output_directory,
 )
