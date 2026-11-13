@@ -235,6 +235,7 @@ pub unsafe trait UpbGetArena: SealedInternal {
     fn get_arena(&mut self, _private: Private) -> &Arena;
 }
 
+#[doc(hidden)]
 pub trait KernelMessage:
     AssociatedMiniTable + UpbGetArena + UpbGetMessagePtr + UpbGetMessagePtrMut + OwnedMessageInterop
 {
@@ -249,6 +250,7 @@ impl<T> KernelMessage for T where
 {
 }
 
+#[doc(hidden)]
 pub trait KernelMessageView<'msg>:
     UpbGetMessagePtr + MessageViewInterop<'msg> + From<MessageViewInner<'msg, Self::KMessage>>
 {
@@ -262,6 +264,7 @@ where
     type KMessage = T::Msg;
 }
 
+#[doc(hidden)]
 pub trait KernelMessageMut<'msg>:
     UpbGetMessagePtr
     + UpbGetMessagePtrMut

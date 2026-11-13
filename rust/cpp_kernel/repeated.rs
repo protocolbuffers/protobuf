@@ -77,6 +77,7 @@ impl<'msg> InnerRepeatedMut<'msg> {
     }
 }
 
+#[doc(hidden)]
 pub trait CppTypeConversions: Proxied {
     type InsertElemType;
     type ElemType;

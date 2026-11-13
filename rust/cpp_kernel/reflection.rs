@@ -13,6 +13,7 @@
 
 use super::*;
 
+#[doc(hidden)]
 pub trait KernelWithReflection: MessageDescriptorInterop {
     fn kernel_full_name(_private: Private) -> &'static str {
         let desc = Self::__unstable_get_descriptor();

@@ -23,6 +23,7 @@ use crate::WithReflection;
 ///
 /// `UpbGetMessagePtr<Msg = Self>` ties the message pointer that reflection APIs operate on to the
 /// `MessageDef` they look up by `Self`, so the two can never describe different message types.
+#[doc(hidden)]
 pub trait KernelWithReflection: UpbWithReflection + UpbGetMessagePtr<Msg = Self> {
     fn kernel_full_name(_private: Private) -> &'static str {
         Self::FULL_NAME

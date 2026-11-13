@@ -14,12 +14,14 @@ use crate::{
 use std::marker::PhantomData;
 
 /// A trait implemented by types which are allowed as keys in maps.
-/// This is all types for fields except for repeated, maps, bytes, messages, enums and floating point types.
-#[doc(inline)]
+/// This is all types for fields except for repeated, maps, bytes, messages, enums and floating
+/// point types.
+#[doc(hidden)]
 pub use crate::__internal::runtime::MapKey;
 
 /// A trait implemented by types which are allowed as values in maps, which is all Singular types.
 /// This trait is distinct from `Singular` only because of the generic `K: MapKey`.
+#[doc(hidden)]
 pub trait MapValue: Singular + SealedInternal {
     #[doc(hidden)]
     fn map_new<K: MapKey>(_: Private) -> Map<K, Self>;

@@ -91,7 +91,7 @@ pub trait MessageViewInterop<'msg>: SealedInternal {
     /// `const google::protobuf::MessageLite&` or `const google::protobuf::MessageLite*`.
     ///
     /// The returned `T` is the Rust binding for `google::protobuf::MessageLite` (see
-    /// [`CppMessageLiteType`]). It is normally inferred from the parameter type
+    /// `CppMessageLiteType`). It is normally inferred from the parameter type
     /// of the C++ function being called.
     ///
     /// To get a mutable reference, see [`MessageMutInterop::as_cpp_message_lite_mut`].
@@ -134,6 +134,7 @@ pub trait MessageViewInterop<'msg>: SealedInternal {
 /// Additionally, the Crubit binding of `google::protobuf::MessageLite` must continue to meet these
 /// requirements: it has the same layout as the C++ class, is `!Unpin`, and
 /// only contains `Cell<MaybeUninit<u8>>` storage.
+#[doc(hidden)]
 pub unsafe trait CppMessageLiteType {}
 
 /// Methods for converting to and from a raw, mutable C++ message pointer.
@@ -191,7 +192,7 @@ pub trait MessageMutInterop<'msg>: SealedInternal {
     /// `google::protobuf::MessageLite&` or `google::protobuf::MessageLite*`.
     ///
     /// The returned `T` is the Rust binding for `google::protobuf::MessageLite` (see
-    /// [`CppMessageLiteType`]). It is normally inferred from the parameter type
+    /// `CppMessageLiteType`). It is normally inferred from the parameter type
     /// of the C++ function being called.
     ///
     /// To get a shared reference, see [`MessageViewInterop::as_cpp_message_lite`].

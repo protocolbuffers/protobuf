@@ -10,16 +10,23 @@
 //! generated code.
 
 // Used by the proto! macro
+#[doc(hidden)]
 pub use paste::paste;
 
+#[doc(hidden)]
 pub use crate::codegen_traits::entity_tag;
+#[doc(hidden)]
 pub use crate::codegen_traits::EntityType;
+#[doc(hidden)]
 pub use crate::extension::{new_extension_id, new_message_extension_id, new_repeated_extension_id};
-pub use crate::r#enum::{enum_value_from_name, Enum, EnumValueNames};
+#[doc(hidden)]
+pub use crate::r#enum::enum_value_from_name;
+pub use crate::r#enum::{Enum, EnumValueNames};
 use crate::repeated::RepeatedView;
 use crate::singular::Singular;
 pub use crate::ProtoStr;
 use crate::{MapKey, MapValue, MapView};
+#[doc(hidden)]
 pub use std::fmt::Debug;
 
 #[doc(hidden)]
@@ -27,9 +34,11 @@ pub mod ext {
     pub use crate::extension::{ExtAccess, ExtClear, ExtGetMut, ExtHas};
 }
 
+#[doc(hidden)]
 #[cfg(all(bzl, cpp_kernel))]
 #[path = "cpp_kernel/mod.rs"]
 pub mod runtime;
+#[doc(hidden)]
 #[cfg(any(not(bzl), upb_kernel))]
 #[path = "upb_kernel/mod.rs"]
 pub mod runtime;
@@ -53,17 +62,20 @@ impl<T: SealedInternal> SealedInternal for &T {}
 impl<T: SealedInternal> SealedInternal for &mut T {}
 
 /// A trait used by the proto_eq() gtest macro.
+#[doc(hidden)]
 pub trait MatcherEq: SealedInternal + Debug {
     fn matches(&self, o: &Self) -> bool;
     fn matches_partially(&self, expected: &Self) -> bool;
 }
 
 /// Used by the proto! macro to get a default value for a repeated field.
+#[doc(hidden)]
 pub fn get_repeated_default_value<T: Singular + Default>(_: Private, _: RepeatedView<'_, T>) -> T {
     Default::default()
 }
 
 /// Used by the proto! macro to get a default value for a map field.
+#[doc(hidden)]
 pub fn get_map_default_value<K: MapKey, V: MapValue + Default>(
     _: Private,
     _: MapView<'_, K, V>,
@@ -131,6 +143,7 @@ const fn are_versions_compatible(gencode: &str, runtime: &str) -> bool {
 ///
 /// If you are seeing this fail, it means that your generated code was built
 /// with a protoc version newer than the runtime crate version.
+#[doc(hidden)]
 #[cfg(not(bzl))]
 pub const fn assert_compatible_gencode_version(gencode_version: &'static str) {
     let runtime_version = env!("CARGO_PKG_VERSION");
@@ -148,6 +161,7 @@ pub const fn assert_compatible_gencode_version(gencode_version: &'static str) {
 /// There is no need for gencode/runtime poison pill when running in bzl; the
 /// gencode using the __internal mod which is not available to checked in
 /// gencode; gencode built from source should always match.
+#[doc(hidden)]
 #[cfg(bzl)]
 pub const fn assert_compatible_gencode_version(_gencode_version: &'static str) {}
 

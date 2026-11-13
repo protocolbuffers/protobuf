@@ -192,9 +192,11 @@ where
     }
 }
 
+#[doc(hidden)]
 pub trait KernelMessage: CppGetRawMessage + CppGetRawMessageMut + OwnedMessageInterop {}
 impl<T: CppGetRawMessage + CppGetRawMessageMut + OwnedMessageInterop> KernelMessage for T {}
 
+#[doc(hidden)]
 pub trait KernelMessageView<'msg>:
     CppGetRawMessage + MessageViewInterop<'msg> + AsView + From<MessageViewInner<'msg, Self::KMessage>>
 {
@@ -211,6 +213,7 @@ where
     type KMessage = T::Proxied;
 }
 
+#[doc(hidden)]
 pub trait KernelMessageMut<'msg>:
     CppGetRawMessageMut + MessageMutInterop<'msg> + AsMut + From<MessageMutInner<'msg, Self::KMessage>>
 {

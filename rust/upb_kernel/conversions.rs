@@ -15,6 +15,7 @@ fn upb_array_resize_failed() -> ! {
     panic!("upb_Array_Resize failed (alloc should be infallible)")
 }
 
+#[doc(hidden)]
 pub trait UpbTypeConversions<Tag>: Proxied {
     fn upb_type() -> upb::CType;
 

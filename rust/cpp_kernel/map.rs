@@ -210,6 +210,7 @@ impl FfiMapValue {
     }
 }
 
+#[doc(hidden)]
 pub trait CppMapTypeConversions: Proxied {
     // We have a notion of a map value "prototype", which is a FfiMapValue that
     // contains just enough information to indicate the value type of the map.
