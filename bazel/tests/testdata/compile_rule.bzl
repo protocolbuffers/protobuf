@@ -15,7 +15,9 @@ def _resource_set_callback(_os, inputs_size):
 
 def _impl(ctx):
     proto_info = ctx.attr.proto_dep[ProtoInfo]
-    if ctx.attr.output_files == "multiple" and proto_info.direct_sources:
+    if ctx.attr.declare_directory:
+        outputs = [ctx.actions.declare_directory(ctx.attr.name + ".out")]
+    elif ctx.attr.output_files == "multiple" and proto_info.direct_sources:
         outputs = proto_common.declare_generated_files(ctx.actions, proto_info, ".out")
     else:
         outputs = [ctx.actions.declare_file(ctx.attr.name)]
@@ -62,5 +64,6 @@ compile_rule = rule(
         "additional_inputs": attr.label_list(allow_files = True),
         "use_resource_set": attr.bool(),
         "progress_message": attr.string(),
+        "declare_directory": attr.bool(),
     },
 )

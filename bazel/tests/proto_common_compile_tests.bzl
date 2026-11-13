@@ -38,6 +38,7 @@ def proto_common_compile_test_suite(name):
         _test_compile_protoc_opts_starlark,
         _test_compile_direct_generated_protos,
         _test_compile_indirect_generated_protos,
+        _test_compile_option_deps,
         _test_compile_override_progress_message,
         _test_proto_compiler_flag_override,
         _test_proto_compiler_native_flag_override,
@@ -50,6 +51,8 @@ def proto_common_compile_test_suite(name):
     ]
     if bazel_features.rules.analysis_tests_can_transition_on_experimental_incompatible_flags:
         tests.append(_test_compile_path_mapping)
+        tests.append(_test_compile_genproto_legacy_no_path_mapping)
+        tests.append(_test_compile_genproto_directory_no_path_mapping)
 
     test_suite(
         name = name,
@@ -83,8 +86,9 @@ def _test_compile_basic_impl(env, target):
         [
             _match_proto_compiler(),
             matching.str_matches("--plugin=*out*testdata/plugin"),
-            matching.equals_wrapper("-I."),
             matching.str_endswith("/A.proto"),
+            matching.equals_wrapper("--descriptor_set_in"),
+            matching.str_matches("*out*simple_proto-descriptor-set.proto.bin*out*simple_proto-source_code_info-set.proto.bin"),
         ],
     )
     action.mnemonic().equals("MyMnemonic")
@@ -109,8 +113,9 @@ def _test_compile_noplugin_impl(env, target):
     action.argv().contains_exactly_predicates(
         [
             _match_proto_compiler(),
-            matching.equals_wrapper("-I."),
             matching.str_endswith("/A.proto"),
+            matching.equals_wrapper("--descriptor_set_in"),
+            matching.str_matches("*out*simple_proto-descriptor-set.proto.bin*out*simple_proto-source_code_info-set.proto.bin"),
         ],
     )
 
@@ -136,8 +141,9 @@ def _test_compile_with_plugin_output_impl(env, target):
             _match_proto_compiler(),
             matching.str_matches("--java_out=param1,param2:*out*test_compile_with_plugin_output_compile"),
             matching.str_matches("--plugin=*out*testdata/plugin"),
-            matching.equals_wrapper("-I."),
             matching.str_endswith("/A.proto"),
+            matching.equals_wrapper("--descriptor_set_in"),
+            matching.str_matches("*out*simple_proto-descriptor-set.proto.bin*out*simple_proto-source_code_info-set.proto.bin"),
         ],
     )
 
@@ -163,8 +169,9 @@ def _test_compile_with_directory_plugin_output_impl(env, target):
             _match_proto_compiler(),
             matching.str_matches("--java_out=param1,param2:*out*bin"),
             matching.str_matches("--plugin=*out*testdata/plugin"),
-            matching.equals_wrapper("-I."),
             matching.str_endswith("/A.proto"),
+            matching.equals_wrapper("--descriptor_set_in"),
+            matching.str_matches("*out*simple_proto-descriptor-set.proto.bin*out*simple_proto-source_code_info-set.proto.bin"),
         ],
     )
 
@@ -189,8 +196,9 @@ def _test_compile_additional_args_impl(env, target):
         [
             _match_proto_compiler(),
             matching.str_matches("--plugin=*out*testdata/plugin"),
-            matching.equals_wrapper("-I."),
             matching.str_endswith("/A.proto"),
+            matching.equals_wrapper("--descriptor_set_in"),
+            matching.str_matches("*out*simple_proto-descriptor-set.proto.bin*out*simple_proto-source_code_info-set.proto.bin"),
             matching.equals_wrapper("--a"),
             matching.equals_wrapper("--b"),
         ],
@@ -335,10 +343,11 @@ def _test_compile_protoc_opts_impl(env, target):
         [
             _match_proto_compiler(),
             matching.str_matches("--plugin=*out*testdata/plugin"),
-            matching.equals_wrapper("-I."),
             matching.equals_wrapper("--foo"),
             matching.equals_wrapper("--bar"),
             matching.str_endswith("/A.proto"),
+            matching.equals_wrapper("--descriptor_set_in"),
+            matching.str_matches("*out*simple_proto-descriptor-set.proto.bin*out*simple_proto-source_code_info-set.proto.bin"),
         ],
     )
 
@@ -368,10 +377,10 @@ def _test_compile_direct_generated_protos_impl(env, target):
         [
             _match_proto_compiler(),
             matching.str_matches("--plugin=*out*testdata/plugin"),
-            matching.str_matches("-I*out/*"),
-            matching.equals_wrapper("-I."),
             matching.str_endswith("/A.proto"),
-            matching.str_matches("*out*G.proto"),
+            matching.str_endswith("/G.proto"),
+            matching.equals_wrapper("--descriptor_set_in"),
+            matching.str_matches("*out*test_compile_direct_generated_protos_directly_generated_proto-descriptor-set.proto.bin*out*test_compile_direct_generated_protos_directly_generated_proto-source_code_info-set.proto.bin"),
         ],
     )
 
@@ -403,10 +412,83 @@ def _test_compile_indirect_generated_protos_impl(env, target):
         [
             _match_proto_compiler(),
             matching.str_matches("--plugin=*out*testdata/plugin"),
-            matching.str_matches("-I*out/*"),
-            matching.equals_wrapper("-I."),
             matching.str_endswith("/A.proto"),
+            matching.equals_wrapper("--descriptor_set_in"),
+            matching.str_matches("*out*_generated_proto-descriptor-set.proto.bin*out*test_compile_indirect_generated_protos_indirectly_generated_proto-descriptor-set.proto.bin*out*test_compile_indirect_generated_protos_indirectly_generated_proto-source_code_info-set.proto.bin"),
         ],
+    )
+
+# Verifies `proto_common.compile` passes direct `option_deps` (and their regular `deps`)
+# without propagating transitive `option_deps`.
+def _test_compile_option_deps(name):
+    util.helper_target(proto_library, name = name + "_opt_dep_dep", srcs = ["opt_dep_dep.proto"])
+    util.helper_target(proto_library, name = name + "_opt_inner_opt", srcs = ["opt_inner_opt.proto"])
+    util.helper_target(
+        proto_library,
+        name = name + "_direct_opt",
+        srcs = ["direct_opt.proto"],
+        deps = [name + "_opt_dep_dep"],
+        option_deps = [name + "_opt_inner_opt"],
+    )
+    util.helper_target(proto_library, name = name + "_dep_opt", srcs = ["dep_opt.proto"])
+    util.helper_target(
+        proto_library,
+        name = name + "_regular_dep",
+        srcs = ["regular_dep.proto"],
+        option_deps = [name + "_dep_opt"],
+    )
+    util.helper_target(
+        proto_library,
+        name = name + "_top",
+        srcs = ["A.proto"],
+        deps = [name + "_regular_dep"],
+        option_deps = [name + "_direct_opt"],
+    )
+    util.helper_target(
+        compile_rule,
+        name = name + "_compile",
+        proto_dep = name + "_top",
+    )
+
+    analysis_test(
+        name = name,
+        target = name + "_compile",
+        impl = _test_compile_option_deps_impl,
+    )
+
+def _test_compile_option_deps_impl(env, target):
+    action = env.expect.that_target(target).action_named("MyMnemonic")
+    action.argv().contains_exactly_predicates(
+        [
+            _match_proto_compiler(),
+            matching.str_matches("--plugin=*out*testdata/plugin"),
+            matching.str_endswith("/A.proto"),
+            matching.equals_wrapper("--descriptor_set_in"),
+            matching.str_matches(
+                "*_regular_dep-descriptor-set.proto.bin" +
+                "*_top-descriptor-set.proto.bin" +
+                "*_opt_dep_dep-descriptor-set.proto.bin" +
+                "*_direct_opt-descriptor-set.proto.bin" +
+                "*_top-source_code_info-set.proto.bin",
+            ),
+        ],
+    )
+    action.argv().not_contains_predicate(matching.str_matches("*_dep_opt-descriptor-set.proto.bin*"))
+    action.argv().not_contains_predicate(matching.str_matches("*_opt_inner_opt-descriptor-set.proto.bin*"))
+    action.inputs().contains_at_least_predicates(
+        [
+            matching.file_basename_equals("test_compile_option_deps_regular_dep-descriptor-set.proto.bin"),
+            matching.file_basename_equals("test_compile_option_deps_top-descriptor-set.proto.bin"),
+            matching.file_basename_equals("test_compile_option_deps_opt_dep_dep-descriptor-set.proto.bin"),
+            matching.file_basename_equals("test_compile_option_deps_direct_opt-descriptor-set.proto.bin"),
+            matching.file_basename_equals("test_compile_option_deps_top-source_code_info-set.proto.bin"),
+        ],
+    )
+    action.inputs().not_contains_predicate(
+        matching.file_basename_equals("test_compile_option_deps_dep_opt-descriptor-set.proto.bin"),
+    )
+    action.inputs().not_contains_predicate(
+        matching.file_basename_equals("test_compile_option_deps_opt_inner_opt-descriptor-set.proto.bin"),
     )
 
 # Verifies `proto_common.compile` strips configuration prefixes under `supports-path-mapping`.
@@ -448,12 +530,76 @@ def _test_compile_path_mapping_impl(env, target):
             _match_proto_compiler(),
             matching.str_matches("--java_out=param1,param2:*-out/cfg/bin/*/tests/_virtual_imports/" + target.label.name.removesuffix("_compile") + "_virtual_proto"),
             matching.str_matches("--plugin=*-out/cfg/bin/*testdata/plugin*"),
-            matching.str_matches("-I*-out/cfg/bin/*/tests/_virtual_imports/" + target.label.name.removesuffix("_compile") + "_virtual_proto"),
-            matching.str_matches("-I*-out/cfg/*"),
-            matching.equals_wrapper("-I."),
-            matching.str_matches("*-out/cfg/bin/*/tests/_virtual_imports/*/A.proto"),
+            matching.equals_wrapper("A.proto"),
+            matching.equals_wrapper("--descriptor_set_in"),
+            matching.str_matches("*-out/cfg/bin/*_generated_proto-descriptor-set.proto.bin*-out/cfg/bin/*_virtual_proto-descriptor-set.proto.bin*-out/cfg/bin/*_virtual_proto-source_code_info-set.proto.bin"),
         ],
     )
+
+# Verifies `proto_common.compile` does not enable `supports-path-mapping` when `output_files == "legacy"`.
+def _test_compile_genproto_legacy_no_path_mapping(name):
+    util.helper_target(
+        proto_lang_toolchain,
+        name = name + "_genproto_legacy_toolchain",
+        command_line = "--java_out=param1,param2:$(OUT)",
+        mnemonic = "GenProto",
+        output_files = "legacy",
+        plugin = "//bazel/tests/testdata:plugin",
+        plugin_format_flag = "--plugin=%s",
+    )
+    util.helper_target(
+        compile_rule,
+        name = name + "_compile",
+        proto_dep = ":simple_proto",
+        plugin_output = "multiple",
+        toolchain = ":" + name + "_genproto_legacy_toolchain",
+    )
+
+    analysis_test(
+        name = name,
+        target = name + "_compile",
+        config_settings = {
+            "//command_line_option:experimental_output_paths": "strip",
+        },
+        impl = _test_compile_genproto_legacy_no_path_mapping_impl,
+    )
+
+def _test_compile_genproto_legacy_no_path_mapping_impl(env, target):
+    action = env.expect.that_target(target).action_named("GenProto")
+    action.argv().not_contains_predicate(matching.str_matches("*-out/cfg/*"))
+
+# Verifies `proto_common.compile` does not enable `supports-path-mapping` when `generated_files` contains a directory (`TreeArtifact`).
+def _test_compile_genproto_directory_no_path_mapping(name):
+    util.helper_target(
+        proto_lang_toolchain,
+        name = name + "_genproto_multiple_toolchain",
+        command_line = "--cpp_out=$(OUT)",
+        mnemonic = "GenProto",
+        output_files = "multiple",
+        plugin = "//bazel/tests/testdata:plugin",
+        plugin_format_flag = "--plugin=%s",
+    )
+    util.helper_target(
+        compile_rule,
+        name = name + "_compile",
+        declare_directory = True,
+        output_files = "multiple",
+        proto_dep = ":simple_proto",
+        toolchain = ":" + name + "_genproto_multiple_toolchain",
+    )
+
+    analysis_test(
+        name = name,
+        target = name + "_compile",
+        config_settings = {
+            "//command_line_option:experimental_output_paths": "strip",
+        },
+        impl = _test_compile_genproto_directory_no_path_mapping_impl,
+    )
+
+def _test_compile_genproto_directory_no_path_mapping_impl(env, target):
+    action = env.expect.that_target(target).action_named("GenProto")
+    action.argv().not_contains_predicate(matching.str_matches("*-out/cfg/*"))
 
 # Verifies usage of `proto_common.compile` with `experimental_progress_message` parameter
 def _test_compile_override_progress_message(name):
