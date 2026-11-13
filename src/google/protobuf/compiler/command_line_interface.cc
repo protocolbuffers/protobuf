@@ -1481,7 +1481,7 @@ bool PopulateDescriptorSetInDatabases(
                     << "\" in --descriptor_set_in has conflicting "
                     << GetUnitDescription(unit) << " with \""
                     << source_it->second << "\"." << std::endl;
-          continue;
+          return false;
         }
       }
 

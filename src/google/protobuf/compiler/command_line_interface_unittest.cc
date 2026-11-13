@@ -4077,11 +4077,10 @@ TEST_F(CommandLineInterfaceTest,
       JoinPaths({"$tmpdir/foo1.proto.bin", "$tmpdir/foo2.proto.bin"}),
       " --descriptor_set_out=$tmpdir/bar_desc --proto_path=$tmpdir "
       "bar.proto"));
-  // TODO - Remove this branch for release v38.0 once conflicting
-  // descriptors are an unconditional error.
-  ExpectWarningSubstring(
-      "foo2.proto.bin: FileDescriptorProto for \"foo.proto\" in "
-      "--descriptor_set_in has conflicting core descriptor schema with");
+  ExpectErrorText(
+      "$tmpdir/foo2.proto.bin: FileDescriptorProto for \"foo.proto\" in "
+      "--descriptor_set_in has conflicting core descriptor schema with "
+      "\"$tmpdir/foo1.proto.bin\".\n");
 }
 
 TEST_F(CommandLineInterfaceTest, SourceCodeInfoOut_SourceCodeInfoOnly) {
