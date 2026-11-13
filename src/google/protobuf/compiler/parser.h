@@ -203,6 +203,9 @@ class PROTOBUF_EXPORT Parser final {
   bool ConsumeNumber(double* output, ErrorMaker error);
   // Consume a string literal and store its (unescaped) value in "output".
   bool ConsumeString(std::string* output, ErrorMaker error);
+  // Consume a string literal representing a .proto import path and store its
+  // (unescaped) value in "output".
+  bool ConsumeProtoString(std::string* output, ErrorMaker error);
 
   // Consume a token representing the end of the statement.  Comments between
   // this token and the next will be harvested for documentation.  The given

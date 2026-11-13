@@ -2904,6 +2904,23 @@ TEST_F(ParseErrorTest, ImportNotQuoted) {
                   "0:7: Expected a string naming the file to import.\n");
 }
 
+TEST_F(ParseErrorTest, ImportEmptyPath) {
+  ExpectHasErrors("import \"\";\n", "0:7: Import path cannot be empty.\n");
+}
+
+TEST_F(ParseErrorTest, ImportInvalidCharacters) {
+  ExpectHasErrors(
+      R"schema(
+        edition = "2024";
+        import "google/protobuf';puts 'INJECTED';#.proto";
+        import public "foo bar.proto";
+        import option "foo$bar.proto";
+      )schema",
+      "2:15: Invalid character '\\'' in import path.\n"
+      "3:22: Invalid character ' ' in import path.\n"
+      "4:22: Invalid character '$' in import path.\n");
+}
+
 TEST_F(ParseErrorTest, MultiplePackagesInFile) {
   ExpectHasErrors(
       "package foo;\n"

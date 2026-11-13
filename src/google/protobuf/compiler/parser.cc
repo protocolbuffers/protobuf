@@ -325,6 +325,35 @@ bool Parser::ConsumeString(std::string* output, ErrorMaker error) {
   }
 }
 
+namespace {
+
+bool IsValidProtoPathChar(char c) {
+  return absl::ascii_isalnum(c) || c == '_' || c == '.' || c == '/' || c == '-';
+}
+
+}  // namespace
+
+bool Parser::ConsumeProtoString(std::string* output, ErrorMaker error) {
+  int line = input_->current().line;
+  int column = input_->current().column;
+  DO(ConsumeString(output, error));
+  if (output->empty()) {
+    RecordError(line, column, "Import path cannot be empty.");
+    return false;
+  }
+  for (char c : *output) {
+    if (!IsValidProtoPathChar(c)) {
+      RecordError(line, column, [c] {
+        return absl::StrCat("Invalid character '",
+                            absl::CEscape(absl::string_view(&c, 1)),
+                            "' in import path.");
+      });
+      return false;
+    }
+  }
+  return true;
+}
+
 bool Parser::TryConsumeEndOfDeclaration(absl::string_view text,
                                         const LocationRecorder* location) {
   if (LookingAt(text)) {
@@ -2641,8 +2670,8 @@ bool Parser::ParseImport(RepeatedPtrField<std::string>* dependency,
         option_dependency->size());
     option_import_location.StartAt(import_start);
     DO(Consume("option"));
-    DO(ConsumeString(&import_file,
-                     "Expected a string naming the file to import."));
+    DO(ConsumeProtoString(&import_file,
+                          "Expected a string naming the file to import."));
     *option_dependency->Add() = import_file;
 
     option_import_location.RecordLegacyImportLocation(containing_file,
@@ -2679,8 +2708,8 @@ bool Parser::ParseImport(RepeatedPtrField<std::string>* dependency,
     DO(Consume("weak"));
     *weak_dependency->Add() = dependency->size();
   }
-  DO(ConsumeString(&import_file,
-                   "Expected a string naming the file to import."));
+  DO(ConsumeProtoString(&import_file,
+                        "Expected a string naming the file to import."));
   *dependency->Add() = import_file;
 
   import_location.RecordLegacyImportLocation(containing_file, import_file);
