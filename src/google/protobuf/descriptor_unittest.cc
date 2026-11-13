@@ -18050,7 +18050,542 @@ TEST_F(SourceLocationTest, GetSourceLocation) {
                                     "rpc Method(A) returns (A.B);"));
 }
 
-// TODO: b/168903973 - Remove once we update the format.
+TEST_F(SourceLocationTest, AggregateOptionSourceLocation) {
+  SourceLocation loc;
+  const FileDescriptor* file_desc =
+      ABSL_DIE_IF_NULL(pool_.FindFileByName("/test/test.proto"));
+
+  SourceCodePath base_path = {FileDescriptorProto::kServiceFieldNumber,
+                              0,
+                              ServiceDescriptorProto::kOptionsFieldNumber,
+                              kCustomOptionFieldNumber,
+                              0,
+                              -UninterpretedOption::kAggregateValueFieldNumber};
+
+  auto make_path = [&](std::initializer_list<int> sub) {
+    SourceCodePath path = base_path;
+    path.insert(path.end(), sub.begin(), sub.end());
+    return path;
+  };
+
+  // Verify what base_path matches directly (the entire aggregate block).
+  {
+    EXPECT_TRUE(file_desc->GetSourceLocation(base_path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput,
+                                 "{a:100, rep: [1, 2, 3], b_sub: {b: 200}}"));
+  }
+
+  // Path to "a" inside {a:100}
+  {
+    SourceCodePath path =
+        make_path({kAFieldNumber, -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "a"));
+  }
+
+  // Path to "100" inside {a:100}
+  {
+    SourceCodePath path = make_path(
+        {kAFieldNumber, -UninterpretedOption::kPositiveIntValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "100"));
+  }
+
+  // Path to the name of the top-level option (test_svc_opt)
+  {
+    SourceCodePath path = {FileDescriptorProto::kServiceFieldNumber,
+                           0,
+                           ServiceDescriptorProto::kOptionsFieldNumber,
+                           kCustomOptionFieldNumber,
+                           0,
+                           -UninterpretedOption::kNameFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput, "(test_svc_opt)"));
+  }
+
+  // Path to "1" inside {rep: [1, 2, 3]}
+  {
+    SourceCodePath path =
+        make_path({kRepFieldNumber, 0,
+                   -UninterpretedOption::kPositiveIntValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "1"));
+  }
+
+  // Path to "2" inside {rep: [1, 2, 3]}
+  {
+    SourceCodePath path =
+        make_path({kRepFieldNumber, 1,
+                   -UninterpretedOption::kPositiveIntValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "2"));
+  }
+
+  // Path to "3" inside {rep: [1, 2, 3]}
+  {
+    SourceCodePath path =
+        make_path({kRepFieldNumber, 2,
+                   -UninterpretedOption::kPositiveIntValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "3"));
+  }
+
+  // Path to "b_sub" inside {..., b_sub: {b: 200}}
+  {
+    SourceCodePath path =
+        make_path({kBSubFieldNumber, -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "b_sub"));
+  }
+
+  // Path to "b" inside {..., b_sub: {b: 200}}
+  {
+    SourceCodePath path = make_path(
+        {kBSubFieldNumber, -UninterpretedOption::kAggregateValueFieldNumber,
+         kBFieldNumber, -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "b"));
+  }
+
+  // Path to "200" inside {..., b_sub: {b: 200}}
+  {
+    SourceCodePath path = make_path(
+        {kBSubFieldNumber, -UninterpretedOption::kAggregateValueFieldNumber,
+         kBFieldNumber, -UninterpretedOption::kDoubleValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "200"));
+  }
+}
+
+class AnyOptionSourceLocationTest : public ::testing::Test {
+ public:
+  AnyOptionSourceLocationTest() {
+    FileDescriptorProto file_proto;
+    FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+    simple_db_.Add(file_proto);
+    FileDescriptorProto any_proto;
+    google::protobuf::Any::descriptor()->file()->CopyTo(&any_proto);
+    simple_db_.Add(any_proto);
+  }
+
+ protected:
+  const FileDescriptor* BuildFile(absl::string_view proto_text) {
+    source_tree_ = std::make_unique<SingletonSourceTree>(
+        "/test/test.proto", std::string(proto_text));
+    source_tree_db_ = std::make_unique<compiler::SourceTreeDescriptorDatabase>(
+        source_tree_.get());
+    merged_db_ = std::make_unique<MergedDescriptorDatabase>(
+        &simple_db_, source_tree_db_.get());
+    pool_ = std::make_unique<DescriptorPool>(merged_db_.get(), &collector_);
+    return ABSL_DIE_IF_NULL(pool_->FindFileByName("/test/test.proto"));
+  }
+
+ private:
+  AbortingErrorCollector collector_;
+  SimpleDescriptorDatabase simple_db_;
+  std::unique_ptr<SingletonSourceTree> source_tree_;
+  std::unique_ptr<compiler::SourceTreeDescriptorDatabase> source_tree_db_;
+  std::unique_ptr<MergedDescriptorDatabase> merged_db_;
+  std::unique_ptr<DescriptorPool> pool_;
+};
+
+TEST_F(AnyOptionSourceLocationTest, NestedAnyOptionSourceLocations) {
+  using ::google::protobuf::Any;
+
+  constexpr absl::string_view kProto = R"schema(
+    syntax = "proto2";
+    package proto2_unittest;
+    import "google/protobuf/descriptor.proto";
+    import "google/protobuf/any.proto";
+
+    message TargetMessage {
+      optional int32 target_int = 1;
+      optional string target_str = 2;
+    }
+
+    message NestedAny {
+      optional google.protobuf.Any any_field = 1;
+    }
+
+    extend google.protobuf.FileOptions {
+      optional NestedAny nested_any_opt = 50000;
+    }
+
+    option (nested_any_opt) = {
+      any_field: {
+        [type.googleapis.com/proto2_unittest.TargetMessage] {
+          target_int: 42
+          target_str: "hello"
+        }
+      }
+    };
+  )schema";
+
+  const FileDescriptor* file_desc = BuildFile(kProto);
+  SourceLocation loc;
+
+  const SourceCodePath base_path = {
+      FileDescriptorProto::kOptionsFieldNumber, 50000,
+      -UninterpretedOption::kAggregateValueFieldNumber};
+
+  auto make_path = [&](std::initializer_list<int> sub) {
+    SourceCodePath path = base_path;
+    path.insert(path.end(), sub.begin(), sub.end());
+    return path;
+  };
+
+  // Field name "any_field"
+  {
+    SourceCodePath path =
+        make_path({1, -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "any_field"));
+  }
+
+  // Type URL value in Any:
+  // "[type.googleapis.com/proto2_unittest.TargetMessage]"
+  {
+    SourceCodePath path =
+        make_path({1, -UninterpretedOption::kAggregateValueFieldNumber,
+                   Any::kTypeUrlFieldNumber,
+                   -UninterpretedOption::kStringValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(
+        loc,
+        MatchesSubstring(
+            kProto, "[type.googleapis.com/proto2_unittest.TargetMessage]"));
+  }
+
+  // Nested target_int field name inside Any.value
+  {
+    SourceCodePath path =
+        make_path({1, -UninterpretedOption::kAggregateValueFieldNumber,
+                   Any::kValueFieldNumber,
+                   -UninterpretedOption::kAggregateValueFieldNumber, 1,
+                   -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "target_int"));
+  }
+
+  // Nested target_int value "42" inside Any.value
+  {
+    SourceCodePath path =
+        make_path({1, -UninterpretedOption::kAggregateValueFieldNumber,
+                   Any::kValueFieldNumber,
+                   -UninterpretedOption::kAggregateValueFieldNumber, 1,
+                   -UninterpretedOption::kPositiveIntValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "42"));
+  }
+
+  // Nested target_str field name inside Any.value
+  {
+    SourceCodePath path =
+        make_path({1, -UninterpretedOption::kAggregateValueFieldNumber,
+                   Any::kValueFieldNumber,
+                   -UninterpretedOption::kAggregateValueFieldNumber, 2,
+                   -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "target_str"));
+  }
+
+  // Nested target_str value "\"hello\"" inside Any.value
+  {
+    SourceCodePath path =
+        make_path({1, -UninterpretedOption::kAggregateValueFieldNumber,
+                   Any::kValueFieldNumber,
+                   -UninterpretedOption::kAggregateValueFieldNumber, 2,
+                   -UninterpretedOption::kStringValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "\"hello\""));
+  }
+}
+
+TEST_F(AnyOptionSourceLocationTest, DirectAnyOptionSourceLocations) {
+  using ::google::protobuf::Any;
+
+  constexpr absl::string_view kProto = R"schema(
+    syntax = "proto2";
+    package proto2_unittest;
+    import "google/protobuf/descriptor.proto";
+    import "google/protobuf/any.proto";
+
+    message TargetMessage {
+      optional int32 target_int = 1;
+    }
+
+    extend google.protobuf.FileOptions {
+      optional google.protobuf.Any direct_any_opt = 50001;
+    }
+
+    option (direct_any_opt) = {
+      [type.googleapis.com/proto2_unittest.TargetMessage] {
+        target_int: 99
+      }
+    };
+  )schema";
+
+  const FileDescriptor* file_desc = BuildFile(kProto);
+  SourceLocation loc;
+
+  const SourceCodePath direct_base_path = {
+      FileDescriptorProto::kOptionsFieldNumber, 50001,
+      -UninterpretedOption::kAggregateValueFieldNumber};
+
+  auto make_direct_path = [&](std::initializer_list<int> sub) {
+    SourceCodePath path = direct_base_path;
+    path.insert(path.end(), sub.begin(), sub.end());
+    return path;
+  };
+
+  // Direct Any type_url value
+  {
+    SourceCodePath path =
+        make_direct_path({Any::kTypeUrlFieldNumber,
+                          -UninterpretedOption::kStringValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(
+        loc,
+        MatchesSubstring(
+            kProto, "[type.googleapis.com/proto2_unittest.TargetMessage]"));
+  }
+
+  // Nested target_int field name inside direct Any.value
+  {
+    SourceCodePath path =
+        make_direct_path({Any::kValueFieldNumber,
+                          -UninterpretedOption::kAggregateValueFieldNumber, 1,
+                          -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "target_int"));
+  }
+
+  // Nested target_int value "99" inside direct Any.value
+  {
+    SourceCodePath path =
+        make_direct_path({Any::kValueFieldNumber,
+                          -UninterpretedOption::kAggregateValueFieldNumber, 1,
+                          -UninterpretedOption::kPositiveIntValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "99"));
+  }
+}
+
+TEST_F(AnyOptionSourceLocationTest, AnyWithoutTypeUrlOptionSourceLocations) {
+  using ::google::protobuf::Any;
+
+  constexpr absl::string_view kProto = R"schema(
+    syntax = "proto2";
+    package proto2_unittest;
+    import "google/protobuf/descriptor.proto";
+    import "google/protobuf/any.proto";
+
+    extend google.protobuf.FileOptions {
+      optional google.protobuf.Any empty_any_opt = 50002;
+      optional google.protobuf.Any value_only_any_opt = 50003;
+    }
+
+    option (empty_any_opt) = {};
+    option (value_only_any_opt) = {
+      value: "unknown"
+    };
+  )schema";
+
+  const FileDescriptor* file_desc = BuildFile(kProto);
+  SourceLocation loc;
+
+  const SourceCodePath value_only_base_path = {
+      FileDescriptorProto::kOptionsFieldNumber, 50003,
+      -UninterpretedOption::kAggregateValueFieldNumber};
+
+  // Regular field name "value" inside Any without type_url
+  {
+    SourceCodePath path = value_only_base_path;
+    path.insert(path.end(), {Any::kValueFieldNumber,
+                             -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "value"));
+  }
+
+  // Regular field value "\"unknown\"" inside Any without type_url
+  {
+    SourceCodePath path = value_only_base_path;
+    path.insert(path.end(), {Any::kValueFieldNumber,
+                             -UninterpretedOption::kStringValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "\"unknown\""));
+  }
+}
+
+TEST_F(AnyOptionSourceLocationTest, DotNotationOptionSourceLocations) {
+  constexpr absl::string_view kProto = R"schema(
+    syntax = "proto2";
+    package proto2_unittest;
+    import "google/protobuf/descriptor.proto";
+
+    message LeafOption {
+      optional int32 single_val = 1;
+      repeated string rep_val = 2;
+    }
+
+    message ParentOption {
+      optional LeafOption leaf = 1;
+    }
+
+    extend google.protobuf.FileOptions {
+      optional ParentOption dot_opt = 50004;
+    }
+
+    option (dot_opt).leaf.single_val = 42;
+    option (dot_opt).leaf.rep_val = "first";
+    option (dot_opt).leaf.rep_val = "second";
+  )schema";
+
+  const FileDescriptor* file_desc = BuildFile(kProto);
+  SourceLocation loc;
+
+  constexpr int kDotOptFieldNumber = 50004;
+  constexpr int kLeafFieldNumber = 1;
+  constexpr int kSingleValFieldNumber = 1;
+  constexpr int kRepValFieldNumber = 2;
+
+  const SourceCodePath opt_base_path = {
+      FileDescriptorProto::kOptionsFieldNumber, kDotOptFieldNumber};
+  auto make_path = [&](std::initializer_list<int> sub) {
+    SourceCodePath path = opt_base_path;
+    path.insert(path.end(), sub.begin(), sub.end());
+    return path;
+  };
+
+  // Top-level option path and component names
+  {
+    EXPECT_TRUE(file_desc->GetSourceLocation(opt_base_path, &loc));
+    EXPECT_THAT(
+        loc, MatchesSubstring(kProto,
+                              "option (dot_opt).leaf.rep_val = \"second\";"));
+
+    SourceCodePath top_name_path =
+        make_path({-UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(top_name_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "(dot_opt)"));
+
+    SourceCodePath leaf_msg_name_path =
+        make_path({-UninterpretedOption::kAggregateValueFieldNumber,
+                   kLeafFieldNumber, -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(leaf_msg_name_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "leaf"));
+  }
+
+  // Non-repeated leaf field `single_val` name and value
+  {
+    SourceCodePath single_name_path = make_path(
+        {-UninterpretedOption::kAggregateValueFieldNumber, kLeafFieldNumber,
+         -UninterpretedOption::kAggregateValueFieldNumber,
+         kSingleValFieldNumber, -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(single_name_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "single_val"));
+
+    SourceCodePath single_val_path = make_path(
+        {-UninterpretedOption::kAggregateValueFieldNumber, kLeafFieldNumber,
+         -UninterpretedOption::kAggregateValueFieldNumber,
+         kSingleValFieldNumber,
+         -UninterpretedOption::kPositiveIntValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(single_val_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "42"));
+  }
+
+  // Repeated leaf field `rep_val` (elements 0 and 1) names and values
+  {
+    SourceCodePath rep0_name_path = make_path(
+        {-UninterpretedOption::kAggregateValueFieldNumber, kLeafFieldNumber,
+         -UninterpretedOption::kAggregateValueFieldNumber, kRepValFieldNumber,
+         0, -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(rep0_name_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "rep_val"));
+
+    SourceCodePath rep0_val_path = make_path(
+        {-UninterpretedOption::kAggregateValueFieldNumber, kLeafFieldNumber,
+         -UninterpretedOption::kAggregateValueFieldNumber, kRepValFieldNumber,
+         0, -UninterpretedOption::kStringValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(rep0_val_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "\"first\""));
+
+    SourceCodePath rep1_name_path = make_path(
+        {-UninterpretedOption::kAggregateValueFieldNumber, kLeafFieldNumber,
+         -UninterpretedOption::kAggregateValueFieldNumber, kRepValFieldNumber,
+         1, -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(rep1_name_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "rep_val"));
+
+    SourceCodePath rep1_val_path = make_path(
+        {-UninterpretedOption::kAggregateValueFieldNumber, kLeafFieldNumber,
+         -UninterpretedOption::kAggregateValueFieldNumber, kRepValFieldNumber,
+         1, -UninterpretedOption::kStringValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(rep1_val_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "\"second\""));
+  }
+}
+
+TEST_F(AnyOptionSourceLocationTest, DotNotationOptionLegacySourceLocations) {
+  constexpr absl::string_view kProto = R"schema(
+    syntax = "proto2";
+    package proto2_unittest;
+    import "google/protobuf/descriptor.proto";
+
+    message LeafOption {
+      optional int32 single_val = 1;
+      repeated string rep_val = 2;
+    }
+
+    message ParentOption {
+      optional LeafOption leaf = 1;
+    }
+
+    extend google.protobuf.FileOptions {
+      optional ParentOption dot_opt = 50004;
+    }
+
+    option (dot_opt).leaf.single_val = 42;
+    option (dot_opt).leaf.rep_val = "first";
+    option (dot_opt).leaf.rep_val = "second";
+  )schema";
+
+  const FileDescriptor* file_desc = BuildFile(kProto);
+  SourceLocation loc;
+
+  constexpr int kDotOptFieldNumber = 50004;
+  constexpr int kLeafFieldNumber = 1;
+  constexpr int kSingleValFieldNumber = 1;
+  constexpr int kRepValFieldNumber = 2;
+
+  const SourceCodePath opt_base_path = {
+      FileDescriptorProto::kOptionsFieldNumber, kDotOptFieldNumber};
+  auto make_path = [&](std::initializer_list<int> sub) {
+    SourceCodePath path = opt_base_path;
+    path.insert(path.end(), sub.begin(), sub.end());
+    return path;
+  };
+
+  SourceCodePath legacy_single_path =
+      make_path({kLeafFieldNumber, kSingleValFieldNumber});
+  EXPECT_TRUE(file_desc->GetSourceLocation(legacy_single_path, &loc));
+  EXPECT_THAT(
+      loc, MatchesSubstring(kProto, "option (dot_opt).leaf.single_val = 42;"));
+
+  SourceCodePath legacy_rep0_path =
+      make_path({kLeafFieldNumber, kRepValFieldNumber, 0});
+  EXPECT_TRUE(file_desc->GetSourceLocation(legacy_rep0_path, &loc));
+  EXPECT_THAT(loc, MatchesSubstring(
+                       kProto, "option (dot_opt).leaf.rep_val = \"first\";"));
+
+  SourceCodePath legacy_rep1_path =
+      make_path({kLeafFieldNumber, kRepValFieldNumber, 1});
+  EXPECT_TRUE(file_desc->GetSourceLocation(legacy_rep1_path, &loc));
+  EXPECT_THAT(loc, MatchesSubstring(
+                       kProto, "option (dot_opt).leaf.rep_val = \"second\";"));
+}
 
 TEST_F(SourceLocationTest, ExtensionSourceLocation) {
   SourceLocation loc;
@@ -18108,7 +18643,19 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
 
     EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
 
-// TODO: b/168903973 - Remove once we update the format.
+    SourceCodePath name_path = {FileDescriptorProto::kOptionsFieldNumber,
+                                FileOptions::kJavaPackageFieldNumber,
+                                -UninterpretedOption::kNameFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(name_path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput, "java_package"));
+
+    SourceCodePath val_path = {FileDescriptorProto::kOptionsFieldNumber,
+                               FileOptions::kJavaPackageFieldNumber,
+                               -UninterpretedOption::kStringValueFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(val_path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput, "\"com.foo.bar\""));
   }
   {
     SourceCodePath path = {FileDescriptorProto::kOptionsFieldNumber,
@@ -18121,7 +18668,18 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
 
     EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
 
-// TODO: b/168903973 - Remove once we update the format.
+    SourceCodePath name_path = {FileDescriptorProto::kOptionsFieldNumber,
+                                kCustomOptionFieldNumber,
+                                -UninterpretedOption::kNameFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(name_path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput, "(test_file_opt)"));
+
+    SourceCodePath val_path = {FileDescriptorProto::kOptionsFieldNumber,
+                               kCustomOptionFieldNumber,
+                               -UninterpretedOption::kStringValueFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(val_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "\"foobar\""));
   }
 
   // Message option

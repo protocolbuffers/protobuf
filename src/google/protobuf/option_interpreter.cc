@@ -582,7 +582,70 @@ void OptionInterpreter::UpdateSourceCodeInfo(SourceCodeInfo* info) {
       }
 
       if (loc_matches) {
-        // TODO: b/168903973 - Remove once we update the format.
+        if (loc->path_size() == static_cast<int64_t>(match_src.size() + 1)) {
+          int uninterpreted_field = loc->path(match_src.size());
+          if (uninterpreted_field == UninterpretedOption::kNameFieldNumber &&
+              dot_name_paths != nullptr) {
+            // Drop concatenated option name location for dot-notation options;
+            // per-component locations will be added below.
+            continue;
+          }
+
+          SourceCodeInfo_Location* mapped_loc = new_locs.Add();
+          *mapped_loc = *loc;
+          if (dot_name_paths != nullptr) {
+            mapped_loc->mutable_path()->Assign(dot_name_paths->back().begin(),
+                                               dot_name_paths->back().end());
+          } else {
+            mapped_loc->mutable_path()->Assign(match_dest.begin(),
+                                               match_dest.end());
+          }
+          mapped_loc->add_path(-uninterpreted_field);
+
+          if (uninterpreted_field !=
+              UninterpretedOption::kAggregateValueFieldNumber) {
+            continue;
+          }
+          auto it = agg_loc_map.find(loc->path());
+          if (it == agg_loc_map.end()) {
+            continue;
+          }
+          for (const AggregateFieldLocation* afl : it->second) {
+            if (afl->name_range.start.line != -1) {
+              SourceCodeInfo_Location* name_loc = new_locs.Add();
+              name_loc->mutable_path()->Assign(afl->field_dest_path.begin(),
+                                               afl->field_dest_path.end());
+              name_loc->add_path(-UninterpretedOption::kNameFieldNumber);
+              SetSpan(name_loc, *loc, afl->name_range);
+            }
+            if (afl->val_range.start.line != -1) {
+              SourceCodeInfo_Location* val_loc = new_locs.Add();
+              val_loc->mutable_path()->Assign(afl->field_dest_path.begin(),
+                                              afl->field_dest_path.end());
+              val_loc->add_path(-afl->value_marker);
+              SetSpan(val_loc, *loc, afl->val_range);
+            }
+          }
+        } else if (dot_name_paths != nullptr &&
+                   loc->path_size() ==
+                       static_cast<int64_t>(match_src.size() + 2) &&
+                   loc->path(match_src.size()) ==
+                       UninterpretedOption::kNameFieldNumber) {
+          // For dot-notation options, the parser records a location for each
+          // element of `repeated NamePart name = 2` with path:
+          //   [match_src..., kNameFieldNumber (2), part_idx (0, 1, 2, ...)]
+          // Extract `part_idx` at `match_src.size() + 1` and map it to the
+          // corresponding component destination path + [-kNameFieldNumber].
+          size_t part_idx = loc->path(match_src.size() + 1);
+          if (part_idx < dot_name_paths->size()) {
+            SourceCodeInfo_Location* name_loc = new_locs.Add();
+            *name_loc = *loc;
+            const SourceCodePath& part_dest = (*dot_name_paths)[part_idx];
+            name_loc->mutable_path()->Assign(part_dest.begin(),
+                                             part_dest.end());
+            name_loc->add_path(-UninterpretedOption::kNameFieldNumber);
+          }
+        }
         // don't copy this row since it is a sub-location that we're removing
         // (or we already mapped it if it's a direct child / name component)
         continue;
