@@ -24,6 +24,13 @@ abstract class AbstractProtobufList<E> extends AbstractList<E> implements Protob
 
   protected static final int DEFAULT_CAPACITY = 10;
 
+  /**
+   * Maximum backing-array capacity trimmed on {@link #makeImmutable()}; covers the first 15 {@code
+   * 1.5x} growth steps (up to {@code 3442}) while bounding freeze-time copies to at most 32 KiB and
+   * avoiding extra allocations on large bulk parses.
+   */
+  static final int MAX_TRIM_CAPACITY = 4096;
+
   /** Whether or not this list is modifiable. */
   private boolean isMutable;
 
@@ -117,9 +124,13 @@ abstract class AbstractProtobufList<E> extends AbstractList<E> implements Protob
   @Override
   public final void makeImmutable() {
     if (isMutable) {
+      onMakeImmutable();
       isMutable = false;
     }
   }
+
+  /** Invoked once when transitioning this list from mutable to immutable. */
+  protected void onMakeImmutable() {}
 
   @Override
   @CanIgnoreReturnValue

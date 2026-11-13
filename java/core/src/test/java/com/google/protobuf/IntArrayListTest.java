@@ -10,6 +10,7 @@ package com.google.protobuf;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static java.util.Arrays.asList;
+import static org.junit.Assert.assertThrows;
 
 import com.google.protobuf.Internal.IntList;
 import java.util.Collections;
@@ -397,6 +398,165 @@ public class IntArrayListTest {
     assertThat(toRemove).isEmpty();
   }
 
+  @Test
+  public void makeImmutable_singleElement_trimsIntArrayListCapacityAndFreezes() {
+    IntArrayList intList = new IntArrayList();
+    intList.addInt(42);
+
+    intList.makeImmutable();
+
+    assertThat(intList.isModifiable()).isFalse();
+    assertThat(intList.getCapacityForTesting()).isEqualTo(1);
+    assertThat(intList).containsExactly(42);
+    assertThat(intList).isEqualTo(newImmutableIntArrayList(42));
+    assertThat(intList.hashCode()).isEqualTo(newImmutableIntArrayList(42).hashCode());
+    assertThrows(UnsupportedOperationException.class, () -> intList.addInt(99));
+    assertThrows(UnsupportedOperationException.class, () -> intList.setInt(0, 99));
+    assertThrows(UnsupportedOperationException.class, intList::clear);
+  }
+
+  @Test
+  public void makeImmutable_singleElement_trimsLongArrayListCapacityAndFreezes() {
+    LongArrayList longList = new LongArrayList();
+    longList.addLong(42000000000L);
+
+    longList.makeImmutable();
+
+    assertThat(longList.isModifiable()).isFalse();
+    assertThat(longList.getCapacityForTesting()).isEqualTo(1);
+    assertThat(longList).containsExactly(42000000000L);
+    assertThat(longList).isEqualTo(newImmutableLongArrayList(42000000000L));
+    assertThat(longList.hashCode()).isEqualTo(newImmutableLongArrayList(42000000000L).hashCode());
+    assertThrows(UnsupportedOperationException.class, () -> longList.addLong(99L));
+    assertThrows(UnsupportedOperationException.class, () -> longList.setLong(0, 99L));
+    assertThrows(UnsupportedOperationException.class, longList::clear);
+  }
+
+  @Test
+  public void makeImmutable_grownBeyondDefaultCapacity_trimsAndRemainsIdempotent() {
+    IntArrayList intList = newMutableIntArrayList(10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20);
+    LongArrayList longList =
+        newMutableLongArrayList(10L, 11L, 12L, 13L, 14L, 15L, 16L, 17L, 18L, 19L, 20L);
+
+    intList.makeImmutable();
+    intList.makeImmutable();
+    longList.makeImmutable();
+    longList.makeImmutable();
+
+    assertThat(intList.getCapacityForTesting()).isEqualTo(11);
+    assertThat(intList).containsExactly(10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20).inOrder();
+    assertThat(longList.getCapacityForTesting()).isEqualTo(11);
+    assertThat(longList)
+        .containsExactly(10L, 11L, 12L, 13L, 14L, 15L, 16L, 17L, 18L, 19L, 20L)
+        .inOrder();
+  }
+
+  @Test
+  public void makeImmutable_emptyEnsuredAndClearedLists_resetBackingArrayToEmpty() {
+    IntArrayList ensuredIntList = new IntArrayList();
+    ensuredIntList.ensureCapacity(5000);
+    IntArrayList clearedIntList = newMutableIntArrayList(7, 8);
+    clearedIntList.clear();
+    LongArrayList ensuredLongList = new LongArrayList();
+    ensuredLongList.ensureCapacity(5000);
+    LongArrayList clearedLongList = newMutableLongArrayList(7L, 8L);
+    clearedLongList.clear();
+
+    ensuredIntList.makeImmutable();
+    clearedIntList.makeImmutable();
+    ensuredLongList.makeImmutable();
+    clearedLongList.makeImmutable();
+    IntArrayList.emptyList().makeImmutable();
+    LongArrayList.emptyList().makeImmutable();
+
+    assertThat(ensuredIntList.isModifiable()).isFalse();
+    assertThat(ensuredIntList.getCapacityForTesting()).isEqualTo(0);
+    assertThat(ensuredIntList).isEmpty();
+    assertThat(clearedIntList.isModifiable()).isFalse();
+    assertThat(clearedIntList.getCapacityForTesting()).isEqualTo(0);
+    assertThat(clearedIntList).isEmpty();
+    assertThat(ensuredLongList.isModifiable()).isFalse();
+    assertThat(ensuredLongList.getCapacityForTesting()).isEqualTo(0);
+    assertThat(ensuredLongList).isEmpty();
+    assertThat(clearedLongList.isModifiable()).isFalse();
+    assertThat(clearedLongList.getCapacityForTesting()).isEqualTo(0);
+    assertThat(clearedLongList).isEmpty();
+    assertThat(IntArrayList.emptyList().isModifiable()).isFalse();
+    assertThat(IntArrayList.emptyList().getCapacityForTesting()).isEqualTo(0);
+    assertThat(LongArrayList.emptyList().isModifiable()).isFalse();
+    assertThat(LongArrayList.emptyList().getCapacityForTesting()).isEqualTo(0);
+  }
+
+  @Test
+  public void makeImmutable_atAndAboveMaxTrimCapacity_trimsAtBoundaryAndPreservesAbove() {
+    IntArrayList atLimitInt =
+        (IntArrayList) newImmutableIntArrayList(5, 6).mutableCopyWithCapacity(4096);
+    IntArrayList aboveLimitInt =
+        (IntArrayList) newImmutableIntArrayList(5, 6).mutableCopyWithCapacity(4097);
+    IntArrayList largeLadderInt = newMutableIntSequence(4097);
+    LongArrayList atLimitLong =
+        (LongArrayList) newImmutableLongArrayList(5L, 6L).mutableCopyWithCapacity(4096);
+    LongArrayList aboveLimitLong =
+        (LongArrayList) newImmutableLongArrayList(5L, 6L).mutableCopyWithCapacity(4097);
+    LongArrayList largeLadderLong = newMutableLongSequence(4097);
+
+    atLimitInt.makeImmutable();
+    aboveLimitInt.makeImmutable();
+    largeLadderInt.makeImmutable();
+    atLimitLong.makeImmutable();
+    aboveLimitLong.makeImmutable();
+    largeLadderLong.makeImmutable();
+
+    assertThat(atLimitInt.getCapacityForTesting()).isEqualTo(2);
+    assertThat(atLimitInt).containsExactly(5, 6).inOrder();
+    assertThat(aboveLimitInt.getCapacityForTesting()).isEqualTo(4097);
+    assertThat(aboveLimitInt).containsExactly(5, 6).inOrder();
+    assertThat(largeLadderInt.getCapacityForTesting()).isEqualTo(5164);
+    assertThat(largeLadderInt).hasSize(4097);
+    assertThat(largeLadderInt.getInt(0)).isEqualTo(1000);
+    assertThat(largeLadderInt.getInt(4096)).isEqualTo(5096);
+    assertThat(atLimitLong.getCapacityForTesting()).isEqualTo(2);
+    assertThat(atLimitLong).containsExactly(5L, 6L).inOrder();
+    assertThat(aboveLimitLong.getCapacityForTesting()).isEqualTo(4097);
+    assertThat(aboveLimitLong).containsExactly(5L, 6L).inOrder();
+    assertThat(largeLadderLong.getCapacityForTesting()).isEqualTo(5164);
+    assertThat(largeLadderLong).hasSize(4097);
+    assertThat(largeLadderLong.getLong(0)).isEqualTo(1000L);
+    assertThat(largeLadderLong.getLong(4096)).isEqualTo(5096L);
+  }
+
+  @Test
+  public void makeImmutable_exactCapacityMutableLists_preservesCapacityAndFreezes() {
+    IntArrayList wrappedInt = IntArrayList.unsafeWrap(new int[] {4, 5, 6});
+    IntArrayList copiedInt =
+        (IntArrayList) newImmutableIntArrayList(4, 5, 6).mutableCopyWithCapacity(3);
+    LongArrayList wrappedLong = LongArrayList.unsafeWrap(new long[] {4L, 5L, 6L});
+    LongArrayList copiedLong =
+        (LongArrayList) newImmutableLongArrayList(4L, 5L, 6L).mutableCopyWithCapacity(3);
+
+    wrappedInt.makeImmutable();
+    copiedInt.makeImmutable();
+    wrappedLong.makeImmutable();
+    copiedLong.makeImmutable();
+
+    assertThat(wrappedInt.isModifiable()).isFalse();
+    assertThat(wrappedInt.getCapacityForTesting()).isEqualTo(3);
+    assertThat(wrappedInt).containsExactly(4, 5, 6).inOrder();
+    assertThrows(UnsupportedOperationException.class, () -> wrappedInt.addInt(7));
+    assertThat(copiedInt.isModifiable()).isFalse();
+    assertThat(copiedInt.getCapacityForTesting()).isEqualTo(3);
+    assertThat(copiedInt).containsExactly(4, 5, 6).inOrder();
+    assertThrows(UnsupportedOperationException.class, () -> copiedInt.addInt(7));
+    assertThat(wrappedLong.isModifiable()).isFalse();
+    assertThat(wrappedLong.getCapacityForTesting()).isEqualTo(3);
+    assertThat(wrappedLong).containsExactly(4L, 5L, 6L).inOrder();
+    assertThrows(UnsupportedOperationException.class, () -> wrappedLong.addLong(7L));
+    assertThat(copiedLong.isModifiable()).isFalse();
+    assertThat(copiedLong.getCapacityForTesting()).isEqualTo(3);
+    assertThat(copiedLong).containsExactly(4L, 5L, 6L).inOrder();
+    assertThrows(UnsupportedOperationException.class, () -> copiedLong.addLong(7L));
+  }
+
   private void assertImmutable(IntList list) {
     if (list.contains(1)) {
       throw new RuntimeException("Cannot test the immutability of lists that contain 1.");
@@ -551,11 +711,46 @@ public class IntArrayListTest {
   }
 
   private static IntArrayList newImmutableIntArrayList(int... elements) {
+    IntArrayList list = newMutableIntArrayList(elements);
+    list.makeImmutable();
+    return list;
+  }
+
+  private static IntArrayList newMutableIntArrayList(int... elements) {
     IntArrayList list = new IntArrayList();
     for (int element : elements) {
       list.addInt(element);
     }
+    return list;
+  }
+
+  private static LongArrayList newImmutableLongArrayList(long... elements) {
+    LongArrayList list = newMutableLongArrayList(elements);
     list.makeImmutable();
+    return list;
+  }
+
+  private static LongArrayList newMutableLongArrayList(long... elements) {
+    LongArrayList list = new LongArrayList();
+    for (long element : elements) {
+      list.addLong(element);
+    }
+    return list;
+  }
+
+  private static IntArrayList newMutableIntSequence(int count) {
+    IntArrayList list = new IntArrayList();
+    for (int i = 0; i < count; i++) {
+      list.addInt(1000 + i);
+    }
+    return list;
+  }
+
+  private static LongArrayList newMutableLongSequence(int count) {
+    LongArrayList list = new LongArrayList();
+    for (int i = 0; i < count; i++) {
+      list.addLong(1000L + i);
+    }
     return list;
   }
 }
