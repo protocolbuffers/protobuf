@@ -7,7 +7,8 @@
 
 use treeshaking_rust_proto::UsedMessage;
 
-fn main() {
+#[cfg_attr(feature = "ios_app", unsafe(no_mangle))]
+pub fn main() {
     let mut msg = UsedMessage::new();
     msg.set_id(42);
     println!("Used ID: {}", msg.id());
