@@ -391,9 +391,8 @@ bool ObjectiveCGenerator::GenerateAll(
     }
   }
 
-  // Multi source generation requires C function extensions and forces:
-  // - off the use of fwd decls in favor of imports
-  // - on the minimal imports support
+  // Multi source generation requires C function extensions and forces off the
+  // use of fwd decls in favor of imports.
   if (generation_options.IsMultiSourceGeneration()) {
     if (generation_options.extension_generation_mode !=
         ExtensionGenerationMode::kCFunction) {
@@ -403,7 +402,6 @@ bool ObjectiveCGenerator::GenerateAll(
       return false;
     }
     generation_options.headers_use_forward_declarations = false;
-    generation_options.generate_minimal_imports = true;
   }
   if (generation_options.experimental_strip_nonfunctional_codegen) {
     generation_options.generate_minimal_imports = true;
