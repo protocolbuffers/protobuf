@@ -8,8 +8,10 @@
 #include "google/protobuf/compiler/python/pyi_generator.h"
 
 #include <cstddef>
+#include <map>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -27,6 +29,7 @@
 #include "google/protobuf/compiler/python/names.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
@@ -39,9 +42,82 @@ PyiGenerator::PyiGenerator() : file_(nullptr) {}
 
 PyiGenerator::~PyiGenerator() = default;
 
+void PyiGenerator::CollectKeywordNames(const FileDescriptor& file) const {
+  // An annotation in a nested class can use a type from an outer scope.
+  // Reserve the bindings emitted anywhere in this stub before choosing names.
+  absl::flat_hash_set<std::string> used;
+  std::map<absl::string_view, const Descriptor*> keywords;
+  internal::VisitDescriptors(file, [&](const auto& node) {
+    using T = std::decay_t<decltype(node)>;
+    if constexpr (std::is_same_v<T, Descriptor> ||
+                  std::is_same_v<T, EnumDescriptor> ||
+                  std::is_same_v<T, EnumValueDescriptor> ||
+                  std::is_same_v<T, FieldDescriptor>) {
+      used.emplace(node.name());
+    } else if constexpr (std::is_same_v<T, ServiceDescriptor>) {
+      if (opensource_runtime_ && HasGenericServices(&file)) {
+        used.emplace(node.name());
+      }
+    }
+    if constexpr (std::is_same_v<T, Descriptor>) {
+      if (IsPythonKeyword(node.name())) {
+        keywords.emplace(node.full_name(), &node);
+      }
+    }
+  });
+  auto is_public_binding = [&](absl::string_view name) {
+    for (int i = 0; i < file.public_dependency_count(); ++i) {
+      const FileDescriptor& dep = *file.public_dependency(i);
+      if (dep.FindMessageTypeByName(name) || dep.FindEnumTypeByName(name) ||
+          dep.FindEnumValueByName(name) || dep.FindExtensionByName(name)) {
+        return true;
+      }
+    }
+    return false;
+  };
+  auto private_name = [&](absl::string_view name) {
+    std::string id = absl::StrCat("_", name);
+    while (is_public_binding(id) || !used.insert(id).second) {
+      id.append("_");
+    }
+    return id;
+  };
+  if (&file == file_) {
+    type_check_only_name_ = private_name("type_check_only");
+  }
+  // Full-name order keeps the result independent of declaration order.
+  for (const auto& [name, message] : keywords) {
+    message_names_.emplace(message, private_name(message->name()));
+  }
+}
+
+std::string PyiGenerator::MessageIdentifier(
+    const Descriptor& descriptor) const {
+  if (!IsPythonKeyword(descriptor.name())) {
+    return std::string(descriptor.name());
+  }
+  if (!message_names_.contains(&descriptor)) {
+    CollectKeywordNames(*descriptor.file());
+  }
+  return message_names_.at(&descriptor);
+}
+
 template <typename DescriptorT>
 std::string PyiGenerator::ModuleLevelName(const DescriptorT& descriptor) const {
-  std::string name = NamePrefixedWithNestedTypes(descriptor, ".");
+  std::string name;
+  if constexpr (std::is_same_v<DescriptorT, Descriptor>) {
+    name = MessageIdentifier(descriptor);
+  } else {
+    name = std::string(descriptor.name());
+  }
+  if (descriptor.containing_type() != nullptr) {
+    std::string parent = ModuleLevelName(*descriptor.containing_type());
+    if (IsPythonKeyword(name)) {
+      return absl::StrCat("getattr(", parent, ", '", name, "')");
+    }
+    return absl::StrCat(parent, ".", name);
+  }
+  name = ResolveKeyword(name);
   if (descriptor.file() != file_) {
     std::string module_alias;
     const absl::string_view filename = descriptor.file()->name();
@@ -76,6 +152,7 @@ struct ImportModules {
   bool has_callable = false;    // typing.Callable
   bool has_well_known_type = false;
   bool has_datetime = false;
+  bool has_type_check_only = false;
 };
 
 // Checks whether a descriptor name matches a well-known type.
@@ -94,6 +171,9 @@ bool IsWellKnownType(const absl::string_view name) {
 // descriptor.
 void CheckImportModules(const Descriptor* descriptor,
                         ImportModules* import_modules) {
+  if (IsPythonKeyword(descriptor->name())) {
+    import_modules->has_type_check_only = true;
+  }
   if (descriptor->extension_range_count() > 0) {
     import_modules->has_extendable = true;
   }
@@ -157,6 +237,7 @@ void PyiGenerator::PrintImportForDescriptor(
     const FileDescriptor& desc, absl::flat_hash_set<std::string>* seen_aliases,
     bool* has_importlib) const {
   const absl::string_view filename = desc.name();
+  if (import_map_.contains(filename)) return;
   std::string module_name_owned = StrippedModuleName(&desc);
   absl::string_view module_name(module_name_owned);
   size_t last_dot_pos = module_name.rfind('.');
@@ -183,8 +264,12 @@ void PyiGenerator::PrintImportForDescriptor(
     }
     printer_->Print("$statement$ as $alias$\n", "statement", import_statement,
                     "alias", alias);
-    import_map_[filename] = alias;
-    seen_aliases->insert(alias);
+  }
+  import_map_[filename] = alias;
+  seen_aliases->insert(alias);
+  for (int i = 0; i < desc.public_dependency_count(); ++i) {
+    PrintImportForDescriptor(*desc.public_dependency(i), seen_aliases,
+                             has_importlib);
   }
 }
 
@@ -218,10 +303,6 @@ void PyiGenerator::PrintImports() const {
       continue;
     }
     PrintImportForDescriptor(*dep, &seen_aliases, &has_importlib);
-    for (int j = 0; j < dep->public_dependency_count(); ++j) {
-      PrintImportForDescriptor(*dep->public_dependency(j), &seen_aliases,
-                               &has_importlib);
-    }
   }
 
   // Prints modules (e.g. _containers, _messages, typing) that are
@@ -298,6 +379,10 @@ void PyiGenerator::PrintImports() const {
   if (import_modules.has_union) {
     printer_->Print(", Union as _Union");
   }
+  if (import_modules.has_type_check_only) {
+    CollectKeywordNames(*file_);
+    printer_->Print(", type_check_only as $name$", "name", type_check_only_name_);
+  }
   printer_->Print("\n");
 
   // Public imports
@@ -306,6 +391,11 @@ void PyiGenerator::PrintImports() const {
     std::string module_name = StrippedModuleName(public_dep);
     // Top level messages in public imports
     for (int i = 0; i < public_dep->message_type_count(); ++i) {
+      if (IsPythonKeyword(public_dep->message_type(i)->name())) {
+        // There is no legal public Python name for this runtime re-export.
+        // References use the defining module's private stub identity instead.
+        continue;
+      }
       printer_->Print(
           "from $module$ import $message_class$ as $message_class$\n", "module",
           module_name, "message_class", public_dep->message_type(i)->name());
@@ -444,7 +534,7 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
   if (!is_nested) {
     printer_->Print("\n");
   }
-  const absl::string_view class_name = message_descriptor.name();
+  const std::string class_name = MessageIdentifier(message_descriptor);
   std::string extra_base;
   // A well-known type needs to inherit from its corresponding base class in
   // net/proto2/python/internal/well_known_types.
@@ -453,6 +543,9 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
         absl::StrCat(", _well_known_types.", message_descriptor.name());
   } else {
     extra_base = "";
+  }
+  if (class_name != message_descriptor.name()) {
+    printer_->Print("@$name$\n", "name", type_check_only_name_);
   }
   printer_->Print("class $class_name$(_message.Message$extra_base$):\n",
                   "class_name", class_name, "extra_base", extra_base);
@@ -623,6 +716,7 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
                             std::string* error) const {
   absl::MutexLock lock(mutex_);
   import_map_.clear();
+  message_names_.clear();
   // Calculate file name.
   file_ = file;
   // In google3, devtools/python/bazel/pytype/pytype_impl.bzl uses --pyi_out to
