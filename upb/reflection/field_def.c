@@ -77,7 +77,7 @@ struct upb_FieldDef {
   } sub;
   uint32_t number_;
   uint16_t index_;
-  uint16_t layout_index;  // Index into msgdef->layout->fields or file->exts
+  uint32_t layout_index;  // Index into msgdef->layout->fields or file->exts
   bool has_default;
   bool has_json_name;
   bool has_presence;
