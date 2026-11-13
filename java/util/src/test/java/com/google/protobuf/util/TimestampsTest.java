@@ -867,7 +867,7 @@ public class TimestampsTest {
   @Test
   public void testConvertFromNanos() {
     assertThat(Timestamps.fromNanos(NANOS)).isEqualTo(TIMESTAMP);
-    assertThat(Timestamps.fromNanos(0)).isEqualTo(ZERO_TIMESTAMP);
+    assertThat(Timestamps.EPOCH).isEqualTo(ZERO_TIMESTAMP);
     assertThat(Timestamps.fromNanos(-1000000)).isEqualTo(ONE_OF_TIMESTAMP);
     assertThat(Timestamps.fromNanos(MAX_VALUE)).isEqualTo(ZERO_TIMESTAMP);
     assertThat(Timestamps.fromNanos(MIN_VALUE)).isEqualTo(ZERO_TIMESTAMP);
