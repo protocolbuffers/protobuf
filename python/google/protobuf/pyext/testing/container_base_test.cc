@@ -12,6 +12,8 @@
 
 #include <memory>
 #include <string>
+#include <type_traits>
+#include <utility>
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
@@ -44,7 +46,7 @@ struct TestMessage : public TreeLockable<TestMessage> {
         message(nullptr, t->guard()),
         is_mutable(p == nullptr, t->guard()),
         is_frozen(false, t->guard()) {
-    SetTree(t);
+    InitTreeQuiescent(t);
     if (p == nullptr) {
       owned_proto = std::make_unique<DescriptorProto>();
       message.SetQuiescent(owned_proto.get());
@@ -56,13 +58,13 @@ struct TestMessage : public TreeLockable<TestMessage> {
   const TestMessage* Owner(const ReadAccess&) const { return this; }
   TestMessage* Owner(const WriteAccess&) { return this; }
 
-  void MoveNodeToTree(MessageTree* new_tree, const WriteAccess& old_w,
-                      const WriteAccess& new_w) {
+  // CRTP hook for TreeLockable::MoveToTree().
+  void UpdateDerivedFieldsGuard(const WriteAccess& old_w,
+                                const WriteAccess& new_w) {
     parent_node.UpdateGuard(old_w, new_w);
     message.UpdateGuard(old_w, new_w);
     is_mutable.UpdateGuard(old_w, new_w);
     is_frozen.UpdateGuard(old_w, new_w);
-    SetTree(new_tree);
   }
 };
 
@@ -85,12 +87,19 @@ Message* AssureWritable(TestMessage* self, const WriteAccess& lock) {
   return self->message.Get(lock);
 }
 
+// TreeLockable::WithWriteRead() passes the source; this fixture's promotion
+// never detaches anything, so it is ignored.
+Message* AssureWritable(TestMessage* self, const WriteAccess& lock,
+                        const WriteReadSource&) {
+  return AssureWritable(self, lock);
+}
+
 struct TestContainer : public TreeLockable<TestContainer> {
   Guarded<TestMessage*> parent_msg;
 
   explicit TestContainer(TestMessage* p)
       : parent_msg(p, p->GetTree()->guard()) {
-    SetTree(p->GetTree());
+    InitTreeQuiescent(p->GetTree());
   }
 
   const TestMessage* Owner(const ReadAccess& access) const {
@@ -100,6 +109,23 @@ struct TestContainer : public TreeLockable<TestContainer> {
     return parent_msg.Get(access);
   }
 };
+
+template <typename Obj, typename Token, typename = void>
+struct CanCallTargetMessage : std::false_type {};
+
+template <typename Obj, typename Token>
+struct CanCallTargetMessage<
+    Obj, Token,
+    std::void_t<decltype(std::declval<Obj>().TargetMessage(
+        std::declval<Token>()))>> : std::true_type {};
+
+static_assert(CanCallTargetMessage<TestMessage&, const WriteAccess&>::value);
+static_assert(CanCallTargetMessage<TestMessage&, const ReadAccess&>::value);
+static_assert(
+    CanCallTargetMessage<const TestMessage&, const ReadAccess&>::value);
+static_assert(
+    !CanCallTargetMessage<const TestMessage&, const WriteAccess&>::value,
+    "const wrappers must not accept WriteAccess in TargetMessage()");
 
 class ContainerBaseTest : public ::testing::Test {
  protected:
@@ -246,7 +272,8 @@ TEST_F(ContainerBaseTest, WithWriteReadAndWithReadRead) {
 
   EXPECT_TRUE(TestMessage::WithWriteRead(
       &a, &b, [&](const WriteAccess& wa, const ReadAccess& rb) {
-        EXPECT_NE(static_cast<const ReadAccess*>(&wa), &rb);
+        EXPECT_EQ(wa.guard(), &tree_a->guard());
+        EXPECT_EQ(rb.guard(), &tree_b->guard());
         static_cast<DescriptorProto*>(a.TargetMessage(wa))
             ->set_name(static_cast<const DescriptorProto*>(b.TargetMessage(rb))
                            ->name());
@@ -260,11 +287,12 @@ TEST_F(ContainerBaseTest, WithWriteReadAndWithReadRead) {
                        ->name() == "from_b";
       }));
 
-  // Same tree (a and its submessage): shares a single lock token.
+  // Same tree (a and its submessage): a single write lock covers both.
   TestMessage sub(tree_a, &a);
   EXPECT_TRUE(TestMessage::WithWriteRead(
       &sub, &a, [&](const WriteAccess& w_sub, const ReadAccess& r_a) {
-        EXPECT_EQ(static_cast<const ReadAccess*>(&w_sub), &r_a);
+        EXPECT_EQ(w_sub.guard(), &tree_a->guard());
+        EXPECT_EQ(r_a.guard(), &tree_a->guard());
         static_cast<MessageOptions*>(sub.TargetMessage(w_sub))
             ->set_deprecated(
                 !static_cast<const DescriptorProto*>(a.TargetMessage(r_a))
@@ -276,16 +304,100 @@ TEST_F(ContainerBaseTest, WithWriteReadAndWithReadRead) {
   tree_b->Unref();
 }
 
+// Mutating dst inside WithWriteRead() may detach the same-tree source onto a
+// new MessageTree (e.g. AssureWritable releasing an overlapping oneof, or
+// InternalClear). The new tree is born write-locked as a split of dst's write
+// lock, and once src has moved, that lock is downgraded to a read lock held by
+// the source's token, so the source stays readable through `r` with no
+// unlocked instant.
+TEST_F(ContainerBaseTest, SourceTokenFollowsSourceSplitOffDuringWrite) {
+  MessageTree* orig_tree = new MessageTree();
+  TestMessage dst(orig_tree);
+  TestMessage src(orig_tree);
+  EXPECT_TRUE(src.WithWrite([&](const WriteAccess& w) {
+    static_cast<DescriptorProto*>(src.TargetMessage(w))->set_name("detached");
+  }));
+
+  MessageTree* detached_tree = nullptr;
+  const TestMessage* const_src = &src;
+  EXPECT_TRUE(TestMessage::WithWriteRead(
+      &dst, const_src, [&](const WriteAccess& w_dst, const ReadAccess& r_src) {
+        EXPECT_EQ(r_src.guard(), &orig_tree->guard());
+
+        // Detach src, as InternalReparentFields does.
+        const WriteReadSource source{const_src, r_src};
+        WithSplitTree(orig_tree, w_dst, &source,
+                      [&](MessageTree* new_tree, const WriteAccess& new_w) {
+                        detached_tree = new_tree;
+                        src.MoveToTree(new_tree, w_dst, new_w);
+                      });
+        EXPECT_EQ(const_src->GetTree(), detached_tree);
+        EXPECT_EQ(r_src.guard(), &detached_tree->guard());
+#ifdef Py_GIL_DISABLED
+        // r_src holds a read lock on the split: writers are excluded.
+        EXPECT_FALSE(detached_tree->guard().WithWrite(
+            false, [](const WriteAccess&) { return true; }));
+        PyErr_Clear();
+#endif
+        static_cast<DescriptorProto*>(dst.TargetMessage(w_dst))
+            ->set_name(static_cast<const DescriptorProto*>(
+                           const_src->TargetMessage(r_src))
+                           ->name());
+      }));
+
+  EXPECT_EQ(dst.WithRead(std::string(),
+                         [&](const ReadAccess& r) {
+                           return static_cast<const DescriptorProto*>(
+                                      dst.TargetMessage(r))
+                               ->name();
+                         }),
+            "detached");
+  // r_src released the split lock when WithWriteRead() returned.
+  EXPECT_TRUE(src.WithWrite([&](const WriteAccess& w) {
+    EXPECT_EQ(w.guard(), &detached_tree->guard());
+  }));
+  detached_tree->Unref();
+  orig_tree->Unref();
+}
+
+// A split that does not contain the source is released when WithSplitTree()
+// returns, and the source token is unaffected.
+TEST_F(ContainerBaseTest, SplitWithoutSourceIsReleasedImmediately) {
+  MessageTree* orig_tree = new MessageTree();
+  TestMessage dst(orig_tree);
+  TestMessage src(orig_tree);
+  TestMessage other(orig_tree);
+
+  MessageTree* detached_tree = nullptr;
+  EXPECT_TRUE(TestMessage::WithWriteRead(
+      &dst, &src, [&](const WriteAccess& w_dst, const ReadAccess& r_src) {
+        const WriteReadSource source{&src, r_src};
+        WithSplitTree(orig_tree, w_dst, &source,
+                      [&](MessageTree* new_tree, const WriteAccess& new_w) {
+                        detached_tree = new_tree;
+                        other.MoveToTree(new_tree, w_dst, new_w);
+                      });
+        EXPECT_EQ(r_src.guard(), &orig_tree->guard());
+        EXPECT_TRUE(other.WithRead([&](const ReadAccess& r) {
+          EXPECT_EQ(r.guard(), &detached_tree->guard());
+        }));
+      }));
+  detached_tree->Unref();
+  orig_tree->Unref();
+}
+
 TEST_F(ContainerBaseTest, MoveToTreeRebindsGuardedFields) {
   MessageTree* orig_tree = new MessageTree();
   TestMessage root(orig_tree);
   TestMessage sub(orig_tree, &root);
 
-  MessageTree* detached_tree = new MessageTree(orig_tree);
+  MessageTree* detached_tree = nullptr;
   EXPECT_TRUE(orig_tree->guard().WithWrite([&](const WriteAccess& old_w) {
-    EXPECT_TRUE(detached_tree->guard().WithWrite([&](const WriteAccess& new_w) {
-      sub.MoveNodeToTree(detached_tree, old_w, new_w);
-    }));
+    WithSplitTree(orig_tree, old_w, /*src=*/nullptr,
+                  [&](MessageTree* new_tree, const WriteAccess& new_w) {
+                    detached_tree = new_tree;
+                    sub.MoveToTree(new_tree, old_w, new_w);
+                  });
   }));
   EXPECT_EQ(sub.GetTree(), detached_tree);
 
@@ -296,7 +408,7 @@ TEST_F(ContainerBaseTest, MoveToTreeRebindsGuardedFields) {
 
   EXPECT_TRUE(detached_tree->guard().WithWrite([&](const WriteAccess& old_w) {
     EXPECT_TRUE(orig_tree->guard().WithWrite([&](const WriteAccess& new_w) {
-      sub.MoveNodeToTree(orig_tree, old_w, new_w);
+      sub.MoveToTree(orig_tree, old_w, new_w);
     }));
   }));
   EXPECT_EQ(sub.GetTree(), orig_tree);
