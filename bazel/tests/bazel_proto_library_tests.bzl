@@ -55,6 +55,8 @@ def bazel_proto_library_test_suite(name):
     # Flipping experimental flag in test requires Bazel 8
     if bazel_features.rules.analysis_tests_can_transition_on_experimental_incompatible_flags:
         tests.append(_test_experimental_proto_descriptor_sets_include_source_info)
+        tests.append(_test_protocopt_include_source_info)
+        tests.append(_test_both_include_source_info_flags)
 
     test_suite(
         name = name,
@@ -902,6 +904,53 @@ def _test_experimental_proto_descriptor_sets_include_source_info_impl(env, targe
         "{package}/{name}-descriptor-set.proto.bin",
     )
     action.argv().contains("--include_source_info")
+    action.argv().not_contains_predicate(matching.str_matches("--source_code_info_out=*"))
+
+def _test_protocopt_include_source_info(name):
+    util.helper_target(
+        proto_library,
+        name = name + "_a_proto",
+        srcs = ["a.proto"],
+    )
+
+    analysis_test(
+        name = name,
+        target = name + "_a_proto",
+        impl = _test_protocopt_include_source_info_impl,
+        config_settings = {
+            "//command_line_option:protocopt": ["--include_source_info"],
+            "@@//bazel/flags:protocopt": ["--include_source_info"],
+        },
+    )
+
+def _test_protocopt_include_source_info_impl(env, target):
+    action = env.expect.that_target(target).action_generating(
+        "{package}/{name}-descriptor-set.proto.bin",
+    )
+    action.argv().contains("--include_source_info")
+    action.argv().not_contains_predicate(matching.str_matches("--source_code_info_out=*"))
+    env.expect.that_int(
+        len([arg for arg in action.actual.argv if arg == "--include_source_info"]),
+    ).equals(1)
+
+def _test_both_include_source_info_flags(name):
+    util.helper_target(
+        proto_library,
+        name = name + "_a_proto",
+        srcs = ["a.proto"],
+    )
+
+    analysis_test(
+        name = name,
+        target = name + "_a_proto",
+        impl = _test_protocopt_include_source_info_impl,
+        config_settings = {
+            "//command_line_option:experimental_proto_descriptor_sets_include_source_info": "true",
+            "@@//bazel/flags:experimental_proto_descriptor_sets_include_source_info": "true",
+            "//command_line_option:protocopt": ["--include_source_info"],
+            "@@//bazel/flags:protocopt": ["--include_source_info"],
+        },
+    )
 
 def _test_source_and_generated_proto_files(name):
     util.helper_target(

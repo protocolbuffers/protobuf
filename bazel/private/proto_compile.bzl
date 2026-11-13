@@ -370,7 +370,8 @@ def _create_proto_descriptors(
     outputs = [descriptor_set]
     args.add(descriptor_set, format = "--descriptor_set_out=%s")
     if include_source_info_in_primary:
-        args.add("--include_source_info")
+        if "--include_source_info" not in protoc_opts:
+            args.add("--include_source_info")
 
         # When --include_source_info is true we have to write out any
         # source_code_info file as a dummy.

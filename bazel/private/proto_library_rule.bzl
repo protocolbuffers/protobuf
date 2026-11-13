@@ -151,7 +151,10 @@ def _proto_library_impl(ctx):
         else:
             allowed_public_imports = None
 
-        include_source_info_in_primary = ctx.attr._experimental_proto_descriptor_sets_include_source_info[BuildSettingInfo].value
+        include_source_info_in_primary = (
+            ctx.attr._experimental_proto_descriptor_sets_include_source_info[BuildSettingInfo].value or
+            "--include_source_info" in protoc_opts
+        )
 
         proto_compile.create_proto_descriptors(
             actions = ctx.actions,
