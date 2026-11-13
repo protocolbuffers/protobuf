@@ -296,6 +296,8 @@ struct PROTOBUF_EXPORT DescriptorTable {
   // update the following descriptor arrays.
   const EnumDescriptor** file_level_enum_descriptors;
   const ServiceDescriptor** file_level_service_descriptors;
+  const char* symbol_descriptor = nullptr;
+  int symbol_size = 0;
 };
 
 // AssignDescriptors() pulls the compiled FileDescriptor from the DescriptorPool
