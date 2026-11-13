@@ -13,6 +13,7 @@
 #include "google/protobuf/descriptor.upb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -189,6 +190,71 @@ TEST(ReflectionTest, RepeatedFieldWithDefault) {
           .status();
   EXPECT_EQ(std::string_view(status.message()),
             "repeated fields cannot have explicit defaults (FooMessage.f1)");
+}
+
+// Writes a non-zero pattern to the stack below the caller, so that a function
+// that returns a partly written value picks up the pattern.
+ABSL_ATTRIBUTE_NOINLINE void DirtyStack() {
+  volatile char buf[1024];
+  for (volatile char& c : buf) c = static_cast<char>(0xab);
+}
+
+TEST(ReflectionTest, FieldDefaultIsFullyInitialized) {
+  absl::StatusOr<upb::DefPool> pool = LoadDescriptorProto(
+      R"pb(
+        syntax: "proto2"
+        name: "F"
+        message_type {
+          name: "FooMessage"
+          field {
+            name: "repeated_string"
+            number: 1
+            label: LABEL_REPEATED
+            type: TYPE_STRING
+          }
+          field {
+            name: "message"
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_MESSAGE
+            type_name: "FooMessage"
+          }
+          field {
+            name: "int32"
+            number: 3
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            default_value: "7"
+          }
+          field {
+            name: "bool"
+            number: 4
+            label: LABEL_OPTIONAL
+            type: TYPE_BOOL
+            default_value: "true"
+          }
+        }
+      )pb");
+  ASSERT_TRUE(pool.ok()) << pool.status();
+  upb::MessageDefPtr m = pool->FindMessageByName("FooMessage");
+  ASSERT_TRUE(m.ptr() != nullptr);
+
+  // Every byte outside the member that holds the default must be zero.
+  auto expect_default = [&](const char* name, upb_MessageValue expected) {
+    DirtyStack();
+    upb_MessageValue actual =
+        upb_FieldDef_Default(m.FindFieldByName(name).ptr());
+    EXPECT_EQ(0, memcmp(&expected, &actual, sizeof(expected))) << name;
+  };
+
+  upb_MessageValue expected = upb_MessageValue_Zero();
+  expect_default("repeated_string", expected);
+  expect_default("message", expected);
+  expected.int32_val = 7;
+  expect_default("int32", expected);
+  expected = upb_MessageValue_Zero();
+  expected.bool_val = true;
+  expect_default("bool", expected);
 }
 
 TEST(ReflectionTest, StringAndBytesDefaults) {
