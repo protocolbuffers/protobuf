@@ -82,7 +82,7 @@ else:
       if index < 0:
         index += size
       if index < 0 or index >= size:
-        raise IndexError('index %d out of range'.index)
+        raise IndexError('index %d out of range' % index)
 
       return self._values[index]
 
