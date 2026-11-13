@@ -242,9 +242,26 @@ static bool upb_Clone_ExtensionValue(const upb_MiniTableField* field,
   return true;
 }
 
+// Maximum recursion depth for deep copy, matching the wire decoder's limit.
+#define kUpb_Copy_MaxDepth 100
+
+static upb_Message* _upb_Message_Copy_Depth(upb_Message* dst,
+                                            const upb_Message* src,
+                                            const upb_MiniTable* mini_table,
+                                            upb_Arena* arena, int depth);
+
 upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
                                const upb_MiniTable* mini_table,
                                upb_Arena* arena) {
+  return _upb_Message_Copy_Depth(dst, src, mini_table, arena,
+                                 kUpb_Copy_MaxDepth);
+}
+
+static upb_Message* _upb_Message_Copy_Depth(upb_Message* dst,
+                                            const upb_Message* src,
+                                            const upb_MiniTable* mini_table,
+                                            upb_Arena* arena, int depth) {
+  if (--depth < 0) return NULL;
   UPB_ASSERT(!upb_Message_IsFrozen(dst));
   if (UPB_UNLIKELY(mini_table->UPB_PRIVATE(size) < sizeof(upb_Message))) {
     return NULL;
@@ -263,7 +280,10 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
             const upb_MiniTable* sub_message_table =
                 upb_MiniTable_GetSubMessageTable(field);
             upb_Message* dst_sub_message =
-                upb_Message_DeepClone(sub_message, sub_message_table, arena);
+                upb_Message_New(sub_message_table, arena);
+            if (!dst_sub_message) goto err;
+            dst_sub_message = _upb_Message_Copy_Depth(
+                dst_sub_message, sub_message, sub_message_table, arena, depth);
             if (dst_sub_message == NULL) goto err;
 
             upb_Message_SetBaseFieldMessage(dst, field, dst_sub_message);
