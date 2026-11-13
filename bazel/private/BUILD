@@ -55,7 +55,6 @@ bzl_library(
     ],
     visibility = ["//bazel:__subpackages__"],
     deps = [
-        ":proto_compile_bzl",
         ":toolchain_helpers_bzl",
         "//bazel/common:proto_common_bzl",
         "//bazel/common:proto_info_bzl",
@@ -79,17 +78,6 @@ bzl_library(
         "//bazel/common:proto_common_bzl",
         "//bazel/common:proto_info_bzl",
         "@rules_java//java/common",
-    ],
-)
-
-bzl_library(
-    name = "proto_compile_bzl",
-    srcs = [
-        "proto_compile.bzl",
-    ],
-    visibility = ["//bazel:__subpackages__"],
-    deps = [
-        ":toolchain_helpers_bzl",
     ],
 )
 
