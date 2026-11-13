@@ -1,7 +1,7 @@
 function(protobuf_generate)
   include(CMakeParseArguments)
 
-  set(_options APPEND_PATH)
+  set(_options APPEND_PATH CODEGEN)
   set(_singleargs LANGUAGE OUT_VAR EXPORT_MACRO PROTOC_OUT_DIR PLUGIN PLUGIN_OPTIONS PROTOC_EXE)
   if(COMMAND target_sources)
     list(APPEND _singleargs TARGET)
@@ -18,6 +18,15 @@ function(protobuf_generate)
   if(NOT protobuf_generate_OUT_VAR AND NOT protobuf_generate_TARGET)
     message(SEND_ERROR "Error: protobuf_generate called without a target or output variable")
     return()
+  endif()
+
+  set(_codegen)
+  if(protobuf_generate_CODEGEN)
+    if(CMAKE_VERSION VERSION_LESS 3.31)
+      message(SEND_ERROR "Error: protobuf_generate CODEGEN requires CMake 3.31 or newer")
+      return()
+    endif()
+    set(_codegen CODEGEN)
   endif()
 
   if(NOT protobuf_generate_LANGUAGE)
@@ -150,6 +159,7 @@ function(protobuf_generate)
 
     add_custom_command(
       OUTPUT ${_generated_srcs}
+      ${_codegen}
       COMMAND ${protobuf_generate_PROTOC_EXE}
       ARGS ${protobuf_generate_PROTOC_OPTIONS} --${protobuf_generate_LANGUAGE}_out ${_plugin_options}:${protobuf_generate_PROTOC_OUT_DIR} ${_plugin} ${_protobuf_include_path} ${_abs_file}
       DEPENDS ${_abs_file} ${protobuf_PROTOC_EXE} ${protobuf_generate_DEPENDENCIES}
