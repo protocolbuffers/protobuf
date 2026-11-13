@@ -49,7 +49,7 @@ def _protoc_authenticity_impl(ctx):
             validation_output = validation_output.path,
             RELEASE_VERSION = RELEASE_VERSION.removeprefix("v"),
             suppression_note = (
-                "To suppress this error, run Bazel with --@com_google_protobuf//bazel/toolchains:allow_nonstandard_protoc" if ctx.attr.fail_on_mismatch else ""
+                "To suppress this error, run Bazel with --@protobuf//bazel/flags:allow_nonstandard_protoc" if ctx.attr.fail_on_mismatch else ""
             ),
             mismatch_exit_code = 1 if ctx.attr.fail_on_mismatch else 0,
             severity = "ERROR" if ctx.attr.fail_on_mismatch else "INFO",
