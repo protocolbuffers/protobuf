@@ -52,7 +52,6 @@ def _rule_impl(ctx):
         mnemonic = ctx.attr.mnemonic,
         allowlist_different_package = ctx.attr.allowlist_different_package,
         toolchain_type = ctx.attr.toolchain_type.label if ctx.attr.toolchain_type else None,
-        host_path_separator = ctx.configuration.host_path_separator,
     )
     return [
         DefaultInfo(files = depset(), runfiles = ctx.runfiles()),

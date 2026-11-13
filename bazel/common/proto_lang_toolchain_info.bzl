@@ -26,6 +26,5 @@ ProtoLangToolchainInfo = provider(
         allowlist_different_package = """(Target) Allowlist to create lang_proto_library in a
           different package than proto_library""",
         toolchain_type = """(Label) Toolchain type that was used to obtain this info""",
-        host_path_separator = "(char/str) host_path_separator from ctx.configuration used in descriptor lists.",
     ),
 )

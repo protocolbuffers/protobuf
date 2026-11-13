@@ -400,7 +400,6 @@ def _internal_gen_well_known_protos_py_impl(ctx):
         protoc_opts = _protoc_opts(ctx),
         plugin = None,
         toolchain_type = toolchains.PROTO_TOOLCHAIN if toolchains.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION else None,
-        host_path_separator = ctx.configuration.host_path_separator,
     )
     proto_common.compile(
         actions = ctx.actions,
