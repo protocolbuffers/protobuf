@@ -4092,11 +4092,674 @@ TEST_F(CommandLineInterfaceTest, SourceCodeInfoOut_SourceCodeInfoOnly) {
   Run("protocol_compiler "
       "--source_code_info_out=$tmpdir/out-source_code_info.proto.bin "
       "--proto_path=$tmpdir foo.proto");
-  // TODO - Remove this branch for release v38.0 once
-  // --source_code_info_out is supported in OSS.
-  ExpectErrorText("--source_code_info_out not yet supported.\n");
+  ExpectNoErrors();
+
+  FileDescriptorSet source_info_set;
+  ReadDescriptorSet("out-source_code_info.proto.bin", &source_info_set);
+  if (HasFatalFailure()) return;
+  EXPECT_EQ(1, source_info_set.file_size());
+  EXPECT_EQ("foo.proto", source_info_set.file(0).name());
+  EXPECT_TRUE(source_info_set.file(0).has_source_code_info());
+  EXPECT_EQ(0, source_info_set.file(0).message_type_size());
 }
 
+TEST_F(CommandLineInterfaceTest, WriteSourceInfoDescriptorSet) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+  CreateTempFile("bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"foo.proto\";\n"
+                 "message Bar {\n"
+                 "  optional Foo foo = 1;\n"
+                 "}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/data_proto-descriptor-set.proto.bin "
+      "--source_code_info_out="
+      "$tmpdir/data_proto-source_code_info-set.proto.bin "
+      "--proto_path=$tmpdir bar.proto");
+
+  ExpectNoErrors();
+
+  FileDescriptorSet descriptor_set;
+  ReadDescriptorSet("data_proto-descriptor-set.proto.bin", &descriptor_set);
+  if (HasFatalFailure()) return;
+  EXPECT_EQ(1, descriptor_set.file_size());
+  EXPECT_EQ("bar.proto", descriptor_set.file(0).name());
+  EXPECT_FALSE(descriptor_set.file(0).has_source_code_info());
+  EXPECT_EQ(1, descriptor_set.file(0).message_type_size());
+
+  FileDescriptorSet source_info_set;
+  ReadDescriptorSet("data_proto-source_code_info-set.proto.bin",
+                    &source_info_set);
+  if (HasFatalFailure()) return;
+  EXPECT_EQ(1, source_info_set.file_size());
+  EXPECT_EQ("bar.proto", source_info_set.file(0).name());
+  EXPECT_TRUE(source_info_set.file(0).has_source_code_info());
+  // The source_info file descriptor should contain only name and
+  // source_code_info.
+  EXPECT_EQ(0, source_info_set.file(0).message_type_size());
+  EXPECT_EQ(0, source_info_set.file(0).enum_type_size());
+  EXPECT_EQ(0, source_info_set.file(0).service_size());
+  EXPECT_EQ(0, source_info_set.file(0).dependency_size());
+}
+
+TEST_F(CommandLineInterfaceTest,
+       WriteTransitiveDescriptorSetWithSourceCodeInfoOut) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+  CreateTempFile("bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"foo.proto\";\n"
+                 "message Bar {\n"
+                 "  optional Foo foo = 1;\n"
+                 "}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/data_proto-descriptor-set.proto.bin "
+      "--source_code_info_out="
+      "$tmpdir/data_proto-source_code_info-set.proto.bin "
+      "--include_imports --proto_path=$tmpdir bar.proto");
+
+  ExpectNoErrors();
+
+  FileDescriptorSet descriptor_set;
+  ReadDescriptorSet("data_proto-descriptor-set.proto.bin", &descriptor_set);
+  if (HasFatalFailure()) return;
+  EXPECT_EQ(2, descriptor_set.file_size());
+  if (descriptor_set.file(0).name() == "bar.proto") {
+    std::swap(descriptor_set.mutable_file()->mutable_data()[0],
+              descriptor_set.mutable_file()->mutable_data()[1]);
+  }
+  EXPECT_EQ("foo.proto", descriptor_set.file(0).name());
+  EXPECT_EQ("bar.proto", descriptor_set.file(1).name());
+  EXPECT_FALSE(descriptor_set.file(0).has_source_code_info());
+  EXPECT_FALSE(descriptor_set.file(1).has_source_code_info());
+
+  FileDescriptorSet source_info_set;
+  ReadDescriptorSet("data_proto-source_code_info-set.proto.bin",
+                    &source_info_set);
+  if (HasFatalFailure()) return;
+  EXPECT_EQ(2, source_info_set.file_size());
+  if (source_info_set.file(0).name() == "bar.proto") {
+    std::swap(source_info_set.mutable_file()->mutable_data()[0],
+              source_info_set.mutable_file()->mutable_data()[1]);
+  }
+  EXPECT_EQ("foo.proto", source_info_set.file(0).name());
+  EXPECT_EQ("bar.proto", source_info_set.file(1).name());
+  EXPECT_TRUE(source_info_set.file(0).has_source_code_info());
+  EXPECT_TRUE(source_info_set.file(1).has_source_code_info());
+  EXPECT_EQ(0, source_info_set.file(0).message_type_size());
+  EXPECT_EQ(0, source_info_set.file(1).message_type_size());
+}
+
+TEST_F(CommandLineInterfaceTest,
+       SourceCodeInfoOut_IncludeSourceInfo_MutuallyExclusive) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --source_code_info_out=$tmpdir/split.bin "
+      "--include_source_info "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectErrorText(
+      "Cannot use both --include_source_info and "
+      "--source_code_info_out.\n");
+}
+
+TEST_F(CommandLineInterfaceTest, DescriptorSetIn_MergedSourceCodeInfo) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment\n"
+                 "message Foo {}\n");
+
+  // First, generate split descriptor_set and source_info for foo.proto.
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo-descriptor.proto.bin "
+      "--source_code_info_out=$tmpdir/foo-source_code_info.proto.bin "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  // Then, compile foo.proto loading it via --descriptor_set_in
+  // passing both descriptor and source_code_info files.
+  Run(absl::StrCat(
+      "protocol_compiler --descriptor_set_in=",
+      JoinPaths({"$tmpdir/foo-descriptor.proto.bin",
+                 "$tmpdir/foo-source_code_info.proto.bin"}),
+      " --descriptor_set_out=$tmpdir/foo_desc --include_source_info "
+      "foo.proto"));
+  ExpectNoErrors();
+
+  FileDescriptorSet foo_set;
+  ReadDescriptorSet("foo_desc", &foo_set);
+  if (HasFatalFailure()) return;
+  ASSERT_EQ(1, foo_set.file_size());
+  EXPECT_EQ("foo.proto", foo_set.file(0).name());
+  EXPECT_EQ(1, foo_set.file(0).message_type_size());
+  // foo.proto's SourceCodeInfo should have been merged from
+  // foo-source_code_info and preserved in foo_desc!
+  EXPECT_TRUE(foo_set.file(0).has_source_code_info());
+  EXPECT_GT(foo_set.file(0).source_code_info().location_size(), 0);
+}
+
+TEST_F(CommandLineInterfaceTest,
+       DescriptorSetIn_ReverseOrder_MergedSourceCodeInfo) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo-descriptor.proto.bin "
+      "--source_code_info_out=$tmpdir/foo-source_code_info.proto.bin "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  // Pass source_code_info BEFORE descriptor in --descriptor_set_in
+  Run(absl::StrCat(
+      "protocol_compiler --descriptor_set_in=",
+      JoinPaths({"$tmpdir/foo-source_code_info.proto.bin",
+                 "$tmpdir/foo-descriptor.proto.bin"}),
+      " --descriptor_set_out=$tmpdir/foo_desc --include_source_info "
+      "foo.proto"));
+  ExpectNoErrors();
+
+  FileDescriptorSet foo_set;
+  ReadDescriptorSet("foo_desc", &foo_set);
+  if (HasFatalFailure()) return;
+  ASSERT_EQ(1, foo_set.file_size());
+  EXPECT_EQ("foo.proto", foo_set.file(0).name());
+  EXPECT_EQ(1, foo_set.file(0).message_type_size());
+  EXPECT_TRUE(foo_set.file(0).has_source_code_info());
+  EXPECT_GT(foo_set.file(0).source_code_info().location_size(), 0);
+}
+
+TEST_F(CommandLineInterfaceTest, DescriptorSetIn_MissingCoreDescriptorSchema) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler "
+      "--source_code_info_out=$tmpdir/foo-sci.proto.bin "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  CreateTempFile("bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Bar {}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_in=$tmpdir/foo-sci.proto.bin "
+      "--descriptor_set_out=$tmpdir/bar_desc "
+      "--proto_path=$tmpdir bar.proto");
+  ExpectErrorText(
+      "No instance of FileDescriptorProto for \"foo.proto\" in "
+      "--descriptor_set_in contains core descriptor schema.\n");
+}
+
+TEST_F(CommandLineInterfaceTest, DescriptorSetIn_ConflictingSourceCodeInfo) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment 1\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo-desc.proto.bin "
+      "--source_code_info_out=$tmpdir/foo-sci1.proto.bin "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment 2\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler "
+      "--source_code_info_out=$tmpdir/foo-sci2.proto.bin "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  CreateTempFile("bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Bar {}\n");
+
+  Run(absl::StrCat(
+      "protocol_compiler --descriptor_set_in=",
+      JoinPaths({"$tmpdir/foo-desc.proto.bin", "$tmpdir/foo-sci1.proto.bin",
+                 "$tmpdir/foo-sci2.proto.bin"}),
+      " --descriptor_set_out=$tmpdir/bar_desc --proto_path=$tmpdir "
+      "bar.proto"));
+  ExpectErrorText(
+      "$tmpdir/foo-sci2.proto.bin: FileDescriptorProto for \"foo.proto\" in "
+      "--descriptor_set_in has conflicting source_code_info with "
+      "\"$tmpdir/foo-sci1.proto.bin\".\n");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       DescriptorSetIn_PartialOverlap_ExistingHasAllData) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo-with-sci.proto.bin "
+      "--include_source_info "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo-desc.proto.bin "
+      "--source_code_info_out=$tmpdir/foo-sci.proto.bin "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  FileDescriptorSet single_set;
+  ReadDescriptorSet("foo-with-sci.proto.bin", &single_set);
+  ASSERT_EQ(1, single_set.file_size());
+  int expected_locations =
+      single_set.file(0).source_code_info().location_size();
+
+  // Partial overlap where existing already contains all data present in
+  // subsequent files: combined file followed by split descriptor and split
+  // source_code_info.
+  Run(absl::StrCat(
+      "protocol_compiler --descriptor_set_in=",
+      JoinPaths({"$tmpdir/foo-with-sci.proto.bin", "$tmpdir/foo-desc.proto.bin",
+                 "$tmpdir/foo-sci.proto.bin"}),
+      " --descriptor_set_out=$tmpdir/foo_desc --include_source_info "
+      "foo.proto"));
+  ExpectNoErrors();
+
+  FileDescriptorSet foo_set;
+  ReadDescriptorSet("foo_desc", &foo_set);
+  ASSERT_EQ(1, foo_set.file_size());
+  EXPECT_EQ("foo.proto", foo_set.file(0).name());
+  EXPECT_EQ(1, foo_set.file(0).message_type_size());
+  EXPECT_EQ(expected_locations,
+            foo_set.file(0).source_code_info().location_size());
+}
+
+TEST_F(CommandLineInterfaceTest,
+       DescriptorSetIn_PartialOverlap_AdditionalCoreSchema) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo-with-sci.proto.bin "
+      "--include_source_info "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  Run("protocol_compiler "
+      "--source_code_info_out=$tmpdir/foo-sci.proto.bin "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  FileDescriptorSet single_set;
+  ReadDescriptorSet("foo-with-sci.proto.bin", &single_set);
+  ASSERT_EQ(1, single_set.file_size());
+  int expected_locations =
+      single_set.file(0).source_code_info().location_size();
+
+  // Partial overlap where subsequent file contains matching source_code_info
+  // plus additional core descriptor schema.
+  Run(absl::StrCat(
+      "protocol_compiler --descriptor_set_in=",
+      JoinPaths(
+          {"$tmpdir/foo-sci.proto.bin", "$tmpdir/foo-with-sci.proto.bin"}),
+      " --descriptor_set_out=$tmpdir/foo_desc --include_source_info "
+      "foo.proto"));
+  ExpectNoErrors();
+
+  FileDescriptorSet foo_set;
+  ReadDescriptorSet("foo_desc", &foo_set);
+  ASSERT_EQ(1, foo_set.file_size());
+  EXPECT_EQ("foo.proto", foo_set.file(0).name());
+  EXPECT_EQ(1, foo_set.file(0).message_type_size());
+  EXPECT_EQ(expected_locations,
+            foo_set.file(0).source_code_info().location_size());
+}
+
+TEST_F(CommandLineInterfaceTest,
+       DescriptorSetIn_ImportedFile_WithoutIncludeImports) {
+  CreateTempFile("foo/foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment\n"
+                 "message Foo {}\n");
+  CreateTempFile("bar/bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"foo.proto\";\n"
+                 "message Bar {\n"
+                 "  optional Foo foo = 1;\n"
+                 "}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo-descriptor.proto.bin "
+      "--source_code_info_out=$tmpdir/foo-source_code_info.proto.bin "
+      "--proto_path=$tmpdir/foo foo.proto");
+  ExpectNoErrors();
+
+  Run(absl::StrCat(
+      "protocol_compiler --descriptor_set_in=",
+      JoinPaths({"$tmpdir/foo-descriptor.proto.bin",
+                 "$tmpdir/foo-source_code_info.proto.bin"}),
+      " --descriptor_set_out=$tmpdir/bar_desc --include_source_info "
+      "--proto_path=$tmpdir/bar bar.proto"));
+  ExpectNoErrors();
+
+  FileDescriptorSet bar_set;
+  ReadDescriptorSet("bar_desc", &bar_set);
+  if (HasFatalFailure()) return;
+  ASSERT_EQ(1, bar_set.file_size());
+  EXPECT_EQ("bar.proto", bar_set.file(0).name());
+  EXPECT_EQ(1, bar_set.file(0).message_type_size());
+  EXPECT_TRUE(bar_set.file(0).has_source_code_info());
+}
+
+TEST_F(CommandLineInterfaceTest,
+       DescriptorSetIn_ImportedFile_WithIncludeImports) {
+  CreateTempFile("foo/foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment\n"
+                 "message Foo {}\n");
+  CreateTempFile("bar/bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"foo.proto\";\n"
+                 "message Bar {\n"
+                 "  optional Foo foo = 1;\n"
+                 "}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo-descriptor.proto.bin "
+      "--source_code_info_out=$tmpdir/foo-source_code_info.proto.bin "
+      "--proto_path=$tmpdir/foo foo.proto");
+  ExpectNoErrors();
+
+  FileDescriptorSet foo_sci_set;
+  ReadDescriptorSet("foo-source_code_info.proto.bin", &foo_sci_set);
+  ASSERT_EQ(1, foo_sci_set.file_size());
+  int expected_foo_locations =
+      foo_sci_set.file(0).source_code_info().location_size();
+  EXPECT_GT(expected_foo_locations, 0);
+
+  Run(absl::StrCat("protocol_compiler --descriptor_set_in=",
+                   JoinPaths({"$tmpdir/foo-descriptor.proto.bin",
+                              "$tmpdir/foo-source_code_info.proto.bin"}),
+                   " --descriptor_set_out=$tmpdir/bar_desc --include_imports "
+                   "--include_source_info --proto_path=$tmpdir/bar bar.proto"));
+  ExpectNoErrors();
+
+  FileDescriptorSet bar_set;
+  ReadDescriptorSet("bar_desc", &bar_set);
+  if (HasFatalFailure()) return;
+  ASSERT_EQ(2, bar_set.file_size());
+  if (bar_set.file(0).name() == "bar.proto") {
+    std::swap(bar_set.mutable_file()->mutable_data()[0],
+              bar_set.mutable_file()->mutable_data()[1]);
+  }
+  EXPECT_EQ("foo.proto", bar_set.file(0).name());
+  EXPECT_EQ("bar.proto", bar_set.file(1).name());
+  EXPECT_EQ(1, bar_set.file(0).message_type_size());
+  EXPECT_EQ(1, bar_set.file(1).message_type_size());
+  EXPECT_EQ(expected_foo_locations,
+            bar_set.file(0).source_code_info().location_size());
+  EXPECT_TRUE(bar_set.file(1).has_source_code_info());
+}
+
+TEST_F(CommandLineInterfaceTest,
+       DescriptorSetIn_IncludeImportsDuplicateUnits_WithoutIncludeImports) {
+  CreateTempFile("foo/foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment\n"
+                 "message Foo {}\n");
+  CreateTempFile("bar/bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"foo.proto\";\n"
+                 "// Bar comment\n"
+                 "message Bar {\n"
+                 "  optional Foo foo = 1;\n"
+                 "}\n");
+  CreateTempFile("baz/baz.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"foo.proto\";\n"
+                 "import \"bar.proto\";\n"
+                 "message Baz {\n"
+                 "  optional Foo foo = 1;\n"
+                 "  optional Bar bar = 2;\n"
+                 "}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo-desc.proto.bin "
+      "--source_code_info_out=$tmpdir/foo-sci.proto.bin "
+      "--proto_path=$tmpdir/foo foo.proto");
+  ExpectNoErrors();
+
+  // Compile bar.proto with --include_imports so bar-desc and bar-sci contain
+  // duplicate units for foo.proto alongside bar.proto.
+  Run(absl::StrCat(
+      "protocol_compiler --descriptor_set_in=",
+      JoinPaths({"$tmpdir/foo-desc.proto.bin", "$tmpdir/foo-sci.proto.bin"}),
+      " --descriptor_set_out=$tmpdir/bar-desc.proto.bin "
+      "--source_code_info_out=$tmpdir/bar-sci.proto.bin --include_imports "
+      "--proto_path=$tmpdir/bar bar.proto"));
+  ExpectNoErrors();
+
+  // Compile baz.proto without --include_imports passing both foo's and bar's
+  // descriptor sets.
+  Run(absl::StrCat(
+      "protocol_compiler --descriptor_set_in=",
+      JoinPaths({"$tmpdir/foo-desc.proto.bin", "$tmpdir/foo-sci.proto.bin",
+                 "$tmpdir/bar-desc.proto.bin", "$tmpdir/bar-sci.proto.bin"}),
+      " --descriptor_set_out=$tmpdir/baz_desc --include_source_info "
+      "--proto_path=$tmpdir/baz baz.proto"));
+  ExpectNoErrors();
+
+  FileDescriptorSet baz_set;
+  ReadDescriptorSet("baz_desc", &baz_set);
+  if (HasFatalFailure()) return;
+  ASSERT_EQ(1, baz_set.file_size());
+  EXPECT_EQ("baz.proto", baz_set.file(0).name());
+  EXPECT_EQ(1, baz_set.file(0).message_type_size());
+  EXPECT_TRUE(baz_set.file(0).has_source_code_info());
+}
+
+TEST_F(CommandLineInterfaceTest,
+       DescriptorSetIn_IncludeImportsDuplicateUnits_WithIncludeImports) {
+  CreateTempFile("foo/foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment\n"
+                 "message Foo {}\n");
+  CreateTempFile("bar/bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"foo.proto\";\n"
+                 "// Bar comment\n"
+                 "message Bar {\n"
+                 "  optional Foo foo = 1;\n"
+                 "}\n");
+  CreateTempFile("baz/baz.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"foo.proto\";\n"
+                 "import \"bar.proto\";\n"
+                 "message Baz {\n"
+                 "  optional Foo foo = 1;\n"
+                 "  optional Bar bar = 2;\n"
+                 "}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo-desc.proto.bin "
+      "--source_code_info_out=$tmpdir/foo-sci.proto.bin "
+      "--proto_path=$tmpdir/foo foo.proto");
+  ExpectNoErrors();
+
+  FileDescriptorSet foo_sci_set;
+  ReadDescriptorSet("foo-sci.proto.bin", &foo_sci_set);
+  ASSERT_EQ(1, foo_sci_set.file_size());
+  int expected_foo_locations =
+      foo_sci_set.file(0).source_code_info().location_size();
+  EXPECT_GT(expected_foo_locations, 0);
+
+  // Compile bar.proto with --include_imports so bar-desc and bar-sci contain
+  // duplicate units for foo.proto alongside bar.proto.
+  Run(absl::StrCat(
+      "protocol_compiler --descriptor_set_in=",
+      JoinPaths({"$tmpdir/foo-desc.proto.bin", "$tmpdir/foo-sci.proto.bin"}),
+      " --descriptor_set_out=$tmpdir/bar-desc.proto.bin "
+      "--source_code_info_out=$tmpdir/bar-sci.proto.bin --include_imports "
+      "--proto_path=$tmpdir/bar bar.proto"));
+  ExpectNoErrors();
+
+  // Compile baz.proto with --include_imports passing both foo's and bar's
+  // descriptor sets.
+  Run(absl::StrCat(
+      "protocol_compiler --descriptor_set_in=",
+      JoinPaths({"$tmpdir/foo-desc.proto.bin", "$tmpdir/foo-sci.proto.bin",
+                 "$tmpdir/bar-desc.proto.bin", "$tmpdir/bar-sci.proto.bin"}),
+      " --descriptor_set_out=$tmpdir/baz_desc --include_imports "
+      "--include_source_info --proto_path=$tmpdir/baz baz.proto"));
+  ExpectNoErrors();
+
+  FileDescriptorSet baz_set;
+  ReadDescriptorSet("baz_desc", &baz_set);
+  if (HasFatalFailure()) return;
+  ASSERT_EQ(3, baz_set.file_size());
+  EXPECT_EQ("foo.proto", baz_set.file(0).name());
+  EXPECT_EQ("bar.proto", baz_set.file(1).name());
+  EXPECT_EQ("baz.proto", baz_set.file(2).name());
+  EXPECT_EQ(1, baz_set.file(0).message_type_size());
+  EXPECT_EQ(1, baz_set.file(1).message_type_size());
+  EXPECT_EQ(1, baz_set.file(2).message_type_size());
+  EXPECT_EQ(expected_foo_locations,
+            baz_set.file(0).source_code_info().location_size());
+  EXPECT_TRUE(baz_set.file(1).has_source_code_info());
+  EXPECT_TRUE(baz_set.file(2).has_source_code_info());
+}
+
+struct ConflictingCoreSchemaTestCase {
+  absl::string_view test_name;
+  absl::string_view conflicting_foo_proto;
+};
+
+class DescriptorSetInConflictingCoreSchemaTest
+    : public CommandLineInterfaceTest,
+      public testing::WithParamInterface<ConflictingCoreSchemaTestCase> {};
+
+TEST_P(DescriptorSetInConflictingCoreSchemaTest,
+       IncludeImportsDuplicateUnits_ConflictingCoreSchema) {
+  CreateTempFile("foo1/foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment\n"
+                 "message Foo {\n"
+                 "  extensions 100 to 199;\n"
+                 "}\n");
+  CreateTempFile("foo2/dep.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Dep {}\n");
+  CreateTempFile("bar/bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"foo.proto\";\n"
+                 "// Bar comment\n"
+                 "message Bar {\n"
+                 "  optional Foo foo = 1;\n"
+                 "}\n");
+  CreateTempFile("baz/baz.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"foo.proto\";\n"
+                 "import \"bar.proto\";\n"
+                 "message Baz {\n"
+                 "  optional Foo foo = 1;\n"
+                 "  optional Bar bar = 2;\n"
+                 "}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo-desc.proto.bin "
+      "--source_code_info_out=$tmpdir/foo-sci.proto.bin "
+      "--proto_path=$tmpdir/foo1 foo.proto");
+  ExpectNoErrors();
+
+  CreateTempFile("foo2/foo.proto", GetParam().conflicting_foo_proto);
+
+  // Compile bar.proto with --include_imports against foo2/foo.proto so
+  // bar-desc contains a duplicate FileDescriptorProto for "foo.proto" with
+  // conflicting core descriptor schema alongside bar.proto.
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/bar-desc.proto.bin "
+      "--source_code_info_out=$tmpdir/bar-sci.proto.bin "
+      "--include_imports "
+      "--proto_path=$tmpdir/foo2 --proto_path=$tmpdir/bar bar.proto");
+  ExpectNoErrors();
+
+  // Compile baz.proto passing both foo's and bar's descriptor sets.
+  Run(absl::StrCat(
+      "protocol_compiler --descriptor_set_in=",
+      JoinPaths({"$tmpdir/foo-desc.proto.bin", "$tmpdir/foo-sci.proto.bin",
+                 "$tmpdir/bar-desc.proto.bin", "$tmpdir/bar-sci.proto.bin"}),
+      " --descriptor_set_out=$tmpdir/baz_desc --include_imports "
+      "--include_source_info --proto_path=$tmpdir/baz baz.proto"));
+  ExpectErrorText(
+      "$tmpdir/bar-desc.proto.bin: FileDescriptorProto for \"foo.proto\" in "
+      "--descriptor_set_in has conflicting core descriptor schema with "
+      "\"$tmpdir/foo-desc.proto.bin\".\n");
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ConflictingCoreSchema, DescriptorSetInConflictingCoreSchemaTest,
+    testing::Values(
+        ConflictingCoreSchemaTestCase{
+            "DifferentImports",
+            "syntax = \"proto2\";\n"
+            "import \"dep.proto\";\n"
+            "message Foo {\n"
+            "  extensions 100 to 199;\n"
+            "}\n",
+        },
+        ConflictingCoreSchemaTestCase{
+            "DifferentMessageType",
+            "syntax = \"proto2\";\n"
+            "message Foo {\n"
+            "  extensions 100 to 199;\n"
+            "}\n"
+            "message ExtraMessage {}\n",
+        },
+        ConflictingCoreSchemaTestCase{
+            "DifferentEnumType",
+            "syntax = \"proto2\";\n"
+            "message Foo {\n"
+            "  extensions 100 to 199;\n"
+            "}\n"
+            "enum ExtraEnum {\n"
+            "  EXTRA_ENUM_UNKNOWN = 0;\n"
+            "}\n",
+        },
+        ConflictingCoreSchemaTestCase{
+            "DifferentService",
+            "syntax = \"proto2\";\n"
+            "message Foo {\n"
+            "  extensions 100 to 199;\n"
+            "}\n"
+            "service ExtraService {\n"
+            "  rpc Call(Foo) returns (Foo);\n"
+            "}\n",
+        },
+        ConflictingCoreSchemaTestCase{
+            "DifferentExtension",
+            "syntax = \"proto2\";\n"
+            "message Foo {\n"
+            "  extensions 100 to 199;\n"
+            "}\n"
+            "extend Foo {\n"
+            "  optional int32 extra_ext = 100;\n"
+            "}\n",
+        }),
+    [](const testing::TestParamInfo<ConflictingCoreSchemaTestCase>& info) {
+      return std::string(info.param.test_name);
+    });
 
 TEST_F(CommandLineInterfaceTest, WriteTransitiveOptionImportDescriptorSet) {
   CreateTempFile("google/protobuf/descriptor.proto",

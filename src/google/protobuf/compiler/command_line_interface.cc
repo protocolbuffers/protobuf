@@ -2630,10 +2630,22 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     descriptor_set_out_name_ = value;
 
   } else if (name == "--source_code_info_out") {
-    // TODO - Temporarily disabled until v38.0 to avoid breaking
-    // changes.
-    std::cerr << name << " not yet supported." << std::endl;
-    return PARSE_ARGUMENT_FAIL;
+    if (!source_code_info_out_name_.empty()) {
+      std::cerr << name << " may only be passed once." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    if (value.empty()) {
+      std::cerr << name << " requires a non-empty value." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    if (mode_ != MODE_COMPILE) {
+      std::cerr
+          << "Cannot use --encode or --decode and generate descriptors at the "
+             "same time."
+          << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    source_code_info_out_name_ = value;
 
   } else if (name == "--dependency_out") {
     if (!dependency_out_name_.empty()) {
@@ -2980,6 +2992,10 @@ Parse PROTO_FILES and generate output based on the options given:
   -oFILE,                     Writes a FileDescriptorSet (a protocol buffer,
     --descriptor_set_out=FILE defined in descriptor.proto) containing all of
                               the input files to FILE.
+  --source_code_info_out=FILE Writes a FileDescriptorSet containing only
+                              the name and SourceCodeInfo for each compiled
+                              proto to FILE. Mutually exclusive with
+                              --include_source_info.
   --include_imports           When using --descriptor_set_out or
                               --source_code_info_out, also include all
                               dependencies of the input files in the
@@ -3021,8 +3037,6 @@ Parse PROTO_FILES and generate output based on the options given:
                               allowed to be used in "import public"
                               declarations.)";
 
-  // TODO - Move --source_code_info_out back to primary block under
-  // --descriptor_set_out for release v38.0.
   std::cout << R"(
   --notices                   Show notice file and exit.)";
   if (!plugin_prefix_.empty()) {
