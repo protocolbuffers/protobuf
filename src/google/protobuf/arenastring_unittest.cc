@@ -28,6 +28,7 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/wire_format_lite.h"
 
 
 // Must be included last.
@@ -203,6 +204,122 @@ TEST_P(SingleArena, CopyConstructLong) {
   field.Destroy();
 }
 
+
+TEST(BitMaskTest, Basic) {
+  using internal::arenastring_internal::BitMask;
+  std::vector<int> empty;
+  for (int b : BitMask(0u)) empty.push_back(b);
+  EXPECT_TRUE(empty.empty());
+
+  std::vector<int> bits;
+  for (int b : BitMask((1u << 0) | (1u << 4) | (1u << 31))) {
+    bits.push_back(b);
+  }
+  EXPECT_THAT(bits, testing::ElementsAre(0, 4, 31));
+}
+
+TEST(BitfieldMaskTest, Basic) {
+  constexpr uint32_t kOutside = 0xffff001fu;
+  EXPECT_FALSE((internal::BitfieldMask<3, 5>(kOutside).any()));
+
+  internal::BitfieldMask<3, 5> m(kOutside | (0b101u << 5));
+  EXPECT_TRUE(m.any());
+  EXPECT_EQ(m.bits(), 0b101u);
+  EXPECT_TRUE(m.test(0));
+  EXPECT_FALSE(m.test(1));
+  EXPECT_TRUE(m.test(2));
+  EXPECT_EQ((internal::BitfieldMask<32, 0>(0x80000001u).bits()), 0x80000001u);
+}
+
+template <size_t kCount>
+void TestMergeAndClearStringFields(Arena* arena) {
+  internal::ArenaStringPtr src[kCount], dst[kCount];
+  for (size_t i = 0; i < kCount; ++i) {
+    src[i].InitDefault();
+    dst[i].InitDefault();
+    src[i].Set(std::string((i % 2 == 0 ? 40 : 5) + i, 'a' + i), arena);
+  }
+  auto dst_msg = Arena::MakeUnique<proto2_unittest::TestEmptyMessage>(arena);
+
+  constexpr int kShift = 3;
+  constexpr uint32_t kAll = (uint32_t{1} << kCount) - 1;
+  constexpr uint32_t kOutside = ~(kAll << kShift);
+
+  for (uint32_t raw : {0u, 1u, 0b1110u, 0x55555555u, 0xaaaaaaaau,
+                       (1u << (kCount - 1)) | 1u, kAll}) {
+    const uint32_t bits = raw & kAll;
+    SCOPED_TRACE(bits);
+    const internal::BitfieldMask<kCount, kShift> mask((bits << kShift) |
+                                                      kOutside);
+    auto expect_dst = [&](bool cleared) {
+      for (size_t i = 0; i < kCount; ++i) {
+        absl::string_view expected = "keep";
+        if ((bits >> i) & 1u) {
+          expected = cleared ? absl::string_view("") : src[i].Get();
+        }
+        EXPECT_EQ(dst[i].Get(), expected) << i;
+      }
+    };
+
+    size_t expected_size_1 = 0;
+    size_t expected_size_2 = 0;
+    for (size_t i = 0; i < kCount; ++i) {
+      dst[i].Set("keep", *dst_msg);
+      if ((bits >> i) & 1u) {
+        const size_t n = internal::WireFormatLite::StringSize(src[i].Get());
+        expected_size_1 += 1 + n;
+        expected_size_2 += 2 + n;
+      }
+    }
+
+    EXPECT_EQ(internal::ByteSizeStringFields(mask, src), expected_size_1);
+    internal::MergeStringFields(mask, dst, src, *dst_msg);
+    expect_dst(/*cleared=*/false);
+    internal::ClearStringFields(mask, dst);
+    expect_dst(/*cleared=*/true);
+
+    if (bits != 0) {
+      EXPECT_EQ(
+          (internal::ByteSizeStringFields</*kMinTagSize=*/2,
+                                          /*kBatchCheck=*/false>(mask, src)),
+          expected_size_2);
+      internal::MergeStringFields</*kBatchCheck=*/false>(mask, dst, src,
+                                                         *dst_msg);
+      expect_dst(/*cleared=*/false);
+      internal::ClearStringFields</*kBatchCheck=*/false>(mask, dst);
+      expect_dst(/*cleared=*/true);
+    }
+  }
+
+  if (arena == nullptr) {
+    internal::DestroyStringFields<kCount>(dst);
+    internal::DestroyStringFields<kCount>(src);
+  }
+}
+
+TEST(BatchedStringFieldsTest, MergeClearAndDestroy) {
+  Arena arena;
+  for (Arena* a : {static_cast<Arena*>(nullptr), &arena}) {
+    TestMergeAndClearStringFields<1>(a);
+    TestMergeAndClearStringFields<2>(a);
+    TestMergeAndClearStringFields<4>(a);
+    TestMergeAndClearStringFields<10>(a);
+  }
+
+  // Exercise out-of-line DestroyStringFields fast path (all default/arena) and
+  // slow-path transition across the 8-wide unrolled loop + tail.
+  for (size_t count : {size_t{0}, size_t{3}, size_t{10}}) {
+    std::vector<internal::ArenaStringPtr> fields(count);
+    for (size_t i = 0; i < count; ++i) fields[i].InitDefault();
+    internal::arenastring_internal::DestroyStringFields(fields.data(), count);
+    if (count >= 2) {
+      for (size_t i = 0; i < count; ++i) fields[i].InitDefault();
+      fields[0].Set(std::string(48, 'a'), &arena);
+      fields[count - 1].Set(std::string(48, 'h'), nullptr);
+      internal::arenastring_internal::DestroyStringFields(fields.data(), count);
+    }
+  }
+}
 
 }  // namespace protobuf
 }  // namespace google

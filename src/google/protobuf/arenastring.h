@@ -18,6 +18,7 @@
 
 #include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
+#include "absl/numeric/bits.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
@@ -140,6 +141,9 @@ class PROTOBUF_EXPORT TaggedStringPtr {
   // Returns true if the current string is an immutable default value.
   bool IsDefault() const { return (as_int() & kMask) == kDefault; }
 
+  // Returns true if the current string is a heap-allocated mutable value.
+  bool IsAllocated() const { return (as_int() & kMask) == kAllocated; }
+
   // If the current string is a heap-allocated mutable value, returns a pointer
   // to it.  Returns nullptr otherwise.
   std::string* GetIfAllocated() const {
@@ -225,6 +229,13 @@ static_assert(std::is_standard_layout_v<TaggedStringPtr>,
 // Because ArenaStringPtr is used in oneof unions, its constructor is a NOP and
 // the field is always manually initialized via method calls.
 //
+class ArenaStringPtr;
+
+namespace arenastring_internal {
+PROTOBUF_EXPORT void DestroyStringFields(ArenaStringPtr* first_str,
+                                         size_t count);
+}  // namespace arenastring_internal
+
 // See TaggedStringPtr for more information about the types of string values
 // being held, and the mutable and ownership invariants for each type.
 class PROTOBUF_EXPORT ArenaStringPtr {
@@ -426,6 +437,8 @@ class PROTOBUF_EXPORT ArenaStringPtr {
 
   friend class ::google::protobuf::internal::SwapFieldHelper;
   friend class TcParser;
+  friend void arenastring_internal::DestroyStringFields(
+      ArenaStringPtr* first_str, size_t count);
 
   // Slow paths.
 
@@ -565,6 +578,156 @@ inline std::string* ArenaStringPtr::UnsafeMutablePointer() {
   ABSL_DCHECK(tagged_ptr_.IsMutable());
   ABSL_DCHECK(tagged_ptr_.Get() != nullptr);
   return tagged_ptr_.Get();
+}
+
+// Implementation helpers for batched ArenaStringPtr operations. Do not emit
+// calls to this namespace directly from generated code; generated messages
+// call the `::_pbi::*` entry points below.
+namespace arenastring_internal {
+
+// Range-for adapter yielding the index of each set bit in `mask` in ascending
+// order.
+class BitMask {
+ public:
+  explicit BitMask(uint32_t mask) : mask_(mask) {}
+
+  BitMask& operator++() {
+    mask_ &= (mask_ - 1);
+    return *this;
+  }
+  int operator*() const { return absl::countr_zero(mask_); }
+
+  BitMask begin() const { return *this; }
+  BitMask end() const { return BitMask(0); }
+
+  friend bool operator==(BitMask a, BitMask b) { return a.mask_ == b.mask_; }
+  friend bool operator!=(BitMask a, BitMask b) { return a.mask_ != b.mask_; }
+
+ private:
+  uint32_t mask_;
+};
+
+inline constexpr int kMinBatchCheckMergeStringFields = 4;
+
+// Clears each string in `first_str` whose bit is set in `mask`.
+PROTOBUF_ALWAYS_INLINE void ClearStringFieldsInline(uint32_t mask,
+                                                    ArenaStringPtr* first_str) {
+  for (int bit : BitMask(mask)) {
+    first_str[bit].ClearNonDefaultToEmpty();
+  }
+}
+
+PROTOBUF_EXPORT void ClearStringFields(uint32_t mask,
+                                       ArenaStringPtr* first_str);
+
+PROTOBUF_EXPORT void DestroyStringFields(ArenaStringPtr* first_str,
+                                         size_t count);
+
+PROTOBUF_EXPORT void MergeStringFields(uint32_t mask,
+                                       ArenaStringPtr* dst_first_str,
+                                       const ArenaStringPtr* src_first_str,
+                                       const MessageLite& parent);
+
+}  // namespace arenastring_internal
+
+// Inline thresholds shared with the C++ code generator.
+inline constexpr int kMaxInlineClearStringFields = 8;
+inline constexpr int kMaxInlineMergeStringFields = 8;
+
+// Called from generated code: extracts `kCount` consecutive presence bits
+// starting at `kShift` from a `has_bits` word.
+template <int kCount, int kShift>
+class BitfieldMask {
+  static_assert(kCount > 0 && kShift >= 0 && kCount + kShift <= 32);
+
+ public:
+  static constexpr int count() { return kCount; }
+  static constexpr int shift() { return kShift; }
+
+  explicit constexpr BitfieldMask(uint32_t has_bits) : has_bits_(has_bits) {}
+
+  constexpr bool any() const { return (has_bits_ & kMask) != 0; }
+  constexpr uint32_t bits() const { return (has_bits_ & kMask) >> kShift; }
+  constexpr operator uint32_t() const { return bits(); }
+  bool test(int i) const {
+    ABSL_DCHECK(i >= 0 && i < kCount);
+    return (has_bits_ & (uint32_t{1} << (kShift + i))) != 0;
+  }
+
+ private:
+  static constexpr uint32_t kMask = (~uint32_t{0} >> (32 - kCount)) << kShift;
+  uint32_t has_bits_;
+};
+
+// Called from generated Clear(): clears each string in `first_str[0..kCount)`
+// whose bit is set in `mask` (`kBatchCheck=false` when `mask` is non-zero).
+template <bool kBatchCheck = true, int kCount, int kShift>
+PROTOBUF_ALWAYS_INLINE void ClearStringFields(BitfieldMask<kCount, kShift> mask,
+                                              ArenaStringPtr* first_str) {
+  if constexpr (kCount == 1) {
+    if (!kBatchCheck || mask.test(0)) {
+      first_str[0].ClearNonDefaultToEmpty();
+    }
+  } else if constexpr (kCount == 2) {
+    if (mask.test(0)) {
+      first_str[0].ClearNonDefaultToEmpty();
+    }
+    if (mask.test(1)) {
+      first_str[1].ClearNonDefaultToEmpty();
+    }
+  } else if constexpr (kCount <= kMaxInlineClearStringFields) {
+    arenastring_internal::ClearStringFieldsInline(mask.bits(), first_str);
+  } else if constexpr (!kBatchCheck) {
+    arenastring_internal::ClearStringFields(mask.bits(), first_str);
+  } else if (const uint32_t bits = mask.bits()) {
+    arenastring_internal::ClearStringFields(bits, first_str);
+  }
+}
+
+// Called from generated SharedDtor(): destroys `kCount` contiguous heap-owned
+// `ArenaStringPtr` fields starting at `first_str` (when `arena == nullptr`).
+template <size_t kCount>
+PROTOBUF_ALWAYS_INLINE void DestroyStringFields(ArenaStringPtr* first_str) {
+  if constexpr (kCount == 1) {
+    first_str[0].Destroy();
+  } else if constexpr (kCount == 2) {
+    first_str[0].Destroy();
+    first_str[1].Destroy();
+  } else {
+    arenastring_internal::DestroyStringFields(first_str, kCount);
+  }
+}
+
+// Called from generated MergeImpl(): copies each string in
+// `src_first_str[0..kCount)` set in `mask` into `dst_first_str` on `parent`.
+template <bool kBatchCheck = true, int kCount, int kShift>
+PROTOBUF_ALWAYS_INLINE void MergeStringFields(
+    BitfieldMask<kCount, kShift> mask, ArenaStringPtr* dst_first_str,
+    const ArenaStringPtr* src_first_str, const MessageLite& parent) {
+  if constexpr (kCount == 1) {
+    if (!kBatchCheck || mask.test(0)) {
+      dst_first_str[0].Set(src_first_str[0].Get(), parent);
+    }
+  } else if constexpr (kCount <= kMaxInlineMergeStringFields) {
+    if constexpr (kBatchCheck &&
+                  kCount >=
+                      arenastring_internal::kMinBatchCheckMergeStringFields) {
+      if (!mask.any()) return;
+    }
+    // Unlike Clear/ByteSize (whose loop bodies inline), Set() is an out-of-line
+    // call, making constant-offset mask.test(i) faster than spilling BitMask.
+    for (int i = 0; i < kCount; ++i) {
+      if (mask.test(i)) {
+        dst_first_str[i].Set(src_first_str[i].Get(), parent);
+      }
+    }
+  } else if constexpr (!kBatchCheck) {
+    arenastring_internal::MergeStringFields(mask.bits(), dst_first_str,
+                                            src_first_str, parent);
+  } else if (const uint32_t bits = mask.bits()) {
+    arenastring_internal::MergeStringFields(bits, dst_first_str, src_first_str,
+                                            parent);
+  }
 }
 
 }  // namespace internal

@@ -296,6 +296,44 @@ const char* EpsCopyInputStream::ReadArenaString(const char* ptr,
   return ptr;
 }
 
+namespace arenastring_internal {
+
+void ClearStringFields(uint32_t mask, ArenaStringPtr* first_str) {
+  ClearStringFieldsInline(mask, first_str);
+}
+
+namespace {
+
+PROTOBUF_NOINLINE void DestroyStringFieldsSlow(ArenaStringPtr* first_str,
+                                               size_t count) {
+  for (size_t i = 0; i < count; ++i) {
+    first_str[i].Destroy();
+  }
+}
+
+}  // namespace
+
+void DestroyStringFields(ArenaStringPtr* first_str, size_t count) {
+  for (size_t i = 0; i < count; ++i) {
+    if (ABSL_PREDICT_FALSE(first_str[i].tagged_ptr_.IsAllocated())) {
+      PROTOBUF_MUSTTAIL return DestroyStringFieldsSlow(first_str + i,
+                                                       count - i);
+    }
+  }
+}
+
+void MergeStringFields(uint32_t mask, ArenaStringPtr* dst_first_str,
+                       const ArenaStringPtr* src_first_str,
+                       const MessageLite& parent) {
+  if (mask == 0) return;
+  Arena* arena = parent.GetArena();
+  for (int bit : BitMask(mask)) {
+    dst_first_str[bit].Set(absl::string_view(src_first_str[bit].Get()), arena);
+  }
+}
+
+}  // namespace arenastring_internal
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

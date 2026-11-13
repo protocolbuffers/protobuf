@@ -892,6 +892,15 @@ size_t WireFormatLite::EnumSizeWithPackedTagSize(
   return tag_size + res + Int32Size(static_cast<int32_t>(res));
 }
 
+
+namespace arenastring_internal {
+
+size_t ByteSizeStringFields(uint32_t mask, const ArenaStringPtr* first_str) {
+  return ByteSizeStringFieldsInline(mask, first_str);
+}
+
+}  // namespace arenastring_internal
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
