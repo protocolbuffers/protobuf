@@ -1,0 +1,33 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_vendor")
+
+# Renders the crates used by the Rust runtime and its tests into ./crates, which
+# extension.bzl turns into repositories. Unlike the crate_universe module
+# extension, this doesn't require every module that depends on protobuf to
+# download cargo and rustc when resolving its dependencies.
+#
+# Regenerate with `bazel run //rust/crates_vendor:crates_vendor`.
+crates_vendor(
+    name = "crates_vendor",
+    cargo_lockfile = "//rust:Cargo.lock",
+    mode = "remote",
+    packages = {
+        "googletest": crate.spec(version = "0.14.2"),
+        "linkme": crate.spec(version = "0.3.35"),
+        "paste": crate.spec(version = "1.0.15"),
+        "quote": crate.spec(version = "1.0.38"),
+        "syn": crate.spec(
+            features = ["full"],
+            version = ">=2, <3",
+        ),
+    },
+    repository_name = "crate_index",
+    tags = ["manual"],
+    vendor_path = "crates",
+)
