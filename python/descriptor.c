@@ -549,6 +549,14 @@ static PyObject* PyUpb_Descriptor_GetFieldsByCamelCaseName(PyObject* _self,
   return PyUpb_ByNameMap_New(&funcs, self->def, self->pool);
 }
 
+static const void* PyUpb_Descriptor_FindFieldByNumber(const void* m, int num) {
+  return upb_MessageDef_FindFieldByNumber(m, num);
+}
+
+static int PyUpb_Descriptor_FieldNumber(const void* f) {
+  return upb_FieldDef_Number(f);
+}
+
 static PyObject* PyUpb_Descriptor_GetFieldsByNumber(PyObject* _self,
                                                     void* closure) {
   static PyUpb_ByNumberMap_Funcs funcs = {
@@ -557,8 +565,8 @@ static PyObject* PyUpb_Descriptor_GetFieldsByNumber(PyObject* _self,
           (void*)&upb_MessageDef_Field,
           (void*)&PyUpb_FieldDescriptor_Get,
       },
-      (void*)&upb_MessageDef_FindFieldByNumber,
-      (void*)&upb_FieldDef_Number,
+      &PyUpb_Descriptor_FindFieldByNumber,
+      &PyUpb_Descriptor_FieldNumber,
   };
   PyUpb_DescriptorBase* self = (void*)_self;
   return PyUpb_ByNumberMap_New(&funcs, self->def, self->pool);
