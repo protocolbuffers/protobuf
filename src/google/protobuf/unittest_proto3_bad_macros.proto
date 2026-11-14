@@ -72,4 +72,11 @@ enum BadNames {
   TYPE_BOOL = 30;
   // Defined in macOS, Windows, and Linux headers.
   DEBUG = 31;
+  // Defined in <sys/socket.h> on some platforms.
+  SOCK_STREAM = 32;
+  SOCK_DGRAM = 33;
+  SOCK_RAW = 34;
+  SOCK_RDM = 35;
+  SOCK_SEQPACKET = 36;
+  SOCK_PACKET = 37;
 }

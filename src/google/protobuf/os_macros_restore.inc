@@ -36,6 +36,36 @@
 #undef PROTOBUF_DID_UNDEF_NO_DATA
 #endif
 
+#ifdef PROTOBUF_DID_UNDEF_SOCK_STREAM
+#pragma pop_macro("SOCK_STREAM")
+#undef PROTOBUF_DID_UNDEF_SOCK_STREAM
+#endif
+
+#ifdef PROTOBUF_DID_UNDEF_SOCK_DGRAM
+#pragma pop_macro("SOCK_DGRAM")
+#undef PROTOBUF_DID_UNDEF_SOCK_DGRAM
+#endif
+
+#ifdef PROTOBUF_DID_UNDEF_SOCK_RAW
+#pragma pop_macro("SOCK_RAW")
+#undef PROTOBUF_DID_UNDEF_SOCK_RAW
+#endif
+
+#ifdef PROTOBUF_DID_UNDEF_SOCK_RDM
+#pragma pop_macro("SOCK_RDM")
+#undef PROTOBUF_DID_UNDEF_SOCK_RDM
+#endif
+
+#ifdef PROTOBUF_DID_UNDEF_SOCK_SEQPACKET
+#pragma pop_macro("SOCK_SEQPACKET")
+#undef PROTOBUF_DID_UNDEF_SOCK_SEQPACKET
+#endif
+
+#ifdef PROTOBUF_DID_UNDEF_SOCK_PACKET
+#pragma pop_macro("SOCK_PACKET")
+#undef PROTOBUF_DID_UNDEF_SOCK_PACKET
+#endif
+
 #ifdef _WIN32
 #pragma pop_macro("CompareString")
 #pragma pop_macro("CREATE_NEW")

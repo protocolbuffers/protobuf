@@ -71,6 +71,13 @@
 #include "google/protobuf/test_util.h"
 
 
+#ifndef _WIN32
+namespace {
+// Capture SOCK_STREAM before port_def.inc (via os_macros_undef.inc) #undefs it.
+constexpr int kSockStream = SOCK_STREAM;
+}  // namespace
+#endif
+
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
@@ -1830,7 +1837,7 @@ TEST_F(IoTest, BlockingFileIoWithTimeout) {
   int fd[2];
 
   for (int i = 0; i < kBlockSizeCount; i++) {
-    ASSERT_EQ(socketpair(AF_UNIX, SOCK_STREAM, 0, fd), 0);
+    ASSERT_EQ(socketpair(AF_UNIX, kSockStream, 0, fd), 0);
     struct timeval tv {
       .tv_sec = 0, .tv_usec = 5000
     };
