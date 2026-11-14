@@ -1447,9 +1447,13 @@ class MessageTest(unittest.TestCase):
     m = message_module.TestAllTypes()
     m.repeated_int32.append(1)
     m.optional_nested_message.bb = 2
-    with self.assertRaises(AssertionError):
+    with self.assertRaisesRegex(
+        AssertionError, 'Cannot merge a message into itself'
+    ):
       m.MergeFrom(m)
-    with self.assertRaises(AssertionError):
+    with self.assertRaisesRegex(
+        AssertionError, 'Cannot merge a message into itself'
+    ):
       m.optional_nested_message.MergeFrom(m.optional_nested_message)
     self.assertEqual([1], m.repeated_int32)
     self.assertEqual(2, m.optional_nested_message.bb)
