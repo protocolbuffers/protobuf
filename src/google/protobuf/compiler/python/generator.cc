@@ -168,7 +168,7 @@ std::string GetLegacySyntaxName(Edition edition) {
 
 }  // namespace
 
-Generator::Generator() : file_(nullptr) {}
+Generator::Generator() : file_(nullptr), printer_(nullptr) {}
 
 Generator::~Generator() = default;
 
@@ -331,6 +331,7 @@ bool Generator::Generate(const FileDescriptor* file,
   printer.Print("# @@protoc_insertion_point(module_scope)\n");
 
 
+  printer_ = nullptr;
   return !printer.failed();
 }
 
