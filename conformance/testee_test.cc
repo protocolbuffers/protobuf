@@ -29,7 +29,12 @@ namespace internal {
 namespace {
 
 using ::protobuf_test_messages::proto2::TestAllTypesProto2;
+using ::testing::_;
+using ::testing::DoAll;
+using ::testing::ElementsAre;
+using ::testing::IsEmpty;
 using ::testing::Return;
+using ::testing::SaveArg;
 
 MATCHER_P(RequestEquals, expected_textproto, "") {
   ::conformance::ConformanceRequest request, expected;
@@ -229,10 +234,145 @@ TEST(TesteeTest, DuplicateTestName) {
           .SerializeBinary();
 
   EXPECT_DEATH(
-      testee.CreateTest("foo", TestPriority::kP0)
+      (void)testee.CreateTest("foo", TestPriority::kP0)
           .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
           .SerializeBinary(),
       "Duplicated test name: Required.Proto2.ProtobufInput.foo.ProtobufOutput");
+}
+
+TEST(TesteeTest, RecordsTheTestsRun) {
+  MockTestRunner mock;
+  Testee testee(&mock);
+  EXPECT_CALL(mock, RunTest).WillRepeatedly(Return(std::string("\004")));
+  EXPECT_THAT(testee.tests_run(), IsEmpty());
+
+  (void)testee.CreateTest("foo", TestPriority::kP0)
+      .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
+      .SerializeBinary();
+  (void)testee.CreateTest("bar", TestPriority::kP1)
+      .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
+      .SerializeText();
+
+  EXPECT_THAT(
+      testee.tests_run(),
+      ElementsAre("Required.Proto2.ProtobufInput.foo.ProtobufOutput",
+                  "Recommended.Proto2.ProtobufInput.bar.TextFormatOutput"));
+}
+
+TEST(TesteeTest, DiscardBinary) {
+  MockTestRunner mock;
+  Testee testee(&mock);
+  EXPECT_CALL(
+      mock,
+      RunTest("Required.Proto2.ProtobufInput.foo", RequestEquals(R"pb(
+                protobuf_payload: "wire"
+                requested_output_format: PROTOBUF
+                message_type: "protobuf_test_messages.proto2.TestAllTypesProto2"
+                test_category: BINARY_TEST
+              )pb")))
+      .WillOnce(RespondWith(R"pb(parse_error: "error")pb"));
+
+  TestResult result =
+      testee.CreateTest("foo", TestPriority::kP0)
+          .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
+          .Discard();
+
+  EXPECT_EQ(result.name(), "Required.Proto2.ProtobufInput.foo");
+  EXPECT_EQ(result.priority(), TestPriority::kP0);
+  EXPECT_EQ(result.type(), TestAllTypesProto2::descriptor());
+  EXPECT_EQ(result.format(), ::conformance::PROTOBUF);
+  EXPECT_THAT(result.response(), EqualsProto(R"pb(parse_error: "error")pb"));
+}
+
+// Discard() sends the request SerializeBinary() sends for the same input,
+// byte for byte; only the test name differs.
+TEST(TesteeTest, DiscardSendsTheSameRequestAsSerializeBinary) {
+  MockTestRunner mock;
+  Testee testee(&mock);
+  std::string serialized_request, discarded_request;
+  EXPECT_CALL(mock,
+              RunTest("Required.Proto2.ProtobufInput.foo.ProtobufOutput", _))
+      .WillOnce(DoAll(SaveArg<1>(&serialized_request),
+                      RespondWith(R"pb(parse_error: "error")pb")));
+  EXPECT_CALL(mock, RunTest("Required.Proto2.ProtobufInput.foo", _))
+      .WillOnce(DoAll(SaveArg<1>(&discarded_request),
+                      RespondWith(R"pb(parse_error: "error")pb")));
+
+  TestResult serialized =
+      testee.CreateTest("foo", TestPriority::kP0)
+          .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
+          .SerializeBinary();
+  TestResult discarded =
+      testee.CreateTest("foo", TestPriority::kP0)
+          .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
+          .Discard();
+
+  EXPECT_EQ(serialized.name(),
+            "Required.Proto2.ProtobufInput.foo.ProtobufOutput");
+  EXPECT_EQ(discarded.name(), "Required.Proto2.ProtobufInput.foo");
+  EXPECT_EQ(discarded_request, serialized_request);
+}
+
+TEST(TesteeTest, DiscardText) {
+  MockTestRunner mock;
+  Testee testee(&mock);
+  EXPECT_CALL(
+      mock,
+      RunTest("Recommended.Proto2.TextFormatInput.foo", RequestEquals(R"pb(
+                text_payload: "text"
+                requested_output_format: TEXT_FORMAT
+                message_type: "protobuf_test_messages.proto2.TestAllTypesProto2"
+                test_category: TEXT_FORMAT_TEST
+              )pb")))
+      .WillOnce(RespondWith(R"pb(parse_error: "error")pb"));
+
+  TestResult result = testee.CreateTest("foo", TestPriority::kP1)
+                          .ParseText(TestAllTypesProto2::descriptor(), "text")
+                          .Discard();
+
+  EXPECT_EQ(result.name(), "Recommended.Proto2.TextFormatInput.foo");
+  EXPECT_EQ(result.priority(), TestPriority::kP1);
+  EXPECT_EQ(result.format(), ::conformance::TEXT_FORMAT);
+  EXPECT_THAT(result.response(), EqualsProto(R"pb(parse_error: "error")pb"));
+}
+
+TEST(TesteeTest, DiscardJson) {
+  MockTestRunner mock;
+  Testee testee(&mock);
+  EXPECT_CALL(
+      mock,
+      RunTest("Required.Proto2.JsonInput.foo", RequestEquals(R"pb(
+                json_payload: "json"
+                requested_output_format: JSON
+                message_type: "protobuf_test_messages.proto2.TestAllTypesProto2"
+                test_category: JSON_TEST
+              )pb")))
+      .WillOnce(RespondWith(R"pb(parse_error: "error")pb"));
+
+  TestResult result = testee.CreateTest("foo", TestPriority::kP0)
+                          .ParseJson(TestAllTypesProto2::descriptor(), "json")
+                          .Discard();
+
+  EXPECT_EQ(result.name(), "Required.Proto2.JsonInput.foo");
+  EXPECT_EQ(result.format(), ::conformance::JSON);
+  EXPECT_THAT(result.response(), EqualsProto(R"pb(parse_error: "error")pb"));
+}
+
+TEST(TesteeDeathTest, DiscardDuplicateTestName) {
+  MockTestRunner mock;
+  Testee testee(&mock);
+  EXPECT_CALL(mock, RunTest("Required.Proto2.ProtobufInput.foo", _))
+      .WillRepeatedly(RespondWith(R"pb(parse_error: "error")pb"));
+
+  TestResult result =
+      testee.CreateTest("foo", TestPriority::kP0)
+          .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
+          .Discard();
+
+  EXPECT_DEATH((void)testee.CreateTest("foo", TestPriority::kP0)
+                   .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
+                   .Discard(),
+               "Duplicated test name: Required.Proto2.ProtobufInput.foo");
 }
 
 TEST(TestPriorityTest, PriorityName) {

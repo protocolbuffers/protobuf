@@ -527,14 +527,26 @@ TEST_F(ResultLedgerTest, OverexpandedWildcardKeepsMatching) {
 TEST_F(ResultLedgerTest, UnexpectedFailuresIgnoreDuplicateReports) {
   ResultLedger ledger;
 
-  // Only the first report of a test counts.
+  // Only the first report of a test counts; a different one is rejected.
   ASSERT_THAT(ledger.ReportFailure("foo", kP0, "first"), Not(IsOk()));
-  ASSERT_THAT(ledger.ReportFailure("foo", kP0, "second"), Not(IsOk()));
+  ASSERT_THAT(ledger.ReportFailure("foo", kP0, "second"),
+              StatusIs(absl::StatusCode::kFailedPrecondition,
+                       HasSubstr("was already reported as a failure (first), "
+                                 "now as a failure (second)")));
 
   EXPECT_THAT(ledger.UnexpectedFailures(),
               ElementsAre(FieldsAre("foo", "first", absl::nullopt)));
   EXPECT_EQ(ledger.unexpected_failures(), 1);
   EXPECT_THAT(ledger.Finalize(), IsOk());
+
+  // Including for what --fix writes.
+  ASSERT_THAT(ledger.SaveFailureList(absl::StrCat(failure_list(), ".new")),
+              IsOk());
+  std::string content;
+  ASSERT_THAT(File::GetContents(absl::StrCat(failure_list(), ".new"), &content,
+                                true),
+              IsOk());
+  EXPECT_EQ(content, "foo # first\n");
 }
 
 TEST_F(ResultLedgerTest, UnexpectedSuccesses) {
@@ -658,15 +670,40 @@ TEST_F(ResultLedgerTest, ToleratedFailure) {
   EXPECT_EQ(content, "listed # abc\n");
 }
 
-TEST_F(ResultLedgerTest, ToleratedFailureIsCountedOnceAcrossKinds) {
+TEST_F(ResultLedgerTest, ReportingAnotherOutcomeIsAnError) {
   ResultLedger ledger;
   ledger.set_enforcement_level(kP0);
-  // The same test name can only be counted under one outcome.
-  ASSERT_THAT(ledger.ReportSuccess("foo"), IsOk());
-  ASSERT_THAT(ledger.ReportFailure("foo", kP1, "abc"), IsOk());
+  ASSERT_THAT(ledger.ReportSuccess("success"), IsOk());
+  ASSERT_THAT(ledger.ReportFailure("failure", kP0, "abc"), Not(IsOk()));
+  ASSERT_THAT(ledger.ReportSkip("skip", "reason"), IsOk());
+
+  // A test has one outcome: the first report stands, a different one is
+  // rejected instead of judged, whatever its verdict would have been.
+  EXPECT_THAT(ledger.ReportFailure("success", kP1, "abc"),
+              StatusIs(absl::StatusCode::kFailedPrecondition,
+                       "test success was already reported as a success, now as "
+                       "a failure (abc).  A test has one outcome: check its "
+                       "result with one matcher."));
+  EXPECT_THAT(ledger.ReportSkip("success", "reason"),
+              StatusIs(absl::StatusCode::kFailedPrecondition,
+                       HasSubstr("as a success, now as skipped (reason)")));
+  EXPECT_THAT(ledger.ReportSuccess("failure"),
+              StatusIs(absl::StatusCode::kFailedPrecondition,
+                       HasSubstr("as a failure (abc), now as a success")));
+  EXPECT_THAT(
+      ledger.ReportFailure("failure", kP0, "xyz"),
+      StatusIs(absl::StatusCode::kFailedPrecondition,
+               HasSubstr("as a failure (abc), now as a failure (xyz)")));
+  EXPECT_THAT(ledger.ReportSuccess("skip"),
+              StatusIs(absl::StatusCode::kFailedPrecondition,
+                       HasSubstr("as skipped (reason), now as a success")));
 
   EXPECT_EQ(ledger.expected_successes(), 1);
   EXPECT_EQ(ledger.tolerated_failures(), 0);
+  EXPECT_EQ(ledger.unexpected_failures(), 1);
+  EXPECT_EQ(ledger.skipped(), 1);
+  EXPECT_THAT(ledger.UnexpectedFailures(),
+              ElementsAre(FieldsAre("failure", "abc", absl::nullopt)));
   EXPECT_THAT(ledger.Finalize(), IsOk());
 }
 
