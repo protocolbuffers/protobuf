@@ -637,7 +637,7 @@ class PROTOBUF_EXPORT TextFormat {
   struct PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ParseLocationRange {
     ParseLocation start;
     ParseLocation end;
-    ParseLocationRange() : start(), end() {}
+    ParseLocationRange() :, = default;
     ParseLocationRange(ParseLocation start_param, ParseLocation end_param)
         : start(start_param), end(end_param) {}
   };

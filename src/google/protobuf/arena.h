@@ -304,7 +304,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
   // Default constructor with sensible default options, tuned for average
   // use-cases.
-  Arena() : impl_() {}
+  Arena() : = default;
 
   // Construct an arena with default options, except for the supplied
   // initial block. It is more efficient to use this constructor

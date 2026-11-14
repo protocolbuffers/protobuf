@@ -133,8 +133,8 @@ bool DescriptorDatabase::FindAllMessageNames(
 
 // ===================================================================
 
-SimpleDescriptorDatabase::SimpleDescriptorDatabase() {}
-SimpleDescriptorDatabase::~SimpleDescriptorDatabase() {}
+SimpleDescriptorDatabase::SimpleDescriptorDatabase() = default;
+SimpleDescriptorDatabase::~SimpleDescriptorDatabase() = default;
 
 template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddFile(
@@ -964,7 +964,7 @@ EncodedDescriptorDatabase::~EncodedDescriptorDatabase() {
 DescriptorPoolDatabase::DescriptorPoolDatabase(
     const DescriptorPool& pool, DescriptorPoolDatabaseOptions options)
     : pool_(pool), options_(std::move(options)) {}
-DescriptorPoolDatabase::~DescriptorPoolDatabase() {}
+DescriptorPoolDatabase::~DescriptorPoolDatabase() = default;
 
 bool DescriptorPoolDatabase::FindFileByName(
     absl::string_view filename, FileDescriptorProto* PROTOBUF_NONNULL output) {
@@ -1035,7 +1035,7 @@ MergedDescriptorDatabase::MergedDescriptorDatabase(
 MergedDescriptorDatabase::MergedDescriptorDatabase(
     const std::vector<DescriptorDatabase*>& sources)
     : sources_(sources) {}
-MergedDescriptorDatabase::~MergedDescriptorDatabase() {}
+MergedDescriptorDatabase::~MergedDescriptorDatabase() = default;
 
 bool MergedDescriptorDatabase::FindFileByName(
     absl::string_view filename, FileDescriptorProto* PROTOBUF_NONNULL output) {
