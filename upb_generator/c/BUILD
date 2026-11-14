@@ -14,7 +14,7 @@ load(
 )
 load("//upb_generator:bootstrap_compiler.bzl", "bootstrap_cc_binary")
 
-package(default_applicable_licenses = ["//:license"])
+package(default_applicable_licenses = ["//:license", "//:package_metadata"])
 
 licenses(["notice"])
 

@@ -15,7 +15,7 @@ build_targets(name = "python")
 licenses(["notice"])
 
 package(
-    default_applicable_licenses = ["//:license"],
+    default_applicable_licenses = ["//:license", "//:package_metadata"],
     default_visibility = ["//python/dist:__pkg__"],
 )
 

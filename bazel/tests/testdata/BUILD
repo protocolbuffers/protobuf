@@ -11,7 +11,7 @@ load("//bazel:proto_library.bzl", "proto_library")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 
 package(
-    default_applicable_licenses = ["//:license"],
+    default_applicable_licenses = ["//:license", "//:package_metadata"],
     default_visibility = ["//visibility:public"],
 )
 

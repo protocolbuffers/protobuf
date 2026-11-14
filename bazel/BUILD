@@ -7,7 +7,7 @@
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
-package(default_applicable_licenses = ["//:license"])
+package(default_applicable_licenses = ["//:license", "//:package_metadata"])
 
 bzl_library(
     name = "proto_library_bzl",

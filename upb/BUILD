@@ -12,7 +12,7 @@ load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_FEATURES")
 load("//upb/bazel/private:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")
 load("//upb/bazel/private/oss:amalgamation.bzl", "upb_amalgamation")  # buildifier: disable=bzl-visibility
 
-package(default_applicable_licenses = ["//:license"])
+package(default_applicable_licenses = ["//:license", "//:package_metadata"])
 
 licenses(["notice"])
 

@@ -7,7 +7,7 @@
 
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
-package(default_applicable_licenses = ["//:license"])
+package(default_applicable_licenses = ["//:license", "//:package_metadata"])
 
 config_setting(
     name = "android",

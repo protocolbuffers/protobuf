@@ -10,7 +10,7 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load("//upb/bazel:copts.bzl", "UPB_DEFAULT_CPPOPTS", "UPB_DEFAULT_FEATURES")
 
-package(default_applicable_licenses = ["//:license"])
+package(default_applicable_licenses = ["//:license", "//:package_metadata"])
 
 licenses(["notice"])
 

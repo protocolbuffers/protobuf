@@ -17,7 +17,7 @@ load(
 )
 load(":build_defs.bzl", "make_shell_script")
 
-package(default_applicable_licenses = ["//:license"])
+package(default_applicable_licenses = ["//:license", "//:package_metadata"])
 
 licenses(["notice"])
 

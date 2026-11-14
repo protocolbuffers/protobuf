@@ -10,7 +10,7 @@ load("//bazel:proto_library.bzl", "proto_library")
 load("//rust:defs.bzl", "rust_proto_library")
 
 package(
-    default_applicable_licenses = ["//:license"],
+    default_applicable_licenses = ["//:license", "//:package_metadata"],
     default_visibility = ["//rust/test/treeshaking:__pkg__"],
 )
 

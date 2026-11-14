@@ -4,18 +4,45 @@
 # license that can be found in the LICENSE file or at
 # https://opensource.org/licenses/MIT.
 
+load("@package_metadata//licenses/rules:license.bzl", package_metadata_license = "license")
+load("@package_metadata//purl:purl.bzl", "purl")
+load("@package_metadata//rules:package_metadata.bzl", "package_metadata")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_license//rules:license.bzl", "license")
 
 package(
-    default_applicable_licenses = [":license"],
+    default_applicable_licenses = [
+        ":license",
+        ":package_metadata",
+    ],
     default_visibility = ["//visibility:public"],
 )
 
 license(
     name = "license",
     package_name = "utf8_range",
+)
+
+package_metadata_license(
+    name = "package_metadata_license",
+    kind = "@package_metadata//licenses/spdx:MIT",
+    text = "LICENSE",
+    visibility = ["//visibility:public"],
+)
+
+package_metadata(
+    name = "package_metadata",
+    attributes = [":package_metadata_license"],
+    purl = (
+        purl.builder()
+        .type("generic")
+        .namespace("protocolbuffers")
+        .name("utf8_range")
+        .version(module_version())
+        .build()
+    ),
+    visibility = ["//visibility:public"],
 )
 
 licenses(["notice"])

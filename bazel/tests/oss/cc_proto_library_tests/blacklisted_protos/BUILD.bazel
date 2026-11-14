@@ -3,7 +3,7 @@ load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel/tests:proto_bzl_test_suite.bzl", "bzl_test_suite")
 load(":tests.bzl", "TESTS")
 
-package(default_applicable_licenses = ["//:license"])
+package(default_applicable_licenses = ["//:license", "//:package_metadata"])
 
 cc_proto_library(
     name = "descriptor_cc_proto",

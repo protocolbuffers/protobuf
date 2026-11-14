@@ -7,7 +7,7 @@
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
-package(default_applicable_licenses = ["//:license"])
+package(default_applicable_licenses = ["//:license", "//:package_metadata"])
 
 toolchain_type(
     name = "proto_toolchain_type",
