@@ -10,6 +10,8 @@
 #include <float.h>  // FLT_DIG and DBL_DIG
 
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <limits>
 #include <string>
@@ -120,6 +122,46 @@ namespace {
 constexpr int kDoubleToBufferSize = 32;
 constexpr int kFloatToBufferSize = 24;
 
+inline bool IsValidFloatChar(char c) {
+  return ('0' <= c && c <= '9') || c == 'e' || c == 'E' || c == '+' || c == '-';
+}
+
+void DelocalizeRadix(char *buffer) {
+  // Fast check:  if the buffer has a normal decimal point, assume no
+  // translation is needed.
+  if (strchr(buffer, '.') != nullptr) return;
+
+  // Find the first unknown character.
+  while (IsValidFloatChar(*buffer)) ++buffer;
+
+  if (*buffer == '\0') {
+    // No radix character found.
+    return;
+  }
+
+  // We are now pointing at the locale-specific radix character.  Replace it
+  // with '.'.
+  *buffer = '.';
+  ++buffer;
+
+  if (!IsValidFloatChar(*buffer) && *buffer != '\0') {
+    // It appears the radix was a multi-byte character.  We need to remove the
+    // extra bytes.
+    char *target = buffer;
+    do {
+      ++buffer;
+    } while (!IsValidFloatChar(*buffer) && *buffer != '\0');
+    memmove(target, buffer, strlen(buffer) + 1);
+  }
+}
+
+bool safe_strtof(const char *str, float *value) {
+  char *endptr;
+  errno = 0;  // errno only gets set on errors
+  *value = strtof(str, &endptr);
+  return *str != 0 && *endptr == 0 && errno == 0;
+}
+
 char *FloatToBuffer(float value, char *buffer) {
   // FLT_DIG is 6 for IEEE-754 floats, which are used on almost all
   // platforms these days.  Just in case some system exists where FLT_DIG
@@ -127,10 +169,10 @@ char *FloatToBuffer(float value, char *buffer) {
   // this assert.
   static_assert(FLT_DIG < 10, "FLT_DIG_is_too_big");
 
-  if (value == std::numeric_limits<float>::infinity()) {
+  if (value == std::numeric_limits<double>::infinity()) {
     absl::SNPrintF(buffer, kFloatToBufferSize, "inf");
     return buffer;
-  } else if (value == -std::numeric_limits<float>::infinity()) {
+  } else if (value == -std::numeric_limits<double>::infinity()) {
     absl::SNPrintF(buffer, kFloatToBufferSize, "-inf");
     return buffer;
   } else if (std::isnan(value)) {
@@ -138,21 +180,23 @@ char *FloatToBuffer(float value, char *buffer) {
     return buffer;
   }
 
-  for (int prec = FLT_DIG; prec <= FLT_DIG + 3; ++prec) {
-    int snprintf_result =
-        absl::SNPrintF(buffer, kFloatToBufferSize, "%.*g", prec, value);
+  int snprintf_result =
+      absl::SNPrintF(buffer, kFloatToBufferSize, "%.*g", FLT_DIG, value);
 
-    // The snprintf should never overflow because the buffer is significantly
-    // larger than the precision we asked for.
+  // The snprintf should never overflow because the buffer is significantly
+  // larger than the precision we asked for.
+  ABSL_DCHECK(snprintf_result > 0 && snprintf_result < kFloatToBufferSize);
+
+  float parsed_value;
+  if (!safe_strtof(buffer, &parsed_value) || parsed_value != value) {
+    snprintf_result =
+        absl::SNPrintF(buffer, kFloatToBufferSize, "%.*g", FLT_DIG + 3, value);
+
+    // Should never overflow; see above.
     ABSL_DCHECK(snprintf_result > 0 && snprintf_result < kFloatToBufferSize);
-
-    float parsed_value;
-    if (prec == FLT_DIG + 3 ||
-        (absl::SimpleAtof(buffer, &parsed_value) && parsed_value == value)) {
-      break;
-    }
   }
 
+  DelocalizeRadix(buffer);
   return buffer;
 }
 
@@ -196,6 +240,7 @@ char *DoubleToBuffer(double value, char *buffer) {
     ABSL_DCHECK(snprintf_result > 0 && snprintf_result < kDoubleToBufferSize);
   }
 
+  DelocalizeRadix(buffer);
   return buffer;
 }
 }  // namespace
