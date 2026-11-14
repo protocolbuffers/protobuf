@@ -316,7 +316,7 @@ TEST(GeneratedCode, NonCanonicalFreestandingField) {
   upb::Arena arena;
 
   // A freestanding copy of a regular field of another message, with no offset
-  // or presence, like upb_Message_Convert() synthesizes for a dropped field.
+  // or presence, like upb_Message_Convert() synthesizes for a demoted field.
   const upb_MiniTableField* src_f =
       upb_MiniTable_FindFieldByNumber(&upb_0test__MessageSetMember_msg_init, 1);
   ASSERT_NE(src_f, nullptr);
@@ -366,7 +366,7 @@ TEST(GeneratedCode, NonCanonicalFreestandingFieldInMessageSet) {
   upb::Arena arena;
 
   // A freestanding copy of a singular sub-message field of another message,
-  // like upb_Message_Convert() synthesizes for a dropped field: no offset or
+  // like upb_Message_Convert() synthesizes for a demoted field: no offset or
   // presence, and its sub copied right after it.
   const upb_MiniTableField* src_f =
       upb_MiniTable_FindFieldByNumber(&upb_0test__TestFreeze_msg_init, 2);
@@ -378,13 +378,11 @@ TEST(GeneratedCode, NonCanonicalFreestandingFieldInMessageSet) {
     upb_MiniTableField field;
     upb_MiniTableSubInternal sub;
   } f;
-  static_assert(offsetof(FieldWithSub, sub) % kUpb_SubmsgOffsetBytes == 0);
   f.field = *src_f;
   f.field.UPB_PRIVATE(offset) = 0;
   f.field.presence = 0;
   f.sub = *UPB_PRIVATE(_upb_MiniTableField_Sub)(src_f);
-  f.field.UPB_PRIVATE(submsg_ofs) =
-      offsetof(FieldWithSub, sub) / kUpb_SubmsgOffsetBytes;
+  UPB_PRIVATE(_upb_MiniTableField_SetSub)(&f.field, &f.sub);
   ASSERT_EQ(upb_MiniTable_SubMessage(&f.field),
             &upb_0test__TestFreeze_msg_init);
 

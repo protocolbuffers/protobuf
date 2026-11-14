@@ -315,6 +315,7 @@ cc_test(
         "//upb/base",
         "//upb/mem",
         "//upb/mini_table",
+        "//upb/mini_table:internal",
         "//upb/port",
         "//upb/reflection",
         "//upb/reflection:internal",

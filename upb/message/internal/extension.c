@@ -7,6 +7,7 @@
 
 #include "upb/message/internal/extension.h"
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -16,6 +17,9 @@
 #include "upb/message/internal/types.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
+#include "upb/mini_table/internal/message.h"
+#include "upb/mini_table/internal/sub.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -91,4 +95,26 @@ upb_AuxField* UPB_PRIVATE(_upb_Message_CreateUnknownField)(
   // accumulate; an existing entry for the same field is never reused.
   return _upb_Message_AppendAuxField(msg, f, a,
                                      kUpb_TaggedAuxType_UnknownAuxField);
+}
+
+const upb_MiniTableField* upb_MiniTableField_ConvertToAuxField(
+    const upb_MiniTableField* f, upb_Arena* a) {
+  typedef struct {
+    upb_MiniTableField field;
+    upb_MiniTableSubInternal sub;
+  } upb_FieldWithSub;
+  UPB_ASSERT(!upb_MiniTableField_IsExtension(f));
+  const bool has_sub = f->UPB_PRIVATE(submsg_ofs) != kUpb_NoSub;
+  upb_FieldWithSub* ret = upb_Arena_Malloc(
+      a, has_sub ? sizeof(upb_FieldWithSub) : sizeof(upb_MiniTableField));
+  if (!ret) return NULL;
+  upb_MiniTableField* aux = &ret->field;
+  *aux = *f;
+  aux->UPB_PRIVATE(offset) = 0;
+  aux->presence = 0;
+  if (has_sub) {
+    ret->sub = *UPB_PRIVATE(_upb_MiniTableField_Sub)(f);
+    UPB_PRIVATE(_upb_MiniTableField_SetSub)(aux, &ret->sub);
+  }
+  return aux;
 }

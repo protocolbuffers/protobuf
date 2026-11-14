@@ -148,6 +148,17 @@ UPB_INLINE upb_MiniTableSubInternal* UPB_PRIVATE(_upb_MiniTableField_Sub)(
                     upb_MiniTableSubInternal);
 }
 
+// Points `f` at `sub`, so that _upb_MiniTableField_Sub(f) returns `sub`. `sub`
+// must be stored after `f`, at an offset that is a multiple of
+// kUpb_SubmsgOffsetBytes and representable in `submsg_ofs`.
+UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_SetSub)(
+    struct upb_MiniTableField* f, const upb_MiniTableSubInternal* sub) {
+  const ptrdiff_t ofs = (const char*)sub - (const char*)f;
+  UPB_ASSERT(ofs > 0 && ofs % kUpb_SubmsgOffsetBytes == 0);
+  UPB_ASSERT(ofs / kUpb_SubmsgOffsetBytes < kUpb_NoSub);
+  f->UPB_PRIVATE(submsg_ofs) = (uint16_t)(ofs / kUpb_SubmsgOffsetBytes);
+}
+
 UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_GetSubMessageTable(
     const struct upb_MiniTableField* f) {
   UPB_ASSERT(upb_MiniTableField_CType(f) == kUpb_CType_Message);

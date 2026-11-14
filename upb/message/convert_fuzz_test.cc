@@ -48,9 +48,7 @@ const upb_MiniTable* SubsetMiniTable(const upb_MiniTable* src, uint64_t mask,
     if (mask & (1ULL << (i % 64))) {
       upb_MiniTableField new_f = *f;
       if (f->UPB_PRIVATE(submsg_ofs) != kUpb_NoSub) {
-        new_subs.push_back(
-            *UPB_PTR_AT(f, f->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
-                        const upb_MiniTableSub));
+        new_subs.push_back(*UPB_PRIVATE(_upb_MiniTableField_Sub)(f));
       }
       new_fields.push_back(new_f);
     }
@@ -82,11 +80,7 @@ const upb_MiniTable* SubsetMiniTable(const upb_MiniTable* src, uint64_t mask,
   for (size_t i = 0; i < new_fields.size(); ++i) {
     upb_MiniTableField* f = &fields_ptr[i];
     if (f->UPB_PRIVATE(submsg_ofs) != kUpb_NoSub) {
-      uintptr_t f_addr = (uintptr_t)f;
-      uintptr_t subs_addr = (uintptr_t)&subs_ptr[sub_idx++];
-
-      size_t diff = subs_addr - f_addr;
-      f->UPB_PRIVATE(submsg_ofs) = (uint16_t)(diff / kUpb_SubmsgOffsetBytes);
+      UPB_PRIVATE(_upb_MiniTableField_SetSub)(f, &subs_ptr[sub_idx++]);
     }
   }
 
@@ -183,7 +177,7 @@ TEST(ConvertFuzz, Convert_IdenticalMinitables_ShallowCopy) {
       4189253947ULL);
 }
 
-TEST(ConvertFuzz, Convert_DifferentSubsets_DroppedFields_Complex) {
+TEST(ConvertFuzz, Convert_DifferentSubsets_DemotedFields_Complex) {
   ConvertFuzz(
       upb::fuzz::MiniTableFuzzInput{
           {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
@@ -199,7 +193,7 @@ TEST(ConvertFuzz, Convert_DifferentSubsets_DroppedFields_Complex) {
       "=\032\253\342K\221MQ\nj\n\304\361\364\304", 1620786928, 2077918455);
 }
 
-TEST(ConvertFuzz, Convert_DifferentSubsets_DroppedFields_Simple) {
+TEST(ConvertFuzz, Convert_DifferentSubsets_DemotedFields_Simple) {
   ConvertFuzz(upb::fuzz::MiniTableFuzzInput{{"", "", "", "", "", "", "", "", "",
                                              "", "", "", "", "", ""},
                                             {""},
@@ -210,7 +204,7 @@ TEST(ConvertFuzz, Convert_DifferentSubsets_DroppedFields_Simple) {
 }
 
 TEST(ConvertFuzz,
-     Convert_DifferentSubsets_DroppedFields_Regression_89982ef4cfe52331) {
+     Convert_DifferentSubsets_DemotedFields_Regression_89982ef4cfe52331) {
   ConvertFuzz(
       upb::fuzz::MiniTableFuzzInput{
           {"", "DD", "z", "", "", "\200"}, {"\031", "\031", "\031"}, "]]", {}},
