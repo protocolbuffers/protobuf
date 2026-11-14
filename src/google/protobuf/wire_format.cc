@@ -397,9 +397,13 @@ bool WireFormat::ParseAndMergeField(
     return SkipField(input, tag,
                      message_reflection->MutableUnknownFields(message));
   } else if (value_format == PACKED_FORMAT) {
-    uint32_t length;
-    if (!input->ReadVarint32(&length)) return false;
+    int length;
+    if (!input->ReadVarintSizeAsInt(&length)) return false;
     io::CodedInputStream::Limit limit = input->PushLimit(length);
+    if (input->BytesUntilLimit() != length) {
+      input->PopLimit(limit);
+      return false;
+    }
 
     switch (field->type()) {
 #define HANDLE_PACKED_TYPE(TYPE, CPPTYPE, CPPTYPE_METHOD)                      \
