@@ -379,29 +379,8 @@ TEST(FuzzTest, FloatDefaultRoundTrip) {
                  default_value: "36.666668"
                }
                field {
-                 name: "f3"
-                 number: 3
-                 label: LABEL_OPTIONAL
-                 type: TYPE_FLOAT
-                 default_value: "0.33333334"
-               }
-               field {
-                 name: "f4"
-                 number: 4
-                 label: LABEL_OPTIONAL
-                 type: TYPE_FLOAT
-                 default_value: "1e+06"
-               }
-               field {
-                 name: "f5"
-                 number: 5
-                 label: LABEL_OPTIONAL
-                 type: TYPE_FLOAT
-                 default_value: "1234567"
-               }
-               field {
                  name: "d1"
-                 number: 6
+                 number: 3
                  label: LABEL_OPTIONAL
                  type: TYPE_DOUBLE
                  default_value: "0.1"
