@@ -3707,6 +3707,14 @@ MessageFactory* Reflection::GetMessageFactory() const {
   return message_factory_;
 }
 
+void Reflection::CheckRepeatedFieldRefField(const FieldDescriptor* field,
+                                            const char* method) const {
+  if (field->containing_type() != descriptor_) {
+    ReportReflectionUsageError(descriptor_, field, method,
+                               "Field does not match message type.");
+  }
+}
+
 const void* Reflection::RepeatedFieldData(
     const Message& message, const FieldDescriptor* field,
     FieldDescriptor::CppType cpp_type, const Descriptor* message_type) const {

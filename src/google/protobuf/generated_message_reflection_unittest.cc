@@ -1608,6 +1608,26 @@ TEST(GeneratedMessageReflectionTest, OneofForeignDescriptorCheck) {
       "Oneof does not match message type");
 }
 
+TEST(GeneratedMessageReflectionTest, RepeatedFieldRefForeignFieldCheck) {
+  // Passing a repeated field descriptor from a different message type to
+  // Get(Mutable)RepeatedFieldRef must fail. The field offset is computed from
+  // the field's index (ReflectionSchema offsets_[field->index()]), so a
+  // foreign repeated field with a higher index than the target's field count
+  // addresses memory outside the target object: an out-of-bounds read for the
+  // const overload, and additionally an out-of-bounds has-bit write (via
+  // SetHasBit) for the mutable overload.
+  unittest::ForeignMessage message;
+  const Reflection* reflection = message.GetReflection();
+  const FieldDescriptor* foreign_field =
+      unittest::TestAllTypes::descriptor()->FindFieldByName("repeated_int32");
+  EXPECT_DEATH(
+      (void)reflection->GetRepeatedFieldRef<int32_t>(message, foreign_field),
+      "Field does not match message type");
+  EXPECT_DEATH((void)reflection->GetMutableRepeatedFieldRef<int32_t>(
+                   &message, foreign_field),
+               "Field does not match message type");
+}
+
 #endif  // GTEST_HAS_DEATH_TEST
 
 class GeneratedMessageReflectionCordAccessorsTest : public testing::Test {

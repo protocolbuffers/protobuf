@@ -1380,6 +1380,13 @@ class PROTOBUF_EXPORT Reflection final {
   template <typename T>
   void VerifyFieldType(const FieldDescriptor* field) const;
 
+  // Verifies that `field` belongs to this reflection's message type, crashing
+  // with a usage error otherwise. Used by the templated Get(Mutable)
+  // RepeatedFieldRef accessors, which are defined in this header and so cannot
+  // use the USAGE_CHECK_* macros (defined in the .cc file).
+  void CheckRepeatedFieldRefField(const FieldDescriptor* field,
+                                  const char* method) const;
+
   template <typename Type>
   const Type& GetRaw(const Message& message,
                      const FieldDescriptor* field) const;
@@ -2018,6 +2025,7 @@ template <typename T>
 RepeatedFieldRef<T> Reflection::GetRepeatedFieldRef(
     const Message& message, const FieldDescriptor* field) const {
   ABSL_DCHECK_EQ(message.GetReflection(), this);
+  CheckRepeatedFieldRefField(field, "GetRepeatedFieldRef");
   return RepeatedFieldRef<T>(message, field);
 }
 
@@ -2025,6 +2033,7 @@ template <typename T>
 MutableRepeatedFieldRef<T> Reflection::GetMutableRepeatedFieldRef(
     Message* message, const FieldDescriptor* field) const {
   ABSL_DCHECK_EQ(message->GetReflection(), this);
+  CheckRepeatedFieldRefField(field, "GetMutableRepeatedFieldRef");
   if (!field->is_extension()) {
     SetHasBit(message, field);
   }
