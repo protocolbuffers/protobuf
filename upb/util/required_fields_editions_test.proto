@@ -25,4 +25,5 @@ message TestRequiredFields {
   map<uint64, HasRequiredField> map_uint64_message = 7;
   map<bool, HasRequiredField> map_bool_message = 8;
   map<string, HasRequiredField> map_string_message = 9;
+  map<string, string> map_string_string = 10;
 }
