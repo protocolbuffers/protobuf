@@ -23,6 +23,7 @@ fi
 
 pushd src
 $PROTOC --php_out=internal:../php/src google/protobuf/descriptor.proto
+$PROTOC --php_out=../php/src google/protobuf/descriptor.proto
 $PROTOC --php_out=internal_generate_c_wkt:../php/src \
   --unsafe_allow_out_dir_escape \
   google/protobuf/any.proto \

@@ -39,6 +39,14 @@ class DescriptorPool
         $files->mergeFromString($data);
 
         foreach($files->getFile() as $file_proto) {
+            if ($file_proto->getName() !== 'google/protobuf/descriptor.proto') {
+                foreach ($file_proto->getDependency() as $dependency) {
+                    if ($dependency === 'google/protobuf/descriptor.proto') {
+                        \GPBMetadata\Google\Protobuf\Descriptor::initOnce();
+                        break;
+                    }
+                }
+            }
             $file = FileDescriptor::buildFromProto($file_proto, $custom_json_names);
 
             foreach ($file->getMessageType() as $desc) {
