@@ -88,6 +88,20 @@ rb_test(
 )
 
 rb_test(
+    name = "gc_enum_descriptor_test",
+    srcs = ["gc_enum_descriptor_test.rb"],
+    args = [
+        "-Iruby/lib:ruby",
+        "ruby/tests/gc_enum_descriptor_test.rb",
+    ],
+    deps = [
+        ":test_ruby_protos",
+        "//ruby:protobuf",
+        "@protobuf_bundle",
+    ],
+)
+
+rb_test(
     name = "generated_code_test",
     srcs = ["generated_code_test.rb"],
     args = [

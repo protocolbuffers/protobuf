@@ -81,6 +81,10 @@ VALUE Map_GetRubyWrapper(const upb_Map* map, upb_CType key_type,
     if (self->value_type_info.type == kUpb_CType_Message) {
       const upb_MessageDef* val_m = self->value_type_info.def.msgdef;
       self->value_type_class = Descriptor_DefToClass(val_m);
+    } else if (self->value_type_info.type == kUpb_CType_Enum) {
+      // GC-root the enumdef too; Convert_UpbToRuby dereferences it.
+      self->value_type_class =
+          EnumDescriptor_DefToObj(self->value_type_info.def.enumdef);
     }
     return ObjectCache_TryAdd(map, val);
   }
@@ -680,6 +684,10 @@ VALUE Map_EmptyFrozen(const upb_FieldDef* f) {
     if (self->value_type_info.type == kUpb_CType_Message) {
       const upb_MessageDef* val_m = value_type_info.def.msgdef;
       self->value_type_class = Descriptor_DefToClass(val_m);
+    } else if (self->value_type_info.type == kUpb_CType_Enum) {
+      // GC-root the enumdef too; Convert_UpbToRuby dereferences it.
+      self->value_type_class =
+          EnumDescriptor_DefToObj(value_type_info.def.enumdef);
     }
     return ObjectCache_TryAdd(f, Map_freeze(val));
   }
