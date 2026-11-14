@@ -1047,6 +1047,63 @@ TEST(DecodeTest, UnlinkedSubMessageFastTableSlotCollision) {
   }
 }
 
+TEST(DecodeTest, UnlinkedClosedEnumDecodesAsUnknown) {
+  Arena mt_arena;
+
+  // A closed-enum field whose sub-enum is never linked. Decoding a value
+  // for it must treat the value as unknown, not dereference the NULL
+  // sub-enum table
+  // (https://github.com/protocolbuffers/protobuf/issues/26857).
+  upb::MtDataEncoder e;
+  e.StartMessage(0);
+  e.PutField(kUpb_FieldType_Enum, 1, kUpb_FieldModifier_IsClosedEnum);
+
+  upb_Status status;
+  upb_Status_Clear(&status);
+  const upb_MiniTable* mt = upb_MiniTable_Build(
+      e.data().data(), e.data().size(), mt_arena.ptr(), &status);
+  ASSERT_TRUE(upb_Status_IsOk(&status)) << upb_Status_ErrorMessage(&status);
+
+  // Field 1 (tag 0x08), varint value 52.
+  std::string payload("\x08\x34");
+  for (int options : GetDecodeOptionsToTest()) {
+    Arena msg_arena;
+    upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+    upb_DecodeStatus result = upb_Decode(payload.data(), payload.size(), msg,
+                                         mt, nullptr, options, msg_arena.ptr());
+    EXPECT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+    EXPECT_TRUE(upb_Message_HasUnknown(msg));
+  }
+}
+
+TEST(DecodeTest, UnlinkedClosedEnumPackedDecodesAsUnknown) {
+  Arena mt_arena;
+
+  // Same NULL sub-enum table as UnlinkedClosedEnumDecodesAsUnknown, but
+  // through the packed-enum decode path.
+  upb::MtDataEncoder e;
+  e.StartMessage(0);
+  e.PutField(kUpb_FieldType_Enum, 2,
+             kUpb_FieldModifier_IsRepeated | kUpb_FieldModifier_IsPacked |
+                 kUpb_FieldModifier_IsClosedEnum);
+
+  upb_Status status;
+  upb_Status_Clear(&status);
+  const upb_MiniTable* mt = upb_MiniTable_Build(
+      e.data().data(), e.data().size(), mt_arena.ptr(), &status);
+  ASSERT_TRUE(upb_Status_IsOk(&status)) << upb_Status_ErrorMessage(&status);
+
+  // Field 2 (tag 0x12), length 2, varint values 52 and 1.
+  std::string payload("\x12\x02\x34\x01");
+  for (int options : GetDecodeOptionsToTest()) {
+    Arena msg_arena;
+    upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+    upb_DecodeStatus result = upb_Decode(payload.data(), payload.size(), msg,
+                                         mt, nullptr, options, msg_arena.ptr());
+    EXPECT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+    EXPECT_TRUE(upb_Message_HasUnknown(msg));
+  }
+}
 TEST(DecodeTest, SetSubMessageMapValidation) {
   Arena arena;
   upb_Status status;
