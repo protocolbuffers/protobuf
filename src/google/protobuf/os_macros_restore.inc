@@ -36,6 +36,16 @@
 #undef PROTOBUF_DID_UNDEF_NO_DATA
 #endif
 
+#ifdef PROTOBUF_DID_UNDEF_SOCK_STREAM
+#pragma pop_macro("SOCK_STREAM")
+#undef PROTOBUF_DID_UNDEF_SOCK_STREAM
+#endif
+
+#ifdef PROTOBUF_DID_UNDEF_SOCK_SEQPACKET
+#pragma pop_macro("SOCK_SEQPACKET")
+#undef PROTOBUF_DID_UNDEF_SOCK_SEQPACKET
+#endif
+
 #ifdef _WIN32
 #pragma pop_macro("CompareString")
 #pragma pop_macro("CREATE_NEW")
