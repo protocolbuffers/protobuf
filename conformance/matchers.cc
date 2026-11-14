@@ -16,9 +16,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/base/nullability.h"
-#include "absl/base/thread_annotations.h"
 #include "absl/log/absl_check.h"
-#include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/strings/ascii.h"
@@ -26,12 +24,9 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "absl/synchronization/mutex.h"
-#include "absl/types/optional.h"
 #include "conformance/binary_wireformat.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/global_test_environment.h"
-#include "conformance/result_ledger.h"
 #include "conformance/testee.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
@@ -47,8 +42,9 @@ namespace {
 
 using ::conformance::ConformanceResponse;
 using ::conformance::WireFormat;
-using ::google::protobuf::conformance::internal::GetGlobalResultLedger;
-using ::google::protobuf::conformance::internal::ResultLedger;
+using ::google::protobuf::conformance::internal::ReportFailure;
+using ::google::protobuf::conformance::internal::ReportSkip;
+using ::google::protobuf::conformance::internal::ReportSuccess;
 using ::google::protobuf::conformance::internal::TestResult;
 
 // Implements EqualsTextProto() and EqualsBinaryProto(): matches a message
@@ -481,20 +477,14 @@ bool RawPayloadMatcher::MatchPayload(
   return false;
 }
 
-// Implements Yields().  This is the single matcher that talks to the global
-// ResultLedger; see matchers.h for the policy it applies.
+// Implements Yields().  This is the single matcher that reports to the global
+// ledger (see global_test_environment.h); see matchers.h for the policy it
+// applies.
 //
-// The ResultLedger must only hear about each test once.  It remembers the
-// names it was told (ResultLedger::WasReported()), and a result it already
-// knows is not evaluated again.  gtest evaluates a failing matcher a second
-// time, through the same matcher object, to explain the failure.  The matcher
-// keeps its last failed verdict for that rerun.  Anything else that checks a
-// reported result is a test bug and fails.
-//
-// Matchers are nominally immutable.  The cache only affects how a failure
-// that has already been decided is explained, never a verdict, and copies of
-// a Matcher share one impl, so the matcher behaves the same through every
-// copy.
+// Every evaluation reports the outcome and gets the failure list's verdict
+// back.  The ledger counts a test once, so gtest's second evaluation of a
+// failing matcher, to explain the failure, changes nothing; a check that
+// contradicts an earlier one of the same result fails instead.
 class YieldsMatcherImpl : public testing::MatcherInterface<const TestResult&> {
  public:
   explicit YieldsMatcherImpl(testing::Matcher<const TestResult&> inner)
@@ -502,30 +492,9 @@ class YieldsMatcherImpl : public testing::MatcherInterface<const TestResult&> {
 
   bool MatchAndExplain(const TestResult& result,
                        testing::MatchResultListener* listener) const override {
-    {
-      absl::MutexLock lock(&mutex_);
-      if (last_failure_.has_value() && last_failure_->result == &result &&
-          last_failure_->name == result.name()) {
-        *listener << last_failure_->explanation;
-        return false;
-      }
-    }
-    if (GetGlobalResultLedger().WasReported(result.name())) {
-      *listener << "TestResult for " << result.name()
-                << " was already checked; each result may be checked exactly "
-                   "once";
-      return false;
-    }
-    absl::Status status = Evaluate(result);
-    *listener << status.message();
-    absl::MutexLock lock(&mutex_);
-    if (status.ok()) {
-      last_failure_.reset();
-    } else {
-      last_failure_ = LastFailure{&result, std::string(result.name()),
-                                  std::string(status.message())};
-    }
-    return status.ok();
+    absl::Status verdict = Evaluate(result);
+    *listener << verdict.message();
+    return verdict.ok();
   }
 
   void DescribeTo(std::ostream* os) const override {
@@ -541,20 +510,18 @@ class YieldsMatcherImpl : public testing::MatcherInterface<const TestResult&> {
   }
 
  private:
-  // Reports `result` to the global ResultLedger and returns the gtest verdict:
-  // OK if the test passes, otherwise an error whose message explains why not.
+  // Decides `result`, reports the outcome to the global ledger and returns the
+  // gtest verdict: OK if the test passes, otherwise an error whose message
+  // explains why not.
   absl::Status Evaluate(const TestResult& result) const {
-    ResultLedger& ledger = GetGlobalResultLedger();
     const std::string name(result.name());
     const ConformanceResponse& response = result.response();
 
-    // A skip is decided here; the inner matcher never sees it.  The ledger
-    // marks a listed entry as seen and returns an error for it, so this is the
-    // only place that reports a listed test the testee skipped.
+    // A skip is decided by the failure list alone; the inner matcher never
+    // sees it.  A listed test the testee skipped fails (see
+    // FailureList::VerdictOnSkip()).
     if (response.result_case() == ConformanceResponse::kSkipped) {
-      absl::Status status = ledger.ReportSkip(name, response.skipped());
-      ABSL_LOG(INFO) << "Skipping test " << name << ": " << response.skipped();
-      return status;
+      return ReportSkip(name, response.skipped());
     }
 
     testing::StringMatchResultListener inner_listener;
@@ -562,7 +529,7 @@ class YieldsMatcherImpl : public testing::MatcherInterface<const TestResult&> {
     std::string message = inner_listener.str();
 
     if (matched) {
-      return ledger.ReportSuccess(name);
+      return ReportSuccess(name);
     }
 
     if (message.empty()) {
@@ -571,30 +538,17 @@ class YieldsMatcherImpl : public testing::MatcherInterface<const TestResult&> {
           testing::DescribeMatcher<const TestResult&>(inner_), ")");
     }
 
-    // The ledger decides whether the failure is expected (listed), tolerated
-    // (above the enforcement level) or unexpected, and logs the first two.
-    absl::Status status =
-        ledger.ReportFailure(name, result.priority(), message);
-    if (status.ok()) {
-      return status;
+    // The failure list decides whether the failure is expected (listed),
+    // tolerated (above the enforcement level) or unexpected.
+    absl::Status verdict = ReportFailure(name, result.priority(), message);
+    if (verdict.ok()) {
+      return verdict;
     }
-    return absl::Status(status.code(),
-                        absl::StrCat(message, "\n", status.message()));
+    return absl::Status(verdict.code(),
+                        absl::StrCat(message, "\n", verdict.message()));
   }
 
-  // The failure this matcher explained last, identified by the result's
-  // address and name, so that gtest's rerun gets the same explanation.  A
-  // destroyed result's address may be reused, but not its name: Testee::Run()
-  // rejects duplicate test names.
-  struct LastFailure {
-    const TestResult* result;
-    std::string name;
-    std::string explanation;
-  };
-
   testing::Matcher<const TestResult&> inner_;
-  mutable absl::Mutex mutex_;
-  mutable absl::optional<LastFailure> last_failure_ ABSL_GUARDED_BY(mutex_);
 };
 
 }  // namespace
