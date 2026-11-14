@@ -50,6 +50,19 @@
 #define PROTOBUF_DID_UNDEF_NO_DATA
 #endif
 
+// sys/socket.h defines these on some platforms.
+#ifdef SOCK_STREAM
+#pragma push_macro("SOCK_STREAM")
+#undef SOCK_STREAM
+#define PROTOBUF_DID_UNDEF_SOCK_STREAM
+#endif
+
+#ifdef SOCK_SEQPACKET
+#pragma push_macro("SOCK_SEQPACKET")
+#undef SOCK_SEQPACKET
+#define PROTOBUF_DID_UNDEF_SOCK_SEQPACKET
+#endif
+
 // Windows declares several inconvenient macro names.  We #undef them and then
 // restore them in port_undef.inc.
 #ifdef _WIN32
