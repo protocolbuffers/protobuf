@@ -823,8 +823,31 @@ static bool PyUpb_SetSubscriptBulkCb(const void* data, Py_ssize_t count,
   // Fast paths for subset assignment when not growing the array
   // (count <= ctx->count).
   if (count <= ctx->count) {
-    if (data != target) {
-      memmove(target, data, count * itemsize);
+    if (ctx->step == 1) {
+      if (data != target) {
+        memmove(target, data, count * itemsize);
+      }
+    } else {
+      // Extended slice (step != 1). The length check above guarantees
+      // count == ctx->count here, so this is a pure strided reassignment of
+      // `count` elements to positions index, index + step, index + 2*step, ...
+      // The source may alias the destination array (e.g. the common
+      // `field[::-1] = field` reverse-in-place idiom). A direct strided copy in
+      // that case both reads elements that were already overwritten and, because
+      // the destination indices are not contiguous, writes past the end of the
+      // array. Stage the source in a scratch buffer first.
+      size_t nbytes = (size_t)count * itemsize;
+      char* tmp = PyMem_Malloc(nbytes ? nbytes : 1);
+      if (!tmp) {
+        PyErr_SetNone(PyExc_MemoryError);
+        return false;
+      }
+      memcpy(tmp, data, nbytes);
+      for (Py_ssize_t i = 0; i < count; i++) {
+        memcpy(dst + (ctx->index + i * ctx->step) * itemsize,
+               tmp + i * itemsize, itemsize);
+      }
+      PyMem_Free(tmp);
     }
     if (count < ctx->count) {
       upb_Array_Move(ctx->arr, ctx->index + count, ctx->index + ctx->count,
