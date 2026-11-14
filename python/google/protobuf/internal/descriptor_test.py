@@ -322,6 +322,8 @@ class DescriptorTest(unittest.TestCase):
     with self.assertRaises(immutability_error):
       message_options.MergeFrom(other_options)
     with self.assertRaises(immutability_error):
+      message_options.MergeFrom(message_options)
+    with self.assertRaises(immutability_error):
       message_options.CopyFrom(other_options)
 
     # Repeated field mutations
