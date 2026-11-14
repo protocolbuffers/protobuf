@@ -22,7 +22,7 @@ on:
         type: string
 jobs:
   publish:
-    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.0.0
+    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@748dc7186bc60d0e24a81ee30aba8aa543794767 # v1.0.0
     with:
       attest: false # protobuf releases are not created with provenance attestations
       draft: false
@@ -30,9 +30,11 @@ jobs:
       # GitHub repository which is a fork of the upstream where the Pull Request will be opened.
       registry_fork: protocolbuffers/bazel-central-registry
     permissions:
-      attestations: write
+      # attest is false above, so the attestation and OIDC grants are not
+      # needed by this call; keep only what publishing requires. (Verified
+      # against publish-to-bcr v1.0.0: every attestation step in its
+      # publish.yaml is gated on inputs.attest.)
       contents: write
-      id-token: write
     secrets:
       # Necessary to push to the BCR fork, and to open a pull request against a registry
       publish_token: ${{ secrets.BOT_ACCESS_TOKEN }}
