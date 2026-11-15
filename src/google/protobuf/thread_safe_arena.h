@@ -18,7 +18,9 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
+#include "absl/log/absl_check.h"
 #include "absl/synchronization/mutex.h"
+#include "google/protobuf/arena_alloc_result.h"
 #include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arenaz_sampler.h"
@@ -69,13 +71,36 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   uint64_t SpaceAllocated() const;
   uint64_t SpaceUsed() const;
 
-  template <AllocationClient alloc_client = AllocationClient::kDefault>
-  void* AllocateAligned(size_t n) {
+  MessageAllocationResult AllocateMessage(size_t n) {
     SerialArena* arena;
     if (ABSL_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
-      return arena->AllocateAligned<alloc_client>(n);
+      return arena->AllocateMessageImpl<SerialArena::AllocationMode::kDefault>(
+          n);
     } else {
-      return AllocateAlignedFallback<alloc_client>(n);
+      return AllocateMessageFallback(n);
+    }
+  }
+
+  template <AllocationClient alloc_client = AllocationClient::kDefault>
+  AllocationResult AllocateDefaultAligned(size_t n) {
+    ABSL_DCHECK(internal::ArenaAlignDefault{}.IsAligned(n));
+    SerialArena* arena;
+    if (ABSL_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+      return arena->AllocateDefaultAligned<alloc_client>(n);
+    } else {
+      return AllocateDefaultAlignedFallback<alloc_client>(n);
+    }
+  }
+
+  AllocationResult AllocateOverAligned(size_t n, size_t align) {
+    ABSL_DCHECK_GT(align, ArenaAlignDefault{}.align());
+    SerialArena* arena;
+    if (ABSL_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+      return arena
+          ->AllocateNonMessageImpl<SerialArena::AllocationMode::kDefault>(
+              n, ArenaAlignAs(align));
+    } else {
+      return AllocateOverAlignedFallback(n, align);
     }
   }
 
@@ -88,21 +113,22 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 
   // This function allocates n bytes if the current block has enough space.
   // Otherwise does nothing and returns `nullptr`.
-  PROTOBUF_NDEBUG_INLINE void* MaybeAllocateAligned(size_t n) {
+  PROTOBUF_NDEBUG_INLINE AllocationResult MaybeAllocateAligned(size_t n) {
     SerialArena* arena = nullptr;
     if (ABSL_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
-      return arena->AllocateImpl<SerialArena::AllocationMode::kNoFallback>(n);
+      return arena
+          ->AllocateNonMessageImpl<SerialArena::AllocationMode::kNoFallback>(n);
     }
-    return nullptr;
+    return {nullptr};
   }
 
-  void* AllocateAlignedWithCleanup(size_t n, size_t align,
-                                   void (*destructor)(void*));
+  AllocationResult AllocateAlignedWithCleanup(size_t n, size_t align,
+                                              void (*destructor)(void*));
 
   // Add object pointer and cleanup function pointer to the list.
   void AddCleanup(void* elem, void (*cleanup)(void*));
 
-  void* AllocateFromStringBlock();
+  AllocationResult AllocateFromStringBlock();
 
   std::vector<void*> PeekCleanupListForTesting();
 
@@ -155,9 +181,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
                 "SerialArena needs to be trivially destructible.");
 
   const AllocationPolicy* AllocPolicy() const { return alloc_policy_.get(); }
-  void InitializeWithPolicy(const AllocationPolicy& policy);
-  void* AllocateAlignedWithCleanupFallback(size_t n, size_t align,
-                                           void (*destructor)(void*));
+  AllocationResult AllocateAlignedWithCleanupFallback(
+      size_t n, size_t align, void (*destructor)(void*));
 
   void Init();
 
@@ -194,8 +219,12 @@ class PROTOBUF_EXPORT ThreadSafeArena {
     return GetSerialArenaSlow();
   }
 
+  MessageAllocationResult AllocateMessageFallback(size_t n);
+
   template <AllocationClient alloc_client = AllocationClient::kDefault>
-  void* AllocateAlignedFallback(size_t n);
+  AllocationResult AllocateDefaultAlignedFallback(size_t n);
+
+  AllocationResult AllocateOverAlignedFallback(size_t n, size_t align);
 
   // Executes callback function over SerialArenaChunk. Passes const
   // SerialArenaChunk*.

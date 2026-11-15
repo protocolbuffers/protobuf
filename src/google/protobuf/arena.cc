@@ -11,6 +11,7 @@
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <limits>
 #include <string>
 #include <type_traits>
@@ -25,8 +26,10 @@
 #include "absl/log/absl_log.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/types/span.h"
+#include "google/protobuf/arena_alloc_result.h"
 #include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/arena_cleanup.h"
+#include "google/protobuf/arena_seed.h"
 #include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/memory_align.h"
 #include "google/protobuf/port.h"
@@ -50,6 +53,37 @@ constexpr ArenaBlock kSentryArenaBlock;
 ArenaBlock* SentryArenaBlock() {
   // const_cast<> is okay as kSentryArenaBlock will never be mutated.
   return const_cast<ArenaBlock*>(&kSentryArenaBlock);
+}
+
+struct SeededArenaPointerResult {
+  SizedPtr mem;
+  uint32_t alignment;
+};
+
+// If `kEnableArenaSeeding` is true, and `mem` is aligned to at least
+// `kMinArenaSeedAlignment`, then the arena pointer is seeded at the beginning
+// of `mem`, and we return the remainder of the block along with the alignment.
+// Otherwise, we return the original `mem` and an alignment of 0.
+SeededArenaPointerResult MaybeSeedArenaPointer(SizedPtr mem,
+                                               ThreadSafeArena* parent) {
+  char* block_ptr = static_cast<char*>(mem.p);
+  size_t block_size = mem.n;
+  uint32_t alignment = 0;
+  if constexpr (ArenaSeedPolicy::kEnableArenaSeeding) {
+    if (ArenaSeedPolicy::kMinArenaSeedAlignment.IsAligned(block_ptr)) {
+      // The block may have a higher alignment than `kMinArenaSeedAlignment`.
+      alignment = EncodedArenaAlignment::AlignmentMask(
+          reinterpret_cast<uintptr_t>(block_ptr));
+      ABSL_DCHECK_GE(alignment, ArenaSeedPolicy::kMinArenaSeedAlignmentValue);
+      PROTOBUF_ASSUME(alignment != 0);
+
+      std::memcpy(block_ptr, &parent, sizeof(Arena*));
+      block_ptr += ArenaSeedPolicy::kArenaPtrSize;
+      block_size -= ArenaSeedPolicy::kArenaPtrSize;
+    }
+  }
+
+  return SeededArenaPointerResult{{block_ptr, block_size}, alignment};
 }
 
 inline size_t AllocationSize(size_t last_size, size_t start_size,
@@ -91,14 +125,20 @@ SizedPtr AllocateMemory(const AllocationPolicy& policy, size_t size) {
 
 SizedPtr AllocateBlock(const AllocationPolicy* policy_ptr, size_t last_size,
                        size_t min_bytes) {
+  // When arena seeding is enabled, conservatively include the size of the
+  // initial arena seed, which may be added if the allocation is aligned to at
+  // least `kMinArenaSeedAlignment`.
+  static constexpr size_t kHeaderSize =
+      ArenaSeedPolicy::kEnableArenaSeeding * ArenaSeedPolicy::kArenaPtrSize +
+      SerialArena::kBlockHeaderSize;
+
   AllocationPolicy policy;  // default policy
   if (policy_ptr) policy = *policy_ptr;
   size_t size =
       AllocationSize(last_size, policy.start_block_size, policy.max_block_size);
   // Verify that min_bytes + kBlockHeaderSize won't overflow.
-  ABSL_CHECK_LE(min_bytes, std::numeric_limits<size_t>::max() -
-                               SerialArena::kBlockHeaderSize);
-  size = std::max(size, SerialArena::kBlockHeaderSize + min_bytes);
+  ABSL_CHECK_LE(min_bytes, std::numeric_limits<size_t>::max() - kHeaderSize);
+  size = std::max(size, kHeaderSize + min_bytes);
 
   return AllocateMemory(policy, size);
 }
@@ -132,7 +172,11 @@ class GetDeallocator {
 };
 
 size_t SerialArenaHeaderSize(const AllocationPolicy& policy) {
-  return ThreadSafeArena::kBlockHeaderSize +
+  // When arena seeding is enabled, conservatively include the size of the
+  // initial arena seed, which may be added if the allocation is aligned to at
+  // least `kMinArenaSeedAlignment`.
+  return ArenaSeedPolicy::kEnableArenaSeeding * ArenaSeedPolicy::kArenaPtrSize +
+         ThreadSafeArena::kBlockHeaderSize +
          (policy.IsDefault() ? 0 : ThreadSafeArena::kAllocPolicySize);
 }
 
@@ -236,7 +280,7 @@ SerialArena::SerialArena(ArenaBlock* b, ThreadSafeArena& parent)
       head_{b},
       ptr_{b->Pointer(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize)},
       limit_{b->Limit()},
-      space_allocated_{b->size},
+      space_allocated_{b->allocation_size()},
       parent_{parent} {
   ABSL_DCHECK(!b->IsSentry());
 }
@@ -257,7 +301,7 @@ SerialArena::SerialArena(FirstSerialArena, SizedPtr mem,
   // If we won't be using a user-provided block and we don't have a custom
   // allocation policy, we can delay allocation of the first block.
   if (mem.p == nullptr && policy.IsDefault()) {
-    Init(SentryArenaBlock(), 0);
+    Init(SentryArenaBlock(), /*offset=*/0, /*allocation_size=*/0);
     return;
   }
 
@@ -265,9 +309,8 @@ SerialArena::SerialArena(FirstSerialArena, SizedPtr mem,
     mem = AllocateBlock(&policy, 0, ThreadSafeArena::kAllocPolicySize);
   } else {
     // Set the user-owned bit in the `ThreadSafeArena`'s allocation policy.
-    // Note that full initialization of the `ThreadSafeArena` has not yet run,
-    // but default initialization has. And `ThreadSafeArena::Init` takes care to
-    // preserve policy flags.
+    // Note that `TaggedAllocationPolicyPtr::set_policy` called below preserves
+    // this bit.
     parent.alloc_policy_.set_is_user_owned_initial_block(true);
 
     if constexpr (internal::PerformDebugChecks()) {
@@ -277,10 +320,24 @@ SerialArena::SerialArena(FirstSerialArena, SizedPtr mem,
     }
   }
 
-  ABSL_ANNOTATE_MEMORY_IS_UNINITIALIZED(mem.p, mem.n);
-  ArenaBlock* head = new (mem.p) ArenaBlock{nullptr, mem.n};
+  auto [block, arena_alignment] = MaybeSeedArenaPointer(mem, &parent_);
 
-  Init(head, kBlockHeaderSize);
+  ABSL_ANNOTATE_MEMORY_IS_UNINITIALIZED(block.p, block.n);
+  ArenaBlock* head = new (block.p)
+      ArenaBlock{nullptr, block.n, /*is_arena_seeded=*/arena_alignment != 0};
+
+  // A custom allocation policy is stored immediately after the block header,
+  // where `ThreadSafeArena::Reset()` expects to find it. We ensured above that
+  // the block has room for it.
+  size_t offset = kBlockHeaderSize;
+  if (!policy.IsDefault()) {
+    void* policy_mem = head->Pointer(kBlockHeaderSize);
+    ABSL_DCHECK(MemoryAlign::Of<AllocationPolicy>().IsAligned(policy_mem));
+    parent.alloc_policy_.set_policy(new (policy_mem) AllocationPolicy{policy});
+    offset += ThreadSafeArena::kAllocPolicySize;
+  }
+
+  Init(head, offset, /*allocation_size=*/mem.n);
 }
 
 std::vector<void*> SerialArena::PeekCleanupListForTesting() {
@@ -291,11 +348,11 @@ std::vector<void*> ThreadSafeArena::PeekCleanupListForTesting() {
   return GetSerialArena()->PeekCleanupListForTesting();
 }
 
-void SerialArena::Init(ArenaBlock* b, size_t offset) {
+void SerialArena::Init(ArenaBlock* b, size_t offset, size_t allocation_size) {
   set_range(b->Pointer(offset), b->Limit());
   head_.store(b, std::memory_order_relaxed);
   space_used_.store(0, std::memory_order_relaxed);
-  space_allocated_.store(b->size, std::memory_order_relaxed);
+  space_allocated_.store(allocation_size, std::memory_order_relaxed);
   cached_block_length_ = 0;
   cached_blocks_ = nullptr;
   string_block_.store(nullptr, std::memory_order_relaxed);
@@ -307,7 +364,11 @@ SerialArena* SerialArena::New(SizedPtr mem, ThreadSafeArena& parent) {
   ThreadSafeArenaStats::RecordAllocateStats(parent.arena_stats_.MutableStats(),
                                             /*used=*/0, /*allocated=*/mem.n,
                                             /*wasted=*/0);
-  auto b = new (mem.p) ArenaBlock{nullptr, mem.n};
+
+  auto [block, arena_alignment] = MaybeSeedArenaPointer(mem, &parent);
+
+  auto b = new (block.p)
+      ArenaBlock{nullptr, block.n, /*is_arena_seeded=*/arena_alignment != 0};
   return new (b->Pointer(kBlockHeaderSize)) SerialArena(b, parent);
 }
 
@@ -316,18 +377,18 @@ SizedPtr SerialArena::Free(Deallocator deallocator) {
   FreeStringBlocks();
 
   ArenaBlock* b = head();
-  SizedPtr mem = {b, b->size};
+  SizedPtr mem = b->MemPtr();
   while (b->next) {
     b = b->next;  // We must first advance before deleting this block
     deallocator(mem);
-    mem = {b, b->size};
+    mem = b->MemPtr();
   }
   return mem;
 }
 
 template <typename Align, typename Cleanup>
-PROTOBUF_NOINLINE void* SerialArena::AllocateFallbackImpl(size_t n, Align align,
-                                                          Cleanup cleanup) {
+PROTOBUF_NOINLINE AllocationResult
+SerialArena::AllocateFallbackImpl(size_t n, Align align, Cleanup cleanup) {
   static_assert(std::is_same_v<Align, ArenaAlignDefault> ||
                 std::is_same_v<Align, MemoryAlign>);
   static_assert(std::is_same_v<Cleanup, NoCleanup> ||
@@ -335,20 +396,20 @@ PROTOBUF_NOINLINE void* SerialArena::AllocateFallbackImpl(size_t n, Align align,
 
   ABSL_DCHECK(align.IsAligned(n));
   AllocateNewBlock(MinBlockSizeForAllocation(n, align, cleanup));
-  return AllocateImpl<AllocationMode::kUnchecked>(n, align, cleanup);
+  return AllocateNonMessageImpl<AllocationMode::kUnchecked>(n, align, cleanup);
 }
 
-template PROTOBUF_EXPORT_TEMPLATE_DEFINE void*
+template PROTOBUF_EXPORT_TEMPLATE_DEFINE AllocationResult
 SerialArena::AllocateFallbackImpl(size_t, ArenaAlignDefault, NoCleanup);
-template PROTOBUF_EXPORT_TEMPLATE_DEFINE void*
+template PROTOBUF_EXPORT_TEMPLATE_DEFINE AllocationResult
 SerialArena::AllocateFallbackImpl(size_t, MemoryAlign, NoCleanup);
-template PROTOBUF_EXPORT_TEMPLATE_DEFINE void*
+template PROTOBUF_EXPORT_TEMPLATE_DEFINE AllocationResult
 SerialArena::AllocateFallbackImpl(size_t, ArenaAlignDefault, WithCleanup);
-template PROTOBUF_EXPORT_TEMPLATE_DEFINE void*
+template PROTOBUF_EXPORT_TEMPLATE_DEFINE AllocationResult
 SerialArena::AllocateFallbackImpl(size_t, MemoryAlign, WithCleanup);
 
 PROTOBUF_NOINLINE
-void* SerialArena::AllocateFromStringBlockFallback() {
+AllocationResult SerialArena::AllocateFromStringBlockFallback() {
   ABSL_DCHECK_EQ(string_block_unused_.load(std::memory_order_relaxed), 0U);
   StringBlock* sb = string_block_.load(std::memory_order_relaxed);
   if (sb) {
@@ -357,11 +418,11 @@ void* SerialArena::AllocateFromStringBlockFallback() {
 
   StringBlock* new_sb;
   size_t size = StringBlock::NextSize(sb);
-  void* ptr = AllocateImpl<AllocationMode::kNoFallback>(size);
-  if (ptr != nullptr) {
+  auto res = AllocateNonMessageImpl<AllocationMode::kNoFallback>(size);
+  if (res.ptr != nullptr) {
     // Correct space_used_ to avoid double counting
     AddSpaceUsed(-size);
-    new_sb = StringBlock::Emplace(ptr, size, sb);
+    new_sb = StringBlock::Emplace(res.ptr, size, sb);
   } else {
     new_sb = StringBlock::New(sb);
     AddSpaceAllocated(new_sb->allocated_size());
@@ -369,7 +430,7 @@ void* SerialArena::AllocateFromStringBlockFallback() {
   string_block_.store(new_sb, std::memory_order_release);
   size_t unused = new_sb->effective_size() - sizeof(std::string);
   string_block_unused_.store(unused, std::memory_order_relaxed);
-  return new_sb->AtOffset(unused);
+  return {new_sb->AtOffset(unused)};
 }
 
 void SerialArena::AllocateNewBlock(size_t n) {
@@ -388,12 +449,17 @@ void SerialArena::AllocateNewBlock(size_t n) {
   // but with a CPU regression. The regression might have been an artifact of
   // the microbenchmark.
 
-  auto mem = AllocateBlock(parent_.AllocPolicy(), old_head->size, n);
+  auto mem =
+      AllocateBlock(parent_.AllocPolicy(), old_head->allocation_size(), n);
   AddSpaceAllocated(mem.n);
   ThreadSafeArenaStats::RecordAllocateStats(parent_.arena_stats_.MutableStats(),
                                             /*used=*/used,
                                             /*allocated=*/mem.n, wasted);
-  auto* new_head = new (mem.p) ArenaBlock{old_head, mem.n};
+  auto [block, alignment] = MaybeSeedArenaPointer(mem, &parent_);
+  ABSL_DCHECK_GE(block.n, kBlockHeaderSize + n);
+
+  auto* new_head = new (block.p)
+      ArenaBlock{old_head, block.n, /*is_arena_seeded=*/alignment != 0};
   set_range(new_head->Pointer(kBlockHeaderSize), new_head->Limit());
   // Previous writes must take effect before writing new head.
   head_.store(new_head, std::memory_order_release);
@@ -419,7 +485,7 @@ uint64_t SerialArena::SpaceUsed() const {
   const ArenaBlock* h = head_.load(std::memory_order_acquire);
   if (h->IsSentry()) return space_used;
 
-  const uint64_t current_block_size = h->size;
+  const uint64_t current_block_size = h->allocation_size();
   space_used += std::min(
       static_cast<uint64_t>(
           ptr() - const_cast<ArenaBlock*>(h)->Pointer(kBlockHeaderSize)),
@@ -636,33 +702,7 @@ ThreadSafeArena::ThreadSafeArena(char* mem, size_t size)
 ThreadSafeArena::ThreadSafeArena(void* mem, size_t size,
                                  const AllocationPolicy& policy)
     : first_arena_(FirstSerialArena{}, SizedPtr{mem, size}, policy, *this) {
-  InitializeWithPolicy(policy);
-}
-
-void ThreadSafeArena::InitializeWithPolicy(const AllocationPolicy& policy) {
   Init();
-
-  if (policy.IsDefault()) return;
-
-#ifndef NDEBUG
-  // If there was a policy (e.g., in Reset()), make sure flags were preserved.
-  const bool old_has_policy = alloc_policy_.has_policy();
-  const uintptr_t old_tags = alloc_policy_.get_tags();
-#define ABSL_DCHECK_POLICY_FLAGS_() \
-  if (old_has_policy) ABSL_CHECK_EQ(old_tags, alloc_policy_.get_tags())
-#else
-#define ABSL_DCHECK_POLICY_FLAGS_()
-#endif  // NDEBUG
-
-  // We ensured enough space so this cannot fail.
-  void* p = first_arena_.AllocateImpl<SerialArena::AllocationMode::kUnchecked>(
-      kAllocPolicySize);
-  new (p) AllocationPolicy{policy};
-  ABSL_DCHECK(MemoryAlign::Of<AllocationPolicy>().IsAligned(p));
-  alloc_policy_.set_policy(reinterpret_cast<AllocationPolicy*>(p));
-  ABSL_DCHECK_POLICY_FLAGS_();
-
-#undef ABSL_DCHECK_POLICY_FLAGS_
 }
 
 uint64_t ThreadSafeArena::GetNextLifeCycleId() {
@@ -741,7 +781,8 @@ void ThreadSafeArena::UnpoisonAllArenaBlocks() const {
   VisitSerialArena([](const SerialArena* serial) {
     for (const auto* b = serial->head(); b != nullptr && !b->IsSentry();
          b = b->next) {
-      internal::UnpoisonMemoryRegion(b, b->size);
+      SizedPtr mem = const_cast<ArenaBlock*>(b)->MemPtr();
+      internal::UnpoisonMemoryRegion(mem.p, mem.n);
     }
   });
 }
@@ -826,9 +867,12 @@ uint64_t ThreadSafeArena::Reset() {
                         : kBlockHeaderSize + kAllocPolicySize;
     ABSL_ANNOTATE_MEMORY_IS_UNINITIALIZED(static_cast<char*>(mem.p) + offset,
                                           mem.n - offset);
-    first_arena_.Init(new (mem.p) ArenaBlock{nullptr, mem.n}, offset);
+    auto [block, arena_alignment] = MaybeSeedArenaPointer(mem, this);
+    auto* arena_block = new (block.p)
+        ArenaBlock{nullptr, block.n, /*is_arena_seeded=*/arena_alignment != 0};
+    first_arena_.Init(arena_block, offset, /*allocation_size=*/mem.n);
   } else {
-    first_arena_.Init(SentryArenaBlock(), 0);
+    first_arena_.Init(SentryArenaBlock(), /*offset=*/0, /*allocation_size=*/0);
   }
 
   // Since the first block and potential alloc_policy on the first block is
@@ -838,17 +882,14 @@ uint64_t ThreadSafeArena::Reset() {
   return space_allocated;
 }
 
-void* ThreadSafeArena::AllocateAlignedWithCleanup(size_t n, size_t align,
-                                                  void (*destructor)(void*)) {
-  // We only require `n` to be aligned to `ArenaAlignDefault{}.align()` before
-  // being passed to `SerialArena::AllocateImpl`.
-  n = ArenaAlignDefault{}.Ceil(n);
-  // We also require `align` to be at least `ArenaAlignDefault{}.align()`.
-  align = std::max(align, ArenaAlignDefault{}.align());
+AllocationResult ThreadSafeArena::AllocateAlignedWithCleanup(
+    size_t n, size_t align, void (*destructor)(void*)) {
+  ABSL_DCHECK_GE(align, internal::ArenaAlignDefault{}.align());
+  ABSL_DCHECK(internal::ArenaAlignAs(align).IsAligned(n));
 
   SerialArena* arena;
   if (ABSL_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
-    return arena->AllocateImpl<SerialArena::AllocationMode::kDefault>(
+    return arena->AllocateNonMessageImpl<SerialArena::AllocationMode::kDefault>(
         n, ArenaAlignAs(align), SerialArena::WithCleanup{destructor});
   } else {
     return AllocateAlignedWithCleanupFallback(n, align, destructor);
@@ -864,17 +905,17 @@ SerialArena* ThreadSafeArena::GetSerialArenaSlow() {
 }
 
 PROTOBUF_NOINLINE
-void* ThreadSafeArena::AllocateAlignedWithCleanupFallback(
+AllocationResult ThreadSafeArena::AllocateAlignedWithCleanupFallback(
     size_t n, size_t align, void (*destructor)(void*)) {
   size_t min_block_size = MinBlockSizeForAllocation(
       n, ArenaAlignAs(align), SerialArena::WithCleanup{destructor});
   return GetSerialArenaFallback(min_block_size)
-      ->AllocateImpl<SerialArena::AllocationMode::kDefault>(
+      ->AllocateNonMessageImpl<SerialArena::AllocationMode::kDefault>(
           n, ArenaAlignAs(align), SerialArena::WithCleanup{destructor});
 }
 
 PROTOBUF_NOINLINE
-void* ThreadSafeArena::AllocateFromStringBlock() {
+AllocationResult ThreadSafeArena::AllocateFromStringBlock() {
   return GetSerialArena()->AllocateFromStringBlock();
 }
 
@@ -942,18 +983,36 @@ uint64_t ThreadSafeArena::SpaceUsed() const {
   return space_used - (alloc_policy_.get() ? sizeof(AllocationPolicy) : 0);
 }
 
-template <AllocationClient alloc_client>
-PROTOBUF_NOINLINE void* ThreadSafeArena::AllocateAlignedFallback(size_t n) {
+PROTOBUF_NOINLINE MessageAllocationResult
+ThreadSafeArena::AllocateMessageFallback(size_t n) {
   size_t min_block_size = MinBlockSizeForAllocation(n, ArenaAlignDefault{},
                                                     SerialArena::NoCleanup{});
   return GetSerialArenaFallback(min_block_size)
-      ->AllocateAligned<alloc_client>(n);
+      ->AllocateMessageImpl<SerialArena::AllocationMode::kDefault>(n);
 }
 
-template void*
-ThreadSafeArena::AllocateAlignedFallback<AllocationClient::kDefault>(size_t);
-template void*
-ThreadSafeArena::AllocateAlignedFallback<AllocationClient::kArray>(size_t);
+template <AllocationClient alloc_client>
+PROTOBUF_NOINLINE AllocationResult
+ThreadSafeArena::AllocateDefaultAlignedFallback(size_t n) {
+  size_t min_block_size = MinBlockSizeForAllocation(n, ArenaAlignDefault{},
+                                                    SerialArena::NoCleanup{});
+  return GetSerialArenaFallback(min_block_size)
+      ->AllocateDefaultAligned<alloc_client>(n);
+}
+
+template AllocationResult ThreadSafeArena::AllocateDefaultAlignedFallback<
+    AllocationClient::kDefault>(size_t);
+template AllocationResult ThreadSafeArena::AllocateDefaultAlignedFallback<
+    AllocationClient::kArray>(size_t);
+
+PROTOBUF_NOINLINE AllocationResult
+ThreadSafeArena::AllocateOverAlignedFallback(size_t n, size_t align) {
+  size_t min_block_size = MinBlockSizeForAllocation(n, ArenaAlignAs(align),
+                                                    SerialArena::NoCleanup{});
+  return GetSerialArenaFallback(min_block_size)
+      ->AllocateNonMessageImpl<SerialArena::AllocationMode::kDefault>(
+          n, ArenaAlignAs(align));
+}
 
 void ThreadSafeArena::CleanupList() {
   if constexpr (HasMemoryPoisoning()) {
@@ -1012,15 +1071,24 @@ SerialArena* ThreadSafeArena::GetSerialArenaFallback(size_t n) {
 
 }  // namespace internal
 
-void* PROTOBUF_NONNULL Arena::Allocate(size_t n) {
-  return impl_.AllocateAligned(n);
+internal::MessageAllocationResult Arena::AllocateMessageImpl(size_t n) {
+  return impl_.AllocateMessage(n);
 }
 
-void* PROTOBUF_NONNULL Arena::AllocateForArray(size_t n) {
-  return impl_.AllocateAligned<internal::AllocationClient::kArray>(n);
+internal::AllocationResult Arena::AllocateDefaultAligned(size_t n) {
+  return impl_.AllocateDefaultAligned(n);
 }
 
-void* PROTOBUF_NONNULL Arena::AllocateAlignedWithCleanup(
+internal::AllocationResult Arena::AllocateOverAligned(size_t n, size_t align) {
+  ABSL_DCHECK(internal::ArenaAlignAs(align).IsAligned(n));
+  return impl_.AllocateOverAligned(n, align);
+}
+
+internal::AllocationResult Arena::AllocateDefaultAlignedForArray(size_t n) {
+  return impl_.AllocateDefaultAligned<internal::AllocationClient::kArray>(n);
+}
+
+internal::AllocationResult Arena::AllocateAlignedWithCleanup(
     size_t n, size_t align,
     void (*PROTOBUF_NONNULL destructor)(void* PROTOBUF_NONNULL)) {
   return impl_.AllocateAlignedWithCleanup(n, align, destructor);

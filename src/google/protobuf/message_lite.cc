@@ -89,13 +89,13 @@ void MessageLite::CheckTypeAndMergeFrom(const MessageLite& other) {
 
 MessageLite* MessageLite::New(Arena* arena) const {
   auto* data = GetClassData();
-  void* mem = data->message_creator.AllocateMessage(arena);
+  auto res = data->message_creator.AllocateMessage(arena);
   // The `instance->New()` expression requires using the actual instance
   // instead of the prototype for the inner function call.
   // Certain custom instances have special per-instance state that needs to be
   // copied.
-  return data->message_creator.PlacementNew(this, data->default_instance(), mem,
-                                            arena);
+  return data->message_creator.PlacementNew(this, data->default_instance(),
+                                            res.ptr, arena);
 }
 
 bool MessageLite::IsInitialized() const {
