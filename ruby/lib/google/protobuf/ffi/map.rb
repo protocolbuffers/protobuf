@@ -58,7 +58,7 @@ module Google
         instance = allocate
         # TODO This argument mangling doesn't agree with the type signature,
         # but does align with the text of the comments and is required to make unit tests pass.
-        if init_hashmap.empty? and ![:enum, :message].include?(value_type)
+        if ![:enum, :message].include?(value_type) and init_hashmap.empty?
           init_hashmap = value_typeclass
           value_typeclass = nil
         end
