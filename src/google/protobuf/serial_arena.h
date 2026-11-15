@@ -12,9 +12,13 @@
 
 #include <algorithm>
 #include <atomic>
+#include <climits>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <new>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "absl/base/attributes.h"
@@ -22,8 +26,10 @@
 #include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
+#include "google/protobuf/arena_alloc_result.h"
 #include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/arena_cleanup.h"
+#include "google/protobuf/arena_seed.h"
 #include "google/protobuf/memory_align.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/string_block.h"
@@ -42,22 +48,63 @@ namespace internal {
 // describes the common header for all blocks.
 struct alignas(ArenaAlignDefault::kAlign) ArenaBlock {
   // For the sentry block with zero-size where ptr_/limit_ both point to `this`.
-  constexpr ArenaBlock() : next(nullptr), size(0) {}
+  constexpr ArenaBlock()
+      : next(nullptr),
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+        is_arena_seeded(false),
+#endif
+        size(0) {
+  }
 
-  ArenaBlock(ArenaBlock* next, size_t size) : next(next), size(size) {
+  ArenaBlock(ArenaBlock* next, size_t size, bool is_arena_seeded)
+      : next(next),
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+        is_arena_seeded(is_arena_seeded),
+#endif
+        size(size) {
     ABSL_DCHECK_GT(size, sizeof(ArenaBlock));
+    ABSL_DCHECK(ArenaSeedPolicy::kEnableArenaSeeding || !is_arena_seeded);
+  }
+
+  size_t allocation_size() const {
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+    return size + is_arena_seeded * ArenaSeedPolicy::kArenaPtrSize;
+#else
+    return size;
+#endif
+  }
+
+  SizedPtr MemPtr() {
+    char* ptr = reinterpret_cast<char*>(this);
+    size_t mem_size = size;
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+    // If the block has an arena seed, that arena seed is placed at the
+    // beginning of the block (so that it lies on an aligned address), before
+    // this `ArenaBlock` header.
+    if (is_arena_seeded) {
+      ptr -= ArenaSeedPolicy::kArenaPtrSize;
+      ABSL_DCHECK(ArenaSeedPolicy::kMinArenaSeedAlignment.IsAligned(ptr));
+      mem_size += ArenaSeedPolicy::kArenaPtrSize;
+    }
+#endif
+    return {ptr, mem_size};
   }
 
   char* Pointer(size_t n) {
     ABSL_DCHECK_LE(n, size);
     return reinterpret_cast<char*>(this) + n;
   }
-  char* Limit() { return Pointer(size & static_cast<size_t>(-8)); }
+  char* Limit() { return Pointer(ArenaAlignDefault{}.Floor(size)); }
 
   bool IsSentry() const { return size == 0; }
 
   ArenaBlock* const next;
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  const bool is_arena_seeded : 1;
+  const size_t size : sizeof(size_t) * CHAR_BIT - 1;
+#else
   const size_t size;
+#endif
   // data follows
 };
 
@@ -87,6 +134,11 @@ class PROTOBUF_EXPORT SerialArena {
       ArenaAlignDefault{}.Ceil(sizeof(ArenaBlock));
   static constexpr size_t kMinimumReturnedArraySize = 16;
 
+  template <bool needs_arena_ptr>
+  using AllocResult =
+      std::conditional_t<needs_arena_ptr, MessageAllocationResult,
+                         AllocationResult>;
+
   void CleanupList() { cleanup_list_.Cleanup(*this); }
   uint64_t SpaceAllocated() const {
     return space_allocated_.load(std::memory_order_relaxed);
@@ -94,21 +146,22 @@ class PROTOBUF_EXPORT SerialArena {
   uint64_t SpaceUsed() const;
 
   // See comments on `cached_blocks_` member for details.
-  PROTOBUF_ALWAYS_INLINE void* TryAllocateFromCachedBlock(size_t size) {
-    if (ABSL_PREDICT_FALSE(size < kMinimumReturnedArraySize)) return nullptr;
+  PROTOBUF_ALWAYS_INLINE AllocationResult
+  TryAllocateFromCachedBlock(size_t size) {
+    if (ABSL_PREDICT_FALSE(size < kMinimumReturnedArraySize)) return {nullptr};
     // We round up to the next larger block in case the memory doesn't match
     // the pattern we are looking for.
     const size_t index = absl::bit_width(size - 1) -
                          absl::bit_width(kMinimumReturnedArraySize - 1);
 
-    if (ABSL_PREDICT_FALSE(index >= cached_block_length_)) return nullptr;
+    if (ABSL_PREDICT_FALSE(index >= cached_block_length_)) return {nullptr};
     auto& cached_head = cached_blocks_[index];
-    if (cached_head == nullptr) return nullptr;
+    if (cached_head == nullptr) return {nullptr};
 
     void* ret = cached_head;
     internal::UnpoisonMemoryRegion(ret, size);
     cached_head = cached_head->next;
-    return ret;
+    return {ret};
   }
 
   // In kArray mode we look through cached blocks.
@@ -119,17 +172,17 @@ class PROTOBUF_EXPORT SerialArena {
   // the right size. We can statically know if the allocation size can benefit
   // from it.
   template <AllocationClient alloc_client = AllocationClient::kDefault>
-  void* AllocateDefaultAligned(size_t n) {
+  AllocationResult AllocateDefaultAligned(size_t n) {
     ABSL_DCHECK(internal::ArenaAlignDefault{}.IsAligned(n));
     ABSL_DCHECK_GE(limit_, ptr());
 
     if constexpr (alloc_client == AllocationClient::kArray) {
-      if (void* res = TryAllocateFromCachedBlock(n)) {
+      if (auto res = TryAllocateFromCachedBlock(n); res.ptr != nullptr) {
         return res;
       }
     }
 
-    return AllocateImpl<AllocationMode::kDefault>(n);
+    return AllocateNonMessageImpl<AllocationMode::kDefault>(n);
   }
 
   // See comments on `cached_blocks_` member for details.
@@ -211,12 +264,88 @@ class PROTOBUF_EXPORT SerialArena {
     static constexpr size_t MaxSize();
   };
 
+  // The fast path for allocations within a seeded region which don't cross an
+  // alignment boundary.
+  template <bool needs_arena_ptr = false, typename Align = ArenaAlignDefault,
+            typename Cleanup = NoCleanup>
+  PROTOBUF_ALWAYS_INLINE AllocResult<needs_arena_ptr> AllocateFast(
+      char* ptr, size_t n, Align align, Cleanup cleanup) {
+    ABSL_DCHECK_EQ(ptr, this->ptr());
+
+    ptr = align.CeilDefaultAligned(ptr);
+    ABSL_DCHECK_LE(ptr + n, limit_);
+
+    internal::UnpoisonMemoryRegion(ptr, n);
+    char* next = ptr + n;
+
+    set_ptr(next);
+    cleanup.AddCleanup(*this, ptr);
+
+    MaybePrefetchData(next);
+
+    PROTOBUF_ASSUME(ptr != nullptr);
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+    if constexpr (needs_arena_ptr) {
+      return {ptr, encoded_arena_alignment_};
+    } else {
+      return {ptr};
+    }
+#else
+    return {ptr};
+#endif
+  }
+
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  // Places an `Arena*` seed at `ptr` and returns the next available address
+  // after the seed.
+  inline char* SeedArena(char* ptr);
+
+  // Slow fallback for allocating a message which won't cross the next
+  // `kMinArenaSeedAlignment` alignment boundary in an unseeded region.
+  inline MessageAllocationResult AllocateMessageInUnseededRegion(size_t n,
+                                                                 char* ptr);
+
+  // Fallback allocation function for when this allocation request would cross
+  // `alignment_limit_`. This fallback is called either when crossing an
+  // alignment boundary (and we should consider re-seeding the arena), or
+  // because we are currently in an unseeded region.
+  template <bool needs_arena_ptr, typename Align, typename Cleanup>
+  AllocResult<needs_arena_ptr> AllocateSlow(size_t n, Align align,
+                                            Cleanup cleanup);
+
+  // Core arena allocation function. Configurable based on alignment and
+  // cleanup registration.
+  template <bool needs_arena_ptr, typename Align, typename Cleanup>
+  PROTOBUF_ALWAYS_INLINE AllocResult<needs_arena_ptr> AllocateImpl(
+      size_t n, Align align, Cleanup cleanup) {
+    ABSL_DCHECK(internal::ArenaAlignDefault{}.IsAligned(n));
+    ABSL_DCHECK_LE(alignment_limit_, limit_);
+    DebugAssertCachedAlignmentLimitIsCorrect();
+
+    char* ptr = this->ptr();
+
+    // Comparing `alignment_limit_` to aligned `ptr` is precarious because
+    // aligning `ptr` may overflow. Instead, we conservatively compare the total
+    // remaining space against `n` plus the maximum possible padding we might
+    // incur from aligning `ptr`. Doing it this way is slightly faster than
+    // calculating how much alignment padding we need before doing the
+    // comparison.
+    const size_t max_alignment_padding =
+        align.align() - ArenaAlignDefault{}.align();
+    if (ABSL_PREDICT_TRUE(static_cast<ptrdiff_t>(n + max_alignment_padding) <=
+                          alignment_limit_ - ptr)) {
+      return AllocateFast<needs_arena_ptr>(ptr, n, align, cleanup);
+    } else {
+      PROTOBUF_MUSTTAIL return AllocateSlow<needs_arena_ptr>(n, align, cleanup);
+    }
+  }
+#else
+
   // Core arena allocation function. Configurable based on overflow handling,
   // alignment, and cleanup registration.
-  template <AllocationMode mode, typename Align = ArenaAlignDefault,
-            typename Cleanup = NoCleanup>
-  PROTOBUF_ALWAYS_INLINE void* AllocateImpl(size_t n, Align align = {},
-                                            Cleanup cleanup = {}) {
+  template <AllocationMode mode, typename Align, typename Cleanup>
+  PROTOBUF_ALWAYS_INLINE AllocationResult AllocateImpl(size_t n, Align align,
+                                                       Cleanup cleanup) {
     static_assert(std::is_same_v<Align, ArenaAlignDefault> ||
                   std::is_same_v<Align, MemoryAlign>);
     static_assert(std::is_same_v<Cleanup, NoCleanup> ||
@@ -224,26 +353,27 @@ class PROTOBUF_EXPORT SerialArena {
     ABSL_DCHECK(align.IsAligned(n));
     ABSL_DCHECK_GE(limit_, ptr());
 
-    char* ret = ptr();
+    char* ptr = this->ptr();
 
-    // Comparing `limit_` to aligned `ret` is precarious because aligning `ret`
+    // Comparing `limit_` to aligned `ptr` is precarious because aligning `ptr`
     // may overflow. Instead, we conservatively compare the total remaining
     // space against `n` plus the maximum possible padding we might incur from
-    // aligning `ret`. Doing it this way is slightly faster than calculating how
+    // aligning `ptr`. Doing it this way is slightly faster than calculating how
     // much alignment padding we need before doing the comparison.
     const size_t max_alignment_padding =
         align.align() - ArenaAlignDefault{}.align();
     const bool enough_space =
-        n + max_alignment_padding <= static_cast<size_t>(limit_ - ret);
+        n + max_alignment_padding <= static_cast<size_t>(limit_ - ptr);
     switch (mode) {
       case AllocationMode::kDefault:
         if (ABSL_PREDICT_FALSE(!enough_space)) {
-          PROTOBUF_MUSTTAIL return AllocateFallbackImpl(n, align, cleanup);
+          PROTOBUF_MUSTTAIL return AllocateFallbackImpl<
+              /*needs_arena_ptr=*/false>(n, align, cleanup);
         }
         break;
       case AllocationMode::kNoFallback:
         if (ABSL_PREDICT_FALSE(!enough_space)) {
-          return nullptr;
+          return {nullptr};
         }
         break;
       case AllocationMode::kUnchecked:
@@ -251,15 +381,34 @@ class PROTOBUF_EXPORT SerialArena {
         break;
     }
 
-    ret = align.CeilDefaultAligned(ret);
+    return AllocateFast(ptr, n, align, cleanup);
+  }
+#endif
 
-    internal::UnpoisonMemoryRegion(ret, n);
-    char* next = ret + n;
-    set_ptr(next);
-    cleanup.AddCleanup(*this, ret);
-    MaybePrefetchData(next);
-    PROTOBUF_ASSUME(ret != nullptr);
-    return ret;
+  template <AllocationMode mode>
+  PROTOBUF_ALWAYS_INLINE MessageAllocationResult AllocateMessageImpl(size_t n) {
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+    (void)mode;
+    auto res = AllocateImpl</*needs_arena_ptr=*/true>(n, ArenaAlignDefault{},
+                                                      NoCleanup{});
+    ABSL_DCHECK_EQ(res.encoded_arena_alignment.FindArena(res.ptr), parent());
+    return res;
+#else
+    auto res = AllocateImpl<mode>(n, ArenaAlignDefault{}, NoCleanup{});
+    return {res.ptr};
+#endif
+  }
+
+  template <AllocationMode mode, typename Align = ArenaAlignDefault,
+            typename Cleanup = NoCleanup>
+  PROTOBUF_ALWAYS_INLINE AllocationResult
+  AllocateNonMessageImpl(size_t n, Align align = {}, Cleanup cleanup = {}) {
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+    (void)mode;
+    return AllocateImpl</*needs_arena_ptr=*/false>(n, align, cleanup);
+#else
+    return AllocateImpl<mode>(n, align, cleanup);
+#endif
   }
 
   PROTOBUF_ALWAYS_INLINE
@@ -268,7 +417,7 @@ class PROTOBUF_EXPORT SerialArena {
     MaybePrefetchCleanup();
   }
 
-  ABSL_ATTRIBUTE_RETURNS_NONNULL void* AllocateFromStringBlock();
+  AllocationResult AllocateFromStringBlock();
 
   std::vector<void*> PeekCleanupListForTesting();
 
@@ -286,8 +435,32 @@ class PROTOBUF_EXPORT SerialArena {
     }
     internal::UnpoisonMemoryRegion(tail, desired_growth);
     set_ptr(tail + desired_growth);
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+    if (tail + desired_growth > alignment_limit_) {
+      UpdateCachedAlignments(tail + desired_growth, /*arena_alignment=*/0);
+    }
+#endif
     return true;
   }
+
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  static bool CrossesAlignmentBoundary(
+      const void* begin, const void* end,
+      EncodedArenaAlignment encoded_arena_alignment) {
+    uintptr_t begin_val = reinterpret_cast<uintptr_t>(begin);
+    uintptr_t end_val = reinterpret_cast<uintptr_t>(end);
+    uint32_t align_shift = std::max<uint32_t>(
+        encoded_arena_alignment.encoded_alignment(),
+        absl::countr_zero(ArenaSeedPolicy::kMinArenaSeedAlignmentValue));
+    // We actually check if begin_val - 1 to end_val - 1 crosses alignment. We
+    // check the lower bound of begin_val - 1 because, if begin_val is exactly
+    // on an alignment boundary, we need to fall back to the slow path to decide
+    // if we want to re-seed the arena. And we check end_val - 1 as an upper
+    // bound in case `end_val - begin_val` is exactly the remaining space in the
+    // aligned region.
+    return (((begin_val - 1) ^ (end_val - 1)) >> align_shift) != 0;
+  };
+#endif
 
   // Attempts to trim the most recent allocation in place down to `desired_end`.
   // Succeeds only if `alloc_end` matches the current tail pointer. Returns true
@@ -306,6 +479,18 @@ class PROTOBUF_EXPORT SerialArena {
     ABSL_DCHECK_LE(static_cast<void*>(head()), desired_end);
     char* desired = static_cast<char*>(desired_end);
     internal::PoisonMemoryRegion(desired, tail - desired);
+
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+    // If this block lies within a seeded region, then shrinking the block can't
+    // have moved `ptr_` to an unseeded region. Therefore, we can only cross an
+    // alignment boundary if we are already in an unseeded region.
+    if (ABSL_PREDICT_FALSE(encoded_arena_alignment_.is_unseeded()) &&
+        CrossesAlignmentBoundary(desired, alloc_end,
+                                 EncodedArenaAlignment::ArenaPrefix())) {
+      alignment_limit_ =
+          ArenaSeedPolicy::kMinArenaSeedAlignment.Floor(desired - 1);
+    }
+#endif
     set_ptr(desired);
     return true;
   }
@@ -330,13 +515,48 @@ class PROTOBUF_EXPORT SerialArena {
   static constexpr ptrdiff_t kPrefetchCleanupDegree = ABSL_CACHELINE_SIZE * 6;
 
   // Constructor is private as only New() should be used.
-  inline SerialArena(ArenaBlock* b, ThreadSafeArena& parent);
+  inline SerialArena(ArenaBlock* b, ThreadSafeArena& parent,
+                     uint32_t arena_alignment);
 
   inline SerialArena(FirstSerialArena, SizedPtr mem,
                      const AllocationPolicy& policy, ThreadSafeArena& parent);
 
-  void* MaybeAllocateString();
-  ABSL_ATTRIBUTE_RETURNS_NONNULL void* AllocateFromStringBlockFallback();
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  // Debug-only function to verify that `alignment_limit_` is set correctly.
+  void DebugAssertCachedAlignmentLimitIsCorrect() {
+#if !defined(NDEBUG)
+    char* alignment_limit =
+        encoded_arena_alignment_.is_unseeded()
+            ? ArenaSeedPolicy::kMinArenaSeedAlignment.Floor(ptr() - 1)
+            : MemoryAlign{encoded_arena_alignment_.alignment()}.Ceil(ptr());
+    alignment_limit = std::min(alignment_limit, limit_);
+
+    ABSL_CHECK_EQ(alignment_limit_, alignment_limit);
+#endif
+  }
+
+  PROTOBUF_ALWAYS_INLINE void UpdateCachedAlignments(char* ptr,
+                                                     uint32_t arena_alignment) {
+    if (arena_alignment == 0) {
+      encoded_arena_alignment_ = EncodedArenaAlignment::ArenaPrefix();
+      alignment_limit_ = ArenaSeedPolicy::kMinArenaSeedAlignment.Floor(ptr - 1);
+    } else {
+      encoded_arena_alignment_ = EncodedArenaAlignment::FromAlignment(
+          std::align_val_t{arena_alignment});
+      alignment_limit_ =
+          std::min(MemoryAlign{arena_alignment}.Ceil(ptr), limit_);
+    }
+  }
+#else
+  PROTOBUF_ALWAYS_INLINE void UpdateCachedAlignments(char* ptr,
+                                                     uint32_t arena_alignment) {
+    (void)ptr;
+    (void)arena_alignment;
+  }
+#endif
+
+  AllocationResult MaybeAllocateString();
+  AllocationResult AllocateFromStringBlockFallback();
 
   // Prefetch the next prefetch_degree bytes after `prefetch_ptr` and
   // up to `limit`, if `next` is within prefetch_degree bytes of `prefetch_ptr`.
@@ -416,16 +636,22 @@ class PROTOBUF_EXPORT SerialArena {
   char* ptr() { return ptr_.load(std::memory_order_relaxed); }
   const char* ptr() const { return ptr_.load(std::memory_order_relaxed); }
   void set_ptr(char* ptr) { return ptr_.store(ptr, std::memory_order_relaxed); }
-  PROTOBUF_ALWAYS_INLINE void set_range(char* ptr, char* limit) {
+  PROTOBUF_ALWAYS_INLINE void set_range(char* ptr, char* limit,
+                                        uint32_t arena_alignment) {
     set_ptr(ptr);
     prefetch_ptr_ = ptr;
     limit_ = limit;
+
+    UpdateCachedAlignments(ptr, arena_alignment);
   }
 
-  template <typename Align, typename Cleanup>
-  void* AllocateFallbackImpl(size_t n, Align align, Cleanup cleanup);
+  template <bool needs_arena_ptr, typename Align = ArenaAlignDefault,
+            typename Cleanup = NoCleanup>
+  AllocResult<needs_arena_ptr> AllocateFallbackImpl(size_t n, Align align = {},
+                                                    Cleanup cleanup = {});
   inline void AllocateNewBlock(size_t n);
-  inline void Init(ArenaBlock* b, size_t offset);
+  inline void Init(ArenaBlock* b, size_t offset, size_t allocation_size,
+                   uint32_t arena_alignment);
 
   // Members are declared here to track sizeof(SerialArena) and hotness
   // centrally. They are (roughly) laid out in descending order of hotness.
@@ -451,6 +677,14 @@ class PROTOBUF_EXPORT SerialArena {
   // On average, it works out because the free list tends to be mostly empty.
   uint8_t cached_block_length_ = 0;
 
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  // If at least `kMinArenaSeedAlignment`, there's an arena pointer at
+  // `encoded_arena_alignment_` alignment below `ptr_`. Otherwise, we are in an
+  // unseeded region, and this value is `EncodedArenaAlignment::ArenaPrefix()`.
+  EncodedArenaAlignment encoded_arena_alignment_ =
+      EncodedArenaAlignment::ArenaPrefix();
+#endif
+
   // Current prefetch positions. Data from `ptr_` up to but not including
   // `prefetch_ptr_` is software prefetched.
   const char* prefetch_ptr_ = ArbitraryInternalPointerForInit();
@@ -464,6 +698,17 @@ class PROTOBUF_EXPORT SerialArena {
 
   // Limiting address up to which memory can be allocated from the head block.
   char* limit_ = ArbitraryInternalPointerForInit();
+
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  // The next point at which we need to consider re-seeding the arena. Before
+  // this point, we know we are within the range of the current arena seed.
+  //
+  // If we are in an unseeded region, this value is `kMinArenaSeedAlignment`
+  // below the next `kMinArenaSeedAlignment` alignment boundary.
+  //
+  // This value is never greater than `limit_`.
+  char* alignment_limit_ = ArbitraryInternalPointerForInit();
+#endif
 
   std::atomic<size_t> space_allocated_{0};
 
@@ -484,11 +729,11 @@ class PROTOBUF_EXPORT SerialArena {
   std::atomic<size_t> space_used_{0};  // Necessary for metrics.
 };
 
-PROTOBUF_ALWAYS_INLINE void* SerialArena::MaybeAllocateString() {
+PROTOBUF_ALWAYS_INLINE AllocationResult SerialArena::MaybeAllocateString() {
   // Check how many unused instances are in the current block.
   size_t unused_bytes = string_block_unused_.load(std::memory_order_relaxed);
   if (ABSL_PREDICT_FALSE(unused_bytes == 0)) {
-    return nullptr;
+    return {nullptr};
   }
 
   unused_bytes -= sizeof(std::string);
@@ -496,13 +741,12 @@ PROTOBUF_ALWAYS_INLINE void* SerialArena::MaybeAllocateString() {
   void* p =
       string_block_.load(std::memory_order_relaxed)->AtOffset(unused_bytes);
   PROTOBUF_ASSUME(p != nullptr);
-  return p;
+  return {p};
 }
 
-ABSL_ATTRIBUTE_RETURNS_NONNULL PROTOBUF_ALWAYS_INLINE void*
-SerialArena::AllocateFromStringBlock() {
-  if (void* p = MaybeAllocateString(); ABSL_PREDICT_TRUE(p != nullptr)) {
-    return p;
+PROTOBUF_ALWAYS_INLINE AllocationResult SerialArena::AllocateFromStringBlock() {
+  if (auto res = MaybeAllocateString(); ABSL_PREDICT_TRUE(res.ptr != nullptr)) {
+    return res;
   }
   return AllocateFromStringBlockFallback();
 }
@@ -512,14 +756,32 @@ inline Arena* ParentArena(SerialArena* arena) {
   return arena->parent();
 }
 
-extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE void*
-SerialArena::AllocateFallbackImpl(size_t, ArenaAlignDefault, NoCleanup);
-extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE void*
-SerialArena::AllocateFallbackImpl(size_t, MemoryAlign, NoCleanup);
-extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE void*
-SerialArena::AllocateFallbackImpl(size_t, ArenaAlignDefault, WithCleanup);
-extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE void*
-SerialArena::AllocateFallbackImpl(size_t, MemoryAlign, WithCleanup);
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE SerialArena::AllocResult<false>
+SerialArena::AllocateSlow<false>(size_t, ArenaAlignDefault, NoCleanup);
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE SerialArena::AllocResult<false>
+SerialArena::AllocateSlow<false>(size_t, MemoryAlign, NoCleanup);
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE SerialArena::AllocResult<false>
+SerialArena::AllocateSlow<false>(size_t, ArenaAlignDefault, WithCleanup);
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE SerialArena::AllocResult<false>
+SerialArena::AllocateSlow<false>(size_t, MemoryAlign, WithCleanup);
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE SerialArena::AllocResult<true>
+SerialArena::AllocateSlow<true>(size_t, ArenaAlignDefault, NoCleanup);
+#endif
+
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE SerialArena::AllocResult<false>
+SerialArena::AllocateFallbackImpl<false>(size_t, ArenaAlignDefault, NoCleanup);
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE SerialArena::AllocResult<false>
+SerialArena::AllocateFallbackImpl<false>(size_t, MemoryAlign, NoCleanup);
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE SerialArena::AllocResult<false>
+SerialArena::AllocateFallbackImpl<false>(size_t, ArenaAlignDefault,
+                                         WithCleanup);
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE SerialArena::AllocResult<false>
+SerialArena::AllocateFallbackImpl<false>(size_t, MemoryAlign, WithCleanup);
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE SerialArena::AllocResult<true>
+SerialArena::AllocateFallbackImpl<true>(size_t, ArenaAlignDefault, NoCleanup);
+#endif
 
 }  // namespace internal
 }  // namespace protobuf

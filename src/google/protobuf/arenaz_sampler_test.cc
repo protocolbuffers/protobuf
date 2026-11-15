@@ -27,6 +27,7 @@
 #include "absl/synchronization/mutex.h"
 #include "absl/time/clock.h"
 #include "google/protobuf/arena_allocation_policy.h"
+#include "google/protobuf/arena_seed.h"
 #include "google/protobuf/serial_arena.h"
 
 
@@ -620,8 +621,17 @@ TEST(ThreadSafeArenazSamplerTest, UsedAndWasted) {
       const auto& histbin =
           h.block_histogram[ThreadSafeArenaStats::FindBin(kSize << i)];
       EXPECT_EQ(histbin.bytes_allocated, kSize << i);
-      EXPECT_EQ(histbin.bytes_used,
-                (kSize << i) - google::protobuf::internal::SerialArena::kBlockHeaderSize);
+      // The exact number of bytes used in a block depends on whether an arena
+      // seed was placed at the beginning of the block, which depends on the
+      // address alignment of the block. Accept both possibilities (seed / no
+      // seed).
+      size_t expected_bytes_used =
+          (kSize << i) - google::protobuf::internal::SerialArena::kBlockHeaderSize;
+      EXPECT_THAT(
+          histbin.bytes_used.load(std::memory_order_relaxed),
+          testing::AnyOf(expected_bytes_used,
+                         expected_bytes_used -
+                             google::protobuf::internal::ArenaSeedPolicy::kArenaPtrSize));
       EXPECT_EQ(histbin.bytes_wasted, 0);
     }
   }),
