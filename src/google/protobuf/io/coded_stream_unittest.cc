@@ -491,36 +491,58 @@ TEST_P(VarintSizeCases, VarintSize32) {
     return;
   }
 
-  EXPECT_EQ(kVarintSizeCases_case.size,
-            CodedOutputStream::VarintSize32(
-                static_cast<uint32_t>(kVarintSizeCases_case.value)));
+  uint32_t v = static_cast<uint32_t>(kVarintSizeCases_case.value);
+  EXPECT_EQ(kVarintSizeCases_case.size, CodedOutputStream::VarintSize32(v));
+  EXPECT_EQ(kVarintSizeCases_case.size + 1,
+            CodedOutputStream::VarintSize32PlusOne(v));
+  int32_t sv = static_cast<int32_t>(v);
+  int expected_signed = sv < 0 ? 10 : kVarintSizeCases_case.size;
+  EXPECT_EQ(expected_signed, CodedOutputStream::VarintSize32SignExtended(sv));
+  EXPECT_EQ(expected_signed + 1,
+            CodedOutputStream::VarintSize32SignExtendedPlusOne(sv));
 }
 
 TEST_P(VarintSizeCases, VarintSize64) {
   VarintSizeCase kVarintSizeCases_case = GetParam();
   EXPECT_EQ(kVarintSizeCases_case.size,
             CodedOutputStream::VarintSize64(kVarintSizeCases_case.value));
+  EXPECT_EQ(
+      kVarintSizeCases_case.size + 1,
+      CodedOutputStream::VarintSize64PlusOne(kVarintSizeCases_case.value));
 }
 
 TEST_F(CodedStreamTest, VarintSize32PowersOfTwo) {
   int expected = 1;
   for (int i = 1; i < 32; i++) {
+    EXPECT_EQ(expected, CodedOutputStream::VarintSize32((0x1u << i) - 1));
+    EXPECT_EQ(expected + 1,
+              CodedOutputStream::VarintSize32PlusOne((0x1u << i) - 1));
     if (i % 7 == 0) {
       expected += 1;
     }
-    EXPECT_EQ(expected, CodedOutputStream::VarintSize32(
-                            static_cast<uint32_t>(0x1u << i)));
+    EXPECT_EQ(expected, CodedOutputStream::VarintSize32(0x1u << i));
+    EXPECT_EQ(expected + 1, CodedOutputStream::VarintSize32PlusOne(0x1u << i));
   }
+  EXPECT_EQ(5, CodedOutputStream::VarintSize32(UINT32_MAX));
+  EXPECT_EQ(6, CodedOutputStream::VarintSize32PlusOne(UINT32_MAX));
 }
 
 TEST_F(CodedStreamTest, VarintSize64PowersOfTwo) {
   int expected = 1;
   for (int i = 1; i < 64; i++) {
+    EXPECT_EQ(expected,
+              CodedOutputStream::VarintSize64((uint64_t{1} << i) - 1));
+    EXPECT_EQ(expected + 1,
+              CodedOutputStream::VarintSize64PlusOne((uint64_t{1} << i) - 1));
     if (i % 7 == 0) {
       expected += 1;
     }
     EXPECT_EQ(expected, CodedOutputStream::VarintSize64(uint64_t{1} << i));
+    EXPECT_EQ(expected + 1,
+              CodedOutputStream::VarintSize64PlusOne(uint64_t{1} << i));
   }
+  EXPECT_EQ(10, CodedOutputStream::VarintSize64(UINT64_MAX));
+  EXPECT_EQ(11, CodedOutputStream::VarintSize64PlusOne(UINT64_MAX));
 }
 
 // -------------------------------------------------------------------

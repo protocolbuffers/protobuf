@@ -18,6 +18,7 @@
 #include <string>
 #include <type_traits>
 
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
@@ -597,299 +598,292 @@ bool WireFormatLite::VerifyUtf8String(const char* data, int size, Operation op,
   return true;
 }
 
-// this code is deliberately written such that clang makes it into really
-// efficient SSE code.
-template <bool ZigZag, bool SignExtended, typename T>
-static size_t VarintSize(const T* data, const int n) {
-  static_assert(sizeof(T) == 4, "This routine only works for 32 bit integers");
-  // is_unsigned<T> => !ZigZag
-  static_assert((std::is_unsigned_v<T> ^ ZigZag) || std::is_signed_v<T>,
-                "Cannot ZigZag encode unsigned types");
-  // is_unsigned<T> => !SignExtended
-  static_assert((std::is_unsigned_v<T> ^ SignExtended) || std::is_signed_v<T>,
-                "Cannot SignExtended unsigned types");
-  static_assert(!(SignExtended && ZigZag),
-                "Cannot SignExtended and ZigZag on the same type");
-  // This approach is only faster when vectorized, and the vectorized
-  // implementation only works in units of the platform's vector width, and is
-  // only faster once a certain number of iterations are used. Normally the
-  // compiler generates two loops - one partially unrolled vectorized loop that
-  // processes big chunks, and a second "epilogue" scalar loop to finish up the
-  // remainder. This is done manually here so that the faster scalar
-  // implementation is used for small inputs and for the epilogue.
-  int vectorN = n & -32;
-  size_t sum = vectorN;
-  size_t msb_sum = 0;
+constexpr int kVarintSizeMaxChunk = 1 << 28;
+
+#if defined(__SSE2__) && defined(__clang__) && \
+    !(defined(__AVX512CD__) && defined(__AVX512VL__))
+// On x86 without hardware 32-bit vector CLZ (vplzcntd), Clang auto-vectorizes
+// the 4-threshold comparison loop into SSE2/AVX2 instructions much faster than
+// byte-shuffle CLZ emulation. GCC does not vectorize this loop, so restrict it
+// to Clang.
+#define PROTOBUF_VARINT32_USE_SSE2_SIMD 1
+#else
+#define PROTOBUF_VARINT32_USE_SSE2_SIMD 0
+#endif
+
+#if PROTOBUF_VARINT32_USE_SSE2_SIMD
+template <bool ZigZag, typename T>
+static size_t VarintSize32Scalar(const T* data, const int n) {
+  constexpr bool kSignExtended = std::is_signed_v<T> && !ZigZag;
+  constexpr size_t kMaxBytes = kSignExtended ? 10 : 5;
+  // Hoist kMaxBytes * n out of the unrolled=1 scalar loop so the loop-carried
+  // dependency is a single add instead of sub + add.
+  constexpr bool kHoistMaxBytes = PROTOBUF_HAS_X86_LZCNT != 0;
+  auto elem_size = [](T v) {
+    if constexpr (ZigZag) {
+      return WireFormatLite::SInt32Size(v);
+    } else if constexpr (kSignExtended) {
+      return WireFormatLite::Int32Size(v);
+    } else {
+      return WireFormatLite::UInt32Size(static_cast<uint32_t>(v));
+    }
+  };
+  size_t acc = 0;
+  // Clang is not smart enough to see that this loop doesn't run many times.
+  // NOLINTNEXTLINE(google3-runtime-pragma-loop-hint): b/315043579
+#pragma clang loop vectorize(disable) unroll(disable) interleave(disable)
+  for (int i = 0; i < n; i++) {
+    size_t s = elem_size(data[i]);
+    acc += kHoistMaxBytes ? (kMaxBytes - s) : s;
+  }
+  return kHoistMaxBytes ? static_cast<size_t>(n) * kMaxBytes - acc : acc;
+}
+
+// Deliberately written so Clang vectorizes 32-bit varint sizing in 32-bit SIMD
+// lanes without widening accumulators to 64-bit. Requires
+// n <= kVarintSizeMaxChunk so uint32_t lane accumulators cannot overflow.
+template <bool ZigZag, typename T>
+PROTOBUF_NOINLINE static size_t VarintSize32Chunk(const T* data, const int n) {
+  constexpr bool kSignExtended = std::is_signed_v<T> && !ZigZag;
+  // SSE2/AVX2 lack unsigned vpcmpgtud; biasing unsigned values into int32_t
+  // emits 1 vpxor + 4 vpcmpgtd instead of 4 vpmaxud + 4 vpcmpeqd. For
+  // SignExtended, negative values have cx < 0 (0 across all 4 comparisons)
+  // and msb_sum adds the remaining 9 bytes (1 + 9 = 10).
+  constexpr uint32_t kBias = kSignExtended ? 0 : 0x80000000u;
+  int vector_n = n & -16;
+  uint32_t sum = static_cast<uint32_t>(vector_n);
+  uint32_t msb_sum = 0;
   int i = 0;
-  for (; i < vectorN; i++) {
-    uint32_t x = data[i];
-    if (ZigZag) {
-      x = WireFormatLite::ZigZagEncode32(x);
-    } else if (SignExtended) {
+  // NOLINTNEXTLINE(google3-runtime-pragma-loop-hint): b/315043579
+#pragma clang loop interleave_count(2) unroll(disable)
+  for (; i < vector_n; i++) {
+    uint32_t x = static_cast<uint32_t>(data[i]);
+    if constexpr (ZigZag) {
+      x = WireFormatLite::ZigZagEncode32(static_cast<int32_t>(x));
+    } else if constexpr (kSignExtended) {
       msb_sum += x >> 31;
     }
-    // clang is so smart that it produces optimal SIMD sequence unrolling
-    // the loop 8 ints at a time. With a sequence of 4
-    // cmpres = cmpgt x, sizeclass  ( -1 or 0)
-    // sum = sum - cmpres
-    if (x > 0x7F) sum++;
-    if (x > 0x3FFF) sum++;
-    if (x > 0x1FFFFF) sum++;
-    if (x > 0xFFFFFFF) sum++;
+    int32_t cx = static_cast<int32_t>(x ^ kBias);
+    if (cx > static_cast<int32_t>(0x7Fu ^ kBias)) sum++;
+    if (cx > static_cast<int32_t>(0x3FFFu ^ kBias)) sum++;
+    if (cx > static_cast<int32_t>(0x1FFFFFu ^ kBias)) sum++;
+    if (cx > static_cast<int32_t>(0xFFFFFFFu ^ kBias)) sum++;
   }
-#ifdef __clang__
-// Clang is not smart enough to see that this loop doesn't run many times
-// NOLINTNEXTLINE(google3-runtime-pragma-loop-hint): b/315043579
-#pragma clang loop vectorize(disable) unroll(disable) interleave(disable)
-#endif
-  for (; i < n; i++) {
-    uint32_t x = data[i];
-    if (ZigZag) {
-      sum += WireFormatLite::SInt32Size(x);
-    } else if (SignExtended) {
-      sum += WireFormatLite::Int32Size(x);
-    } else {
-      sum += WireFormatLite::UInt32Size(x);
+  size_t total = sum;
+  if constexpr (kSignExtended) {
+    total += static_cast<size_t>(msb_sum) * 9;
+  }
+  if (i < n) {
+    total += VarintSize32Scalar<ZigZag>(data + i, n - i);
+  }
+  return total;
+}
+#else   // !PROTOBUF_VARINT32_USE_SSE2_SIMD
+// Accumulate in 32-bit lanes (5 + 5 = 10 for negatives) so targets with
+// hardware 32-bit vector CLZ (such as ARM NEON or AVX-512CD) vectorize from
+// n >= 4 without 64-bit lane widening or .rodata constant loads. Requires
+// n <= kVarintSizeMaxChunk so uint32_t lane accumulators cannot overflow.
+template <bool ZigZag, typename T>
+static size_t VarintSize32Chunk(const T* data, const int n) {
+  constexpr bool kSignExtended = std::is_signed_v<T> && !ZigZag;
+  uint32_t sum = 0;
+  uint32_t msb_sum = 0;
+  for (int i = 0; i < n; i++) {
+    uint32_t u = static_cast<uint32_t>(data[i]);
+    if constexpr (ZigZag) {
+      u = WireFormatLite::ZigZagEncode32(static_cast<int32_t>(u));
+    } else if constexpr (kSignExtended) {
+      msb_sum += u >> 31;
     }
+    sum += static_cast<uint32_t>(WireFormatLite::UInt32Size(u));
   }
-  if (SignExtended) sum += msb_sum * 5;
-  return sum;
+  size_t total = sum;
+  if constexpr (kSignExtended) {
+    total += static_cast<size_t>(msb_sum) * 5;
+  }
+  return total;
+}
+#endif  // PROTOBUF_VARINT32_USE_SSE2_SIMD
+
+template <bool ZigZag, typename T>
+PROTOBUF_NOINLINE static size_t VarintSize32Large(const T* data, int n) {
+  size_t total = 0;
+#ifdef __clang__
+  // NOLINTNEXTLINE(google3-runtime-pragma-loop-hint): b/315043579
+#pragma clang loop unroll(disable)
+#endif  // __clang__
+  do {
+    int chunk = n < kVarintSizeMaxChunk ? n : kVarintSizeMaxChunk;
+    total += VarintSize32Chunk<ZigZag>(data, chunk);
+    data += chunk;
+    n -= chunk;
+  } while (n > 0);
+  return total;
 }
 
 template <bool ZigZag, typename T>
+static PROTOBUF_ALWAYS_INLINE size_t VarintSize32Chunked(const T* data,
+                                                         const int n) {
+  return ABSL_PREDICT_FALSE(n > kVarintSizeMaxChunk)
+             ? VarintSize32Large<ZigZag>(data, n)
+             : VarintSize32Chunk<ZigZag>(data, n);
+}
+
+#if PROTOBUF_VARINT32_USE_SSE2_SIMD
+// Out-of-line tail-call target so the hot n < 16 path in *WithPackedTagSize
+// avoids saving tag_size and cached_size across a non-tail call.
+template <bool ZigZag, typename T>
+PROTOBUF_NOINLINE static size_t VarintSize32VectorizedWithPackedTagSize(
+    const T* data, size_t tag_size, const internal::CachedSize& cached_size,
+    const int n) {
+  size_t res = VarintSize32Chunked<ZigZag>(data, n);
+  cached_size.SetNonZero(ToCachedSize(res));
+  return tag_size + WireFormatLite::LengthDelimitedSize(res);
+}
+#endif  // PROTOBUF_VARINT32_USE_SSE2_SIMD
+
+template <bool ZigZag, typename T>
 static size_t VarintSize64(const T* data, const int n) {
-  static_assert(sizeof(T) == 8, "This routine only works for 64 bit integers");
-  // is_unsigned<T> => !ZigZag
-  static_assert(!ZigZag || !std::is_unsigned_v<T>,
-                "Cannot ZigZag encode unsigned types");
-  int vectorN = n & -32;
-  uint64_t sum = vectorN;
-  int i = 0;
-  for (; i < vectorN; i++) {
-    uint64_t x = data[i];
-    if (ZigZag) {
-      x = WireFormatLite::ZigZagEncode64(x);
-    }
-    // First step is a binary search, we can't branch in sse so we use the
-    // result of the compare to adjust sum and appropriately. This code is
-    // written to make clang recognize the vectorization.
-    uint64_t tmp = x >= (static_cast<uint64_t>(1) << 35) ? -1 : 0;
-    sum += 5 & tmp;
-    x >>= 35 & tmp;
-    if (x > 0x7F) sum++;
-    if (x > 0x3FFF) sum++;
-    if (x > 0x1FFFFF) sum++;
-    if (x > 0xFFFFFFF) sum++;
-  }
-#ifdef __clang__
-// Clang is not smart enough to see that this loop doesn't run many times
-// NOLINTNEXTLINE(google3-runtime-pragma-loop-hint): b/315043579
-#pragma clang loop vectorize(disable) unroll(disable) interleave(disable)
-#endif
-  for (; i < n; i++) {
-    uint64_t x = data[i];
-    if (ZigZag) {
-      sum += WireFormatLite::SInt64Size(x);
+  size_t sum = 0;
+#if defined(__clang__) && !(defined(__AVX512CD__) && defined(__AVX512VL__)) && \
+    !defined(__ARM_FEATURE_SVE)
+  // Without hardware 64-bit vector CLZ, Clang vectorizes SInt64 ZigZag + CLZ
+  // using byte-shuffle lookup tables, which is much slower than scalar CLZ.
+  // NOLINTNEXTLINE(google3-runtime-pragma-loop-hint): b/315043579
+#pragma clang loop vectorize(disable)
+#if PROTOBUF_HAS_X86_LZCNT
+  // Unroll 4x so AFDO variance does not collapse unrolling and +10 folds.
+  // NOLINTNEXTLINE(google3-runtime-pragma-loop-hint): b/315043579
+#pragma clang loop unroll_count(4)
+#endif  // PROTOBUF_HAS_X86_LZCNT
+#endif  // __clang__ && !(__AVX512CD__ && __AVX512VL__) && !__ARM_FEATURE_SVE
+  for (int i = 0; i < n; i++) {
+    if constexpr (ZigZag) {
+      sum += WireFormatLite::SInt64Size(data[i]);
     } else {
-      sum += WireFormatLite::UInt64Size(x);
+      sum += WireFormatLite::UInt64Size(static_cast<uint64_t>(data[i]));
     }
   }
   return sum;
 }
 
-// On machines without a vector count-leading-zeros instruction such as SVE CLZ
-// on arm or VPLZCNT on x86, SSE or AVX2 instructions can allow vectorization of
-// the size calculation loop. GCC does not detect this autovectorization
-// opportunity, so only enable for clang.
-// When last tested, AVX512-vectorized lzcnt was slower than the SSE/AVX2
-// implementation, so __AVX512CD__ is not checked.
-#if defined(__SSE__) && defined(__clang__)
+template <bool ZigZag = false, typename T>
+static size_t RepeatedVarintSize(const RepeatedField<T>& value) {
+  static_assert(sizeof(T) == 4 || sizeof(T) == 8);
+  static_assert(!ZigZag || std::is_signed_v<T>,
+                "Cannot ZigZag encode unsigned types");
+  const int n = value.size();
+  if (n <= 0) return 0;
+  const T* data = value.data();
+  if constexpr (sizeof(T) == 4) {
+#if PROTOBUF_VARINT32_USE_SSE2_SIMD
+    // Most repeated fields have fewer than 16 elements; keep the short scalar
+    // loop on the fallthrough path and tail-call the vectorized helper.
+    if (ABSL_PREDICT_FALSE(n >= 16)) {
+      return VarintSize32Chunked<ZigZag>(data, n);
+    }
+    return VarintSize32Scalar<ZigZag>(data, n);
+#else   // !PROTOBUF_VARINT32_USE_SSE2_SIMD
+    return VarintSize32Chunked<ZigZag>(data, n);
+#endif  // PROTOBUF_VARINT32_USE_SSE2_SIMD
+  } else {
+    return VarintSize64<ZigZag>(data, n);
+  }
+}
+
+template <bool ZigZag = false, typename T>
+static size_t RepeatedVarintSizeWithPackedTagSize(
+    const RepeatedField<T>& value, size_t tag_size,
+    const internal::CachedSize& cached_size) {
+  static_assert(sizeof(T) == 4 || sizeof(T) == 8);
+  static_assert(!ZigZag || std::is_signed_v<T>,
+                "Cannot ZigZag encode unsigned types");
+  const int n = value.size();
+  if (n <= 0) {
+    if (ABSL_PREDICT_FALSE(cached_size.Get() != 0)) {
+      cached_size.Set(0);
+    }
+    return 0;
+  }
+  const T* data = value.data();
+  size_t res;
+  if constexpr (sizeof(T) == 4) {
+#if PROTOBUF_VARINT32_USE_SSE2_SIMD
+    if (ABSL_PREDICT_FALSE(n >= 16)) {
+      return VarintSize32VectorizedWithPackedTagSize<ZigZag>(data, tag_size,
+                                                             cached_size, n);
+    }
+    res = VarintSize32Scalar<ZigZag>(data, n);
+#else   // !PROTOBUF_VARINT32_USE_SSE2_SIMD
+    res = VarintSize32Chunked<ZigZag>(data, n);
+#endif  // PROTOBUF_VARINT32_USE_SSE2_SIMD
+  } else {
+    res = VarintSize64<ZigZag>(data, n);
+  }
+  cached_size.SetNonZero(ToCachedSize(res));
+  return tag_size + WireFormatLite::LengthDelimitedSize(res);
+}
+
+#undef PROTOBUF_VARINT32_USE_SSE2_SIMD
+
 size_t WireFormatLite::Int32Size(const RepeatedField<int32_t>& value) {
-  return VarintSize<false, true>(value.data(), value.size());
+  return RepeatedVarintSize(value);
 }
-
-size_t WireFormatLite::UInt32Size(const RepeatedField<uint32_t>& value) {
-  return VarintSize<false, false>(value.data(), value.size());
-}
-
-size_t WireFormatLite::SInt32Size(const RepeatedField<int32_t>& value) {
-  return VarintSize<true, false>(value.data(), value.size());
-}
-
-size_t WireFormatLite::EnumSize(const RepeatedField<int>& value) {
-  // On ILP64, sizeof(int) == 8, which would require a different template.
-  return VarintSize<false, true>(value.data(), value.size());
-}
-
-#else  // !(defined(__SSE__) && defined(__clang__))
-
-size_t WireFormatLite::Int32Size(const RepeatedField<int32_t>& value) {
-  size_t out = 0;
-  const int n = value.size();
-  for (int i = 0; i < n; i++) {
-    out += Int32Size(value.Get(i));
-  }
-  return out;
-}
-
-size_t WireFormatLite::UInt32Size(const RepeatedField<uint32_t>& value) {
-  size_t out = 0;
-  const int n = value.size();
-  for (int i = 0; i < n; i++) {
-    out += UInt32Size(value.Get(i));
-  }
-  return out;
-}
-
-size_t WireFormatLite::SInt32Size(const RepeatedField<int32_t>& value) {
-  size_t out = 0;
-  const int n = value.size();
-  for (int i = 0; i < n; i++) {
-    out += SInt32Size(value.Get(i));
-  }
-  return out;
-}
-
-size_t WireFormatLite::EnumSize(const RepeatedField<int>& value) {
-  size_t out = 0;
-  const int n = value.size();
-  for (int i = 0; i < n; i++) {
-    out += EnumSize(value.Get(i));
-  }
-  return out;
-}
-
-#endif
-
-// Micro benchmarks show that the vectorizable loop only starts beating
-// the normal loop when 256-bit vector registers are available.
-#if defined(__AVX2__) && defined(__clang__)
 size_t WireFormatLite::Int64Size(const RepeatedField<int64_t>& value) {
-  return VarintSize64<false>(value.data(), value.size());
+  return RepeatedVarintSize(value);
 }
-
+size_t WireFormatLite::UInt32Size(const RepeatedField<uint32_t>& value) {
+  return RepeatedVarintSize(value);
+}
 size_t WireFormatLite::UInt64Size(const RepeatedField<uint64_t>& value) {
-  return VarintSize64<false>(value.data(), value.size());
+  return RepeatedVarintSize(value);
 }
-
+size_t WireFormatLite::SInt32Size(const RepeatedField<int32_t>& value) {
+  return RepeatedVarintSize</*ZigZag=*/true>(value);
+}
 size_t WireFormatLite::SInt64Size(const RepeatedField<int64_t>& value) {
-  return VarintSize64<true>(value.data(), value.size());
+  return RepeatedVarintSize</*ZigZag=*/true>(value);
 }
-
-#else
-
-size_t WireFormatLite::Int64Size(const RepeatedField<int64_t>& value) {
-  size_t out = 0;
-  const int n = value.size();
-  for (int i = 0; i < n; i++) {
-    out += Int64Size(value.Get(i));
-  }
-  return out;
+size_t WireFormatLite::EnumSize(const RepeatedField<int>& value) {
+  return RepeatedVarintSize(value);
 }
-
-size_t WireFormatLite::UInt64Size(const RepeatedField<uint64_t>& value) {
-  size_t out = 0;
-  const int n = value.size();
-  for (int i = 0; i < n; i++) {
-    out += UInt64Size(value.Get(i));
-  }
-  return out;
-}
-
-size_t WireFormatLite::SInt64Size(const RepeatedField<int64_t>& value) {
-  size_t out = 0;
-  const int n = value.size();
-  for (int i = 0; i < n; i++) {
-    out += SInt64Size(value.Get(i));
-  }
-  return out;
-}
-
-#endif
 
 size_t WireFormatLite::Int32SizeWithPackedTagSize(
     const RepeatedField<int32_t>& value, size_t tag_size,
     const internal::CachedSize& cached_size) {
-  if (value.empty()) {
-    cached_size.Set(0);
-    return 0;
-  }
-  size_t res;
-  PROTOBUF_ALWAYS_INLINE_CALL res = Int32Size(value);
-  cached_size.SetNonZero(ToCachedSize(res));
-  return tag_size + res + Int32Size(static_cast<int32_t>(res));
+  return RepeatedVarintSizeWithPackedTagSize(value, tag_size, cached_size);
 }
 size_t WireFormatLite::Int64SizeWithPackedTagSize(
     const RepeatedField<int64_t>& value, size_t tag_size,
     const internal::CachedSize& cached_size) {
-  if (value.empty()) {
-    cached_size.Set(0);
-    return 0;
-  }
-  size_t res;
-  PROTOBUF_ALWAYS_INLINE_CALL res = Int64Size(value);
-  cached_size.SetNonZero(ToCachedSize(res));
-  return tag_size + res + Int32Size(static_cast<int32_t>(res));
+  return RepeatedVarintSizeWithPackedTagSize(value, tag_size, cached_size);
 }
 size_t WireFormatLite::UInt32SizeWithPackedTagSize(
     const RepeatedField<uint32_t>& value, size_t tag_size,
     const internal::CachedSize& cached_size) {
-  if (value.empty()) {
-    cached_size.Set(0);
-    return 0;
-  }
-  size_t res;
-  PROTOBUF_ALWAYS_INLINE_CALL res = UInt32Size(value);
-  cached_size.SetNonZero(ToCachedSize(res));
-  return tag_size + res + Int32Size(static_cast<int32_t>(res));
+  return RepeatedVarintSizeWithPackedTagSize(value, tag_size, cached_size);
 }
 size_t WireFormatLite::UInt64SizeWithPackedTagSize(
     const RepeatedField<uint64_t>& value, size_t tag_size,
     const internal::CachedSize& cached_size) {
-  if (value.empty()) {
-    cached_size.Set(0);
-    return 0;
-  }
-  size_t res;
-  PROTOBUF_ALWAYS_INLINE_CALL res = UInt64Size(value);
-  cached_size.SetNonZero(ToCachedSize(res));
-  return tag_size + res + Int32Size(static_cast<int32_t>(res));
+  return RepeatedVarintSizeWithPackedTagSize(value, tag_size, cached_size);
 }
 size_t WireFormatLite::SInt32SizeWithPackedTagSize(
     const RepeatedField<int32_t>& value, size_t tag_size,
     const internal::CachedSize& cached_size) {
-  if (value.empty()) {
-    cached_size.Set(0);
-    return 0;
-  }
-  size_t res;
-  PROTOBUF_ALWAYS_INLINE_CALL res = SInt32Size(value);
-  cached_size.SetNonZero(ToCachedSize(res));
-  return tag_size + res + Int32Size(static_cast<int32_t>(res));
+  return RepeatedVarintSizeWithPackedTagSize</*ZigZag=*/true>(value, tag_size,
+                                                              cached_size);
 }
 size_t WireFormatLite::SInt64SizeWithPackedTagSize(
     const RepeatedField<int64_t>& value, size_t tag_size,
     const internal::CachedSize& cached_size) {
-  if (value.empty()) {
-    cached_size.Set(0);
-    return 0;
-  }
-  size_t res;
-  PROTOBUF_ALWAYS_INLINE_CALL res = SInt64Size(value);
-  cached_size.SetNonZero(ToCachedSize(res));
-  return tag_size + res + Int32Size(static_cast<int32_t>(res));
+  return RepeatedVarintSizeWithPackedTagSize</*ZigZag=*/true>(value, tag_size,
+                                                              cached_size);
 }
 size_t WireFormatLite::EnumSizeWithPackedTagSize(
     const RepeatedField<int>& value, size_t tag_size,
     const internal::CachedSize& cached_size) {
-  if (value.empty()) {
-    cached_size.Set(0);
-    return 0;
-  }
-  size_t res;
-  PROTOBUF_ALWAYS_INLINE_CALL res = EnumSize(value);
-  cached_size.SetNonZero(ToCachedSize(res));
-  return tag_size + res + Int32Size(static_cast<int32_t>(res));
+  return RepeatedVarintSizeWithPackedTagSize(value, tag_size, cached_size);
 }
 
 }  // namespace internal
