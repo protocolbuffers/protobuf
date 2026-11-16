@@ -1431,6 +1431,121 @@ TEST_F(CommandLineInterfaceTest, AllowDotDotInFilenameWithFlag) {
   ExpectNoErrors();
 }
 
+TEST_F(CommandLineInterfaceTest, RejectInvalidImportPath) {
+  CreateTempDir("google");
+  CreateTempFile("google/protobuf';puts 'INJECTED';#.proto",
+                 "syntax = \"proto3\";\n"
+                 "message Dep {}\n");
+  CreateTempFile("main.proto",
+                 "syntax = \"proto3\";\n"
+                 "import \"google/protobuf';puts 'INJECTED';#.proto\";\n"
+                 "message Main {}\n");
+
+  RunProtoc(
+      "protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir main.proto");
+
+  ExpectErrorSubstring("Invalid character \"'\" in file path.");
+}
+
+TEST_F(CommandLineInterfaceTest, RejectInvalidInputFilePath) {
+  CreateTempFile("bad'name.proto",
+                 "syntax = \"proto3\";\n"
+                 "message Bad {}\n");
+
+  RunProtoc(
+      "protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir $tmpdir/bad'name.proto");
+
+  ExpectErrorSubstring("Invalid character \"'\" in file path.");
+}
+
+TEST_F(CommandLineInterfaceTest, DescriptorSetInRejectsInvalidFilePaths) {
+  // Descriptors from --descriptor_set_in bypass the parser and
+  // DiskSourceTree, so file names must be validated before any generator runs.
+  FileDescriptorSet file_descriptor_set;
+  FileDescriptorProto* dep = file_descriptor_set.add_file();
+  dep->set_name("../../evil.proto");
+  FileDescriptorProto* main_file = file_descriptor_set.add_file();
+  main_file->set_name("main.proto");
+  main_file->add_dependency(dep->name());
+  WriteDescriptorSet("main.bin", &file_descriptor_set);
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--descriptor_set_in=$tmpdir/main.bin main.proto");
+
+  ExpectErrorSubstring(
+      "main.proto: Import \"../../evil.proto\": File path must not contain "
+      "\"..\" path segments.");
+}
+
+TEST_F(CommandLineInterfaceTest, RejectsInvalidImportOfOptionImport) {
+  // Option imports of the files being compiled, and their transitive imports,
+  // are emitted into plugin requests, dependency manifests, and descriptor
+  // sets, so their names must be validated too.
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("evil;x.proto", R"schema(
+      syntax = "proto2";
+      package evil;
+      message E { optional int32 a = 1; }
+  )schema");
+  CreateTempFile("options.proto", R"schema(
+      syntax = "proto2";
+      package test;
+      import "google/protobuf/descriptor.proto";
+      import "evil;x.proto";
+      extend google.protobuf.FileOptions { optional evil.E opt = 99990; }
+  )schema");
+  CreateTempFile("foo.proto", R"schema(
+      edition = "2024";
+      import option "options.proto";
+      option (test.opt).a = 1;
+  )schema");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
+      "--dependency_out=$tmpdir/manifest foo.proto --experimental_editions");
+
+  ExpectErrorSubstring(
+      "options.proto: Import \"evil;x.proto\": Invalid character ';' in file "
+      "path.");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       DescriptorSetInRejectsInvalidImportOfOptionImport) {
+  FileDescriptorSet file_descriptor_set;
+  FileDescriptorProto::descriptor()->file()->CopyTo(
+      file_descriptor_set.add_file());
+  FileDescriptorProto* evil = file_descriptor_set.add_file();
+  evil->set_name("../../evil.proto");
+  FileDescriptorProto* file = file_descriptor_set.add_file();
+  file->set_name("foo.proto");
+  file->add_dependency(file_descriptor_set.file(0).name());
+  file->add_dependency(evil->name());
+  DescriptorProto* message = file->add_message_type();
+  message->set_name("Foo");
+  FieldDescriptorProto* field = message->add_extension();
+  field->set_type(FieldDescriptorProto::TYPE_STRING);
+  field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  field->set_name("ext");
+  field->set_number(1234567);
+  field->set_extendee(".google.protobuf.FileOptions");
+  WriteDescriptorSet("foo.bin", &file_descriptor_set);
+
+  CreateTempFile("bar.proto", R"schema(
+      edition = "2024";
+      import option "foo.proto";
+      option (Foo.ext) = "hello";
+  )schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--descriptor_set_in=$tmpdir/foo.bin bar.proto");
+
+  ExpectErrorSubstring(
+      "foo.proto: Import \"../../evil.proto\": File path must not contain "
+      "\"..\" path segments.");
+}
+
 TEST_F(CommandLineInterfaceTest, GeneratorParameters) {
   // Test that generator parameters are correctly parsed from the command line.
 
@@ -7158,6 +7273,174 @@ INSTANTIATE_TEST_SUITE_P(FileDescriptorSetSource, EncodeDecodeTest,
 }  // anonymous namespace
 
 #endif  // !GOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN
+
+namespace {
+
+using ::google::protobuf::internal::IsValidProtoFilePath;
+using ::google::protobuf::internal::ValidateFilePathsForCodeGeneration;
+
+TEST(IsValidProtoFilePathTest, AcceptsOrdinaryPaths) {
+  std::string error;
+  EXPECT_TRUE(IsValidProtoFilePath("foo.proto", &error));
+  EXPECT_TRUE(IsValidProtoFilePath("foo/bar-baz_1.2/qux.proto", &error));
+  EXPECT_TRUE(IsValidProtoFilePath("foo/bar/qux.proto", nullptr));
+  EXPECT_TRUE(IsValidProtoFilePath("foo..bar.proto", &error));
+  EXPECT_TRUE(IsValidProtoFilePath("foo/..bar/baz.proto", &error));
+  EXPECT_TRUE(IsValidProtoFilePath("foo/bar../baz.proto", &error));
+  EXPECT_EQ(error, "");
+}
+
+TEST(IsValidProtoFilePathTest, RejectsEmptyPath) {
+  std::string error;
+  EXPECT_FALSE(IsValidProtoFilePath("", &error));
+  EXPECT_EQ(error, "File path cannot be empty.");
+  EXPECT_FALSE(IsValidProtoFilePath("", nullptr));
+}
+
+TEST(IsValidProtoFilePathTest, RejectsControlCharacters) {
+  std::string error;
+  EXPECT_FALSE(IsValidProtoFilePath("foo\n.proto", &error));
+  EXPECT_EQ(error, "Invalid control character 0x0a in file path.");
+  EXPECT_FALSE(
+      IsValidProtoFilePath(absl::string_view("foo\0.proto", 10), &error));
+  EXPECT_EQ(error, "Invalid control character 0x00 in file path.");
+  EXPECT_FALSE(IsValidProtoFilePath("foo\x7f.proto", &error));
+  EXPECT_EQ(error, "Invalid control character 0x7f in file path.");
+}
+
+TEST(IsValidProtoFilePathTest, RejectsBannedCharacters) {
+  std::string error;
+  EXPECT_FALSE(IsValidProtoFilePath("foo;bar.proto", &error));
+  EXPECT_EQ(error, "Invalid character ';' in file path.");
+  EXPECT_FALSE(IsValidProtoFilePath("foo\\bar.proto", &error));
+  EXPECT_EQ(error, "Invalid character '\\' in file path.");
+  EXPECT_FALSE(IsValidProtoFilePath("foo'bar.proto", &error));
+  EXPECT_EQ(error, "Invalid character \"'\" in file path.");
+  EXPECT_FALSE(IsValidProtoFilePath("foo$bar.proto", nullptr));
+}
+
+TEST(IsValidProtoFilePathTest, RejectsParentReferences) {
+  for (absl::string_view path :
+       {"..", "../foo.proto", "foo/../bar.proto", "foo/.."}) {
+    std::string error;
+    EXPECT_FALSE(IsValidProtoFilePath(path, &error)) << path;
+    EXPECT_EQ(error, "File path must not contain \"..\" path segments.");
+  }
+}
+
+TEST(IsValidProtoFilePathTest, RejectsCurrentDirectoryReferences) {
+  for (absl::string_view path :
+       {".", "./foo.proto", "foo/./bar.proto", "foo/."}) {
+    std::string error;
+    EXPECT_FALSE(IsValidProtoFilePath(path, &error)) << path;
+    EXPECT_EQ(error, "File path must not contain \".\" path segments.");
+  }
+  // Dots within a segment are fine.
+  EXPECT_TRUE(IsValidProtoFilePath(".foo.proto", nullptr));
+  EXPECT_TRUE(IsValidProtoFilePath("foo/.bar/baz.proto", nullptr));
+}
+
+TEST(IsValidProtoFilePathTest, RejectsAbsoluteAndNonCanonicalPaths) {
+  for (absl::string_view path :
+       {"/", "/tmp/evil.proto", "foo/", "foo//bar.proto", "//foo.proto"}) {
+    std::string error;
+    EXPECT_FALSE(IsValidProtoFilePath(path, &error)) << path;
+    EXPECT_EQ(error,
+              "File path must be relative and must not contain empty path "
+              "segments.");
+  }
+}
+
+class ValidateFilePathsTest : public ::testing::Test {
+ protected:
+  const FileDescriptor* AddFile(absl::string_view name,
+                                std::vector<std::string> deps = {},
+                                std::vector<std::string> option_deps = {}) {
+    FileDescriptorProto proto;
+    proto.set_name(name);
+    for (auto& dep : deps) proto.add_dependency(dep);
+    if (!option_deps.empty()) {
+      proto.set_syntax("editions");
+      proto.set_edition(EDITION_2024);
+      for (auto& dep : option_deps) proto.add_option_dependency(dep);
+    }
+    const FileDescriptor* file = pool_.BuildFile(proto);
+    ABSL_CHECK(file != nullptr) << name;
+    return file;
+  }
+
+  std::string Validate(std::vector<const FileDescriptor*> files) {
+    std::string error;
+    if (ValidateFilePathsForCodeGeneration(files, &error)) {
+      return "OK";
+    }
+    return error;
+  }
+
+  DescriptorPool pool_;
+};
+
+TEST_F(ValidateFilePathsTest, AcceptsValidTransitiveClosure) {
+  AddFile("a.proto");
+  AddFile("b.proto", {"a.proto"});
+  EXPECT_EQ(Validate({AddFile("c.proto", {"a.proto", "b.proto"})}), "OK");
+}
+
+TEST_F(ValidateFilePathsTest, RejectsInvalidFileName) {
+  EXPECT_EQ(Validate({AddFile("foo\nbar.proto")}),
+            "foo\\nbar.proto: Invalid control character 0x0a in file path.");
+}
+
+TEST_F(ValidateFilePathsTest, RejectsInvalidDirectImport) {
+  AddFile("../../evil.proto");
+  EXPECT_EQ(Validate({AddFile("main.proto", {"../../evil.proto"})}),
+            "main.proto: Import \"../../evil.proto\": File path must not "
+            "contain \"..\" path segments.");
+}
+
+TEST_F(ValidateFilePathsTest, RejectsInvalidTransitiveImport) {
+  AddFile("evil';.proto");
+  AddFile("middle.proto", {"evil';.proto"});
+  EXPECT_EQ(Validate({AddFile("main.proto", {"middle.proto"})}),
+            "middle.proto: Import \"evil\\';.proto\": Invalid character "
+            "\"'\" in file path.");
+}
+
+TEST_F(ValidateFilePathsTest, RejectsInvalidImportOfOptionImport) {
+  // protoc emits option imports of the files being generated, and their
+  // transitive imports, into plugin requests and dependency manifests.
+  AddFile("evil;.proto");
+  AddFile("opt.proto", {"evil;.proto"});
+  EXPECT_EQ(Validate({AddFile("main.proto", {}, {"opt.proto"})}),
+            "opt.proto: Import \"evil;.proto\": Invalid character ';' in "
+            "file path.");
+}
+
+TEST_F(ValidateFilePathsTest, RejectsInvalidOptionImportName) {
+  EXPECT_EQ(Validate({AddFile("main.proto", {}, {"../opt.proto"})}),
+            "main.proto: Option import \"../opt.proto\": File path must not "
+            "contain \"..\" path segments.");
+
+  // Option import names of non-top-level files are checked too, even though
+  // those files are never loaded.
+  AddFile("dep.proto", {}, {"bad$.proto"});
+  EXPECT_EQ(Validate({AddFile("main2.proto", {"dep.proto"})}),
+            "dep.proto: Option import \"bad$.proto\": Invalid character '$' "
+            "in file path.");
+}
+
+TEST_F(ValidateFilePathsTest, DoesNotFollowNestedOrMissingOptionImports) {
+  // Only the direct option imports of the given files are emitted by protoc,
+  // so files reached through nested option imports are not inspected.
+  AddFile("evil;.proto");
+  AddFile("deep.proto", {"evil;.proto"});
+  AddFile("opt.proto", {}, {"deep.proto"});
+  EXPECT_EQ(
+      Validate({AddFile("main.proto", {}, {"opt.proto", "missing.proto"})}),
+      "OK");
+}
+
+}  // namespace
 
 #include "google/protobuf/port_undef.inc"
 

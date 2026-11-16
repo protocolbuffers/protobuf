@@ -176,6 +176,21 @@ TEST_F(RubyGeneratorCliTest, RubyPackageNewlineRejected) {
   ExpectErrorSubstring("Invalid");
 }
 
+TEST_F(RubyGeneratorCliTest, InvalidImportPathRejected) {
+  CreateTempFile("google/protobuf';raise 'BOOM';#.proto",
+                 "syntax = \"proto3\";\n"
+                 "message Dep {}\n");
+  CreateTempFile("main.proto",
+                 "syntax = \"proto3\";\n"
+                 "import \"google/protobuf';raise 'BOOM';#.proto\";\n"
+                 "message Main {}\n");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --ruby_out=$tmpdir main.proto");
+
+  ExpectErrorSubstring("Invalid character");
+}
+
 }  // namespace
 }  // namespace ruby
 }  // namespace compiler
