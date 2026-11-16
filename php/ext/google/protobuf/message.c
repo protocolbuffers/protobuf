@@ -245,6 +245,8 @@ bool ValueEq(upb_MessageValue val1, upb_MessageValue val2, TypeInfo type) {
  *   $m1 == $m2
  */
 static int Message_compare_objects(zval* m1, zval* m2) {
+  ZEND_COMPARE_OBJECTS_FALLBACK(m1, m2);
+
   Message* intern1 = (Message*)Z_OBJ_P(m1);
   Message* intern2 = (Message*)Z_OBJ_P(m2);
   const upb_MessageDef* m = intern1->desc->msgdef;

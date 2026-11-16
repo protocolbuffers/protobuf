@@ -94,6 +94,8 @@ static void MapField_destructor(zend_object* obj) {
  *   $map1 == $map2
  */
 static int MapField_compare_objects(zval* map1, zval* map2) {
+  ZEND_COMPARE_OBJECTS_FALLBACK(map1, map2);
+
   MapField* intern1 = (MapField*)Z_OBJ_P(map1);
   MapField* intern2 = (MapField*)Z_OBJ_P(map2);
 

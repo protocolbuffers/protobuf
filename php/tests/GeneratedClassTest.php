@@ -1996,6 +1996,85 @@ class GeneratedClassTest extends TestBase
         # TODO: what about unknown fields?
     }
 
+    public function testEqualityWithOtherTypes()
+    {
+        $m = new TestMessage();
+        $m->setOptionalInt32(42);
+
+        $this->assertFalse($m == null);
+        $this->assertFalse(null == $m);
+        $this->assertTrue($m != null);
+        $this->assertTrue(null != $m);
+
+        $this->assertTrue($m == true);
+        $this->assertTrue(true == $m);
+        $this->assertFalse($m == false);
+        $this->assertFalse(false == $m);
+        $this->assertFalse($m != true);
+        $this->assertTrue($m != false);
+
+        $this->assertFalse($m == '');
+        $this->assertFalse('' == $m);
+        $this->assertFalse($m == 'foo');
+        $this->assertFalse('foo' == $m);
+        $this->assertTrue($m != 'foo');
+
+        $this->assertFalse($m == []);
+        $this->assertFalse([] == $m);
+        $this->assertFalse($m == ['optional_int32' => 42]);
+        $this->assertFalse(['optional_int32' => 42] == $m);
+        $this->assertTrue($m != []);
+
+        $std = new \stdClass();
+        $this->assertFalse($m == $std);
+        $this->assertFalse($std == $m);
+        $this->assertTrue($m != $std);
+        $this->assertTrue($std != $m);
+
+        $sub = new Sub();
+        $this->assertFalse($m == $sub);
+        $this->assertFalse($sub == $m);
+        $this->assertTrue($m != $sub);
+
+        $arr = new RepeatedField(GPBType::INT32);
+        $this->assertFalse($m == $arr);
+        $this->assertFalse($arr == $m);
+        $this->assertTrue($m != $arr);
+
+        $map = new MapField(GPBType::INT32, GPBType::INT32);
+        $this->assertFalse($m == $map);
+        $this->assertFalse($map == $m);
+        $this->assertTrue($m != $map);
+
+        $this->assertFalse(in_array($m, ['foo', [], $std, $sub, $arr, $map]));
+
+        $notices = 0;
+        set_error_handler(function ($errno, $errstr) use (&$notices) {
+            if ($errno === E_NOTICE) {
+                $notices++;
+                return true;
+            }
+            return false;
+        });
+        try {
+            $this->assertFalse($m == 0);
+            $this->assertFalse(0 == $m);
+            $this->assertTrue($m == 1);
+            $this->assertTrue(1 == $m);
+            $this->assertFalse($m == 5);
+            $this->assertFalse(5 == $m);
+            $this->assertTrue($m != 5);
+            $this->assertTrue(5 != $m);
+            $this->assertTrue($m == 1.0);
+            $this->assertTrue(1.0 == $m);
+            $this->assertFalse($m == 1.5);
+            $this->assertFalse(1.5 == $m);
+        } finally {
+            restore_error_handler();
+        }
+        $this->assertSame(12, $notices);
+    }
+
     #########################################################
     # Test hasOneof<Field> methods exists and working
     #########################################################

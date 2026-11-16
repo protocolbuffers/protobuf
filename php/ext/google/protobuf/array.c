@@ -76,6 +76,8 @@ static void RepeatedField_destructor(zend_object* obj) {
  *   $rf1 == $rf2
  */
 static int RepeatedField_compare_objects(zval* rf1, zval* rf2) {
+  ZEND_COMPARE_OBJECTS_FALLBACK(rf1, rf2);
+
   RepeatedField* intern1 = (RepeatedField*)Z_OBJ_P(rf1);
   RepeatedField* intern2 = (RepeatedField*)Z_OBJ_P(rf2);
 
