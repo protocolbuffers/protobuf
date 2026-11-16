@@ -431,47 +431,14 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state, int64_t value
   GPBWriteRawVarint64(&state_, GPBEncodeZigZag64(value));
 }
 
-// clang-format off
-
-//%PDDM-DEFINE WRITE_PACKABLE_DEFNS(NAME, ARRAY_TYPE, TYPE, ACCESSOR_NAME)
-//%- (void)write##NAME##Array:(int32_t)fieldNumber
-//%       NAME$S     values:(GPB##ARRAY_TYPE##Array *)values
-//%       NAME$S        tag:(uint32_t)tag {
-//%  if (tag != 0) {
-//%    if (values.count == 0) return;
-//%    __block size_t dataSize = 0;
-//%    [values enumerate##ACCESSOR_NAME##ValuesWithBlock:^(TYPE value, __unused NSUInteger idx,__unused  BOOL *stop) {
-//%      dataSize += GPBCompute##NAME##SizeNoTag(value);
-//%    }];
-//%    GPBWriteRawVarint32(&state_, tag);
-//%    GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-//%    [values enumerate##ACCESSOR_NAME##ValuesWithBlock:^(TYPE value, __unused NSUInteger idx, __unused BOOL *stop) {
-//%      [self write##NAME##NoTag:value];
-//%    }];
-//%  } else {
-//%    [values enumerate##ACCESSOR_NAME##ValuesWithBlock:^(TYPE value, __unused NSUInteger idx, __unused BOOL *stop) {
-//%      [self write##NAME:fieldNumber value:value];
-//%    }];
-//%  }
-//%}
-//%
-//%PDDM-DEFINE WRITE_UNPACKABLE_DEFNS(NAME, TYPE)
-//%- (void)write##NAME##Array:(int32_t)fieldNumber values:(NSArray *)values {
-//%  for (TYPE *value in values) {
-//%    [self write##NAME:fieldNumber value:value];
-//%  }
-//%}
-//%
-//%PDDM-EXPAND WRITE_PACKABLE_DEFNS(Double, Double, double, )
+// @@protoc_objc_autogen: GPBCodedOutputStream.m:write_array_defns
 // This block of code is generated, do not edit it directly.
 
-- (void)writeDoubleArray:(int32_t)fieldNumber
-                  values:(GPBDoubleArray *)values
-                     tag:(uint32_t)tag {
+- (void)writeDoubleArray:(int32_t)fieldNumber values:(GPBDoubleArray *)values tag:(uint32_t)tag {
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(double value, __unused NSUInteger idx,__unused  BOOL *stop) {
+    [values enumerateValuesWithBlock:^(double value, __unused NSUInteger idx, __unused BOOL *stop) {
       dataSize += GPBComputeDoubleSizeNoTag(value);
     }];
     GPBWriteRawVarint32(&state_, tag);
@@ -486,16 +453,11 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state, int64_t value
   }
 }
 
-//%PDDM-EXPAND WRITE_PACKABLE_DEFNS(Float, Float, float, )
-// This block of code is generated, do not edit it directly.
-
-- (void)writeFloatArray:(int32_t)fieldNumber
-                 values:(GPBFloatArray *)values
-                    tag:(uint32_t)tag {
+- (void)writeFloatArray:(int32_t)fieldNumber values:(GPBFloatArray *)values tag:(uint32_t)tag {
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(float value, __unused NSUInteger idx,__unused  BOOL *stop) {
+    [values enumerateValuesWithBlock:^(float value, __unused NSUInteger idx, __unused BOOL *stop) {
       dataSize += GPBComputeFloatSizeNoTag(value);
     }];
     GPBWriteRawVarint32(&state_, tag);
@@ -510,256 +472,231 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state, int64_t value
   }
 }
 
-//%PDDM-EXPAND WRITE_PACKABLE_DEFNS(UInt64, UInt64, uint64_t, )
-// This block of code is generated, do not edit it directly.
-
-- (void)writeUInt64Array:(int32_t)fieldNumber
-                  values:(GPBUInt64Array *)values
-                     tag:(uint32_t)tag {
+- (void)writeUInt64Array:(int32_t)fieldNumber values:(GPBUInt64Array *)values tag:(uint32_t)tag {
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx,__unused  BOOL *stop) {
-      dataSize += GPBComputeUInt64SizeNoTag(value);
-    }];
+    [values
+        enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          dataSize += GPBComputeUInt64SizeNoTag(value);
+        }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-      [self writeUInt64NoTag:value];
-    }];
+    [values
+        enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          [self writeUInt64NoTag:value];
+        }];
   } else {
-    [values enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-      [self writeUInt64:fieldNumber value:value];
-    }];
+    [values
+        enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          [self writeUInt64:fieldNumber value:value];
+        }];
   }
 }
 
-//%PDDM-EXPAND WRITE_PACKABLE_DEFNS(Int64, Int64, int64_t, )
-// This block of code is generated, do not edit it directly.
-
-- (void)writeInt64Array:(int32_t)fieldNumber
-                 values:(GPBInt64Array *)values
-                    tag:(uint32_t)tag {
+- (void)writeInt64Array:(int32_t)fieldNumber values:(GPBInt64Array *)values tag:(uint32_t)tag {
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx,__unused  BOOL *stop) {
-      dataSize += GPBComputeInt64SizeNoTag(value);
-    }];
+    [values
+        enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          dataSize += GPBComputeInt64SizeNoTag(value);
+        }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-      [self writeInt64NoTag:value];
-    }];
+    [values
+        enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          [self writeInt64NoTag:value];
+        }];
   } else {
-    [values enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-      [self writeInt64:fieldNumber value:value];
-    }];
+    [values
+        enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          [self writeInt64:fieldNumber value:value];
+        }];
   }
 }
 
-//%PDDM-EXPAND WRITE_PACKABLE_DEFNS(Int32, Int32, int32_t, )
-// This block of code is generated, do not edit it directly.
-
-- (void)writeInt32Array:(int32_t)fieldNumber
-                 values:(GPBInt32Array *)values
-                    tag:(uint32_t)tag {
+- (void)writeInt32Array:(int32_t)fieldNumber values:(GPBInt32Array *)values tag:(uint32_t)tag {
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx,__unused  BOOL *stop) {
-      dataSize += GPBComputeInt32SizeNoTag(value);
-    }];
+    [values
+        enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          dataSize += GPBComputeInt32SizeNoTag(value);
+        }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-      [self writeInt32NoTag:value];
-    }];
+    [values
+        enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          [self writeInt32NoTag:value];
+        }];
   } else {
-    [values enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-      [self writeInt32:fieldNumber value:value];
-    }];
+    [values
+        enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          [self writeInt32:fieldNumber value:value];
+        }];
   }
 }
 
-//%PDDM-EXPAND WRITE_PACKABLE_DEFNS(UInt32, UInt32, uint32_t, )
-// This block of code is generated, do not edit it directly.
-
-- (void)writeUInt32Array:(int32_t)fieldNumber
-                  values:(GPBUInt32Array *)values
-                     tag:(uint32_t)tag {
+- (void)writeUInt32Array:(int32_t)fieldNumber values:(GPBUInt32Array *)values tag:(uint32_t)tag {
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx,__unused  BOOL *stop) {
-      dataSize += GPBComputeUInt32SizeNoTag(value);
-    }];
+    [values
+        enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          dataSize += GPBComputeUInt32SizeNoTag(value);
+        }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-      [self writeUInt32NoTag:value];
-    }];
+    [values
+        enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          [self writeUInt32NoTag:value];
+        }];
   } else {
-    [values enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-      [self writeUInt32:fieldNumber value:value];
-    }];
+    [values
+        enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          [self writeUInt32:fieldNumber value:value];
+        }];
   }
 }
 
-//%PDDM-EXPAND WRITE_PACKABLE_DEFNS(Fixed64, UInt64, uint64_t, )
-// This block of code is generated, do not edit it directly.
-
-- (void)writeFixed64Array:(int32_t)fieldNumber
-                   values:(GPBUInt64Array *)values
-                      tag:(uint32_t)tag {
+- (void)writeFixed64Array:(int32_t)fieldNumber values:(GPBUInt64Array *)values tag:(uint32_t)tag {
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx,__unused  BOOL *stop) {
-      dataSize += GPBComputeFixed64SizeNoTag(value);
-    }];
+    [values
+        enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          dataSize += GPBComputeFixed64SizeNoTag(value);
+        }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-      [self writeFixed64NoTag:value];
-    }];
+    [values
+        enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          [self writeFixed64NoTag:value];
+        }];
   } else {
-    [values enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-      [self writeFixed64:fieldNumber value:value];
-    }];
+    [values
+        enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          [self writeFixed64:fieldNumber value:value];
+        }];
   }
 }
 
-//%PDDM-EXPAND WRITE_PACKABLE_DEFNS(Fixed32, UInt32, uint32_t, )
-// This block of code is generated, do not edit it directly.
-
-- (void)writeFixed32Array:(int32_t)fieldNumber
-                   values:(GPBUInt32Array *)values
-                      tag:(uint32_t)tag {
+- (void)writeFixed32Array:(int32_t)fieldNumber values:(GPBUInt32Array *)values tag:(uint32_t)tag {
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx,__unused  BOOL *stop) {
-      dataSize += GPBComputeFixed32SizeNoTag(value);
-    }];
+    [values
+        enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          dataSize += GPBComputeFixed32SizeNoTag(value);
+        }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-      [self writeFixed32NoTag:value];
-    }];
+    [values
+        enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          [self writeFixed32NoTag:value];
+        }];
   } else {
-    [values enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-      [self writeFixed32:fieldNumber value:value];
-    }];
+    [values
+        enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          [self writeFixed32:fieldNumber value:value];
+        }];
   }
 }
 
-//%PDDM-EXPAND WRITE_PACKABLE_DEFNS(SInt32, Int32, int32_t, )
-// This block of code is generated, do not edit it directly.
-
-- (void)writeSInt32Array:(int32_t)fieldNumber
-                  values:(GPBInt32Array *)values
-                     tag:(uint32_t)tag {
+- (void)writeSInt32Array:(int32_t)fieldNumber values:(GPBInt32Array *)values tag:(uint32_t)tag {
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx,__unused  BOOL *stop) {
-      dataSize += GPBComputeSInt32SizeNoTag(value);
-    }];
+    [values
+        enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          dataSize += GPBComputeSInt32SizeNoTag(value);
+        }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-      [self writeSInt32NoTag:value];
-    }];
+    [values
+        enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          [self writeSInt32NoTag:value];
+        }];
   } else {
-    [values enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-      [self writeSInt32:fieldNumber value:value];
-    }];
+    [values
+        enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          [self writeSInt32:fieldNumber value:value];
+        }];
   }
 }
 
-//%PDDM-EXPAND WRITE_PACKABLE_DEFNS(SInt64, Int64, int64_t, )
-// This block of code is generated, do not edit it directly.
-
-- (void)writeSInt64Array:(int32_t)fieldNumber
-                  values:(GPBInt64Array *)values
-                     tag:(uint32_t)tag {
+- (void)writeSInt64Array:(int32_t)fieldNumber values:(GPBInt64Array *)values tag:(uint32_t)tag {
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx,__unused  BOOL *stop) {
-      dataSize += GPBComputeSInt64SizeNoTag(value);
-    }];
+    [values
+        enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          dataSize += GPBComputeSInt64SizeNoTag(value);
+        }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-      [self writeSInt64NoTag:value];
-    }];
+    [values
+        enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          [self writeSInt64NoTag:value];
+        }];
   } else {
-    [values enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-      [self writeSInt64:fieldNumber value:value];
-    }];
+    [values
+        enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          [self writeSInt64:fieldNumber value:value];
+        }];
   }
 }
 
-//%PDDM-EXPAND WRITE_PACKABLE_DEFNS(SFixed64, Int64, int64_t, )
-// This block of code is generated, do not edit it directly.
-
-- (void)writeSFixed64Array:(int32_t)fieldNumber
-                    values:(GPBInt64Array *)values
-                       tag:(uint32_t)tag {
+- (void)writeSFixed64Array:(int32_t)fieldNumber values:(GPBInt64Array *)values tag:(uint32_t)tag {
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx,__unused  BOOL *stop) {
-      dataSize += GPBComputeSFixed64SizeNoTag(value);
-    }];
+    [values
+        enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          dataSize += GPBComputeSFixed64SizeNoTag(value);
+        }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-      [self writeSFixed64NoTag:value];
-    }];
+    [values
+        enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          [self writeSFixed64NoTag:value];
+        }];
   } else {
-    [values enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-      [self writeSFixed64:fieldNumber value:value];
-    }];
+    [values
+        enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          [self writeSFixed64:fieldNumber value:value];
+        }];
   }
 }
 
-//%PDDM-EXPAND WRITE_PACKABLE_DEFNS(SFixed32, Int32, int32_t, )
-// This block of code is generated, do not edit it directly.
-
-- (void)writeSFixed32Array:(int32_t)fieldNumber
-                    values:(GPBInt32Array *)values
-                       tag:(uint32_t)tag {
+- (void)writeSFixed32Array:(int32_t)fieldNumber values:(GPBInt32Array *)values tag:(uint32_t)tag {
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx,__unused  BOOL *stop) {
-      dataSize += GPBComputeSFixed32SizeNoTag(value);
-    }];
+    [values
+        enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          dataSize += GPBComputeSFixed32SizeNoTag(value);
+        }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-      [self writeSFixed32NoTag:value];
-    }];
+    [values
+        enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          [self writeSFixed32NoTag:value];
+        }];
   } else {
-    [values enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-      [self writeSFixed32:fieldNumber value:value];
-    }];
+    [values
+        enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          [self writeSFixed32:fieldNumber value:value];
+        }];
   }
 }
 
-//%PDDM-EXPAND WRITE_PACKABLE_DEFNS(Bool, Bool, BOOL, )
-// This block of code is generated, do not edit it directly.
-
-- (void)writeBoolArray:(int32_t)fieldNumber
-                values:(GPBBoolArray *)values
-                   tag:(uint32_t)tag {
+- (void)writeBoolArray:(int32_t)fieldNumber values:(GPBBoolArray *)values tag:(uint32_t)tag {
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(BOOL value, __unused NSUInteger idx,__unused  BOOL *stop) {
+    [values enumerateValuesWithBlock:^(BOOL value, __unused NSUInteger idx, __unused BOOL *stop) {
       dataSize += GPBComputeBoolSizeNoTag(value);
     }];
     GPBWriteRawVarint32(&state_, tag);
@@ -774,32 +711,27 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state, int64_t value
   }
 }
 
-//%PDDM-EXPAND WRITE_PACKABLE_DEFNS(Enum, Enum, int32_t, Raw)
-// This block of code is generated, do not edit it directly.
-
-- (void)writeEnumArray:(int32_t)fieldNumber
-                values:(GPBEnumArray *)values
-                   tag:(uint32_t)tag {
+- (void)writeEnumArray:(int32_t)fieldNumber values:(GPBEnumArray *)values tag:(uint32_t)tag {
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateRawValuesWithBlock:^(int32_t value, __unused NSUInteger idx,__unused  BOOL *stop) {
-      dataSize += GPBComputeEnumSizeNoTag(value);
-    }];
+    [values
+        enumerateRawValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          dataSize += GPBComputeEnumSizeNoTag(value);
+        }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateRawValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-      [self writeEnumNoTag:value];
-    }];
+    [values
+        enumerateRawValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          [self writeEnumNoTag:value];
+        }];
   } else {
-    [values enumerateRawValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-      [self writeEnum:fieldNumber value:value];
-    }];
+    [values
+        enumerateRawValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+          [self writeEnum:fieldNumber value:value];
+        }];
   }
 }
-
-//%PDDM-EXPAND WRITE_UNPACKABLE_DEFNS(String, NSString)
-// This block of code is generated, do not edit it directly.
 
 - (void)writeStringArray:(int32_t)fieldNumber values:(NSArray *)values {
   for (NSString *value in values) {
@@ -807,17 +739,11 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state, int64_t value
   }
 }
 
-//%PDDM-EXPAND WRITE_UNPACKABLE_DEFNS(Message, GPBMessage)
-// This block of code is generated, do not edit it directly.
-
 - (void)writeMessageArray:(int32_t)fieldNumber values:(NSArray *)values {
   for (GPBMessage *value in values) {
     [self writeMessage:fieldNumber value:value];
   }
 }
-
-//%PDDM-EXPAND WRITE_UNPACKABLE_DEFNS(Bytes, NSData)
-// This block of code is generated, do not edit it directly.
 
 - (void)writeBytesArray:(int32_t)fieldNumber values:(NSArray *)values {
   for (NSData *value in values) {
@@ -825,18 +751,12 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state, int64_t value
   }
 }
 
-//%PDDM-EXPAND WRITE_UNPACKABLE_DEFNS(Group, GPBMessage)
-// This block of code is generated, do not edit it directly.
-
 - (void)writeGroupArray:(int32_t)fieldNumber values:(NSArray *)values {
   for (GPBMessage *value in values) {
     [self writeGroup:fieldNumber value:value];
   }
 }
-
-//%PDDM-EXPAND-END (18 expansions)
-
-// clang-format on
+// @@protoc_objc_autogen_end
 
 - (void)writeMessageSetExtension:(int32_t)fieldNumber value:(GPBMessage *)value {
   GPBWriteTagWithFormat(&state_, GPBWireFormatMessageSetItem, GPBWireFormatStartGroup);

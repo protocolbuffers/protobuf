@@ -201,9 +201,6 @@ fi
 # Ensure the WKT sources checked in are current.
 objectivec/generate_well_known_types.sh --check-only
 
-header "Checking on the ObjC Runtime pddm expansions"
-${BazelBin} test //objectivec:sources_pddm_expansion_test $BazelFlags
-
 readonly XCODE_VERSION_LINE="$(xcodebuild -version | grep Xcode\  )"
 readonly XCODE_VERSION="${XCODE_VERSION_LINE/Xcode /}"  # drop the prefix.
 

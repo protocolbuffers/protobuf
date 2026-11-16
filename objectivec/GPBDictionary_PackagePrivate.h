@@ -22,44 +22,7 @@
 - (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
 @end
 
-// Disable clang-format for the macros.
-// clang-format off
-
-//%PDDM-DEFINE DICTIONARY_PRIV_INTERFACES_FOR_POD_KEY(KEY_NAME)
-//%DICTIONARY_POD_PRIV_INTERFACES_FOR_KEY(KEY_NAME)
-//%DICTIONARY_PRIVATE_INTERFACES(KEY_NAME, Object, Object)
-//%PDDM-DEFINE DICTIONARY_POD_PRIV_INTERFACES_FOR_KEY(KEY_NAME)
-//%DICTIONARY_PRIVATE_INTERFACES(KEY_NAME, UInt32, Basic)
-//%DICTIONARY_PRIVATE_INTERFACES(KEY_NAME, Int32, Basic)
-//%DICTIONARY_PRIVATE_INTERFACES(KEY_NAME, UInt64, Basic)
-//%DICTIONARY_PRIVATE_INTERFACES(KEY_NAME, Int64, Basic)
-//%DICTIONARY_PRIVATE_INTERFACES(KEY_NAME, Bool, Basic)
-//%DICTIONARY_PRIVATE_INTERFACES(KEY_NAME, Float, Basic)
-//%DICTIONARY_PRIVATE_INTERFACES(KEY_NAME, Double, Basic)
-//%DICTIONARY_PRIVATE_INTERFACES(KEY_NAME, Enum, Enum)
-
-//%PDDM-DEFINE DICTIONARY_PRIVATE_INTERFACES(KEY_NAME, VALUE_NAME, HELPER)
-//%@interface GPB##KEY_NAME##VALUE_NAME##Dictionary () <GPBDictionaryInternalsProtocol> {
-//% @package
-//%  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
-//%}
-//%EXTRA_DICTIONARY_PRIVATE_INTERFACES_##HELPER()@end
-//%
-
-//%PDDM-DEFINE EXTRA_DICTIONARY_PRIVATE_INTERFACES_Basic()
-// Empty
-//%PDDM-DEFINE EXTRA_DICTIONARY_PRIVATE_INTERFACES_Object()
-//%- (BOOL)isInitialized;
-//%- (instancetype)deepCopyWithZone:(NSZone *)zone
-//%    __attribute__((ns_returns_retained));
-//%
-//%PDDM-DEFINE EXTRA_DICTIONARY_PRIVATE_INTERFACES_Enum()
-//%- (NSData *)serializedDataForUnknownValue:(int32_t)value
-//%                                   forKey:(GPBGenericValue *)key
-//%                              keyDataType:(GPBDataType)keyDataType;
-//%
-
-//%PDDM-EXPAND DICTIONARY_PRIV_INTERFACES_FOR_POD_KEY(UInt32)
+// @@protoc_objc_autogen: GPBDictionary_PackagePrivate.h:private_interfaces
 // This block of code is generated, do not edit it directly.
 
 @interface GPBUInt32UInt32Dictionary () <GPBDictionaryInternalsProtocol> {
@@ -118,12 +81,8 @@
   GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
 }
 - (BOOL)isInitialized;
-- (instancetype)deepCopyWithZone:(NSZone *)zone
-    __attribute__((ns_returns_retained));
+- (instancetype)deepCopyWithZone:(NSZone *)zone __attribute__((ns_returns_retained));
 @end
-
-//%PDDM-EXPAND DICTIONARY_PRIV_INTERFACES_FOR_POD_KEY(Int32)
-// This block of code is generated, do not edit it directly.
 
 @interface GPBInt32UInt32Dictionary () <GPBDictionaryInternalsProtocol> {
  @package
@@ -181,12 +140,8 @@
   GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
 }
 - (BOOL)isInitialized;
-- (instancetype)deepCopyWithZone:(NSZone *)zone
-    __attribute__((ns_returns_retained));
+- (instancetype)deepCopyWithZone:(NSZone *)zone __attribute__((ns_returns_retained));
 @end
-
-//%PDDM-EXPAND DICTIONARY_PRIV_INTERFACES_FOR_POD_KEY(UInt64)
-// This block of code is generated, do not edit it directly.
 
 @interface GPBUInt64UInt32Dictionary () <GPBDictionaryInternalsProtocol> {
  @package
@@ -244,12 +199,8 @@
   GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
 }
 - (BOOL)isInitialized;
-- (instancetype)deepCopyWithZone:(NSZone *)zone
-    __attribute__((ns_returns_retained));
+- (instancetype)deepCopyWithZone:(NSZone *)zone __attribute__((ns_returns_retained));
 @end
-
-//%PDDM-EXPAND DICTIONARY_PRIV_INTERFACES_FOR_POD_KEY(Int64)
-// This block of code is generated, do not edit it directly.
 
 @interface GPBInt64UInt32Dictionary () <GPBDictionaryInternalsProtocol> {
  @package
@@ -307,12 +258,8 @@
   GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
 }
 - (BOOL)isInitialized;
-- (instancetype)deepCopyWithZone:(NSZone *)zone
-    __attribute__((ns_returns_retained));
+- (instancetype)deepCopyWithZone:(NSZone *)zone __attribute__((ns_returns_retained));
 @end
-
-//%PDDM-EXPAND DICTIONARY_PRIV_INTERFACES_FOR_POD_KEY(Bool)
-// This block of code is generated, do not edit it directly.
 
 @interface GPBBoolUInt32Dictionary () <GPBDictionaryInternalsProtocol> {
  @package
@@ -370,12 +317,8 @@
   GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
 }
 - (BOOL)isInitialized;
-- (instancetype)deepCopyWithZone:(NSZone *)zone
-    __attribute__((ns_returns_retained));
+- (instancetype)deepCopyWithZone:(NSZone *)zone __attribute__((ns_returns_retained));
 @end
-
-//%PDDM-EXPAND DICTIONARY_POD_PRIV_INTERFACES_FOR_KEY(String)
-// This block of code is generated, do not edit it directly.
 
 @interface GPBStringUInt32Dictionary () <GPBDictionaryInternalsProtocol> {
  @package
@@ -427,10 +370,7 @@
                                    forKey:(GPBGenericValue *)key
                               keyDataType:(GPBDataType)keyDataType;
 @end
-
-//%PDDM-EXPAND-END (6 expansions)
-
-// clang-format on
+// @@protoc_objc_autogen_end
 
 #pragma mark - NSDictionary Subclass
 

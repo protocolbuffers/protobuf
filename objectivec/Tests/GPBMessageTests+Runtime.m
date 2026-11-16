@@ -239,71 +239,8 @@
   // being true.
   //
 
-  // Disable clang-format for the macros.
-  // clang-format off
-
-//%PDDM-DEFINE PROTO2_TEST_HAS_FIELD(FIELD, NON_ZERO_VALUE, ZERO_VALUE)
-//%  {  // optional##FIELD :: NON_ZERO_VALUE
-//%    Message2 *msg = [[Message2 alloc] init];
-//%    XCTAssertFalse(msg.hasOptional##FIELD);
-//%    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_Optional##FIELD));
-//%    msg.optional##FIELD = NON_ZERO_VALUE;
-//%    XCTAssertTrue(msg.hasOptional##FIELD);
-//%    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_Optional##FIELD));
-//%    [msg release];
-//%  }
-//%  {  // optional##FIELD :: ZERO_VALUE
-//%    Message2 *msg = [[Message2 alloc] init];
-//%    XCTAssertFalse(msg.hasOptional##FIELD);
-//%    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_Optional##FIELD));
-//%    msg.optional##FIELD = ZERO_VALUE;
-//%    XCTAssertTrue(msg.hasOptional##FIELD);
-//%    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_Optional##FIELD));
-//%    [msg release];
-//%  }
-//%
-//%PDDM-DEFINE PROTO2_TEST_CLEAR_FIELD_WITH_NIL(FIELD, VALUE)
-//%  {  // optional##FIELD
-//%    Message2 *msg = [[Message2 alloc] init];
-//%    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_Optional##FIELD));
-//%    msg.optional##FIELD = VALUE;
-//%    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_Optional##FIELD));
-//%    msg.optional##FIELD = nil;
-//%    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_Optional##FIELD));
-//%    [msg release];
-//%  }
-//%
-//%PDDM-DEFINE PROTO2_TEST_HAS_FIELDS()
-//%PROTO2_TEST_HAS_FIELD(Int32, 1, 0)
-//%PROTO2_TEST_HAS_FIELD(Int64, 1, 0)
-//%PROTO2_TEST_HAS_FIELD(Uint32, 1, 0)
-//%PROTO2_TEST_HAS_FIELD(Uint64, 1, 0)
-//%PROTO2_TEST_HAS_FIELD(Sint32, 1, 0)
-//%PROTO2_TEST_HAS_FIELD(Sint64, 1, 0)
-//%PROTO2_TEST_HAS_FIELD(Fixed32, 1, 0)
-//%PROTO2_TEST_HAS_FIELD(Fixed64, 1, 0)
-//%PROTO2_TEST_HAS_FIELD(Sfixed32, 1, 0)
-//%PROTO2_TEST_HAS_FIELD(Sfixed64, 1, 0)
-//%PROTO2_TEST_HAS_FIELD(Float, 1.0f, 0.0f)
-//%PROTO2_TEST_HAS_FIELD(Double, 1.0, 0.0)
-//%PROTO2_TEST_HAS_FIELD(Bool, YES, NO)
-//%PROTO2_TEST_HAS_FIELD(String, @"foo", @"")
-//%PROTO2_TEST_HAS_FIELD(Bytes, [@"foo" dataUsingEncoding:NSUTF8StringEncoding], [NSData data])
-//%  //
-//%  // Test doesn't apply to optionalGroup/optionalMessage.
-//%  //
-//%
-//%PROTO2_TEST_HAS_FIELD(Enum, Message2_Enum_Bar, Message2_Enum_Foo)
-//%  //
-//%  // Nil can also be used to clear strings, bytes, groups, and messages.
-//%  //
-//%
-//%PROTO2_TEST_CLEAR_FIELD_WITH_NIL(String, @"foo")
-//%PROTO2_TEST_CLEAR_FIELD_WITH_NIL(Bytes, [@"foo" dataUsingEncoding:NSUTF8StringEncoding])
-//%PROTO2_TEST_CLEAR_FIELD_WITH_NIL(Group, [Message2_OptionalGroup message])
-//%PROTO2_TEST_CLEAR_FIELD_WITH_NIL(Message, [Message2 message])
-//%PDDM-EXPAND PROTO2_TEST_HAS_FIELDS()
-// This block of code is generated, do not edit it directly.
+  // @@protoc_objc_autogen: Tests/GPBMessageTests+Runtime.m:proto2_has_fields
+  // This block of code is generated, do not edit it directly.
 
   {  // optionalInt32 :: 1
     Message2 *msg = [[Message2 alloc] init];
@@ -656,10 +593,7 @@
     XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_OptionalMessage));
     [msg release];
   }
-
-//%PDDM-EXPAND-END PROTO2_TEST_HAS_FIELDS()
-
-  // clang-format on
+  // @@protoc_objc_autogen_end
 }
 
 - (void)testProto3SingleFieldHasBehavior {
@@ -668,61 +602,8 @@
   // being true.  When set to the default, shouldn't be true.
   //
 
-  // Disable clang-format for the macros.
-  // clang-format off
-
-//%PDDM-DEFINE PROTO3_TEST_HAS_FIELD(FIELD, NON_ZERO_VALUE, ZERO_VALUE)
-//%  {  // optional##FIELD
-//%    Message3 *msg = [[Message3 alloc] init];
-//%    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_Optional##FIELD));
-//%    msg.optional##FIELD = NON_ZERO_VALUE;
-//%    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_Optional##FIELD));
-//%    msg.optional##FIELD = ZERO_VALUE;
-//%    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_Optional##FIELD));
-//%    [msg release];
-//%  }
-//%
-//%PDDM-DEFINE PROTO3_TEST_CLEAR_FIELD_WITH_NIL(FIELD, VALUE)
-//%  {  // optional##FIELD
-//%    Message3 *msg = [[Message3 alloc] init];
-//%    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_Optional##FIELD));
-//%    msg.optional##FIELD = VALUE;
-//%    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_Optional##FIELD));
-//%    msg.optional##FIELD = nil;
-//%    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_Optional##FIELD));
-//%    [msg release];
-//%  }
-//%
-//%PDDM-DEFINE PROTO3_TEST_HAS_FIELDS()
-//%PROTO3_TEST_HAS_FIELD(Int32, 1, 0)
-//%PROTO3_TEST_HAS_FIELD(Int64, 1, 0)
-//%PROTO3_TEST_HAS_FIELD(Uint32, 1, 0)
-//%PROTO3_TEST_HAS_FIELD(Uint64, 1, 0)
-//%PROTO3_TEST_HAS_FIELD(Sint32, 1, 0)
-//%PROTO3_TEST_HAS_FIELD(Sint64, 1, 0)
-//%PROTO3_TEST_HAS_FIELD(Fixed32, 1, 0)
-//%PROTO3_TEST_HAS_FIELD(Fixed64, 1, 0)
-//%PROTO3_TEST_HAS_FIELD(Sfixed32, 1, 0)
-//%PROTO3_TEST_HAS_FIELD(Sfixed64, 1, 0)
-//%PROTO3_TEST_HAS_FIELD(Float, 1.0f, 0.0f)
-//%PROTO3_TEST_HAS_FIELD(Double, 1.0, 0.0)
-//%PROTO3_TEST_HAS_FIELD(Bool, YES, NO)
-//%PROTO3_TEST_HAS_FIELD(String, @"foo", @"")
-//%PROTO3_TEST_HAS_FIELD(Bytes, [@"foo" dataUsingEncoding:NSUTF8StringEncoding], [NSData data])
-//%  //
-//%  // Test doesn't apply to optionalMessage (no groups in proto3).
-//%  //
-//%
-//%PROTO3_TEST_HAS_FIELD(Enum, Message3_Enum_Bar, Message3_Enum_Foo)
-//%  //
-//%  // Nil can also be used to clear strings, bytes, and messages (no groups in proto3).
-//%  //
-//%
-//%PROTO3_TEST_CLEAR_FIELD_WITH_NIL(String, @"foo")
-//%PROTO3_TEST_CLEAR_FIELD_WITH_NIL(Bytes, [@"foo" dataUsingEncoding:NSUTF8StringEncoding])
-//%PROTO3_TEST_CLEAR_FIELD_WITH_NIL(Message, [Message3 message])
-//%PDDM-EXPAND PROTO3_TEST_HAS_FIELDS()
-// This block of code is generated, do not edit it directly.
+  // @@protoc_objc_autogen: Tests/GPBMessageTests+Runtime.m:proto3_has_fields
+  // This block of code is generated, do not edit it directly.
 
   {  // optionalInt32
     Message3 *msg = [[Message3 alloc] init];
@@ -921,10 +802,7 @@
     XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_OptionalMessage));
     [msg release];
   }
-
-//%PDDM-EXPAND-END PROTO3_TEST_HAS_FIELDS()
-
-  // clang-format on
+  // @@protoc_objc_autogen_end
 }
 
 - (void)testProto3SingleOptionalFieldHasBehavior {
@@ -932,45 +810,8 @@
   // Setting to any value including the default (0) should result in true.
   //
 
-  // Disable clang-format for the macros.
-  // clang-format off
-
-//%PDDM-DEFINE PROTO3_TEST_OPTIONAL_HAS_FIELD(FIELD, NON_ZERO_VALUE, ZERO_VALUE)
-//%  {  // optional##FIELD
-//%    Message3Optional *msg = [[Message3Optional alloc] init];
-//%    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_Optional##FIELD));
-//%    msg.optional##FIELD = NON_ZERO_VALUE;
-//%    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_Optional##FIELD));
-//%    msg.hasOptional##FIELD = NO;
-//%    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_Optional##FIELD));
-//%    msg.optional##FIELD = ZERO_VALUE;
-//%    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_Optional##FIELD));
-//%    [msg release];
-//%  }
-//%
-//%PDDM-DEFINE PROTO3_TEST_OPTIONAL_HAS_FIELDS()
-//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Int32, 1, 0)
-//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Int64, 1, 0)
-//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Uint32, 1, 0)
-//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Uint64, 1, 0)
-//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Sint32, 1, 0)
-//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Sint64, 1, 0)
-//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Fixed32, 1, 0)
-//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Fixed64, 1, 0)
-//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Sfixed32, 1, 0)
-//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Sfixed64, 1, 0)
-//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Float, 1.0f, 0.0f)
-//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Double, 1.0, 0.0)
-//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Bool, YES, NO)
-//%PROTO3_TEST_OPTIONAL_HAS_FIELD(String, @"foo", @"")
-//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Bytes, [@"foo" dataUsingEncoding:NSUTF8StringEncoding], [NSData data])
-//%  //
-//%  // Test doesn't apply to optionalMessage (no groups in proto3).
-//%  //
-//%
-//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Enum, Message3Optional_Enum_Bar, Message3Optional_Enum_Foo)
-//%PDDM-EXPAND PROTO3_TEST_OPTIONAL_HAS_FIELDS()
-// This block of code is generated, do not edit it directly.
+  // @@protoc_objc_autogen: Tests/GPBMessageTests+Runtime.m:proto3_optional_has_fields
+  // This block of code is generated, do not edit it directly.
 
   {  // optionalInt32
     Message3Optional *msg = [[Message3Optional alloc] init];
@@ -1167,10 +1008,7 @@
     XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalEnum));
     [msg release];
   }
-
-//%PDDM-EXPAND-END PROTO3_TEST_OPTIONAL_HAS_FIELDS()
-
-  // clang-format on
+  // @@protoc_objc_autogen_end
 }
 
 - (void)testAccessingProto2UnknownEnumValues {

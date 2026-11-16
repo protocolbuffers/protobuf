@@ -20,10 +20,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// Disable clang-format for the macros.
-// clang-format off
-
-//%PDDM-EXPAND DECLARE_DICTIONARIES()
+// @@protoc_objc_autogen: GPBDictionary.h:dictionary_interfaces
 // This block of code is generated, do not edit it directly.
 
 #pragma mark - UInt32 -> UInt32
@@ -35,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBUInt32UInt32Dictionary : NSObject <NSCopying>
+@interface GPBUInt32UInt32Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -49,8 +46,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt32s:(const uint32_t [__nullable])values
-                        forKeys:(const uint32_t [__nullable])keys
+- (instancetype)initWithUInt32s:(const uint32_t[__nullable])values
+                        forKeys:(const uint32_t[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -89,8 +86,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndUInt32sUsingBlock:
-    (void (NS_NOESCAPE ^)(uint32_t key, uint32_t value, BOOL *stop))block;
+- (void)enumerateKeysAndUInt32sUsingBlock:(void(NS_NOESCAPE ^)(uint32_t key, uint32_t value,
+                                                               BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -131,7 +128,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBUInt32Int32Dictionary : NSObject <NSCopying>
+@interface GPBUInt32Int32Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -145,8 +142,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt32s:(const int32_t [__nullable])values
-                       forKeys:(const uint32_t [__nullable])keys
+- (instancetype)initWithInt32s:(const int32_t[__nullable])values
+                       forKeys:(const uint32_t[__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -185,8 +182,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndInt32sUsingBlock:
-    (void (NS_NOESCAPE ^)(uint32_t key, int32_t value, BOOL *stop))block;
+- (void)enumerateKeysAndInt32sUsingBlock:(void(NS_NOESCAPE ^)(uint32_t key, int32_t value,
+                                                              BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -227,7 +224,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBUInt32UInt64Dictionary : NSObject <NSCopying>
+@interface GPBUInt32UInt64Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -241,8 +238,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt64s:(const uint64_t [__nullable])values
-                        forKeys:(const uint32_t [__nullable])keys
+- (instancetype)initWithUInt64s:(const uint64_t[__nullable])values
+                        forKeys:(const uint32_t[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -281,8 +278,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndUInt64sUsingBlock:
-    (void (NS_NOESCAPE ^)(uint32_t key, uint64_t value, BOOL *stop))block;
+- (void)enumerateKeysAndUInt64sUsingBlock:(void(NS_NOESCAPE ^)(uint32_t key, uint64_t value,
+                                                               BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -323,7 +320,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBUInt32Int64Dictionary : NSObject <NSCopying>
+@interface GPBUInt32Int64Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -337,8 +334,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt64s:(const int64_t [__nullable])values
-                       forKeys:(const uint32_t [__nullable])keys
+- (instancetype)initWithInt64s:(const int64_t[__nullable])values
+                       forKeys:(const uint32_t[__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -377,8 +374,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndInt64sUsingBlock:
-    (void (NS_NOESCAPE ^)(uint32_t key, int64_t value, BOOL *stop))block;
+- (void)enumerateKeysAndInt64sUsingBlock:(void(NS_NOESCAPE ^)(uint32_t key, int64_t value,
+                                                              BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -419,7 +416,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBUInt32BoolDictionary : NSObject <NSCopying>
+@interface GPBUInt32BoolDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -433,8 +430,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithBools:(const BOOL [__nullable])values
-                      forKeys:(const uint32_t [__nullable])keys
+- (instancetype)initWithBools:(const BOOL[__nullable])values
+                      forKeys:(const uint32_t[__nullable])keys
                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -473,8 +470,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndBoolsUsingBlock:
-    (void (NS_NOESCAPE ^)(uint32_t key, BOOL value, BOOL *stop))block;
+- (void)enumerateKeysAndBoolsUsingBlock:(void(NS_NOESCAPE ^)(uint32_t key, BOOL value, BOOL *stop))
+                                            block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -515,7 +512,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBUInt32FloatDictionary : NSObject <NSCopying>
+@interface GPBUInt32FloatDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -529,8 +526,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithFloats:(const float [__nullable])values
-                       forKeys:(const uint32_t [__nullable])keys
+- (instancetype)initWithFloats:(const float[__nullable])values
+                       forKeys:(const uint32_t[__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -569,8 +566,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndFloatsUsingBlock:
-    (void (NS_NOESCAPE ^)(uint32_t key, float value, BOOL *stop))block;
+- (void)enumerateKeysAndFloatsUsingBlock:(void(NS_NOESCAPE ^)(uint32_t key, float value,
+                                                              BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -611,7 +608,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBUInt32DoubleDictionary : NSObject <NSCopying>
+@interface GPBUInt32DoubleDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -625,8 +622,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithDoubles:(const double [__nullable])values
-                        forKeys:(const uint32_t [__nullable])keys
+- (instancetype)initWithDoubles:(const double[__nullable])values
+                        forKeys:(const uint32_t[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -665,8 +662,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndDoublesUsingBlock:
-    (void (NS_NOESCAPE ^)(uint32_t key, double value, BOOL *stop))block;
+- (void)enumerateKeysAndDoublesUsingBlock:(void(NS_NOESCAPE ^)(uint32_t key, double value,
+                                                               BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -707,7 +704,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBUInt32EnumDictionary : NSObject <NSCopying>
+@interface GPBUInt32EnumDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -734,8 +731,8 @@ __attribute__((objc_subclassing_restricted))
  * @return A newly initialized dictionary with the keys and values in it.
  **/
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
-                                 rawValues:(const int32_t [__nullable])values
-                                   forKeys:(const uint32_t [__nullable])keys
+                                 rawValues:(const int32_t[__nullable])values
+                                   forKeys:(const uint32_t[__nullable])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -782,8 +779,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndEnumsUsingBlock:
-    (void (NS_NOESCAPE ^)(uint32_t key, int32_t value, BOOL *stop))block;
+- (void)enumerateKeysAndEnumsUsingBlock:(void(NS_NOESCAPE ^)(uint32_t key, int32_t value,
+                                                             BOOL *stop))block;
 
 /**
  * Gets the raw enum value for the given key.
@@ -809,8 +806,8 @@ __attribute__((objc_subclassing_restricted))
  *   **rawValue**: The value for the current entry
  *   **stop**:     A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndRawValuesUsingBlock:
-    (void (NS_NOESCAPE ^)(uint32_t key, int32_t rawValue, BOOL *stop))block;
+- (void)enumerateKeysAndRawValuesUsingBlock:(void(NS_NOESCAPE ^)(uint32_t key, int32_t rawValue,
+                                                                 BOOL *stop))block;
 
 /**
  * Adds the keys and raw enum values from another dictionary.
@@ -870,7 +867,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBUInt32ObjectDictionary<__covariant ObjectType> : NSObject <NSCopying>
+@interface GPBUInt32ObjectDictionary<__covariant ObjectType> : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -879,13 +876,14 @@ __attribute__((objc_subclassing_restricted))
  * Initializes this dictionary, copying the given values and keys.
  *
  * @param objects      The values to be placed in this dictionary.
- * @param keys         The keys under which to store the values.
- * @param count        The number of elements to copy into the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithObjects:(const ObjectType __nonnull GPB_UNSAFE_UNRETAINED [__nullable])objects
-                        forKeys:(const uint32_t [__nullable])keys
+- (instancetype)initWithObjects:
+                    (const ObjectType __nonnull GPB_UNSAFE_UNRETAINED[__nullable])objects
+                        forKeys:(const uint32_t[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -919,12 +917,12 @@ __attribute__((objc_subclassing_restricted))
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:         The key for the current entry.
+ *   **key**:        The key for the current entry.
  *   **object**:      The value for the current entry
- *   **stop**:        A pointer to a boolean that when set stops the enumeration.
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndObjectsUsingBlock:
-    (void (NS_NOESCAPE ^)(uint32_t key, ObjectType object, BOOL *stop))block;
+- (void)enumerateKeysAndObjectsUsingBlock:(void(NS_NOESCAPE ^)(uint32_t key, ObjectType object,
+                                                               BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -938,7 +936,7 @@ __attribute__((objc_subclassing_restricted))
  * Sets the value for the given key.
  *
  * @param object     The value to set.
- * @param key        The key under which to store the value.
+ * @param key       The key under which to store the value.
  **/
 - (void)setObject:(ObjectType)object forKey:(uint32_t)key;
 
@@ -965,7 +963,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBInt32UInt32Dictionary : NSObject <NSCopying>
+@interface GPBInt32UInt32Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -979,8 +977,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt32s:(const uint32_t [__nullable])values
-                        forKeys:(const int32_t [__nullable])keys
+- (instancetype)initWithUInt32s:(const uint32_t[__nullable])values
+                        forKeys:(const int32_t[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -1019,8 +1017,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndUInt32sUsingBlock:
-    (void (NS_NOESCAPE ^)(int32_t key, uint32_t value, BOOL *stop))block;
+- (void)enumerateKeysAndUInt32sUsingBlock:(void(NS_NOESCAPE ^)(int32_t key, uint32_t value,
+                                                               BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -1061,7 +1059,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBInt32Int32Dictionary : NSObject <NSCopying>
+@interface GPBInt32Int32Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -1075,8 +1073,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt32s:(const int32_t [__nullable])values
-                       forKeys:(const int32_t [__nullable])keys
+- (instancetype)initWithInt32s:(const int32_t[__nullable])values
+                       forKeys:(const int32_t[__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -1115,8 +1113,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndInt32sUsingBlock:
-    (void (NS_NOESCAPE ^)(int32_t key, int32_t value, BOOL *stop))block;
+- (void)enumerateKeysAndInt32sUsingBlock:(void(NS_NOESCAPE ^)(int32_t key, int32_t value,
+                                                              BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -1157,7 +1155,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBInt32UInt64Dictionary : NSObject <NSCopying>
+@interface GPBInt32UInt64Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -1171,8 +1169,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt64s:(const uint64_t [__nullable])values
-                        forKeys:(const int32_t [__nullable])keys
+- (instancetype)initWithUInt64s:(const uint64_t[__nullable])values
+                        forKeys:(const int32_t[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -1211,8 +1209,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndUInt64sUsingBlock:
-    (void (NS_NOESCAPE ^)(int32_t key, uint64_t value, BOOL *stop))block;
+- (void)enumerateKeysAndUInt64sUsingBlock:(void(NS_NOESCAPE ^)(int32_t key, uint64_t value,
+                                                               BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -1253,7 +1251,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBInt32Int64Dictionary : NSObject <NSCopying>
+@interface GPBInt32Int64Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -1267,8 +1265,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt64s:(const int64_t [__nullable])values
-                       forKeys:(const int32_t [__nullable])keys
+- (instancetype)initWithInt64s:(const int64_t[__nullable])values
+                       forKeys:(const int32_t[__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -1307,8 +1305,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndInt64sUsingBlock:
-    (void (NS_NOESCAPE ^)(int32_t key, int64_t value, BOOL *stop))block;
+- (void)enumerateKeysAndInt64sUsingBlock:(void(NS_NOESCAPE ^)(int32_t key, int64_t value,
+                                                              BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -1349,7 +1347,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBInt32BoolDictionary : NSObject <NSCopying>
+@interface GPBInt32BoolDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -1363,8 +1361,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithBools:(const BOOL [__nullable])values
-                      forKeys:(const int32_t [__nullable])keys
+- (instancetype)initWithBools:(const BOOL[__nullable])values
+                      forKeys:(const int32_t[__nullable])keys
                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -1403,8 +1401,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndBoolsUsingBlock:
-    (void (NS_NOESCAPE ^)(int32_t key, BOOL value, BOOL *stop))block;
+- (void)enumerateKeysAndBoolsUsingBlock:(void(NS_NOESCAPE ^)(int32_t key, BOOL value, BOOL *stop))
+                                            block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -1445,7 +1443,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBInt32FloatDictionary : NSObject <NSCopying>
+@interface GPBInt32FloatDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -1459,8 +1457,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithFloats:(const float [__nullable])values
-                       forKeys:(const int32_t [__nullable])keys
+- (instancetype)initWithFloats:(const float[__nullable])values
+                       forKeys:(const int32_t[__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -1499,8 +1497,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndFloatsUsingBlock:
-    (void (NS_NOESCAPE ^)(int32_t key, float value, BOOL *stop))block;
+- (void)enumerateKeysAndFloatsUsingBlock:(void(NS_NOESCAPE ^)(int32_t key, float value, BOOL *stop))
+                                             block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -1541,7 +1539,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBInt32DoubleDictionary : NSObject <NSCopying>
+@interface GPBInt32DoubleDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -1555,8 +1553,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithDoubles:(const double [__nullable])values
-                        forKeys:(const int32_t [__nullable])keys
+- (instancetype)initWithDoubles:(const double[__nullable])values
+                        forKeys:(const int32_t[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -1595,8 +1593,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndDoublesUsingBlock:
-    (void (NS_NOESCAPE ^)(int32_t key, double value, BOOL *stop))block;
+- (void)enumerateKeysAndDoublesUsingBlock:(void(NS_NOESCAPE ^)(int32_t key, double value,
+                                                               BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -1637,7 +1635,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBInt32EnumDictionary : NSObject <NSCopying>
+@interface GPBInt32EnumDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -1664,8 +1662,8 @@ __attribute__((objc_subclassing_restricted))
  * @return A newly initialized dictionary with the keys and values in it.
  **/
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
-                                 rawValues:(const int32_t [__nullable])values
-                                   forKeys:(const int32_t [__nullable])keys
+                                 rawValues:(const int32_t[__nullable])values
+                                   forKeys:(const int32_t[__nullable])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -1712,8 +1710,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndEnumsUsingBlock:
-    (void (NS_NOESCAPE ^)(int32_t key, int32_t value, BOOL *stop))block;
+- (void)enumerateKeysAndEnumsUsingBlock:(void(NS_NOESCAPE ^)(int32_t key, int32_t value,
+                                                             BOOL *stop))block;
 
 /**
  * Gets the raw enum value for the given key.
@@ -1739,8 +1737,8 @@ __attribute__((objc_subclassing_restricted))
  *   **rawValue**: The value for the current entry
  *   **stop**:     A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndRawValuesUsingBlock:
-    (void (NS_NOESCAPE ^)(int32_t key, int32_t rawValue, BOOL *stop))block;
+- (void)enumerateKeysAndRawValuesUsingBlock:(void(NS_NOESCAPE ^)(int32_t key, int32_t rawValue,
+                                                                 BOOL *stop))block;
 
 /**
  * Adds the keys and raw enum values from another dictionary.
@@ -1800,7 +1798,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBInt32ObjectDictionary<__covariant ObjectType> : NSObject <NSCopying>
+@interface GPBInt32ObjectDictionary<__covariant ObjectType> : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -1809,13 +1807,14 @@ __attribute__((objc_subclassing_restricted))
  * Initializes this dictionary, copying the given values and keys.
  *
  * @param objects      The values to be placed in this dictionary.
- * @param keys         The keys under which to store the values.
- * @param count        The number of elements to copy into the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithObjects:(const ObjectType __nonnull GPB_UNSAFE_UNRETAINED [__nullable])objects
-                        forKeys:(const int32_t [__nullable])keys
+- (instancetype)initWithObjects:
+                    (const ObjectType __nonnull GPB_UNSAFE_UNRETAINED[__nullable])objects
+                        forKeys:(const int32_t[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -1849,12 +1848,12 @@ __attribute__((objc_subclassing_restricted))
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:         The key for the current entry.
+ *   **key**:        The key for the current entry.
  *   **object**:      The value for the current entry
- *   **stop**:        A pointer to a boolean that when set stops the enumeration.
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndObjectsUsingBlock:
-    (void (NS_NOESCAPE ^)(int32_t key, ObjectType object, BOOL *stop))block;
+- (void)enumerateKeysAndObjectsUsingBlock:(void(NS_NOESCAPE ^)(int32_t key, ObjectType object,
+                                                               BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -1868,7 +1867,7 @@ __attribute__((objc_subclassing_restricted))
  * Sets the value for the given key.
  *
  * @param object     The value to set.
- * @param key        The key under which to store the value.
+ * @param key       The key under which to store the value.
  **/
 - (void)setObject:(ObjectType)object forKey:(int32_t)key;
 
@@ -1895,7 +1894,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBUInt64UInt32Dictionary : NSObject <NSCopying>
+@interface GPBUInt64UInt32Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -1909,8 +1908,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt32s:(const uint32_t [__nullable])values
-                        forKeys:(const uint64_t [__nullable])keys
+- (instancetype)initWithUInt32s:(const uint32_t[__nullable])values
+                        forKeys:(const uint64_t[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -1949,8 +1948,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndUInt32sUsingBlock:
-    (void (NS_NOESCAPE ^)(uint64_t key, uint32_t value, BOOL *stop))block;
+- (void)enumerateKeysAndUInt32sUsingBlock:(void(NS_NOESCAPE ^)(uint64_t key, uint32_t value,
+                                                               BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -1991,7 +1990,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBUInt64Int32Dictionary : NSObject <NSCopying>
+@interface GPBUInt64Int32Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -2005,8 +2004,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt32s:(const int32_t [__nullable])values
-                       forKeys:(const uint64_t [__nullable])keys
+- (instancetype)initWithInt32s:(const int32_t[__nullable])values
+                       forKeys:(const uint64_t[__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -2045,8 +2044,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndInt32sUsingBlock:
-    (void (NS_NOESCAPE ^)(uint64_t key, int32_t value, BOOL *stop))block;
+- (void)enumerateKeysAndInt32sUsingBlock:(void(NS_NOESCAPE ^)(uint64_t key, int32_t value,
+                                                              BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -2087,7 +2086,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBUInt64UInt64Dictionary : NSObject <NSCopying>
+@interface GPBUInt64UInt64Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -2101,8 +2100,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt64s:(const uint64_t [__nullable])values
-                        forKeys:(const uint64_t [__nullable])keys
+- (instancetype)initWithUInt64s:(const uint64_t[__nullable])values
+                        forKeys:(const uint64_t[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -2141,8 +2140,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndUInt64sUsingBlock:
-    (void (NS_NOESCAPE ^)(uint64_t key, uint64_t value, BOOL *stop))block;
+- (void)enumerateKeysAndUInt64sUsingBlock:(void(NS_NOESCAPE ^)(uint64_t key, uint64_t value,
+                                                               BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -2183,7 +2182,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBUInt64Int64Dictionary : NSObject <NSCopying>
+@interface GPBUInt64Int64Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -2197,8 +2196,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt64s:(const int64_t [__nullable])values
-                       forKeys:(const uint64_t [__nullable])keys
+- (instancetype)initWithInt64s:(const int64_t[__nullable])values
+                       forKeys:(const uint64_t[__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -2237,8 +2236,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndInt64sUsingBlock:
-    (void (NS_NOESCAPE ^)(uint64_t key, int64_t value, BOOL *stop))block;
+- (void)enumerateKeysAndInt64sUsingBlock:(void(NS_NOESCAPE ^)(uint64_t key, int64_t value,
+                                                              BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -2279,7 +2278,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBUInt64BoolDictionary : NSObject <NSCopying>
+@interface GPBUInt64BoolDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -2293,8 +2292,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithBools:(const BOOL [__nullable])values
-                      forKeys:(const uint64_t [__nullable])keys
+- (instancetype)initWithBools:(const BOOL[__nullable])values
+                      forKeys:(const uint64_t[__nullable])keys
                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -2333,8 +2332,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndBoolsUsingBlock:
-    (void (NS_NOESCAPE ^)(uint64_t key, BOOL value, BOOL *stop))block;
+- (void)enumerateKeysAndBoolsUsingBlock:(void(NS_NOESCAPE ^)(uint64_t key, BOOL value, BOOL *stop))
+                                            block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -2375,7 +2374,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBUInt64FloatDictionary : NSObject <NSCopying>
+@interface GPBUInt64FloatDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -2389,8 +2388,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithFloats:(const float [__nullable])values
-                       forKeys:(const uint64_t [__nullable])keys
+- (instancetype)initWithFloats:(const float[__nullable])values
+                       forKeys:(const uint64_t[__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -2429,8 +2428,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndFloatsUsingBlock:
-    (void (NS_NOESCAPE ^)(uint64_t key, float value, BOOL *stop))block;
+- (void)enumerateKeysAndFloatsUsingBlock:(void(NS_NOESCAPE ^)(uint64_t key, float value,
+                                                              BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -2471,7 +2470,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBUInt64DoubleDictionary : NSObject <NSCopying>
+@interface GPBUInt64DoubleDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -2485,8 +2484,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithDoubles:(const double [__nullable])values
-                        forKeys:(const uint64_t [__nullable])keys
+- (instancetype)initWithDoubles:(const double[__nullable])values
+                        forKeys:(const uint64_t[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -2525,8 +2524,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndDoublesUsingBlock:
-    (void (NS_NOESCAPE ^)(uint64_t key, double value, BOOL *stop))block;
+- (void)enumerateKeysAndDoublesUsingBlock:(void(NS_NOESCAPE ^)(uint64_t key, double value,
+                                                               BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -2567,7 +2566,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBUInt64EnumDictionary : NSObject <NSCopying>
+@interface GPBUInt64EnumDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -2594,8 +2593,8 @@ __attribute__((objc_subclassing_restricted))
  * @return A newly initialized dictionary with the keys and values in it.
  **/
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
-                                 rawValues:(const int32_t [__nullable])values
-                                   forKeys:(const uint64_t [__nullable])keys
+                                 rawValues:(const int32_t[__nullable])values
+                                   forKeys:(const uint64_t[__nullable])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -2642,8 +2641,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndEnumsUsingBlock:
-    (void (NS_NOESCAPE ^)(uint64_t key, int32_t value, BOOL *stop))block;
+- (void)enumerateKeysAndEnumsUsingBlock:(void(NS_NOESCAPE ^)(uint64_t key, int32_t value,
+                                                             BOOL *stop))block;
 
 /**
  * Gets the raw enum value for the given key.
@@ -2669,8 +2668,8 @@ __attribute__((objc_subclassing_restricted))
  *   **rawValue**: The value for the current entry
  *   **stop**:     A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndRawValuesUsingBlock:
-    (void (NS_NOESCAPE ^)(uint64_t key, int32_t rawValue, BOOL *stop))block;
+- (void)enumerateKeysAndRawValuesUsingBlock:(void(NS_NOESCAPE ^)(uint64_t key, int32_t rawValue,
+                                                                 BOOL *stop))block;
 
 /**
  * Adds the keys and raw enum values from another dictionary.
@@ -2730,7 +2729,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBUInt64ObjectDictionary<__covariant ObjectType> : NSObject <NSCopying>
+@interface GPBUInt64ObjectDictionary<__covariant ObjectType> : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -2739,13 +2738,14 @@ __attribute__((objc_subclassing_restricted))
  * Initializes this dictionary, copying the given values and keys.
  *
  * @param objects      The values to be placed in this dictionary.
- * @param keys         The keys under which to store the values.
- * @param count        The number of elements to copy into the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithObjects:(const ObjectType __nonnull GPB_UNSAFE_UNRETAINED [__nullable])objects
-                        forKeys:(const uint64_t [__nullable])keys
+- (instancetype)initWithObjects:
+                    (const ObjectType __nonnull GPB_UNSAFE_UNRETAINED[__nullable])objects
+                        forKeys:(const uint64_t[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -2779,12 +2779,12 @@ __attribute__((objc_subclassing_restricted))
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:         The key for the current entry.
+ *   **key**:        The key for the current entry.
  *   **object**:      The value for the current entry
- *   **stop**:        A pointer to a boolean that when set stops the enumeration.
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndObjectsUsingBlock:
-    (void (NS_NOESCAPE ^)(uint64_t key, ObjectType object, BOOL *stop))block;
+- (void)enumerateKeysAndObjectsUsingBlock:(void(NS_NOESCAPE ^)(uint64_t key, ObjectType object,
+                                                               BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -2798,7 +2798,7 @@ __attribute__((objc_subclassing_restricted))
  * Sets the value for the given key.
  *
  * @param object     The value to set.
- * @param key        The key under which to store the value.
+ * @param key       The key under which to store the value.
  **/
 - (void)setObject:(ObjectType)object forKey:(uint64_t)key;
 
@@ -2825,7 +2825,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBInt64UInt32Dictionary : NSObject <NSCopying>
+@interface GPBInt64UInt32Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -2839,8 +2839,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt32s:(const uint32_t [__nullable])values
-                        forKeys:(const int64_t [__nullable])keys
+- (instancetype)initWithUInt32s:(const uint32_t[__nullable])values
+                        forKeys:(const int64_t[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -2879,8 +2879,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndUInt32sUsingBlock:
-    (void (NS_NOESCAPE ^)(int64_t key, uint32_t value, BOOL *stop))block;
+- (void)enumerateKeysAndUInt32sUsingBlock:(void(NS_NOESCAPE ^)(int64_t key, uint32_t value,
+                                                               BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -2921,7 +2921,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBInt64Int32Dictionary : NSObject <NSCopying>
+@interface GPBInt64Int32Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -2935,8 +2935,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt32s:(const int32_t [__nullable])values
-                       forKeys:(const int64_t [__nullable])keys
+- (instancetype)initWithInt32s:(const int32_t[__nullable])values
+                       forKeys:(const int64_t[__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -2975,8 +2975,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndInt32sUsingBlock:
-    (void (NS_NOESCAPE ^)(int64_t key, int32_t value, BOOL *stop))block;
+- (void)enumerateKeysAndInt32sUsingBlock:(void(NS_NOESCAPE ^)(int64_t key, int32_t value,
+                                                              BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -3017,7 +3017,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBInt64UInt64Dictionary : NSObject <NSCopying>
+@interface GPBInt64UInt64Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -3031,8 +3031,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt64s:(const uint64_t [__nullable])values
-                        forKeys:(const int64_t [__nullable])keys
+- (instancetype)initWithUInt64s:(const uint64_t[__nullable])values
+                        forKeys:(const int64_t[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -3071,8 +3071,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndUInt64sUsingBlock:
-    (void (NS_NOESCAPE ^)(int64_t key, uint64_t value, BOOL *stop))block;
+- (void)enumerateKeysAndUInt64sUsingBlock:(void(NS_NOESCAPE ^)(int64_t key, uint64_t value,
+                                                               BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -3113,7 +3113,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBInt64Int64Dictionary : NSObject <NSCopying>
+@interface GPBInt64Int64Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -3127,8 +3127,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt64s:(const int64_t [__nullable])values
-                       forKeys:(const int64_t [__nullable])keys
+- (instancetype)initWithInt64s:(const int64_t[__nullable])values
+                       forKeys:(const int64_t[__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -3167,8 +3167,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndInt64sUsingBlock:
-    (void (NS_NOESCAPE ^)(int64_t key, int64_t value, BOOL *stop))block;
+- (void)enumerateKeysAndInt64sUsingBlock:(void(NS_NOESCAPE ^)(int64_t key, int64_t value,
+                                                              BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -3209,7 +3209,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBInt64BoolDictionary : NSObject <NSCopying>
+@interface GPBInt64BoolDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -3223,8 +3223,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithBools:(const BOOL [__nullable])values
-                      forKeys:(const int64_t [__nullable])keys
+- (instancetype)initWithBools:(const BOOL[__nullable])values
+                      forKeys:(const int64_t[__nullable])keys
                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -3263,8 +3263,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndBoolsUsingBlock:
-    (void (NS_NOESCAPE ^)(int64_t key, BOOL value, BOOL *stop))block;
+- (void)enumerateKeysAndBoolsUsingBlock:(void(NS_NOESCAPE ^)(int64_t key, BOOL value, BOOL *stop))
+                                            block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -3305,7 +3305,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBInt64FloatDictionary : NSObject <NSCopying>
+@interface GPBInt64FloatDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -3319,8 +3319,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithFloats:(const float [__nullable])values
-                       forKeys:(const int64_t [__nullable])keys
+- (instancetype)initWithFloats:(const float[__nullable])values
+                       forKeys:(const int64_t[__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -3359,8 +3359,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndFloatsUsingBlock:
-    (void (NS_NOESCAPE ^)(int64_t key, float value, BOOL *stop))block;
+- (void)enumerateKeysAndFloatsUsingBlock:(void(NS_NOESCAPE ^)(int64_t key, float value, BOOL *stop))
+                                             block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -3401,7 +3401,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBInt64DoubleDictionary : NSObject <NSCopying>
+@interface GPBInt64DoubleDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -3415,8 +3415,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithDoubles:(const double [__nullable])values
-                        forKeys:(const int64_t [__nullable])keys
+- (instancetype)initWithDoubles:(const double[__nullable])values
+                        forKeys:(const int64_t[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -3455,8 +3455,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndDoublesUsingBlock:
-    (void (NS_NOESCAPE ^)(int64_t key, double value, BOOL *stop))block;
+- (void)enumerateKeysAndDoublesUsingBlock:(void(NS_NOESCAPE ^)(int64_t key, double value,
+                                                               BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -3497,7 +3497,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBInt64EnumDictionary : NSObject <NSCopying>
+@interface GPBInt64EnumDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -3524,8 +3524,8 @@ __attribute__((objc_subclassing_restricted))
  * @return A newly initialized dictionary with the keys and values in it.
  **/
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
-                                 rawValues:(const int32_t [__nullable])values
-                                   forKeys:(const int64_t [__nullable])keys
+                                 rawValues:(const int32_t[__nullable])values
+                                   forKeys:(const int64_t[__nullable])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -3572,8 +3572,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndEnumsUsingBlock:
-    (void (NS_NOESCAPE ^)(int64_t key, int32_t value, BOOL *stop))block;
+- (void)enumerateKeysAndEnumsUsingBlock:(void(NS_NOESCAPE ^)(int64_t key, int32_t value,
+                                                             BOOL *stop))block;
 
 /**
  * Gets the raw enum value for the given key.
@@ -3599,8 +3599,8 @@ __attribute__((objc_subclassing_restricted))
  *   **rawValue**: The value for the current entry
  *   **stop**:     A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndRawValuesUsingBlock:
-    (void (NS_NOESCAPE ^)(int64_t key, int32_t rawValue, BOOL *stop))block;
+- (void)enumerateKeysAndRawValuesUsingBlock:(void(NS_NOESCAPE ^)(int64_t key, int32_t rawValue,
+                                                                 BOOL *stop))block;
 
 /**
  * Adds the keys and raw enum values from another dictionary.
@@ -3660,7 +3660,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBInt64ObjectDictionary<__covariant ObjectType> : NSObject <NSCopying>
+@interface GPBInt64ObjectDictionary<__covariant ObjectType> : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -3669,13 +3669,14 @@ __attribute__((objc_subclassing_restricted))
  * Initializes this dictionary, copying the given values and keys.
  *
  * @param objects      The values to be placed in this dictionary.
- * @param keys         The keys under which to store the values.
- * @param count        The number of elements to copy into the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithObjects:(const ObjectType __nonnull GPB_UNSAFE_UNRETAINED [__nullable])objects
-                        forKeys:(const int64_t [__nullable])keys
+- (instancetype)initWithObjects:
+                    (const ObjectType __nonnull GPB_UNSAFE_UNRETAINED[__nullable])objects
+                        forKeys:(const int64_t[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -3709,12 +3710,12 @@ __attribute__((objc_subclassing_restricted))
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:         The key for the current entry.
+ *   **key**:        The key for the current entry.
  *   **object**:      The value for the current entry
- *   **stop**:        A pointer to a boolean that when set stops the enumeration.
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndObjectsUsingBlock:
-    (void (NS_NOESCAPE ^)(int64_t key, ObjectType object, BOOL *stop))block;
+- (void)enumerateKeysAndObjectsUsingBlock:(void(NS_NOESCAPE ^)(int64_t key, ObjectType object,
+                                                               BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -3728,7 +3729,7 @@ __attribute__((objc_subclassing_restricted))
  * Sets the value for the given key.
  *
  * @param object     The value to set.
- * @param key        The key under which to store the value.
+ * @param key       The key under which to store the value.
  **/
 - (void)setObject:(ObjectType)object forKey:(int64_t)key;
 
@@ -3755,7 +3756,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBBoolUInt32Dictionary : NSObject <NSCopying>
+@interface GPBBoolUInt32Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -3769,8 +3770,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt32s:(const uint32_t [__nullable])values
-                        forKeys:(const BOOL [__nullable])keys
+- (instancetype)initWithUInt32s:(const uint32_t[__nullable])values
+                        forKeys:(const BOOL[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -3809,8 +3810,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndUInt32sUsingBlock:
-    (void (NS_NOESCAPE ^)(BOOL key, uint32_t value, BOOL *stop))block;
+- (void)enumerateKeysAndUInt32sUsingBlock:(void(NS_NOESCAPE ^)(BOOL key, uint32_t value,
+                                                               BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -3851,7 +3852,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBBoolInt32Dictionary : NSObject <NSCopying>
+@interface GPBBoolInt32Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -3865,8 +3866,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt32s:(const int32_t [__nullable])values
-                       forKeys:(const BOOL [__nullable])keys
+- (instancetype)initWithInt32s:(const int32_t[__nullable])values
+                       forKeys:(const BOOL[__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -3905,8 +3906,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndInt32sUsingBlock:
-    (void (NS_NOESCAPE ^)(BOOL key, int32_t value, BOOL *stop))block;
+- (void)enumerateKeysAndInt32sUsingBlock:(void(NS_NOESCAPE ^)(BOOL key, int32_t value, BOOL *stop))
+                                             block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -3947,7 +3948,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBBoolUInt64Dictionary : NSObject <NSCopying>
+@interface GPBBoolUInt64Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -3961,8 +3962,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt64s:(const uint64_t [__nullable])values
-                        forKeys:(const BOOL [__nullable])keys
+- (instancetype)initWithUInt64s:(const uint64_t[__nullable])values
+                        forKeys:(const BOOL[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -4001,8 +4002,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndUInt64sUsingBlock:
-    (void (NS_NOESCAPE ^)(BOOL key, uint64_t value, BOOL *stop))block;
+- (void)enumerateKeysAndUInt64sUsingBlock:(void(NS_NOESCAPE ^)(BOOL key, uint64_t value,
+                                                               BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -4043,7 +4044,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBBoolInt64Dictionary : NSObject <NSCopying>
+@interface GPBBoolInt64Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -4057,8 +4058,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt64s:(const int64_t [__nullable])values
-                       forKeys:(const BOOL [__nullable])keys
+- (instancetype)initWithInt64s:(const int64_t[__nullable])values
+                       forKeys:(const BOOL[__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -4097,8 +4098,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndInt64sUsingBlock:
-    (void (NS_NOESCAPE ^)(BOOL key, int64_t value, BOOL *stop))block;
+- (void)enumerateKeysAndInt64sUsingBlock:(void(NS_NOESCAPE ^)(BOOL key, int64_t value, BOOL *stop))
+                                             block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -4139,7 +4140,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBBoolBoolDictionary : NSObject <NSCopying>
+@interface GPBBoolBoolDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -4153,8 +4154,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithBools:(const BOOL [__nullable])values
-                      forKeys:(const BOOL [__nullable])keys
+- (instancetype)initWithBools:(const BOOL[__nullable])values
+                      forKeys:(const BOOL[__nullable])keys
                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -4193,8 +4194,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndBoolsUsingBlock:
-    (void (NS_NOESCAPE ^)(BOOL key, BOOL value, BOOL *stop))block;
+- (void)enumerateKeysAndBoolsUsingBlock:(void(NS_NOESCAPE ^)(BOOL key, BOOL value, BOOL *stop))
+                                            block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -4235,7 +4236,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBBoolFloatDictionary : NSObject <NSCopying>
+@interface GPBBoolFloatDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -4249,8 +4250,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithFloats:(const float [__nullable])values
-                       forKeys:(const BOOL [__nullable])keys
+- (instancetype)initWithFloats:(const float[__nullable])values
+                       forKeys:(const BOOL[__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -4289,8 +4290,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndFloatsUsingBlock:
-    (void (NS_NOESCAPE ^)(BOOL key, float value, BOOL *stop))block;
+- (void)enumerateKeysAndFloatsUsingBlock:(void(NS_NOESCAPE ^)(BOOL key, float value, BOOL *stop))
+                                             block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -4331,7 +4332,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBBoolDoubleDictionary : NSObject <NSCopying>
+@interface GPBBoolDoubleDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -4345,8 +4346,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithDoubles:(const double [__nullable])values
-                        forKeys:(const BOOL [__nullable])keys
+- (instancetype)initWithDoubles:(const double[__nullable])values
+                        forKeys:(const BOOL[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -4385,8 +4386,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndDoublesUsingBlock:
-    (void (NS_NOESCAPE ^)(BOOL key, double value, BOOL *stop))block;
+- (void)enumerateKeysAndDoublesUsingBlock:(void(NS_NOESCAPE ^)(BOOL key, double value, BOOL *stop))
+                                              block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -4427,7 +4428,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBBoolEnumDictionary : NSObject <NSCopying>
+@interface GPBBoolEnumDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -4454,8 +4455,8 @@ __attribute__((objc_subclassing_restricted))
  * @return A newly initialized dictionary with the keys and values in it.
  **/
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
-                                 rawValues:(const int32_t [__nullable])values
-                                   forKeys:(const BOOL [__nullable])keys
+                                 rawValues:(const int32_t[__nullable])values
+                                   forKeys:(const BOOL[__nullable])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -4502,8 +4503,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndEnumsUsingBlock:
-    (void (NS_NOESCAPE ^)(BOOL key, int32_t value, BOOL *stop))block;
+- (void)enumerateKeysAndEnumsUsingBlock:(void(NS_NOESCAPE ^)(BOOL key, int32_t value, BOOL *stop))
+                                            block;
 
 /**
  * Gets the raw enum value for the given key.
@@ -4529,8 +4530,8 @@ __attribute__((objc_subclassing_restricted))
  *   **rawValue**: The value for the current entry
  *   **stop**:     A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndRawValuesUsingBlock:
-    (void (NS_NOESCAPE ^)(BOOL key, int32_t rawValue, BOOL *stop))block;
+- (void)enumerateKeysAndRawValuesUsingBlock:(void(NS_NOESCAPE ^)(BOOL key, int32_t rawValue,
+                                                                 BOOL *stop))block;
 
 /**
  * Adds the keys and raw enum values from another dictionary.
@@ -4590,7 +4591,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBBoolObjectDictionary<__covariant ObjectType> : NSObject <NSCopying>
+@interface GPBBoolObjectDictionary<__covariant ObjectType> : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -4599,13 +4600,14 @@ __attribute__((objc_subclassing_restricted))
  * Initializes this dictionary, copying the given values and keys.
  *
  * @param objects      The values to be placed in this dictionary.
- * @param keys         The keys under which to store the values.
- * @param count        The number of elements to copy into the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithObjects:(const ObjectType __nonnull GPB_UNSAFE_UNRETAINED [__nullable])objects
-                        forKeys:(const BOOL [__nullable])keys
+- (instancetype)initWithObjects:
+                    (const ObjectType __nonnull GPB_UNSAFE_UNRETAINED[__nullable])objects
+                        forKeys:(const BOOL[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -4639,12 +4641,12 @@ __attribute__((objc_subclassing_restricted))
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:         The key for the current entry.
+ *   **key**:        The key for the current entry.
  *   **object**:      The value for the current entry
- *   **stop**:        A pointer to a boolean that when set stops the enumeration.
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndObjectsUsingBlock:
-    (void (NS_NOESCAPE ^)(BOOL key, ObjectType object, BOOL *stop))block;
+- (void)enumerateKeysAndObjectsUsingBlock:(void(NS_NOESCAPE ^)(BOOL key, ObjectType object,
+                                                               BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -4658,7 +4660,7 @@ __attribute__((objc_subclassing_restricted))
  * Sets the value for the given key.
  *
  * @param object     The value to set.
- * @param key        The key under which to store the value.
+ * @param key       The key under which to store the value.
  **/
 - (void)setObject:(ObjectType)object forKey:(BOOL)key;
 
@@ -4685,7 +4687,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBStringUInt32Dictionary : NSObject <NSCopying>
+@interface GPBStringUInt32Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -4699,8 +4701,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt32s:(const uint32_t [__nullable])values
-                        forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
+- (instancetype)initWithUInt32s:(const uint32_t[__nullable])values
+                        forKeys:(const NSString *__nonnull GPB_UNSAFE_UNRETAINED[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -4739,8 +4741,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndUInt32sUsingBlock:
-    (void (NS_NOESCAPE ^)(NSString *key, uint32_t value, BOOL *stop))block;
+- (void)enumerateKeysAndUInt32sUsingBlock:(void(NS_NOESCAPE ^)(NSString *key, uint32_t value,
+                                                               BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -4781,7 +4783,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBStringInt32Dictionary : NSObject <NSCopying>
+@interface GPBStringInt32Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -4795,8 +4797,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt32s:(const int32_t [__nullable])values
-                       forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
+- (instancetype)initWithInt32s:(const int32_t[__nullable])values
+                       forKeys:(const NSString *__nonnull GPB_UNSAFE_UNRETAINED[__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -4835,8 +4837,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndInt32sUsingBlock:
-    (void (NS_NOESCAPE ^)(NSString *key, int32_t value, BOOL *stop))block;
+- (void)enumerateKeysAndInt32sUsingBlock:(void(NS_NOESCAPE ^)(NSString *key, int32_t value,
+                                                              BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -4877,7 +4879,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBStringUInt64Dictionary : NSObject <NSCopying>
+@interface GPBStringUInt64Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -4891,8 +4893,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt64s:(const uint64_t [__nullable])values
-                        forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
+- (instancetype)initWithUInt64s:(const uint64_t[__nullable])values
+                        forKeys:(const NSString *__nonnull GPB_UNSAFE_UNRETAINED[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -4931,8 +4933,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndUInt64sUsingBlock:
-    (void (NS_NOESCAPE ^)(NSString *key, uint64_t value, BOOL *stop))block;
+- (void)enumerateKeysAndUInt64sUsingBlock:(void(NS_NOESCAPE ^)(NSString *key, uint64_t value,
+                                                               BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -4973,7 +4975,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBStringInt64Dictionary : NSObject <NSCopying>
+@interface GPBStringInt64Dictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -4987,8 +4989,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt64s:(const int64_t [__nullable])values
-                       forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
+- (instancetype)initWithInt64s:(const int64_t[__nullable])values
+                       forKeys:(const NSString *__nonnull GPB_UNSAFE_UNRETAINED[__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -5027,8 +5029,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndInt64sUsingBlock:
-    (void (NS_NOESCAPE ^)(NSString *key, int64_t value, BOOL *stop))block;
+- (void)enumerateKeysAndInt64sUsingBlock:(void(NS_NOESCAPE ^)(NSString *key, int64_t value,
+                                                              BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -5069,7 +5071,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBStringBoolDictionary : NSObject <NSCopying>
+@interface GPBStringBoolDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -5083,8 +5085,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithBools:(const BOOL [__nullable])values
-                      forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
+- (instancetype)initWithBools:(const BOOL[__nullable])values
+                      forKeys:(const NSString *__nonnull GPB_UNSAFE_UNRETAINED[__nullable])keys
                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -5123,8 +5125,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndBoolsUsingBlock:
-    (void (NS_NOESCAPE ^)(NSString *key, BOOL value, BOOL *stop))block;
+- (void)enumerateKeysAndBoolsUsingBlock:(void(NS_NOESCAPE ^)(NSString *key, BOOL value, BOOL *stop))
+                                            block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -5165,7 +5167,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBStringFloatDictionary : NSObject <NSCopying>
+@interface GPBStringFloatDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -5179,8 +5181,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithFloats:(const float [__nullable])values
-                       forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
+- (instancetype)initWithFloats:(const float[__nullable])values
+                       forKeys:(const NSString *__nonnull GPB_UNSAFE_UNRETAINED[__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -5219,8 +5221,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndFloatsUsingBlock:
-    (void (NS_NOESCAPE ^)(NSString *key, float value, BOOL *stop))block;
+- (void)enumerateKeysAndFloatsUsingBlock:(void(NS_NOESCAPE ^)(NSString *key, float value,
+                                                              BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -5261,7 +5263,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBStringDoubleDictionary : NSObject <NSCopying>
+@interface GPBStringDoubleDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -5275,8 +5277,8 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithDoubles:(const double [__nullable])values
-                        forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
+- (instancetype)initWithDoubles:(const double[__nullable])values
+                        forKeys:(const NSString *__nonnull GPB_UNSAFE_UNRETAINED[__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -5315,8 +5317,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndDoublesUsingBlock:
-    (void (NS_NOESCAPE ^)(NSString *key, double value, BOOL *stop))block;
+- (void)enumerateKeysAndDoublesUsingBlock:(void(NS_NOESCAPE ^)(NSString *key, double value,
+                                                               BOOL *stop))block;
 
 /**
  * Adds the keys and values from another dictionary.
@@ -5357,7 +5359,7 @@ __attribute__((objc_subclassing_restricted))
  * @note This class is not meant to be subclassed.
  **/
 __attribute__((objc_subclassing_restricted))
-@interface GPBStringEnumDictionary : NSObject <NSCopying>
+@interface GPBStringEnumDictionary : NSObject<NSCopying>
 
 /** Number of entries stored in this dictionary. */
 @property(nonatomic, readonly) NSUInteger count;
@@ -5383,10 +5385,11 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return A newly initialized dictionary with the keys and values in it.
  **/
-- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
-                                 rawValues:(const int32_t [__nullable])values
-                                   forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
-                                     count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)
+    initWithValidationFunction:(nullable GPBEnumValidationFunc)func
+                     rawValues:(const int32_t[__nullable])values
+                       forKeys:(const NSString *__nonnull GPB_UNSAFE_UNRETAINED[__nullable])keys
+                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
  * Initializes a dictionary with the entries from the given.
@@ -5432,8 +5435,8 @@ __attribute__((objc_subclassing_restricted))
  *   **value**:      The value for the current entry
  *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndEnumsUsingBlock:
-    (void (NS_NOESCAPE ^)(NSString *key, int32_t value, BOOL *stop))block;
+- (void)enumerateKeysAndEnumsUsingBlock:(void(NS_NOESCAPE ^)(NSString *key, int32_t value,
+                                                             BOOL *stop))block;
 
 /**
  * Gets the raw enum value for the given key.
@@ -5459,8 +5462,8 @@ __attribute__((objc_subclassing_restricted))
  *   **rawValue**: The value for the current entry
  *   **stop**:     A pointer to a boolean that when set stops the enumeration.
  **/
-- (void)enumerateKeysAndRawValuesUsingBlock:
-    (void (NS_NOESCAPE ^)(NSString *key, int32_t rawValue, BOOL *stop))block;
+- (void)enumerateKeysAndRawValuesUsingBlock:(void(NS_NOESCAPE ^)(NSString *key, int32_t rawValue,
+                                                                 BOOL *stop))block;
 
 /**
  * Adds the keys and raw enum values from another dictionary.
@@ -5510,298 +5513,6 @@ __attribute__((objc_subclassing_restricted))
 - (void)removeAll;
 
 @end
-
-//%PDDM-EXPAND-END DECLARE_DICTIONARIES()
+// @@protoc_objc_autogen_end
 
 NS_ASSUME_NONNULL_END
-
-//%PDDM-DEFINE DECLARE_DICTIONARIES()
-//%DICTIONARY_INTERFACES_FOR_POD_KEY(UInt32, uint32_t)
-//%DICTIONARY_INTERFACES_FOR_POD_KEY(Int32, int32_t)
-//%DICTIONARY_INTERFACES_FOR_POD_KEY(UInt64, uint64_t)
-//%DICTIONARY_INTERFACES_FOR_POD_KEY(Int64, int64_t)
-//%DICTIONARY_INTERFACES_FOR_POD_KEY(Bool, BOOL)
-//%DICTIONARY_POD_INTERFACES_FOR_KEY(String, NSString, *, OBJECT)
-//%PDDM-DEFINE DICTIONARY_INTERFACES_FOR_POD_KEY(KEY_NAME, KEY_TYPE)
-//%DICTIONARY_POD_INTERFACES_FOR_KEY(KEY_NAME, KEY_TYPE, , POD)
-//%DICTIONARY_POD_KEY_TO_OBJECT_INTERFACE(KEY_NAME, KEY_TYPE, Object, ObjectType)
-//%PDDM-DEFINE DICTIONARY_POD_INTERFACES_FOR_KEY(KEY_NAME, KEY_TYPE, KisP, KHELPER)
-//%DICTIONARY_KEY_TO_POD_INTERFACE(KEY_NAME, KEY_TYPE, KisP, KHELPER, UInt32, uint32_t)
-//%DICTIONARY_KEY_TO_POD_INTERFACE(KEY_NAME, KEY_TYPE, KisP, KHELPER, Int32, int32_t)
-//%DICTIONARY_KEY_TO_POD_INTERFACE(KEY_NAME, KEY_TYPE, KisP, KHELPER, UInt64, uint64_t)
-//%DICTIONARY_KEY_TO_POD_INTERFACE(KEY_NAME, KEY_TYPE, KisP, KHELPER, Int64, int64_t)
-//%DICTIONARY_KEY_TO_POD_INTERFACE(KEY_NAME, KEY_TYPE, KisP, KHELPER, Bool, BOOL)
-//%DICTIONARY_KEY_TO_POD_INTERFACE(KEY_NAME, KEY_TYPE, KisP, KHELPER, Float, float)
-//%DICTIONARY_KEY_TO_POD_INTERFACE(KEY_NAME, KEY_TYPE, KisP, KHELPER, Double, double)
-//%DICTIONARY_KEY_TO_ENUM_INTERFACE(KEY_NAME, KEY_TYPE, KisP, KHELPER, Enum, int32_t)
-//%PDDM-DEFINE DICTIONARY_KEY_TO_POD_INTERFACE(KEY_NAME, KEY_TYPE, KisP, KHELPER, VALUE_NAME, VALUE_TYPE)
-//%DICTIONARY_COMMON_INTERFACE(KEY_NAME, KEY_TYPE, KisP, KHELPER, VALUE_NAME, VALUE_TYPE, POD, VALUE_NAME, value)
-//%PDDM-DEFINE DICTIONARY_POD_KEY_TO_OBJECT_INTERFACE(KEY_NAME, KEY_TYPE, VALUE_NAME, VALUE_TYPE)
-//%DICTIONARY_COMMON_INTERFACE(KEY_NAME, KEY_TYPE, , POD, VALUE_NAME, VALUE_TYPE, OBJECT, Object, object)
-//%PDDM-DEFINE VALUE_FOR_KEY_POD(KEY_TYPE, VALUE_TYPE, VNAME)
-//%/**
-//% * Gets the value for the given key.
-//% *
-//% * @param value Pointer into which the value will be set, if found.
-//% * @param key   Key under which the value is stored, if present.
-//% *
-//% * @return YES if the key was found and the value was copied, NO otherwise.
-//% **/
-//%- (BOOL)get##VNAME##:(nullable VALUE_TYPE *)value forKey:(KEY_TYPE)key;
-//%PDDM-DEFINE VALUE_FOR_KEY_OBJECT(KEY_TYPE, VALUE_TYPE, VNAME)
-//%/**
-//% * Fetches the object stored under the given key.
-//% *
-//% * @param key Key under which the value is stored, if present.
-//% *
-//% * @return The object if found, nil otherwise.
-//% **/
-//%- (nullable VALUE_TYPE)objectForKey:(KEY_TYPE)key;
-//%PDDM-DEFINE VALUE_FOR_KEY_Enum(KEY_TYPE, VALUE_TYPE, VNAME)
-//%VALUE_FOR_KEY_POD(KEY_TYPE, VALUE_TYPE, VNAME)
-//%PDDM-DEFINE ARRAY_ARG_MODIFIERPOD()
-// Nothing
-//%PDDM-DEFINE ARRAY_ARG_MODIFIEREnum()
-// Nothing
-//%PDDM-DEFINE ARRAY_ARG_MODIFIEROBJECT()
-//%__nonnull GPB_UNSAFE_UNRETAINED ##
-//%PDDM-DEFINE DICTIONARY_CLASS_DECLPOD(KEY_NAME, VALUE_NAME, VALUE_TYPE)
-//%GPB##KEY_NAME##VALUE_NAME##Dictionary
-//%PDDM-DEFINE DICTIONARY_CLASS_DECLEnum(KEY_NAME, VALUE_NAME, VALUE_TYPE)
-//%GPB##KEY_NAME##VALUE_NAME##Dictionary
-//%PDDM-DEFINE DICTIONARY_CLASS_DECLOBJECT(KEY_NAME, VALUE_NAME, VALUE_TYPE)
-//%GPB##KEY_NAME##VALUE_NAME##Dictionary<__covariant VALUE_TYPE>
-//%PDDM-DEFINE DICTIONARY_COMMON_INTERFACE(KEY_NAME, KEY_TYPE, KisP, KHELPER, VALUE_NAME, VALUE_TYPE, VHELPER, VNAME, VNAME_VAR)
-//%#pragma mark - KEY_NAME -> VALUE_NAME
-//%
-//%/**
-//% * Class used for map fields of <##KEY_TYPE##, ##VALUE_TYPE##>
-//% * values. This performs better than boxing into NSNumbers in NSDictionaries.
-//% *
-//% * @note This class is not meant to be subclassed.
-//% **/
-//%__attribute__((objc_subclassing_restricted))
-//%@interface DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) : NSObject <NSCopying>
-//%
-//%/** Number of entries stored in this dictionary. */
-//%@property(nonatomic, readonly) NSUInteger count;
-//%
-//%/**
-//% * Initializes this dictionary, copying the given values and keys.
-//% *
-//% * @param ##VNAME_VAR##s      The values to be placed in this dictionary.
-//% * @param keys ##VNAME_VAR$S##  The keys under which to store the values.
-//% * @param count ##VNAME_VAR$S## The number of elements to copy into the dictionary.
-//% *
-//% * @return A newly initialized dictionary with a copy of the values and keys.
-//% **/
-//%- (instancetype)initWith##VNAME##s:(const VALUE_TYPE ARRAY_ARG_MODIFIER##VHELPER()[__nullable])##VNAME_VAR##s
-//%                ##VNAME$S##  forKeys:(const KEY_TYPE##KisP$S##KisP ARRAY_ARG_MODIFIER##KHELPER()[__nullable])keys
-//%                ##VNAME$S##    count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
-//%
-//%/**
-//% * Initializes this dictionary, copying the entries from the given dictionary.
-//% *
-//% * @param dictionary Dictionary containing the entries to add to this dictionary.
-//% *
-//% * @return A newly initialized dictionary with the entries of the given dictionary.
-//% **/
-//%- (instancetype)initWithDictionary:(GPB##KEY_NAME##VALUE_NAME##Dictionary *)dictionary;
-//%
-//%/**
-//% * Initializes this dictionary with the requested capacity.
-//% *
-//% * @param numItems Number of items needed for this dictionary.
-//% *
-//% * @return A newly initialized dictionary with the requested capacity.
-//% **/
-//%- (instancetype)initWithCapacity:(NSUInteger)numItems;
-//%
-//%DICTIONARY_IMMUTABLE_INTERFACE(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, VHELPER, VNAME, VNAME_VAR)
-//%
-//%/**
-//% * Adds the keys and values from another dictionary.
-//% *
-//% * @param otherDictionary Dictionary containing entries to be added to this
-//% *                        dictionary.
-//% **/
-//%- (void)addEntriesFromDictionary:(GPB##KEY_NAME##VALUE_NAME##Dictionary *)otherDictionary;
-//%
-//%DICTIONARY_MUTABLE_INTERFACE(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, VHELPER, VNAME, VNAME_VAR)
-//%
-//%@end
-//%
-
-//%PDDM-DEFINE DICTIONARY_KEY_TO_ENUM_INTERFACE(KEY_NAME, KEY_TYPE, KisP, KHELPER, VALUE_NAME, VALUE_TYPE)
-//%DICTIONARY_KEY_TO_ENUM_INTERFACE2(KEY_NAME, KEY_TYPE, KisP, KHELPER, VALUE_NAME, VALUE_TYPE, Enum)
-//%PDDM-DEFINE DICTIONARY_KEY_TO_ENUM_INTERFACE2(KEY_NAME, KEY_TYPE, KisP, KHELPER, VALUE_NAME, VALUE_TYPE, VHELPER)
-//%#pragma mark - KEY_NAME -> VALUE_NAME
-//%
-//%/**
-//% * Class used for map fields of <##KEY_TYPE##, ##VALUE_TYPE##>
-//% * values. This performs better than boxing into NSNumbers in NSDictionaries.
-//% *
-//% * @note This class is not meant to be subclassed.
-//% **/
-//%__attribute__((objc_subclassing_restricted))
-//%@interface GPB##KEY_NAME##VALUE_NAME##Dictionary : NSObject <NSCopying>
-//%
-//%/** Number of entries stored in this dictionary. */
-//%@property(nonatomic, readonly) NSUInteger count;
-//%/** The validation function to check if the enums are valid. */
-//%@property(nonatomic, readonly) GPBEnumValidationFunc validationFunc;
-//%
-//%/**
-//% * Initializes a dictionary with the given validation function.
-//% *
-//% * @param func The enum validation function for the dictionary.
-//% *
-//% * @return A newly initialized dictionary.
-//% **/
-//%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func;
-//%
-//%/**
-//% * Initializes a dictionary with the entries given.
-//% *
-//% * @param func   The enum validation function for the dictionary.
-//% * @param values The raw enum values values to be placed in the dictionary.
-//% * @param keys   The keys under which to store the values.
-//% * @param count  The number of entries to store in the dictionary.
-//% *
-//% * @return A newly initialized dictionary with the keys and values in it.
-//% **/
-//%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
-//%                                 rawValues:(const VALUE_TYPE ARRAY_ARG_MODIFIER##VHELPER()[__nullable])values
-//%                                   forKeys:(const KEY_TYPE##KisP$S##KisP ARRAY_ARG_MODIFIER##KHELPER()[__nullable])keys
-//%                                     count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
-//%
-//%/**
-//% * Initializes a dictionary with the entries from the given.
-//% * dictionary.
-//% *
-//% * @param dictionary Dictionary containing the entries to add to the dictionary.
-//% *
-//% * @return A newly initialized dictionary with the entries from the given
-//% *         dictionary in it.
-//% **/
-//%- (instancetype)initWithDictionary:(GPB##KEY_NAME##VALUE_NAME##Dictionary *)dictionary;
-//%
-//%/**
-//% * Initializes a dictionary with the given capacity.
-//% *
-//% * @param func     The enum validation function for the dictionary.
-//% * @param numItems Capacity needed for the dictionary.
-//% *
-//% * @return A newly initialized dictionary with the given capacity.
-//% **/
-//%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
-//%                                  capacity:(NSUInteger)numItems;
-//%
-//%// These will return kGPBUnrecognizedEnumeratorValue if the value for the key
-//%// is not a valid enumerator as defined by validationFunc. If the actual value is
-//%// desired, use "raw" version of the method.
-//%
-//%DICTIONARY_IMMUTABLE_INTERFACE(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, VHELPER, Enum, value)
-//%
-//%/**
-//% * Gets the raw enum value for the given key.
-//% *
-//% * @note This method bypass the validationFunc to enable the access of values that
-//% *       were not known at the time the binary was compiled.
-//% *
-//% * @param rawValue Pointer into which the value will be set, if found.
-//% * @param key      Key under which the value is stored, if present.
-//% *
-//% * @return YES if the key was found and the value was copied, NO otherwise.
-//% **/
-//%- (BOOL)getRawValue:(nullable VALUE_TYPE *)rawValue forKey:(KEY_TYPE##KisP$S##KisP)key;
-//%
-//%/**
-//% * Enumerates the keys and values on this dictionary with the given block.
-//% *
-//% * @note This method bypass the validationFunc to enable the access of values that
-//% *       were not known at the time the binary was compiled.
-//% *
-//% * @param block The block to enumerate with.
-//% *   **key**:      The key for the current entry.
-//% *   **rawValue**: The value for the current entry
-//% *   **stop**:     A pointer to a boolean that when set stops the enumeration.
-//% **/
-//%- (void)enumerateKeysAndRawValuesUsingBlock:
-//%    (void (NS_NOESCAPE ^)(KEY_TYPE KisP##key, VALUE_TYPE rawValue, BOOL *stop))block;
-//%
-//%/**
-//% * Adds the keys and raw enum values from another dictionary.
-//% *
-//% * @note This method bypass the validationFunc to enable the setting of values that
-//% *       were not known at the time the binary was compiled.
-//% *
-//% * @param otherDictionary Dictionary containing entries to be added to this
-//% *                        dictionary.
-//% **/
-//%- (void)addRawEntriesFromDictionary:(GPB##KEY_NAME##VALUE_NAME##Dictionary *)otherDictionary;
-//%
-//%// If value is not a valid enumerator as defined by validationFunc, these
-//%// methods will assert in debug, and will log in release and assign the value
-//%// to the default value. Use the rawValue methods below to assign non enumerator
-//%// values.
-//%
-//%DICTIONARY_MUTABLE_INTERFACE(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, VHELPER, Enum, value)
-//%
-//%@end
-//%
-
-//%PDDM-DEFINE DICTIONARY_IMMUTABLE_INTERFACE(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, VHELPER, VNAME, VNAME_VAR)
-//%VALUE_FOR_KEY_##VHELPER(KEY_TYPE##KisP$S##KisP, VALUE_TYPE, VNAME)
-//%
-//%/**
-//% * Enumerates the keys and values on this dictionary with the given block.
-//% *
-//% * @param block The block to enumerate with.
-//% *   **key**: ##VNAME_VAR$S##  The key for the current entry.
-//% *   **VNAME_VAR**:      The value for the current entry
-//% *   **stop**: ##VNAME_VAR$S## A pointer to a boolean that when set stops the enumeration.
-//% **/
-//%- (void)enumerateKeysAnd##VNAME##sUsingBlock:
-//%    (void (NS_NOESCAPE ^)(KEY_TYPE KisP##key, VALUE_TYPE VNAME_VAR, BOOL *stop))block;
-
-//%PDDM-DEFINE DICTIONARY_MUTABLE_INTERFACE(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, VHELPER, VNAME, VNAME_VAR)
-//%/**
-//% * Sets the value for the given key.
-//% *
-//% * @param ##VNAME_VAR     The value to set.
-//% * @param key ##VNAME_VAR$S## The key under which to store the value.
-//% **/
-//%- (void)set##VNAME##:(VALUE_TYPE)##VNAME_VAR forKey:(KEY_TYPE##KisP$S##KisP)key;
-//%DICTIONARY_EXTRA_MUTABLE_METHODS_##VHELPER(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE)
-//%/**
-//% * Removes the entry for the given key.
-//% *
-//% * @param aKey Key to be removed from this dictionary.
-//% **/
-//%- (void)remove##VNAME##ForKey:(KEY_TYPE##KisP$S##KisP)aKey;
-//%
-//%/**
-//% * Removes all entries in this dictionary.
-//% **/
-//%- (void)removeAll;
-
-//%PDDM-DEFINE DICTIONARY_EXTRA_MUTABLE_METHODS_POD(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE)
-// Empty
-//%PDDM-DEFINE DICTIONARY_EXTRA_MUTABLE_METHODS_OBJECT(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE)
-// Empty
-//%PDDM-DEFINE DICTIONARY_EXTRA_MUTABLE_METHODS_Enum(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE)
-//%
-//%/**
-//% * Sets the raw enum value for the given key.
-//% *
-//% * @note This method bypass the validationFunc to enable the setting of values that
-//% *       were not known at the time the binary was compiled.
-//% *
-//% * @param rawValue The raw enum value to set.
-//% * @param key      The key under which to store the raw enum value.
-//% **/
-//%- (void)setRawValue:(VALUE_TYPE)rawValue forKey:(KEY_TYPE##KisP$S##KisP)key;
-//%
-
-// clang-format on

@@ -88,49 +88,8 @@
   // Proto3 optionals should be just like proto2, zero values also get serialized.
   //
 
-  // Disable clang-format for the macros.
-  // clang-format off
-
-//%PDDM-DEFINE PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(FIELD, ZERO_VALUE, EXPECTED_LEN)
-//%  {  // optional##FIELD
-//%    Message3Optional *msg = [[Message3Optional alloc] init];
-//%    NSData *data = [msg data];
-//%    XCTAssertEqual([data length], 0U);
-//%    msg.optional##FIELD = ZERO_VALUE;
-//%    data = [msg data];
-//%    XCTAssertEqual(data.length, EXPECTED_LEN);
-//%    NSError *err = nil;
-//%    Message3Optional *msg2 = [Message3Optional parseFromData:data error:&err];
-//%    XCTAssertNotNil(msg2);
-//%    XCTAssertNil(err);
-//%    XCTAssertTrue(msg2.hasOptional##FIELD);
-//%    XCTAssertEqualObjects(msg, msg2);
-//%    [msg release];
-//%  }
-//%
-//%PDDM-DEFINE PROTO3_TEST_SERIALIZE_OPTIONAL_FIELDS()
-//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Int32, 0, 2)
-//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Int64, 0, 2)
-//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Uint32, 0, 2)
-//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Uint64, 0, 2)
-//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Sint32, 0, 2)
-//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Sint64, 0, 2)
-//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Fixed32, 0, 5)
-//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Fixed64, 0, 9)
-//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Sfixed32, 0, 5)
-//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Sfixed64, 0, 9)
-//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Float, 0.0f, 5)
-//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Double, 0.0, 9)
-//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Bool, NO, 2)
-//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(String, @"", 2)
-//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Bytes, [NSData data], 2)
-//%  //
-//%  // Test doesn't apply to optionalMessage (no groups in proto3).
-//%  //
-//%
-//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Enum, Message3Optional_Enum_Foo, 3)
-//%PDDM-EXPAND PROTO3_TEST_SERIALIZE_OPTIONAL_FIELDS()
-// This block of code is generated, do not edit it directly.
+  // @@protoc_objc_autogen: Tests/GPBMessageTests+Serialization.m:proto3_serialize_optional_fields
+  // This block of code is generated, do not edit it directly.
 
   {  // optionalInt32
     Message3Optional *msg = [[Message3Optional alloc] init];
@@ -391,10 +350,7 @@
     XCTAssertEqualObjects(msg, msg2);
     [msg release];
   }
-
-//%PDDM-EXPAND-END PROTO3_TEST_SERIALIZE_OPTIONAL_FIELDS()
-
-  // clang-format on
+  // @@protoc_objc_autogen_end
 }
 
 - (void)testProto2UnknownEnumToUnknownField {
@@ -478,75 +434,10 @@
   XCTAssertEqual(orig.oneofE1, UnknownEnumsMyEnumPlusExtra_EExtra);
 }
 
-// Disable clang-format for the macros.
-// clang-format off
-
-//%PDDM-DEFINE TEST_ROUNDTRIP_ONEOF(MESSAGE, FIELD, VALUE)
-//%TEST_ROUNDTRIP_ONEOF_ADV(MESSAGE, FIELD, VALUE, )
-//%PDDM-DEFINE TEST_ROUNDTRIP_ONEOF_ADV(MESSAGE, FIELD, VALUE, EQ_SUFFIX)
-//%  {  // oneof##FIELD
-//%    MESSAGE *orig = [[MESSAGE alloc] init];
-//%    orig.oneof##FIELD = VALUE;
-//%    XCTAssertEqual(orig.oOneOfCase, MESSAGE##_O_OneOfCase_Oneof##FIELD);
-//%    NSData *data = [orig data];
-//%    XCTAssertNotNil(data);
-//%    MESSAGE *msg = [MESSAGE parseFromData:data error:NULL];
-//%    XCTAssertEqual(msg.oOneOfCase, MESSAGE##_O_OneOfCase_Oneof##FIELD);
-//%    XCTAssertEqual##EQ_SUFFIX(msg.oneof##FIELD, VALUE);
-//%    [orig release];
-//%  }
-//%
-//%PDDM-DEFINE TEST_ROUNDTRIP_ONEOFS(SYNTAX, BOOL_NON_DEFAULT)
-//%- (void)testProto##SYNTAX##RoundTripOneof {
-//%
-//%GROUP_INIT##SYNTAX()  Message##SYNTAX *subMessage = [[Message##SYNTAX alloc] init];
-//%  XCTAssertNotNil(subMessage);
-//%  subMessage.optionalInt32 = 666;
-//%
-//%TEST_ROUNDTRIP_ONEOF(Message##SYNTAX, Int32, 1)
-//%TEST_ROUNDTRIP_ONEOF(Message##SYNTAX, Int64, 2)
-//%TEST_ROUNDTRIP_ONEOF(Message##SYNTAX, Uint32, 3U)
-//%TEST_ROUNDTRIP_ONEOF(Message##SYNTAX, Uint64, 4U)
-//%TEST_ROUNDTRIP_ONEOF(Message##SYNTAX, Sint32, 5)
-//%TEST_ROUNDTRIP_ONEOF(Message##SYNTAX, Sint64, 6)
-//%TEST_ROUNDTRIP_ONEOF(Message##SYNTAX, Fixed32, 7U)
-//%TEST_ROUNDTRIP_ONEOF(Message##SYNTAX, Fixed64, 8U)
-//%TEST_ROUNDTRIP_ONEOF(Message##SYNTAX, Sfixed32, 9)
-//%TEST_ROUNDTRIP_ONEOF(Message##SYNTAX, Sfixed64, 10)
-//%TEST_ROUNDTRIP_ONEOF(Message##SYNTAX, Float, 11.0f)
-//%TEST_ROUNDTRIP_ONEOF(Message##SYNTAX, Double, 12.0)
-//%TEST_ROUNDTRIP_ONEOF(Message##SYNTAX, Bool, BOOL_NON_DEFAULT)
-//%TEST_ROUNDTRIP_ONEOF_ADV(Message##SYNTAX, String, @"foo", Objects)
-//%TEST_ROUNDTRIP_ONEOF_ADV(Message##SYNTAX, Bytes, [@"bar" dataUsingEncoding:NSUTF8StringEncoding], Objects)
-//%GROUP_TEST##SYNTAX()TEST_ROUNDTRIP_ONEOF_ADV(Message##SYNTAX, Message, subMessage, Objects)
-//%TEST_ROUNDTRIP_ONEOF(Message##SYNTAX, Enum, Message##SYNTAX##_Enum_Bar)
-//%GROUP_CLEANUP##SYNTAX()  [subMessage release];
-//%}
-//%
-//%PDDM-DEFINE GROUP_INIT2()
-//%  Message2_OneofGroup *group = [[Message2_OneofGroup alloc] init];
-//%  XCTAssertNotNil(group);
-//%  group.a = 777;
-//%
-//%PDDM-DEFINE GROUP_CLEANUP2()
-//%  [group release];
-//%
-//%PDDM-DEFINE GROUP_TEST2()
-//%TEST_ROUNDTRIP_ONEOF_ADV(Message2, Group, group, Objects)
-//%
-//%PDDM-DEFINE GROUP_INIT3()
-// Empty
-//%PDDM-DEFINE GROUP_CLEANUP3()
-// Empty
-//%PDDM-DEFINE GROUP_TEST3()
-//%  // Not "group" in proto3.
-//%
-//%
-//%PDDM-EXPAND TEST_ROUNDTRIP_ONEOFS(2, NO)
+// @@protoc_objc_autogen: Tests/GPBMessageTests+Serialization.m:roundtrip_oneofs
 // This block of code is generated, do not edit it directly.
 
 - (void)testProto2RoundTripOneof {
-
   Message2_OneofGroup *group = [[Message2_OneofGroup alloc] init];
   XCTAssertNotNil(group);
   group.a = 777;
@@ -774,11 +665,7 @@
   [subMessage release];
 }
 
-//%PDDM-EXPAND TEST_ROUNDTRIP_ONEOFS(3, YES)
-// This block of code is generated, do not edit it directly.
-
 - (void)testProto3RoundTripOneof {
-
   Message3 *subMessage = [[Message3 alloc] init];
   XCTAssertNotNil(subMessage);
   subMessage.optionalInt32 = 666;
@@ -991,10 +878,7 @@
 
   [subMessage release];
 }
-
-//%PDDM-EXPAND-END (2 expansions)
-
-// clang-format on
+// @@protoc_objc_autogen_end
 
 - (void)testPackedUnpackedMessageParsing {
   // packed is optional, a repeated field should parse when packed or unpacked.

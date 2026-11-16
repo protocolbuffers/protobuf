@@ -12,20 +12,13 @@
 #import "GPBTestUtilities.h"
 #import "objectivec/Tests/UnittestRuntimeProto2.pbobjc.h"
 
-// Disable clang-format for the macros.
-// clang-format off
-
-// Pull in the macros (using an external file because expanding all tests
-// in a single file makes a file that is failing to work with within Xcode.
-//%PDDM-IMPORT-DEFINES GPBDictionaryTests.pddm
-
-//%PDDM-EXPAND TESTS_FOR_POD_VALUES(String,NSString,*,Objects,@"foo",@"bar",@"baz",@"mumble")
+// @@protoc_objc_autogen: Tests/GPBDictionaryTests+String.m:dictionary_tests
 // This block of code is generated, do not edit it directly.
 
 // To let the testing macros work, add some extra methods to simplify things.
 @interface GPBStringEnumDictionary (TestingTweak)
-- (instancetype)initWithEnums:(const int32_t [])values
-                      forKeys:(const NSString * [])keys
+- (instancetype)initWithEnums:(const int32_t[])values
+                      forKeys:(const NSString *[])keys
                         count:(NSUInteger)count;
 @end
 
@@ -42,8 +35,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 @implementation GPBStringEnumDictionary (TestingTweak)
-- (instancetype)initWithEnums:(const int32_t [])values
-                      forKeys:(const NSString * [])keys
+- (instancetype)initWithEnums:(const int32_t[])values
+                      forKeys:(const NSString *[])keys
                         count:(NSUInteger)count {
   return [self initWithValidationFunction:TestingEnum_IsValidValue
                                 rawValues:values
@@ -51,7 +44,6 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
                                     count:count];
 }
 @end
-
 
 #pragma mark - String -> UInt32
 
@@ -65,7 +57,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getUInt32:NULL forKey:@"foo"]);
-  [dict enumerateKeysAndUInt32sUsingBlock:^(__unused NSString *aKey, __unused uint32_t aValue, __unused BOOL *stop) {
+  [dict enumerateKeysAndUInt32sUsingBlock:^(__unused NSString *aKey, __unused uint32_t aValue,
+                                            __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
@@ -90,8 +83,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testBasics {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz" };
-  const uint32_t kValues[] = { 100U, 101U, 102U };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz"};
+  const uint32_t kValues[] = {100U, 101U, 102U};
   GPBStringUInt32Dictionary *dict =
       [[GPBStringUInt32Dictionary alloc] initWithUInt32s:kValues
                                                  forKeys:kKeys
@@ -111,7 +104,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertFalse([dict getUInt32:NULL forKey:@"mumble"]);
 
   __block NSUInteger idx = 0;
-  NSString **seenKeys = malloc(3 * sizeof(NSString*));
+  NSString **seenKeys = malloc(3 * sizeof(NSString *));
   uint32_t *seenValues = malloc(3 * sizeof(uint32_t));
   [dict enumerateKeysAndUInt32sUsingBlock:^(NSString *aKey, uint32_t aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 3U);
@@ -135,7 +128,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndUInt32sUsingBlock:^(__unused NSString *aKey, __unused uint32_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndUInt32sUsingBlock:^(__unused NSString *aKey, __unused uint32_t aValue,
+                                            BOOL *stop) {
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -144,11 +138,11 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testEquality {
-  const NSString *kKeys1[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const NSString *kKeys2[] = { @"bar", @"foo", @"mumble" };
-  const uint32_t kValues1[] = { 100U, 101U, 102U };
-  const uint32_t kValues2[] = { 100U, 103U, 102U };
-  const uint32_t kValues3[] = { 100U, 101U, 102U, 103U };
+  const NSString *kKeys1[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const NSString *kKeys2[] = {@"bar", @"foo", @"mumble"};
+  const uint32_t kValues1[] = {100U, 101U, 102U};
+  const uint32_t kValues2[] = {100U, 103U, 102U};
+  const uint32_t kValues3[] = {100U, 101U, 102U, 103U};
   GPBStringUInt32Dictionary *dict1 =
       [[GPBStringUInt32Dictionary alloc] initWithUInt32s:kValues1
                                                  forKeys:kKeys1
@@ -198,8 +192,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testCopy {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const uint32_t kValues[] = { 100U, 101U, 102U, 103U };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const uint32_t kValues[] = {100U, 101U, 102U, 103U};
   GPBStringUInt32Dictionary *dict =
       [[GPBStringUInt32Dictionary alloc] initWithUInt32s:kValues
                                                  forKeys:kKeys
@@ -219,16 +213,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testDictionaryFromDictionary {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const uint32_t kValues[] = { 100U, 101U, 102U, 103U };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const uint32_t kValues[] = {100U, 101U, 102U, 103U};
   GPBStringUInt32Dictionary *dict =
       [[GPBStringUInt32Dictionary alloc] initWithUInt32s:kValues
                                                  forKeys:kKeys
                                                    count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
-  GPBStringUInt32Dictionary *dict2 =
-      [[GPBStringUInt32Dictionary alloc] initWithDictionary:dict];
+  GPBStringUInt32Dictionary *dict2 = [[GPBStringUInt32Dictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
@@ -246,8 +239,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   [dict setUInt32:100U forKey:@"foo"];
   XCTAssertEqual(dict.count, 1U);
 
-  const NSString *kKeys[] = { @"bar", @"baz", @"mumble" };
-  const uint32_t kValues[] = { 101U, 102U, 103U };
+  const NSString *kKeys[] = {@"bar", @"baz", @"mumble"};
+  const uint32_t kValues[] = {101U, 102U, 103U};
   GPBStringUInt32Dictionary *dict2 =
       [[GPBStringUInt32Dictionary alloc] initWithUInt32s:kValues
                                                  forKeys:kKeys
@@ -274,8 +267,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testRemove {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const uint32_t kValues[] = { 100U, 101U, 102U, 103U };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const uint32_t kValues[] = {100U, 101U, 102U, 103U};
   GPBStringUInt32Dictionary *dict =
       [[GPBStringUInt32Dictionary alloc] initWithUInt32s:kValues
                                                  forKeys:kKeys
@@ -332,8 +325,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testInplaceMutation {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const uint32_t kValues[] = { 100U, 101U, 102U, 103U };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const uint32_t kValues[] = {100U, 101U, 102U, 103U};
   GPBStringUInt32Dictionary *dict =
       [[GPBStringUInt32Dictionary alloc] initWithUInt32s:kValues
                                                  forKeys:kKeys
@@ -384,8 +377,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertTrue([dict getUInt32:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 101U);
 
-  const NSString *kKeys2[] = { @"bar", @"baz" };
-  const uint32_t kValues2[] = { 102U, 100U };
+  const NSString *kKeys2[] = {@"bar", @"baz"};
+  const uint32_t kValues2[] = {102U, 100U};
   GPBStringUInt32Dictionary *dict2 =
       [[GPBStringUInt32Dictionary alloc] initWithUInt32s:kValues2
                                                  forKeys:kKeys2
@@ -424,7 +417,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getInt32:NULL forKey:@"foo"]);
-  [dict enumerateKeysAndInt32sUsingBlock:^(__unused NSString *aKey, __unused int32_t aValue, __unused BOOL *stop) {
+  [dict enumerateKeysAndInt32sUsingBlock:^(__unused NSString *aKey, __unused int32_t aValue,
+                                           __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
@@ -449,8 +443,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testBasics {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz" };
-  const int32_t kValues[] = { 200, 201, 202 };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz"};
+  const int32_t kValues[] = {200, 201, 202};
   GPBStringInt32Dictionary *dict =
       [[GPBStringInt32Dictionary alloc] initWithInt32s:kValues
                                                forKeys:kKeys
@@ -470,7 +464,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertFalse([dict getInt32:NULL forKey:@"mumble"]);
 
   __block NSUInteger idx = 0;
-  NSString **seenKeys = malloc(3 * sizeof(NSString*));
+  NSString **seenKeys = malloc(3 * sizeof(NSString *));
   int32_t *seenValues = malloc(3 * sizeof(int32_t));
   [dict enumerateKeysAndInt32sUsingBlock:^(NSString *aKey, int32_t aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 3U);
@@ -494,7 +488,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndInt32sUsingBlock:^(__unused NSString *aKey, __unused int32_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndInt32sUsingBlock:^(__unused NSString *aKey, __unused int32_t aValue,
+                                           BOOL *stop) {
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -503,11 +498,11 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testEquality {
-  const NSString *kKeys1[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const NSString *kKeys2[] = { @"bar", @"foo", @"mumble" };
-  const int32_t kValues1[] = { 200, 201, 202 };
-  const int32_t kValues2[] = { 200, 203, 202 };
-  const int32_t kValues3[] = { 200, 201, 202, 203 };
+  const NSString *kKeys1[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const NSString *kKeys2[] = {@"bar", @"foo", @"mumble"};
+  const int32_t kValues1[] = {200, 201, 202};
+  const int32_t kValues2[] = {200, 203, 202};
+  const int32_t kValues3[] = {200, 201, 202, 203};
   GPBStringInt32Dictionary *dict1 =
       [[GPBStringInt32Dictionary alloc] initWithInt32s:kValues1
                                                forKeys:kKeys1
@@ -557,8 +552,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testCopy {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const int32_t kValues[] = { 200, 201, 202, 203 };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const int32_t kValues[] = {200, 201, 202, 203};
   GPBStringInt32Dictionary *dict =
       [[GPBStringInt32Dictionary alloc] initWithInt32s:kValues
                                                forKeys:kKeys
@@ -578,16 +573,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testDictionaryFromDictionary {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const int32_t kValues[] = { 200, 201, 202, 203 };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const int32_t kValues[] = {200, 201, 202, 203};
   GPBStringInt32Dictionary *dict =
       [[GPBStringInt32Dictionary alloc] initWithInt32s:kValues
                                                forKeys:kKeys
                                                  count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
-  GPBStringInt32Dictionary *dict2 =
-      [[GPBStringInt32Dictionary alloc] initWithDictionary:dict];
+  GPBStringInt32Dictionary *dict2 = [[GPBStringInt32Dictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
@@ -605,8 +599,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   [dict setInt32:200 forKey:@"foo"];
   XCTAssertEqual(dict.count, 1U);
 
-  const NSString *kKeys[] = { @"bar", @"baz", @"mumble" };
-  const int32_t kValues[] = { 201, 202, 203 };
+  const NSString *kKeys[] = {@"bar", @"baz", @"mumble"};
+  const int32_t kValues[] = {201, 202, 203};
   GPBStringInt32Dictionary *dict2 =
       [[GPBStringInt32Dictionary alloc] initWithInt32s:kValues
                                                forKeys:kKeys
@@ -633,8 +627,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testRemove {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const int32_t kValues[] = { 200, 201, 202, 203 };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const int32_t kValues[] = {200, 201, 202, 203};
   GPBStringInt32Dictionary *dict =
       [[GPBStringInt32Dictionary alloc] initWithInt32s:kValues
                                                forKeys:kKeys
@@ -691,8 +685,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testInplaceMutation {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const int32_t kValues[] = { 200, 201, 202, 203 };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const int32_t kValues[] = {200, 201, 202, 203};
   GPBStringInt32Dictionary *dict =
       [[GPBStringInt32Dictionary alloc] initWithInt32s:kValues
                                                forKeys:kKeys
@@ -743,8 +737,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertTrue([dict getInt32:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 201);
 
-  const NSString *kKeys2[] = { @"bar", @"baz" };
-  const int32_t kValues2[] = { 202, 200 };
+  const NSString *kKeys2[] = {@"bar", @"baz"};
+  const int32_t kValues2[] = {202, 200};
   GPBStringInt32Dictionary *dict2 =
       [[GPBStringInt32Dictionary alloc] initWithInt32s:kValues2
                                                forKeys:kKeys2
@@ -783,7 +777,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getUInt64:NULL forKey:@"foo"]);
-  [dict enumerateKeysAndUInt64sUsingBlock:^(__unused NSString *aKey, __unused uint64_t aValue, __unused BOOL *stop) {
+  [dict enumerateKeysAndUInt64sUsingBlock:^(__unused NSString *aKey, __unused uint64_t aValue,
+                                            __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
@@ -808,8 +803,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testBasics {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz" };
-  const uint64_t kValues[] = { 300U, 301U, 302U };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz"};
+  const uint64_t kValues[] = {300U, 301U, 302U};
   GPBStringUInt64Dictionary *dict =
       [[GPBStringUInt64Dictionary alloc] initWithUInt64s:kValues
                                                  forKeys:kKeys
@@ -829,7 +824,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertFalse([dict getUInt64:NULL forKey:@"mumble"]);
 
   __block NSUInteger idx = 0;
-  NSString **seenKeys = malloc(3 * sizeof(NSString*));
+  NSString **seenKeys = malloc(3 * sizeof(NSString *));
   uint64_t *seenValues = malloc(3 * sizeof(uint64_t));
   [dict enumerateKeysAndUInt64sUsingBlock:^(NSString *aKey, uint64_t aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 3U);
@@ -853,7 +848,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndUInt64sUsingBlock:^(__unused NSString *aKey, __unused uint64_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndUInt64sUsingBlock:^(__unused NSString *aKey, __unused uint64_t aValue,
+                                            BOOL *stop) {
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -862,11 +858,11 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testEquality {
-  const NSString *kKeys1[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const NSString *kKeys2[] = { @"bar", @"foo", @"mumble" };
-  const uint64_t kValues1[] = { 300U, 301U, 302U };
-  const uint64_t kValues2[] = { 300U, 303U, 302U };
-  const uint64_t kValues3[] = { 300U, 301U, 302U, 303U };
+  const NSString *kKeys1[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const NSString *kKeys2[] = {@"bar", @"foo", @"mumble"};
+  const uint64_t kValues1[] = {300U, 301U, 302U};
+  const uint64_t kValues2[] = {300U, 303U, 302U};
+  const uint64_t kValues3[] = {300U, 301U, 302U, 303U};
   GPBStringUInt64Dictionary *dict1 =
       [[GPBStringUInt64Dictionary alloc] initWithUInt64s:kValues1
                                                  forKeys:kKeys1
@@ -916,8 +912,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testCopy {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const uint64_t kValues[] = { 300U, 301U, 302U, 303U };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const uint64_t kValues[] = {300U, 301U, 302U, 303U};
   GPBStringUInt64Dictionary *dict =
       [[GPBStringUInt64Dictionary alloc] initWithUInt64s:kValues
                                                  forKeys:kKeys
@@ -937,16 +933,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testDictionaryFromDictionary {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const uint64_t kValues[] = { 300U, 301U, 302U, 303U };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const uint64_t kValues[] = {300U, 301U, 302U, 303U};
   GPBStringUInt64Dictionary *dict =
       [[GPBStringUInt64Dictionary alloc] initWithUInt64s:kValues
                                                  forKeys:kKeys
                                                    count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
-  GPBStringUInt64Dictionary *dict2 =
-      [[GPBStringUInt64Dictionary alloc] initWithDictionary:dict];
+  GPBStringUInt64Dictionary *dict2 = [[GPBStringUInt64Dictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
@@ -964,8 +959,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   [dict setUInt64:300U forKey:@"foo"];
   XCTAssertEqual(dict.count, 1U);
 
-  const NSString *kKeys[] = { @"bar", @"baz", @"mumble" };
-  const uint64_t kValues[] = { 301U, 302U, 303U };
+  const NSString *kKeys[] = {@"bar", @"baz", @"mumble"};
+  const uint64_t kValues[] = {301U, 302U, 303U};
   GPBStringUInt64Dictionary *dict2 =
       [[GPBStringUInt64Dictionary alloc] initWithUInt64s:kValues
                                                  forKeys:kKeys
@@ -992,8 +987,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testRemove {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const uint64_t kValues[] = { 300U, 301U, 302U, 303U };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const uint64_t kValues[] = {300U, 301U, 302U, 303U};
   GPBStringUInt64Dictionary *dict =
       [[GPBStringUInt64Dictionary alloc] initWithUInt64s:kValues
                                                  forKeys:kKeys
@@ -1050,8 +1045,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testInplaceMutation {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const uint64_t kValues[] = { 300U, 301U, 302U, 303U };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const uint64_t kValues[] = {300U, 301U, 302U, 303U};
   GPBStringUInt64Dictionary *dict =
       [[GPBStringUInt64Dictionary alloc] initWithUInt64s:kValues
                                                  forKeys:kKeys
@@ -1102,8 +1097,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertTrue([dict getUInt64:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 301U);
 
-  const NSString *kKeys2[] = { @"bar", @"baz" };
-  const uint64_t kValues2[] = { 302U, 300U };
+  const NSString *kKeys2[] = {@"bar", @"baz"};
+  const uint64_t kValues2[] = {302U, 300U};
   GPBStringUInt64Dictionary *dict2 =
       [[GPBStringUInt64Dictionary alloc] initWithUInt64s:kValues2
                                                  forKeys:kKeys2
@@ -1142,7 +1137,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getInt64:NULL forKey:@"foo"]);
-  [dict enumerateKeysAndInt64sUsingBlock:^(__unused NSString *aKey, __unused int64_t aValue, __unused BOOL *stop) {
+  [dict enumerateKeysAndInt64sUsingBlock:^(__unused NSString *aKey, __unused int64_t aValue,
+                                           __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
@@ -1167,8 +1163,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testBasics {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz" };
-  const int64_t kValues[] = { 400, 401, 402 };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz"};
+  const int64_t kValues[] = {400, 401, 402};
   GPBStringInt64Dictionary *dict =
       [[GPBStringInt64Dictionary alloc] initWithInt64s:kValues
                                                forKeys:kKeys
@@ -1188,7 +1184,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertFalse([dict getInt64:NULL forKey:@"mumble"]);
 
   __block NSUInteger idx = 0;
-  NSString **seenKeys = malloc(3 * sizeof(NSString*));
+  NSString **seenKeys = malloc(3 * sizeof(NSString *));
   int64_t *seenValues = malloc(3 * sizeof(int64_t));
   [dict enumerateKeysAndInt64sUsingBlock:^(NSString *aKey, int64_t aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 3U);
@@ -1212,7 +1208,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndInt64sUsingBlock:^(__unused NSString *aKey, __unused int64_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndInt64sUsingBlock:^(__unused NSString *aKey, __unused int64_t aValue,
+                                           BOOL *stop) {
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -1221,11 +1218,11 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testEquality {
-  const NSString *kKeys1[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const NSString *kKeys2[] = { @"bar", @"foo", @"mumble" };
-  const int64_t kValues1[] = { 400, 401, 402 };
-  const int64_t kValues2[] = { 400, 403, 402 };
-  const int64_t kValues3[] = { 400, 401, 402, 403 };
+  const NSString *kKeys1[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const NSString *kKeys2[] = {@"bar", @"foo", @"mumble"};
+  const int64_t kValues1[] = {400, 401, 402};
+  const int64_t kValues2[] = {400, 403, 402};
+  const int64_t kValues3[] = {400, 401, 402, 403};
   GPBStringInt64Dictionary *dict1 =
       [[GPBStringInt64Dictionary alloc] initWithInt64s:kValues1
                                                forKeys:kKeys1
@@ -1275,8 +1272,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testCopy {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const int64_t kValues[] = { 400, 401, 402, 403 };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const int64_t kValues[] = {400, 401, 402, 403};
   GPBStringInt64Dictionary *dict =
       [[GPBStringInt64Dictionary alloc] initWithInt64s:kValues
                                                forKeys:kKeys
@@ -1296,16 +1293,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testDictionaryFromDictionary {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const int64_t kValues[] = { 400, 401, 402, 403 };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const int64_t kValues[] = {400, 401, 402, 403};
   GPBStringInt64Dictionary *dict =
       [[GPBStringInt64Dictionary alloc] initWithInt64s:kValues
                                                forKeys:kKeys
                                                  count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
-  GPBStringInt64Dictionary *dict2 =
-      [[GPBStringInt64Dictionary alloc] initWithDictionary:dict];
+  GPBStringInt64Dictionary *dict2 = [[GPBStringInt64Dictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
@@ -1323,8 +1319,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   [dict setInt64:400 forKey:@"foo"];
   XCTAssertEqual(dict.count, 1U);
 
-  const NSString *kKeys[] = { @"bar", @"baz", @"mumble" };
-  const int64_t kValues[] = { 401, 402, 403 };
+  const NSString *kKeys[] = {@"bar", @"baz", @"mumble"};
+  const int64_t kValues[] = {401, 402, 403};
   GPBStringInt64Dictionary *dict2 =
       [[GPBStringInt64Dictionary alloc] initWithInt64s:kValues
                                                forKeys:kKeys
@@ -1351,8 +1347,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testRemove {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const int64_t kValues[] = { 400, 401, 402, 403 };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const int64_t kValues[] = {400, 401, 402, 403};
   GPBStringInt64Dictionary *dict =
       [[GPBStringInt64Dictionary alloc] initWithInt64s:kValues
                                                forKeys:kKeys
@@ -1409,8 +1405,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testInplaceMutation {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const int64_t kValues[] = { 400, 401, 402, 403 };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const int64_t kValues[] = {400, 401, 402, 403};
   GPBStringInt64Dictionary *dict =
       [[GPBStringInt64Dictionary alloc] initWithInt64s:kValues
                                                forKeys:kKeys
@@ -1461,8 +1457,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertTrue([dict getInt64:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 401);
 
-  const NSString *kKeys2[] = { @"bar", @"baz" };
-  const int64_t kValues2[] = { 402, 400 };
+  const NSString *kKeys2[] = {@"bar", @"baz"};
+  const int64_t kValues2[] = {402, 400};
   GPBStringInt64Dictionary *dict2 =
       [[GPBStringInt64Dictionary alloc] initWithInt64s:kValues2
                                                forKeys:kKeys2
@@ -1501,7 +1497,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getBool:NULL forKey:@"foo"]);
-  [dict enumerateKeysAndBoolsUsingBlock:^(__unused NSString *aKey, __unused BOOL aValue, __unused BOOL *stop) {
+  [dict enumerateKeysAndBoolsUsingBlock:^(__unused NSString *aKey, __unused BOOL aValue,
+                                          __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
@@ -1526,8 +1523,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testBasics {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz" };
-  const BOOL kValues[] = { YES, YES, NO };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz"};
+  const BOOL kValues[] = {YES, YES, NO};
   GPBStringBoolDictionary *dict =
       [[GPBStringBoolDictionary alloc] initWithBools:kValues
                                              forKeys:kKeys
@@ -1547,7 +1544,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertFalse([dict getBool:NULL forKey:@"mumble"]);
 
   __block NSUInteger idx = 0;
-  NSString **seenKeys = malloc(3 * sizeof(NSString*));
+  NSString **seenKeys = malloc(3 * sizeof(NSString *));
   BOOL *seenValues = malloc(3 * sizeof(BOOL));
   [dict enumerateKeysAndBoolsUsingBlock:^(NSString *aKey, BOOL aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 3U);
@@ -1571,20 +1568,21 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndBoolsUsingBlock:^(__unused NSString *aKey, __unused BOOL aValue, BOOL *stop) {
-    if (idx == 1) *stop = YES;
-    XCTAssertNotEqual(idx, 2U);
-    ++idx;
-  }];
+  [dict
+      enumerateKeysAndBoolsUsingBlock:^(__unused NSString *aKey, __unused BOOL aValue, BOOL *stop) {
+        if (idx == 1) *stop = YES;
+        XCTAssertNotEqual(idx, 2U);
+        ++idx;
+      }];
   [dict release];
 }
 
 - (void)testEquality {
-  const NSString *kKeys1[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const NSString *kKeys2[] = { @"bar", @"foo", @"mumble" };
-  const BOOL kValues1[] = { YES, YES, NO };
-  const BOOL kValues2[] = { YES, NO, NO };
-  const BOOL kValues3[] = { YES, YES, NO, NO };
+  const NSString *kKeys1[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const NSString *kKeys2[] = {@"bar", @"foo", @"mumble"};
+  const BOOL kValues1[] = {YES, YES, NO};
+  const BOOL kValues2[] = {YES, NO, NO};
+  const BOOL kValues3[] = {YES, YES, NO, NO};
   GPBStringBoolDictionary *dict1 =
       [[GPBStringBoolDictionary alloc] initWithBools:kValues1
                                              forKeys:kKeys1
@@ -1634,8 +1632,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testCopy {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const BOOL kValues[] = { YES, YES, NO, NO };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const BOOL kValues[] = {YES, YES, NO, NO};
   GPBStringBoolDictionary *dict =
       [[GPBStringBoolDictionary alloc] initWithBools:kValues
                                              forKeys:kKeys
@@ -1655,16 +1653,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testDictionaryFromDictionary {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const BOOL kValues[] = { YES, YES, NO, NO };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const BOOL kValues[] = {YES, YES, NO, NO};
   GPBStringBoolDictionary *dict =
       [[GPBStringBoolDictionary alloc] initWithBools:kValues
                                              forKeys:kKeys
                                                count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
-  GPBStringBoolDictionary *dict2 =
-      [[GPBStringBoolDictionary alloc] initWithDictionary:dict];
+  GPBStringBoolDictionary *dict2 = [[GPBStringBoolDictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
@@ -1682,8 +1679,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   [dict setBool:YES forKey:@"foo"];
   XCTAssertEqual(dict.count, 1U);
 
-  const NSString *kKeys[] = { @"bar", @"baz", @"mumble" };
-  const BOOL kValues[] = { YES, NO, NO };
+  const NSString *kKeys[] = {@"bar", @"baz", @"mumble"};
+  const BOOL kValues[] = {YES, NO, NO};
   GPBStringBoolDictionary *dict2 =
       [[GPBStringBoolDictionary alloc] initWithBools:kValues
                                              forKeys:kKeys
@@ -1710,8 +1707,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testRemove {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const BOOL kValues[] = { YES, YES, NO, NO };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const BOOL kValues[] = {YES, YES, NO, NO};
   GPBStringBoolDictionary *dict =
       [[GPBStringBoolDictionary alloc] initWithBools:kValues
                                              forKeys:kKeys
@@ -1768,8 +1765,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testInplaceMutation {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const BOOL kValues[] = { YES, YES, NO, NO };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const BOOL kValues[] = {YES, YES, NO, NO};
   GPBStringBoolDictionary *dict =
       [[GPBStringBoolDictionary alloc] initWithBools:kValues
                                              forKeys:kKeys
@@ -1820,8 +1817,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertTrue([dict getBool:&value forKey:@"mumble"]);
   XCTAssertEqual(value, YES);
 
-  const NSString *kKeys2[] = { @"bar", @"baz" };
-  const BOOL kValues2[] = { NO, YES };
+  const NSString *kKeys2[] = {@"bar", @"baz"};
+  const BOOL kValues2[] = {NO, YES};
   GPBStringBoolDictionary *dict2 =
       [[GPBStringBoolDictionary alloc] initWithBools:kValues2
                                              forKeys:kKeys2
@@ -1860,7 +1857,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getFloat:NULL forKey:@"foo"]);
-  [dict enumerateKeysAndFloatsUsingBlock:^(__unused NSString *aKey, __unused float aValue, __unused BOOL *stop) {
+  [dict enumerateKeysAndFloatsUsingBlock:^(__unused NSString *aKey, __unused float aValue,
+                                           __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
@@ -1885,8 +1883,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testBasics {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz" };
-  const float kValues[] = { 500.f, 501.f, 502.f };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz"};
+  const float kValues[] = {500.f, 501.f, 502.f};
   GPBStringFloatDictionary *dict =
       [[GPBStringFloatDictionary alloc] initWithFloats:kValues
                                                forKeys:kKeys
@@ -1906,7 +1904,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertFalse([dict getFloat:NULL forKey:@"mumble"]);
 
   __block NSUInteger idx = 0;
-  NSString **seenKeys = malloc(3 * sizeof(NSString*));
+  NSString **seenKeys = malloc(3 * sizeof(NSString *));
   float *seenValues = malloc(3 * sizeof(float));
   [dict enumerateKeysAndFloatsUsingBlock:^(NSString *aKey, float aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 3U);
@@ -1930,7 +1928,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndFloatsUsingBlock:^(__unused NSString *aKey, __unused float aValue, BOOL *stop) {
+  [dict enumerateKeysAndFloatsUsingBlock:^(__unused NSString *aKey, __unused float aValue,
+                                           BOOL *stop) {
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -1939,11 +1938,11 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testEquality {
-  const NSString *kKeys1[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const NSString *kKeys2[] = { @"bar", @"foo", @"mumble" };
-  const float kValues1[] = { 500.f, 501.f, 502.f };
-  const float kValues2[] = { 500.f, 503.f, 502.f };
-  const float kValues3[] = { 500.f, 501.f, 502.f, 503.f };
+  const NSString *kKeys1[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const NSString *kKeys2[] = {@"bar", @"foo", @"mumble"};
+  const float kValues1[] = {500.f, 501.f, 502.f};
+  const float kValues2[] = {500.f, 503.f, 502.f};
+  const float kValues3[] = {500.f, 501.f, 502.f, 503.f};
   GPBStringFloatDictionary *dict1 =
       [[GPBStringFloatDictionary alloc] initWithFloats:kValues1
                                                forKeys:kKeys1
@@ -1993,8 +1992,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testCopy {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const float kValues[] = { 500.f, 501.f, 502.f, 503.f };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const float kValues[] = {500.f, 501.f, 502.f, 503.f};
   GPBStringFloatDictionary *dict =
       [[GPBStringFloatDictionary alloc] initWithFloats:kValues
                                                forKeys:kKeys
@@ -2014,16 +2013,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testDictionaryFromDictionary {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const float kValues[] = { 500.f, 501.f, 502.f, 503.f };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const float kValues[] = {500.f, 501.f, 502.f, 503.f};
   GPBStringFloatDictionary *dict =
       [[GPBStringFloatDictionary alloc] initWithFloats:kValues
                                                forKeys:kKeys
                                                  count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
-  GPBStringFloatDictionary *dict2 =
-      [[GPBStringFloatDictionary alloc] initWithDictionary:dict];
+  GPBStringFloatDictionary *dict2 = [[GPBStringFloatDictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
@@ -2041,8 +2039,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   [dict setFloat:500.f forKey:@"foo"];
   XCTAssertEqual(dict.count, 1U);
 
-  const NSString *kKeys[] = { @"bar", @"baz", @"mumble" };
-  const float kValues[] = { 501.f, 502.f, 503.f };
+  const NSString *kKeys[] = {@"bar", @"baz", @"mumble"};
+  const float kValues[] = {501.f, 502.f, 503.f};
   GPBStringFloatDictionary *dict2 =
       [[GPBStringFloatDictionary alloc] initWithFloats:kValues
                                                forKeys:kKeys
@@ -2069,8 +2067,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testRemove {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const float kValues[] = { 500.f, 501.f, 502.f, 503.f };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const float kValues[] = {500.f, 501.f, 502.f, 503.f};
   GPBStringFloatDictionary *dict =
       [[GPBStringFloatDictionary alloc] initWithFloats:kValues
                                                forKeys:kKeys
@@ -2127,8 +2125,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testInplaceMutation {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const float kValues[] = { 500.f, 501.f, 502.f, 503.f };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const float kValues[] = {500.f, 501.f, 502.f, 503.f};
   GPBStringFloatDictionary *dict =
       [[GPBStringFloatDictionary alloc] initWithFloats:kValues
                                                forKeys:kKeys
@@ -2179,8 +2177,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertTrue([dict getFloat:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 501.f);
 
-  const NSString *kKeys2[] = { @"bar", @"baz" };
-  const float kValues2[] = { 502.f, 500.f };
+  const NSString *kKeys2[] = {@"bar", @"baz"};
+  const float kValues2[] = {502.f, 500.f};
   GPBStringFloatDictionary *dict2 =
       [[GPBStringFloatDictionary alloc] initWithFloats:kValues2
                                                forKeys:kKeys2
@@ -2219,7 +2217,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getDouble:NULL forKey:@"foo"]);
-  [dict enumerateKeysAndDoublesUsingBlock:^(__unused NSString *aKey, __unused double aValue, __unused BOOL *stop) {
+  [dict enumerateKeysAndDoublesUsingBlock:^(__unused NSString *aKey, __unused double aValue,
+                                            __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
@@ -2244,8 +2243,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testBasics {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz" };
-  const double kValues[] = { 600., 601., 602. };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz"};
+  const double kValues[] = {600., 601., 602.};
   GPBStringDoubleDictionary *dict =
       [[GPBStringDoubleDictionary alloc] initWithDoubles:kValues
                                                  forKeys:kKeys
@@ -2265,7 +2264,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertFalse([dict getDouble:NULL forKey:@"mumble"]);
 
   __block NSUInteger idx = 0;
-  NSString **seenKeys = malloc(3 * sizeof(NSString*));
+  NSString **seenKeys = malloc(3 * sizeof(NSString *));
   double *seenValues = malloc(3 * sizeof(double));
   [dict enumerateKeysAndDoublesUsingBlock:^(NSString *aKey, double aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 3U);
@@ -2289,7 +2288,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndDoublesUsingBlock:^(__unused NSString *aKey, __unused double aValue, BOOL *stop) {
+  [dict enumerateKeysAndDoublesUsingBlock:^(__unused NSString *aKey, __unused double aValue,
+                                            BOOL *stop) {
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -2298,11 +2298,11 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testEquality {
-  const NSString *kKeys1[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const NSString *kKeys2[] = { @"bar", @"foo", @"mumble" };
-  const double kValues1[] = { 600., 601., 602. };
-  const double kValues2[] = { 600., 603., 602. };
-  const double kValues3[] = { 600., 601., 602., 603. };
+  const NSString *kKeys1[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const NSString *kKeys2[] = {@"bar", @"foo", @"mumble"};
+  const double kValues1[] = {600., 601., 602.};
+  const double kValues2[] = {600., 603., 602.};
+  const double kValues3[] = {600., 601., 602., 603.};
   GPBStringDoubleDictionary *dict1 =
       [[GPBStringDoubleDictionary alloc] initWithDoubles:kValues1
                                                  forKeys:kKeys1
@@ -2352,8 +2352,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testCopy {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const double kValues[] = { 600., 601., 602., 603. };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const double kValues[] = {600., 601., 602., 603.};
   GPBStringDoubleDictionary *dict =
       [[GPBStringDoubleDictionary alloc] initWithDoubles:kValues
                                                  forKeys:kKeys
@@ -2373,16 +2373,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testDictionaryFromDictionary {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const double kValues[] = { 600., 601., 602., 603. };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const double kValues[] = {600., 601., 602., 603.};
   GPBStringDoubleDictionary *dict =
       [[GPBStringDoubleDictionary alloc] initWithDoubles:kValues
                                                  forKeys:kKeys
                                                    count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
-  GPBStringDoubleDictionary *dict2 =
-      [[GPBStringDoubleDictionary alloc] initWithDictionary:dict];
+  GPBStringDoubleDictionary *dict2 = [[GPBStringDoubleDictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
@@ -2400,8 +2399,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   [dict setDouble:600. forKey:@"foo"];
   XCTAssertEqual(dict.count, 1U);
 
-  const NSString *kKeys[] = { @"bar", @"baz", @"mumble" };
-  const double kValues[] = { 601., 602., 603. };
+  const NSString *kKeys[] = {@"bar", @"baz", @"mumble"};
+  const double kValues[] = {601., 602., 603.};
   GPBStringDoubleDictionary *dict2 =
       [[GPBStringDoubleDictionary alloc] initWithDoubles:kValues
                                                  forKeys:kKeys
@@ -2428,8 +2427,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testRemove {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const double kValues[] = { 600., 601., 602., 603. };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const double kValues[] = {600., 601., 602., 603.};
   GPBStringDoubleDictionary *dict =
       [[GPBStringDoubleDictionary alloc] initWithDoubles:kValues
                                                  forKeys:kKeys
@@ -2486,8 +2485,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testInplaceMutation {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const double kValues[] = { 600., 601., 602., 603. };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const double kValues[] = {600., 601., 602., 603.};
   GPBStringDoubleDictionary *dict =
       [[GPBStringDoubleDictionary alloc] initWithDoubles:kValues
                                                  forKeys:kKeys
@@ -2538,8 +2537,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertTrue([dict getDouble:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 601.);
 
-  const NSString *kKeys2[] = { @"bar", @"baz" };
-  const double kValues2[] = { 602., 600. };
+  const NSString *kKeys2[] = {@"bar", @"baz"};
+  const double kValues2[] = {602., 600.};
   GPBStringDoubleDictionary *dict2 =
       [[GPBStringDoubleDictionary alloc] initWithDoubles:kValues2
                                                  forKeys:kKeys2
@@ -2578,7 +2577,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getEnum:NULL forKey:@"foo"]);
-  [dict enumerateKeysAndEnumsUsingBlock:^(__unused NSString *aKey, __unused int32_t aValue, __unused BOOL *stop) {
+  [dict enumerateKeysAndEnumsUsingBlock:^(__unused NSString *aKey, __unused int32_t aValue,
+                                          __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
@@ -2603,8 +2603,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testBasics {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz" };
-  const int32_t kValues[] = { 700, 701, 702 };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz"};
+  const int32_t kValues[] = {700, 701, 702};
   GPBStringEnumDictionary *dict =
       [[GPBStringEnumDictionary alloc] initWithEnums:kValues
                                              forKeys:kKeys
@@ -2624,7 +2624,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertFalse([dict getEnum:NULL forKey:@"mumble"]);
 
   __block NSUInteger idx = 0;
-  NSString **seenKeys = malloc(3 * sizeof(NSString*));
+  NSString **seenKeys = malloc(3 * sizeof(NSString *));
   int32_t *seenValues = malloc(3 * sizeof(int32_t));
   [dict enumerateKeysAndEnumsUsingBlock:^(NSString *aKey, int32_t aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 3U);
@@ -2648,7 +2648,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndEnumsUsingBlock:^(__unused NSString *aKey, __unused int32_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndEnumsUsingBlock:^(__unused NSString *aKey, __unused int32_t aValue,
+                                          BOOL *stop) {
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -2657,11 +2658,11 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testEquality {
-  const NSString *kKeys1[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const NSString *kKeys2[] = { @"bar", @"foo", @"mumble" };
-  const int32_t kValues1[] = { 700, 701, 702 };
-  const int32_t kValues2[] = { 700, 703, 702 };
-  const int32_t kValues3[] = { 700, 701, 702, 703 };
+  const NSString *kKeys1[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const NSString *kKeys2[] = {@"bar", @"foo", @"mumble"};
+  const int32_t kValues1[] = {700, 701, 702};
+  const int32_t kValues2[] = {700, 703, 702};
+  const int32_t kValues3[] = {700, 701, 702, 703};
   GPBStringEnumDictionary *dict1 =
       [[GPBStringEnumDictionary alloc] initWithEnums:kValues1
                                              forKeys:kKeys1
@@ -2711,8 +2712,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testCopy {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const int32_t kValues[] = { 700, 701, 702, 703 };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const int32_t kValues[] = {700, 701, 702, 703};
   GPBStringEnumDictionary *dict =
       [[GPBStringEnumDictionary alloc] initWithEnums:kValues
                                              forKeys:kKeys
@@ -2732,16 +2733,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testDictionaryFromDictionary {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const int32_t kValues[] = { 700, 701, 702, 703 };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const int32_t kValues[] = {700, 701, 702, 703};
   GPBStringEnumDictionary *dict =
       [[GPBStringEnumDictionary alloc] initWithEnums:kValues
                                              forKeys:kKeys
                                                count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
-  GPBStringEnumDictionary *dict2 =
-      [[GPBStringEnumDictionary alloc] initWithDictionary:dict];
+  GPBStringEnumDictionary *dict2 = [[GPBStringEnumDictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
@@ -2759,8 +2759,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   [dict setEnum:700 forKey:@"foo"];
   XCTAssertEqual(dict.count, 1U);
 
-  const NSString *kKeys[] = { @"bar", @"baz", @"mumble" };
-  const int32_t kValues[] = { 701, 702, 703 };
+  const NSString *kKeys[] = {@"bar", @"baz", @"mumble"};
+  const int32_t kValues[] = {701, 702, 703};
   GPBStringEnumDictionary *dict2 =
       [[GPBStringEnumDictionary alloc] initWithEnums:kValues
                                              forKeys:kKeys
@@ -2787,8 +2787,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testRemove {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const int32_t kValues[] = { 700, 701, 702, 703 };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const int32_t kValues[] = {700, 701, 702, 703};
   GPBStringEnumDictionary *dict =
       [[GPBStringEnumDictionary alloc] initWithEnums:kValues
                                              forKeys:kKeys
@@ -2845,8 +2845,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testInplaceMutation {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const int32_t kValues[] = { 700, 701, 702, 703 };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const int32_t kValues[] = {700, 701, 702, 703};
   GPBStringEnumDictionary *dict =
       [[GPBStringEnumDictionary alloc] initWithEnums:kValues
                                              forKeys:kKeys
@@ -2897,8 +2897,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertTrue([dict getEnum:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 701);
 
-  const NSString *kKeys2[] = { @"bar", @"baz" };
-  const int32_t kValues2[] = { 702, 700 };
+  const NSString *kKeys2[] = {@"bar", @"baz"};
+  const int32_t kValues2[] = {702, 700};
   GPBStringEnumDictionary *dict2 =
       [[GPBStringEnumDictionary alloc] initWithEnums:kValues2
                                              forKeys:kKeys2
@@ -2933,8 +2933,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 @implementation GPBStringEnumDictionaryUnknownEnumTests
 
 - (void)testRawBasics {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz" };
-  const int32_t kValues[] = { 700, 801, 702 };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz"};
+  const int32_t kValues[] = {700, 801, 702};
   GPBStringEnumDictionary *dict =
       [[GPBStringEnumDictionary alloc] initWithValidationFunction:TestingEnum_IsValidValue
                                                         rawValues:kValues
@@ -2959,7 +2959,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertFalse([dict getRawValue:NULL forKey:@"mumble"]);
 
   __block NSUInteger idx = 0;
-  NSString **seenKeys = malloc(3 * sizeof(NSString*));
+  NSString **seenKeys = malloc(3 * sizeof(NSString *));
   int32_t *seenValues = malloc(3 * sizeof(int32_t));
   [dict enumerateKeysAndEnumsUsingBlock:^(NSString *aKey, int32_t aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 3U);
@@ -3005,7 +3005,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndRawValuesUsingBlock:^(__unused NSString *aKey, __unused int32_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndRawValuesUsingBlock:^(__unused NSString *aKey, __unused int32_t aValue,
+                                              BOOL *stop) {
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -3014,11 +3015,11 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testEqualityWithUnknowns {
-  const NSString *kKeys1[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const NSString *kKeys2[] = { @"bar", @"foo", @"mumble" };
-  const int32_t kValues1[] = { 700, 801, 702 };  // Unknown
-  const int32_t kValues2[] = { 700, 803, 702 };  // Unknown
-  const int32_t kValues3[] = { 700, 801, 702, 803 };  // Unknowns
+  const NSString *kKeys1[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const NSString *kKeys2[] = {@"bar", @"foo", @"mumble"};
+  const int32_t kValues1[] = {700, 801, 702};       // Unknown
+  const int32_t kValues2[] = {700, 803, 702};       // Unknown
+  const int32_t kValues3[] = {700, 801, 702, 803};  // Unknowns
   GPBStringEnumDictionary *dict1 =
       [[GPBStringEnumDictionary alloc] initWithValidationFunction:TestingEnum_IsValidValue
                                                         rawValues:kValues1
@@ -3073,8 +3074,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testCopyWithUnknowns {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const int32_t kValues[] = { 700, 801, 702, 803 };  // Unknown
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const int32_t kValues[] = {700, 801, 702, 803};  // Unknown
   GPBStringEnumDictionary *dict =
       [[GPBStringEnumDictionary alloc] initWithValidationFunction:TestingEnum_IsValidValue
                                                         rawValues:kValues
@@ -3095,8 +3096,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testDictionaryFromDictionary {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const int32_t kValues[] = { 700, 801, 702, 803 };  // Unknowns
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const int32_t kValues[] = {700, 801, 702, 803};  // Unknowns
   GPBStringEnumDictionary *dict =
       [[GPBStringEnumDictionary alloc] initWithValidationFunction:TestingEnum_IsValidValue
                                                         rawValues:kValues
@@ -3104,8 +3105,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
                                                             count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
-  GPBStringEnumDictionary *dict2 =
-      [[GPBStringEnumDictionary alloc] initWithDictionary:dict];
+  GPBStringEnumDictionary *dict2 = [[GPBStringEnumDictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
@@ -3128,12 +3128,12 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   [dict setRawValue:801 forKey:@"bar"];  // Unknown
   XCTAssertEqual(dict.count, 1U);
 
-  const NSString *kKeys[] = { @"foo", @"baz", @"mumble" };
-  const int32_t kValues[] = { 700, 702, 803 };  // Unknown
+  const NSString *kKeys[] = {@"foo", @"baz", @"mumble"};
+  const int32_t kValues[] = {700, 702, 803};  // Unknown
   GPBStringEnumDictionary *dict2 =
       [[GPBStringEnumDictionary alloc] initWithEnums:kValues
-                                               forKeys:kKeys
-                                                 count:GPBARRAYSIZE(kValues)];
+                                             forKeys:kKeys
+                                               count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict2);
   [dict addRawEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 4U);
@@ -3162,8 +3162,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testUnknownRemove {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const int32_t kValues[] = { 700, 801, 702, 803 };  // Unknowns
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const int32_t kValues[] = {700, 801, 702, 803};  // Unknowns
   GPBStringEnumDictionary *dict =
       [[GPBStringEnumDictionary alloc] initWithValidationFunction:TestingEnum_IsValidValue
                                                         rawValues:kValues
@@ -3221,8 +3221,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testInplaceMutationUnknowns {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const int32_t kValues[] = { 700, 801, 702, 803 };  // Unknowns
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const int32_t kValues[] = {700, 801, 702, 803};  // Unknowns
   GPBStringEnumDictionary *dict =
       [[GPBStringEnumDictionary alloc] initWithValidationFunction:TestingEnum_IsValidValue
                                                         rawValues:kValues
@@ -3290,8 +3290,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertTrue([dict getEnum:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 700);
 
-  const NSString *kKeys2[] = { @"bar", @"baz" };
-  const int32_t kValues2[] = { 702, 801 };  // Unknown
+  const NSString *kKeys2[] = {@"bar", @"baz"};
+  const int32_t kValues2[] = {702, 801};  // Unknown
   GPBStringEnumDictionary *dict2 =
       [[GPBStringEnumDictionary alloc] initWithValidationFunction:TestingEnum_IsValidValue
                                                         rawValues:kValues2
@@ -3318,8 +3318,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testCopyUnknowns {
-  const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
-  const int32_t kValues[] = { 700, 801, 702, 803 };
+  const NSString *kKeys[] = {@"foo", @"bar", @"baz", @"mumble"};
+  const int32_t kValues[] = {700, 801, 702, 803};
   GPBStringEnumDictionary *dict =
       [[GPBStringEnumDictionary alloc] initWithValidationFunction:TestingEnum_IsValidValue
                                                         rawValues:kValues
@@ -3341,5 +3341,4 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 @end
-
-//%PDDM-EXPAND-END TESTS_FOR_POD_VALUES(String,NSString,*,Objects,@"foo",@"bar",@"baz",@"mumble")
+// @@protoc_objc_autogen_end
