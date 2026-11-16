@@ -983,6 +983,76 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("9a0400", bin2hex($to));
     }
 
+    public function testDiscardUnknownFieldsAtDefaultMaxDepth()
+    {
+        $clean = $this->makeRecursiveMessage(100);
+        $cleanPayload = $clean->serializeToString();
+
+        $dirty = $this->makeRecursiveMessage(100);
+        $unknown = hex2bin('F80601');
+        $cur = $dirty;
+        for ($i = 0; $i <= 100; $i++) {
+            if ($i === 63 || $i === 64 || $i === 100) {
+                $cur->mergeFromString($unknown);
+            }
+            if ($i < 100) {
+                $cur = $cur->getRecursive();
+            }
+        }
+        $dirtyPayload = $dirty->serializeToString();
+        $this->assertNotSame($cleanPayload, $dirtyPayload);
+
+        $decoded = new TestMessage();
+        $decoded->mergeFromString($dirtyPayload);
+        $decoded->discardUnknownFields();
+        $this->assertSame($cleanPayload, $decoded->serializeToString());
+    }
+
+    public function testDiscardUnknownFieldsMaxDepthExceeded()
+    {
+        if (!extension_loaded('protobuf')) {
+            $this->markTestSkipped(
+                'discardUnknownFields depth limit is C-extension only');
+        }
+
+        $msg = $this->makeRecursiveMessage(101);
+        $cur = $msg;
+        for ($i = 0; $i < 101; $i++) {
+            $cur = $cur->getRecursive();
+        }
+        $cur->mergeFromString(hex2bin('F80601'));
+        $payload = $msg->serializeToString(200);
+
+        $decoded = new TestMessage();
+        $decoded->mergeFromString($payload, 200);
+
+        try {
+            $decoded->discardUnknownFields();
+            $this->fail('Expected an exception for exceeding the recursion limit');
+        } catch (Exception $e) {
+            $this->assertStringContainsString('Max nesting exceeded', $e->getMessage());
+        }
+    }
+
+    public function testDiscardUnknownFieldsCycleThrows()
+    {
+        if (!extension_loaded('protobuf')) {
+            $this->markTestSkipped(
+                'discardUnknownFields depth limit is C-extension only');
+        }
+
+        $m = new TestMessage();
+        $m->setRecursive($m);
+        try {
+            $m->discardUnknownFields();
+            $this->fail('Expected an exception for exceeding the recursion limit');
+        } catch (Exception $e) {
+            $this->assertStringContainsString('Max nesting exceeded', $e->getMessage());
+        } finally {
+            $m->setRecursive(null);
+        }
+    }
+
     public function testJsonUnknown()
     {
         // Test unknown number

@@ -6,9 +6,12 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include <array>
+#include <climits>
+#include <cstddef>
 #include <cstring>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
@@ -25,10 +28,18 @@
 #include "upb/base/string_view.h"
 #include "upb/mem/alloc.h"
 #include "upb/mem/arena.hpp"
+#include "upb/message/array.h"
+#include "upb/message/map.h"
+#include "upb/message/message.h"
+#include "upb/message/value.h"
+#include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
 #include "upb/reflection/internal/def_pool.h"
+#include "upb/reflection/message.h"
 #include "upb/test/parse_text_proto.h"
+#include "upb/wire/decode.h"
+#include "upb/wire/encode.h"
 
 namespace upb_test {
 namespace {
@@ -801,6 +812,363 @@ TEST(ReflectionTest, LoadDefInitDeepChain) {
       bad_deps, nullptr, "bad_top.proto",
       upb_StringView_FromDataAndSize(ser[0].data(), ser[0].size())};
   EXPECT_FALSE(_upb_DefPool_LoadDefInitEx(pool.ptr(), &bad_top, true));
+}
+
+upb::DefPool LoadDiscardUnknownTestPool() {
+  absl::StatusOr<upb::DefPool> pool = LoadDescriptorProto(R"pb(
+    syntax: "proto2"
+    name: "discard_unknown_test.proto"
+    message_type {
+      name: "Node"
+      extension_range { start: 1000 end: 2000 }
+      field {
+        name: "child"
+        number: 1
+        label: LABEL_OPTIONAL
+        type: TYPE_MESSAGE
+        type_name: ".Node"
+      }
+      field {
+        name: "children"
+        number: 2
+        label: LABEL_REPEATED
+        type: TYPE_MESSAGE
+        type_name: ".Node"
+      }
+      field {
+        name: "node_map"
+        number: 3
+        label: LABEL_REPEATED
+        type: TYPE_MESSAGE
+        type_name: ".Node.NodeMapEntry"
+      }
+      nested_type {
+        name: "NodeMapEntry"
+        options { map_entry: true }
+        field { name: "key" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+        field {
+          name: "value"
+          number: 2
+          label: LABEL_OPTIONAL
+          type: TYPE_MESSAGE
+          type_name: ".Node"
+        }
+      }
+    }
+    extension {
+      name: "ext_child"
+      number: 1000
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".Node"
+      extendee: ".Node"
+    }
+  )pb");
+  ABSL_CHECK_OK(pool);
+  return *std::move(pool);
+}
+
+[[nodiscard]] bool AddUnknownField(upb_Message* msg, const upb_MiniTable* mt,
+                                   upb::Arena& arena) {
+  // Unknown varint field 111 = 1.
+  static constexpr char kUnknownVarint[] = {'\xF8', '\x06', '\x01'};
+  if (upb_Decode(kUnknownVarint, sizeof(kUnknownVarint), msg, mt, nullptr, 0,
+                 arena.ptr()) != kUpb_DecodeStatus_Ok) {
+    return false;
+  }
+  return upb_Message_HasUnknown(msg);
+}
+
+TEST(ReflectionTest, DiscardUnknownNegativeMaxDepth) {
+  upb::DefPool pool = LoadDiscardUnknownTestPool();
+  upb::MessageDefPtr m = pool.FindMessageByName("Node");
+  ASSERT_TRUE(m);
+  const upb_MiniTable* mt = upb_MessageDef_MiniTable(m.ptr());
+  upb::Arena arena;
+
+  upb_Message* msg = upb_Message_New(mt, arena.ptr());
+  ASSERT_NE(msg, nullptr);
+  ASSERT_TRUE(AddUnknownField(msg, mt, arena));
+
+  EXPECT_FALSE(upb_Message_DiscardUnknown(msg, m.ptr(), nullptr, -1));
+  EXPECT_TRUE(upb_Message_HasUnknown(msg));
+
+  EXPECT_FALSE(upb_Message_DiscardUnknown(msg, m.ptr(), nullptr, INT_MIN));
+  EXPECT_TRUE(upb_Message_HasUnknown(msg));
+}
+
+TEST(ReflectionTest, DiscardUnknownZeroMaxDepth) {
+  upb::DefPool pool = LoadDiscardUnknownTestPool();
+  upb::MessageDefPtr m = pool.FindMessageByName("Node");
+  ASSERT_TRUE(m);
+  upb::FieldDefPtr child_f = m.FindFieldByName("child");
+  upb::FieldDefPtr children_f = m.FindFieldByName("children");
+  upb::FieldDefPtr map_f = m.FindFieldByName("node_map");
+  ASSERT_TRUE(child_f);
+  ASSERT_TRUE(children_f);
+  ASSERT_TRUE(map_f);
+  const upb_MiniTable* mt = upb_MessageDef_MiniTable(m.ptr());
+  upb::Arena arena;
+
+  // Leaf message with empty containers succeeds with maxdepth == 0.
+  upb_Message* leaf = upb_Message_New(mt, arena.ptr());
+  ASSERT_NE(leaf, nullptr);
+  ASSERT_NE(upb_Message_Mutable(leaf, children_f.ptr(), arena.ptr()).array,
+            nullptr);
+  ASSERT_NE(upb_Message_Mutable(leaf, map_f.ptr(), arena.ptr()).map, nullptr);
+  ASSERT_TRUE(AddUnknownField(leaf, mt, arena));
+
+  EXPECT_TRUE(upb_Message_DiscardUnknown(leaf, m.ptr(), nullptr, 0));
+  EXPECT_FALSE(upb_Message_HasUnknown(leaf));
+
+  // Message with a child submessage clears root, leaves child untouched, and
+  // returns false with maxdepth == 0.
+  upb_Message* root = upb_Message_New(mt, arena.ptr());
+  ASSERT_NE(root, nullptr);
+  ASSERT_TRUE(AddUnknownField(root, mt, arena));
+  upb_Message* child =
+      upb_Message_Mutable(root, child_f.ptr(), arena.ptr()).msg;
+  ASSERT_NE(child, nullptr);
+  ASSERT_TRUE(AddUnknownField(child, mt, arena));
+
+  EXPECT_FALSE(upb_Message_DiscardUnknown(root, m.ptr(), nullptr, 0));
+  EXPECT_FALSE(upb_Message_HasUnknown(root));
+  EXPECT_TRUE(upb_Message_HasUnknown(child));
+}
+
+TEST(ReflectionTest, DiscardUnknownMatchesDefaultDecodeDepth) {
+  upb::DefPool pool = LoadDiscardUnknownTestPool();
+  upb::MessageDefPtr m = pool.FindMessageByName("Node");
+  ASSERT_TRUE(m);
+  upb::FieldDefPtr child_f = m.FindFieldByName("child");
+  ASSERT_TRUE(child_f);
+  const upb_MiniTable* mt = upb_MessageDef_MiniTable(m.ptr());
+  upb::Arena arena;
+
+  const int kDefaultDepth =
+      static_cast<int>(upb_EncodeOptions_GetEffectiveMaxDepth(0));
+  ASSERT_EQ(kDefaultDepth, 100);
+
+  // Build root + 100 nested submessages (levels 0..100), each with an unknown
+  // field.
+  upb_Message* root = upb_Message_New(mt, arena.ptr());
+  ASSERT_NE(root, nullptr);
+  upb_Message* cur = root;
+  for (int i = 0; i <= kDefaultDepth; ++i) {
+    ASSERT_TRUE(AddUnknownField(cur, mt, arena));
+    if (i < kDefaultDepth) {
+      cur = upb_Message_Mutable(cur, child_f.ptr(), arena.ptr()).msg;
+      ASSERT_NE(cur, nullptr);
+    }
+  }
+
+  // Round-trip via default upb_Encode and upb_Decode (options == 0).
+  char* buf = nullptr;
+  size_t size = 0;
+  ASSERT_EQ(upb_Encode(root, mt, 0, arena.ptr(), &buf, &size),
+            kUpb_EncodeStatus_Ok);
+
+  upb_Message* decoded = upb_Message_New(mt, arena.ptr());
+  ASSERT_NE(decoded, nullptr);
+  ASSERT_EQ(upb_Decode(buf, size, decoded, mt, nullptr, 0, arena.ptr()),
+            kUpb_DecodeStatus_Ok);
+
+  EXPECT_TRUE(
+      upb_Message_DiscardUnknown(decoded, m.ptr(), nullptr, kDefaultDepth));
+
+  const upb_Message* node = decoded;
+  for (int i = 0; i <= kDefaultDepth; ++i) {
+    EXPECT_FALSE(upb_Message_HasUnknown(node)) << "at depth " << i;
+    if (i < kDefaultDepth) {
+      node = upb_Message_GetFieldByDef(node, child_f.ptr()).msg_val;
+      ASSERT_NE(node, nullptr) << "at depth " << i;
+    }
+  }
+}
+
+TEST(ReflectionTest, DiscardUnknownExceedingMaxDepth) {
+  upb::DefPool pool = LoadDiscardUnknownTestPool();
+  upb::MessageDefPtr m = pool.FindMessageByName("Node");
+  ASSERT_TRUE(m);
+  upb::FieldDefPtr child_f = m.FindFieldByName("child");
+  ASSERT_TRUE(child_f);
+  const upb_MiniTable* mt = upb_MessageDef_MiniTable(m.ptr());
+  upb::Arena arena;
+
+  const int kMaxDepth =
+      static_cast<int>(upb_EncodeOptions_GetEffectiveMaxDepth(0));
+  // Build root + 101 nested submessages (levels 0..101).
+  upb_Message* root = upb_Message_New(mt, arena.ptr());
+  ASSERT_NE(root, nullptr);
+  upb_Message* cur = root;
+  for (int i = 0; i <= kMaxDepth + 1; ++i) {
+    ASSERT_TRUE(AddUnknownField(cur, mt, arena));
+    if (i < kMaxDepth + 1) {
+      cur = upb_Message_Mutable(cur, child_f.ptr(), arena.ptr()).msg;
+      ASSERT_NE(cur, nullptr);
+    }
+  }
+
+  EXPECT_FALSE(upb_Message_DiscardUnknown(root, m.ptr(), nullptr, kMaxDepth));
+
+  const upb_Message* node = root;
+  for (int i = 0; i <= kMaxDepth + 1; ++i) {
+    if (i <= kMaxDepth) {
+      EXPECT_FALSE(upb_Message_HasUnknown(node)) << "at depth " << i;
+    } else {
+      EXPECT_TRUE(upb_Message_HasUnknown(node)) << "at depth " << i;
+    }
+    if (i < kMaxDepth + 1) {
+      node = upb_Message_GetFieldByDef(node, child_f.ptr()).msg_val;
+      ASSERT_NE(node, nullptr) << "at depth " << i;
+    }
+  }
+}
+
+TEST(ReflectionTest, DiscardUnknownSubmessageKinds) {
+  upb::DefPool pool = LoadDiscardUnknownTestPool();
+  upb::MessageDefPtr m = pool.FindMessageByName("Node");
+  ASSERT_TRUE(m);
+  upb::FieldDefPtr child_f = m.FindFieldByName("child");
+  upb::FieldDefPtr children_f = m.FindFieldByName("children");
+  upb::FieldDefPtr map_f = m.FindFieldByName("node_map");
+  upb::FieldDefPtr ext_f = pool.FindExtensionByName("ext_child");
+  ASSERT_TRUE(child_f);
+  ASSERT_TRUE(children_f);
+  ASSERT_TRUE(map_f);
+  ASSERT_TRUE(ext_f);
+  const upb_MiniTable* mt = upb_MessageDef_MiniTable(m.ptr());
+  upb::Arena arena;
+
+  // Repeated submessages: maxdepth == 1 clears level 1 and returns true.
+  {
+    upb_Message* root = upb_Message_New(mt, arena.ptr());
+    ASSERT_NE(root, nullptr);
+    ASSERT_TRUE(AddUnknownField(root, mt, arena));
+    upb_Array* arr =
+        upb_Message_Mutable(root, children_f.ptr(), arena.ptr()).array;
+    ASSERT_NE(arr, nullptr);
+    upb_Message* elem = upb_Message_New(mt, arena.ptr());
+    ASSERT_NE(elem, nullptr);
+    ASSERT_TRUE(AddUnknownField(elem, mt, arena));
+    upb_MessageValue v;
+    v.msg_val = elem;
+    ASSERT_TRUE(upb_Array_Append(arr, v, arena.ptr()));
+
+    EXPECT_TRUE(upb_Message_DiscardUnknown(root, m.ptr(), nullptr, 1));
+    EXPECT_FALSE(upb_Message_HasUnknown(root));
+    EXPECT_FALSE(upb_Message_HasUnknown(elem));
+  }
+
+  // Repeated submessages exceeding depth: returns false, preserves level-2
+  // unknown field, and still clears sibling at level 1.
+  {
+    upb_Message* root = upb_Message_New(mt, arena.ptr());
+    ASSERT_NE(root, nullptr);
+    ASSERT_TRUE(AddUnknownField(root, mt, arena));
+    upb_Array* arr =
+        upb_Message_Mutable(root, children_f.ptr(), arena.ptr()).array;
+    ASSERT_NE(arr, nullptr);
+
+    upb_Message* elem0 = upb_Message_New(mt, arena.ptr());
+    ASSERT_NE(elem0, nullptr);
+    ASSERT_TRUE(AddUnknownField(elem0, mt, arena));
+    upb_Message* grandchild =
+        upb_Message_Mutable(elem0, child_f.ptr(), arena.ptr()).msg;
+    ASSERT_NE(grandchild, nullptr);
+    ASSERT_TRUE(AddUnknownField(grandchild, mt, arena));
+
+    upb_Message* elem1 = upb_Message_New(mt, arena.ptr());
+    ASSERT_NE(elem1, nullptr);
+    ASSERT_TRUE(AddUnknownField(elem1, mt, arena));
+
+    upb_MessageValue v0, v1;
+    v0.msg_val = elem0;
+    v1.msg_val = elem1;
+    ASSERT_TRUE(upb_Array_Append(arr, v0, arena.ptr()));
+    ASSERT_TRUE(upb_Array_Append(arr, v1, arena.ptr()));
+
+    EXPECT_FALSE(upb_Message_DiscardUnknown(root, m.ptr(), nullptr, 1));
+    EXPECT_FALSE(upb_Message_HasUnknown(root));
+    EXPECT_FALSE(upb_Message_HasUnknown(elem0));
+    EXPECT_FALSE(upb_Message_HasUnknown(elem1));
+    EXPECT_TRUE(upb_Message_HasUnknown(grandchild));
+  }
+
+  // Map message values: maxdepth == 1 clears level 1 and returns true.
+  {
+    upb_Message* root = upb_Message_New(mt, arena.ptr());
+    ASSERT_NE(root, nullptr);
+    ASSERT_TRUE(AddUnknownField(root, mt, arena));
+    upb_Map* map = upb_Message_Mutable(root, map_f.ptr(), arena.ptr()).map;
+    ASSERT_NE(map, nullptr);
+    upb_Message* val_msg = upb_Message_New(mt, arena.ptr());
+    ASSERT_NE(val_msg, nullptr);
+    ASSERT_TRUE(AddUnknownField(val_msg, mt, arena));
+    upb_MessageValue k, v;
+    k.int32_val = 1;
+    v.msg_val = val_msg;
+    ASSERT_TRUE(upb_Map_Set(map, k, v, arena.ptr()));
+
+    EXPECT_TRUE(upb_Message_DiscardUnknown(root, m.ptr(), nullptr, 1));
+    EXPECT_FALSE(upb_Message_HasUnknown(root));
+    EXPECT_FALSE(upb_Message_HasUnknown(val_msg));
+  }
+
+  // Map message values exceeding depth: returns false, preserves level-2
+  // unknown field, and still clears sibling entry at level 1.
+  {
+    upb_Message* root = upb_Message_New(mt, arena.ptr());
+    ASSERT_NE(root, nullptr);
+    ASSERT_TRUE(AddUnknownField(root, mt, arena));
+    upb_Map* map = upb_Message_Mutable(root, map_f.ptr(), arena.ptr()).map;
+    ASSERT_NE(map, nullptr);
+
+    upb_Message* val1 = upb_Message_New(mt, arena.ptr());
+    ASSERT_NE(val1, nullptr);
+    ASSERT_TRUE(AddUnknownField(val1, mt, arena));
+    upb_Message* grandchild =
+        upb_Message_Mutable(val1, child_f.ptr(), arena.ptr()).msg;
+    ASSERT_NE(grandchild, nullptr);
+    ASSERT_TRUE(AddUnknownField(grandchild, mt, arena));
+
+    upb_Message* val2 = upb_Message_New(mt, arena.ptr());
+    ASSERT_NE(val2, nullptr);
+    ASSERT_TRUE(AddUnknownField(val2, mt, arena));
+
+    upb_MessageValue k1, v1, k2, v2;
+    k1.int32_val = 1;
+    v1.msg_val = val1;
+    k2.int32_val = 2;
+    v2.msg_val = val2;
+    ASSERT_TRUE(upb_Map_Set(map, k1, v1, arena.ptr()));
+    ASSERT_TRUE(upb_Map_Set(map, k2, v2, arena.ptr()));
+
+    EXPECT_FALSE(upb_Message_DiscardUnknown(root, m.ptr(), nullptr, 1));
+    EXPECT_FALSE(upb_Message_HasUnknown(root));
+    EXPECT_FALSE(upb_Message_HasUnknown(val1));
+    EXPECT_FALSE(upb_Message_HasUnknown(val2));
+    EXPECT_TRUE(upb_Message_HasUnknown(grandchild));
+  }
+
+  // Extension submessage: maxdepth == 0 fails and leaves extension child
+  // untouched; maxdepth == 1 clears both root and extension child.
+  {
+    upb_Message* root = upb_Message_New(mt, arena.ptr());
+    ASSERT_NE(root, nullptr);
+    ASSERT_TRUE(AddUnknownField(root, mt, arena));
+    upb_Message* ext_child =
+        upb_Message_Mutable(root, ext_f.ptr(), arena.ptr()).msg;
+    ASSERT_NE(ext_child, nullptr);
+    ASSERT_TRUE(AddUnknownField(ext_child, mt, arena));
+
+    EXPECT_FALSE(upb_Message_DiscardUnknown(root, m.ptr(), pool.ptr(), 0));
+    EXPECT_FALSE(upb_Message_HasUnknown(root));
+    EXPECT_TRUE(upb_Message_HasUnknown(ext_child));
+
+    EXPECT_TRUE(upb_Message_DiscardUnknown(root, m.ptr(), pool.ptr(), 1));
+    EXPECT_FALSE(upb_Message_HasUnknown(ext_child));
+  }
 }
 
 }  // namespace

@@ -203,7 +203,7 @@ bool _upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
   upb_MessageValue val;
   bool ret = true;
 
-  if (--depth == 0) return false;
+  if (depth < 0) return false;
 
   _upb_Message_DiscardUnknown_shallow(msg);
 
@@ -221,7 +221,7 @@ bool _upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
       upb_MessageValue map_key, map_val;
       while (upb_Map_Next(map, &map_key, &map_val, &iter)) {
         if (!_upb_Message_DiscardUnknown((upb_Message*)map_val.msg_val, val_m,
-                                         ext_pool, depth)) {
+                                         ext_pool, depth - 1)) {
           ret = false;
         }
       }
@@ -231,13 +231,13 @@ bool _upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
       for (i = 0; i < n; i++) {
         upb_MessageValue elem = upb_Array_Get(arr, i);
         if (!_upb_Message_DiscardUnknown((upb_Message*)elem.msg_val, subm,
-                                         ext_pool, depth)) {
+                                         ext_pool, depth - 1)) {
           ret = false;
         }
       }
     } else {
       if (!_upb_Message_DiscardUnknown((upb_Message*)val.msg_val, subm,
-                                       ext_pool, depth)) {
+                                       ext_pool, depth - 1)) {
         ret = false;
       }
     }
