@@ -303,6 +303,16 @@ bool ExtensionSet::MoveExtension(Arena* arena, int dst_number,
     return false;
   }
 
+  if (&src == this && dst_number == src_number) {
+    return true;
+  }
+
+  // Copy the Extension struct and erase the source entry before inserting into
+  // `this`. When `&src == this`, erasing first frees a slot in place so
+  // `Insert` shifts the entry into its new position without growing the table.
+  Extension ext = *src_ext;
+  src.Erase(src_number);
+
   // Get or create the destination extension.
   auto [dst_ext, is_new] = Insert(arena, dst_number);
   if (!is_new) {
@@ -314,10 +324,7 @@ bool ExtensionSet::MoveExtension(Arena* arena, int dst_number,
   }
 
   // Move the extension from the source to the destination.
-  *dst_ext = std::move(*src_ext);
-
-  // Erase the extension from the source.
-  src.Erase(src_number);
+  *dst_ext = ext;
   return true;
 }
 

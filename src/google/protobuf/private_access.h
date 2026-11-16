@@ -18,6 +18,7 @@ class MessageLite;
 
 namespace internal {
 
+struct ClassDataPrefix;
 struct ClassData;
 class ExtensionSet;
 class ThreadSafeArena;
@@ -43,6 +44,12 @@ struct PrivateAccess {
   static auto& GetInternalMetadata(MessageT& msg) {
     return msg._internal_metadata_;
   }
+
+  // Returns the `ClassDataPrefix` for the given message. If the concrete
+  // message type is known, this returns a compile-time constant. Otherwise,
+  // `ClassDataPrefix` is loaded from `MessageLite::GetClassDataPrefix()`.
+  template <typename MessageT>
+  static const ClassDataPrefix* GetClassDataPrefix(const MessageT& msg);
 
   template <typename T>
   static auto& GetExtensionSet(T& msg) {

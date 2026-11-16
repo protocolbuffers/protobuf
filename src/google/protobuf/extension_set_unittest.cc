@@ -2139,6 +2139,65 @@ TEST_F(ExtensionSetTest, MergeLargeExtensionSetToEmpty) {
   }
 }
 
+TEST_F(ExtensionSetTest, MoveExtensionSelfMoveAndReallocation) {
+  const int kMsgExtNum = unittest::optional_nested_message_extension.number();
+  const int kDstExtNum =
+      unittest::optional_unverified_lazy_message_extension.number();
+
+  {
+    unittest::TestAllExtensions msg;
+    msg.MutableExtension(unittest::optional_nested_message_extension)
+        ->set_bb(99);
+    ExtensionSet& set = PrivateAccess::GetExtensionSet(msg);
+
+    ASSERT_TRUE(
+        set.MoveExtension(/*arena=*/nullptr, kMsgExtNum, set, kMsgExtNum));
+    EXPECT_TRUE(msg.HasExtension(unittest::optional_nested_message_extension));
+    EXPECT_EQ(
+        msg.GetExtension(unittest::optional_nested_message_extension).bb(), 99);
+  }
+
+  // Self-move of an extension with a non-null descriptor must still fail.
+  {
+    unittest::TestAllExtensions msg;
+    const FieldDescriptor* fd =
+        GetExtensionReflection(unittest::optional_int32_extension);
+    msg.GetReflection()->SetInt32(&msg, fd, 101);
+    ExtensionSet& set = PrivateAccess::GetExtensionSet(msg);
+    const int kIntExtNum = unittest::optional_int32_extension.number();
+    EXPECT_FALSE(
+        set.MoveExtension(/*arena=*/nullptr, kIntExtNum, set, kIntExtNum));
+    EXPECT_TRUE(msg.HasExtension(unittest::optional_int32_extension));
+    EXPECT_EQ(msg.GetExtension(unittest::optional_int32_extension), 101);
+  }
+
+  // Test moving within the same ExtensionSet across a range of sizes so we
+  // cover flat-map capacity boundaries without growing the table.
+  for (int num_extra = 0; num_extra <= 10; ++num_extra) {
+    unittest::TestAllExtensions msg;
+    msg.MutableExtension(unittest::optional_nested_message_extension)
+        ->set_bb(99);
+    ExtensionSet& set = PrivateAccess::GetExtensionSet(msg);
+    for (int i = 1; i <= num_extra; ++i) {
+      set.Set<int32_t>(/*parent=*/HeapMessage(), 1000 + i,
+                       WireFormatLite::TYPE_INT32, i,
+                       /*descriptor=*/nullptr);
+    }
+    const size_t space_before = set.SpaceUsedExcludingSelfLong();
+
+    ASSERT_TRUE(
+        set.MoveExtension(/*arena=*/nullptr, kDstExtNum, set, kMsgExtNum));
+    EXPECT_EQ(set.SpaceUsedExcludingSelfLong(), space_before);
+    EXPECT_FALSE(msg.HasExtension(unittest::optional_nested_message_extension));
+    EXPECT_TRUE(
+        msg.HasExtension(unittest::optional_unverified_lazy_message_extension));
+    EXPECT_EQ(
+        msg.GetExtension(unittest::optional_unverified_lazy_message_extension)
+            .bb(),
+        99);
+  }
+}
+
 }  // namespace
 }  // namespace internal
 }  // namespace protobuf

@@ -16,6 +16,7 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "conformance/failure_list.h"
@@ -47,12 +48,13 @@ struct UnexpectedResult {
 inline constexpr int kMaximumWildcardExpansions = 20;
 
 // The ledger of a conformance run: tallies the results of its tests against
-// its failure list.  The failure list is loaded once (see LoadFailureList())
-// into a FailureList, which decides each result; the Report*() methods apply
-// its verdicts and count the outcomes.  The conformance matchers (see
-// matchers.h) report the outcome of every test here.  The test environment
-// reads the counters back as test properties and, under --fix, writes the new
-// failure list from the ledger (see SaveFailureList()).
+// its failure list.  It knows nothing of gtest.  The failure list is loaded
+// once (see LoadFailureList()) into a FailureList, which decides each result;
+// the Report*() methods apply its verdicts and count the outcomes, each test
+// once.  The conformance matchers (see matchers.h) report the outcome of every
+// test here.  The test environment reads the counters back as test properties
+// and, under --fix, writes the new failure list from the ledger (see
+// SaveFailureList()).
 class ResultLedger {
  public:
   ResultLedger() = default;
@@ -74,14 +76,22 @@ class ResultLedger {
   // invalid wildcard.
   absl::Status LoadFailureList(absl::string_view filename);
 
-  // The failure list as loaded so far, which decides each result.  Yields()
-  // reads the global environment's through GetGlobalResultLedger().
+  // The failure list as loaded so far, which decides each result (see the
+  // Report*() methods).
   const FailureList& failure_list() const { return failure_list_; }
 
   // Saves an updated failure list to disk based on the reported results.
   // Returns an error if `filename` can't be opened for writing or the write
   // fails.
   absl::Status SaveFailureList(absl::string_view filename) const;
+
+  // The Report*() methods record one test's outcome and return the failure
+  // list's verdict on it.  Each test is counted once: reporting it again with
+  // the same outcome returns the verdict again and changes nothing (gtest
+  // evaluates a failing matcher a second time to explain the failure).
+  // Reporting a different outcome, or a failure with a different message,
+  // returns a FailedPrecondition error instead of the verdict: a test has one
+  // outcome, so its result must not be checked by matchers that disagree.
 
   // Records a successful test run and returns
   // FailureList::VerdictOnSuccess().
@@ -113,9 +123,8 @@ class ResultLedger {
   void ReportNotSelected(absl::string_view test_name);
 
   // Whether any of the Report*() methods has been called for `test_name`.
-  // Yields() checks this to reject a second check of the same test.
   bool WasReported(absl::string_view test_name) const {
-    return seen_tests_.contains(test_name);
+    return reported_tests_.contains(test_name);
   }
 
   // The sorted failure list entries that more than kMaximumWildcardExpansions
@@ -206,6 +215,21 @@ class ResultLedger {
   // UnmatchedExpectedFailures()) and returns it.
   absl::optional<std::string> MarkMatched(absl::string_view test_name);
 
+  // The outcome a test was reported with (see Report*()).
+  struct ReportedOutcome {
+    enum Kind { kSuccess, kFailure, kSkip, kNotSelected };
+    Kind kind;
+    // The formatted failure message or the skip reason, else empty.
+    std::string message;
+  };
+  static std::string DescribeReportedOutcome(const ReportedOutcome& outcome);
+
+  // Remembers `outcome` as the first one reported for `test_name`.  Returns
+  // true if it is, false if the same outcome was reported before (or the test
+  // was reported as not selected), and an error if a different one was.
+  absl::StatusOr<bool> RecordReportedOutcome(absl::string_view test_name,
+                                             ReportedOutcome outcome);
+
   FailureList failure_list_;
 
   absl::flat_hash_set<std::string> unseen_expected_failures_;
@@ -216,9 +240,10 @@ class ResultLedger {
   // success.  See OverexpandedWildcards().
   absl::flat_hash_map<std::string, int> number_of_matches_;
 
-  // Every test name reported so far (see WasReported()), so that a test
-  // reported more than once is only counted once.
-  absl::flat_hash_set<std::string> seen_tests_;
+  // Every test name reported so far (see WasReported()) and its first
+  // outcome, so that a test reported more than once is counted once and can't
+  // change its outcome.
+  absl::flat_hash_map<std::string, ReportedOutcome> reported_tests_;
 
   // The tests counted by unexpected_failures_, mapped to their formatted
   // failure message, and the tests counted by unexpected_successes_, mapped to

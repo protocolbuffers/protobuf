@@ -74,6 +74,8 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
       file_options.strip_nonfunctional_codegen = true;
     } else if (option.first == "bootstrap") {
       file_options.bootstrap = true;
+    } else if (option.first == "allow_legacy_generic_services") {
+      file_options.allow_legacy_generic_services = true;
     } else {
       *error = absl::StrCat("Unknown generator option: ", option.first);
       return false;

@@ -7,6 +7,7 @@
 
 #include "google/protobuf/varint_shuffle.h"
 
+#include <cstdint>
 #include <string>
 #include <vector>
 

@@ -113,11 +113,8 @@ cc_test(
     size = "small",
     srcs = ["naming_test.cc"],
     deps = [
-        ":context",
         ":naming",
         "//src/google/protobuf",
-        "//src/google/protobuf/io",
-        "@abseil-cpp//absl/container:flat_hash_map",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -142,6 +139,7 @@ cc_test(
     srcs = ["relative_path_test.cc"],
     deps = [
         ":relative_path",
+        "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

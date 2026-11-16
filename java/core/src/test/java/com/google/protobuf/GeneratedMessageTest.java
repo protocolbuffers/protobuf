@@ -27,7 +27,6 @@ import proto2_unittest.NonNestedExtensionLite.MyNonNestedExtensionLite;
 import proto2_unittest.OuterClassNameTest2OuterClass;
 import proto2_unittest.OuterClassNameTest3OuterClass;
 import proto2_unittest.OuterClassNameTestOuterClass;
-import proto2_unittest.ServiceWithNoOuter;
 import proto2_unittest.UnittestOptimizeFor.TestOptimizedForSize;
 import proto2_unittest.UnittestOptimizeFor.TestOptionalOptimizedForSize;
 import proto2_unittest.UnittestOptimizeFor.TestRequiredOptimizedForSize;
@@ -922,9 +921,6 @@ public class GeneratedMessageTest {
     Descriptors.FieldDescriptor field =
         MessageWithNoOuter.getDescriptor().findFieldByName("foreign_enum");
     assertThat(message.getField(field)).isEqualTo(EnumWithNoOuter.BAR.getValueDescriptor());
-
-    assertThat(ServiceWithNoOuter.getDescriptor().getFile())
-        .isEqualTo(MultipleFilesTestProto.getDescriptor());
 
     assertThat(
             TestAllExtensions.getDefaultInstance()

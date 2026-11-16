@@ -35,13 +35,14 @@ pub use crate::proxied::{
 };
 #[allow(deprecated)]
 pub use crate::proxied::{MutProxied, Proxied};
-pub use crate::r#enum::{Enum, UnknownEnumValue};
+pub use crate::r#enum::{Enum, EnumValueNames, UnknownEnumValue};
 pub use crate::repeated::{Repeated, RepeatedIter, RepeatedMut, RepeatedView};
 pub use crate::singular::Singular;
 pub use crate::string::{ProtoBytes, ProtoStr, ProtoString, Utf8Error};
 pub use protobuf_macros::proto_proc as proto;
 
 // TODO: Remove this alias once we have confirmed there are no incoming references.
+#[doc(hidden)]
 pub use Singular as ProxiedInRepeated;
 
 pub mod prelude;
@@ -61,6 +62,7 @@ pub mod prelude;
 /// symbol while still allowing it from codegen, so it is only by private by
 /// convention. As application code should never use this module, anything
 /// changes under `__internal` is not considered a semver breaking change.
+#[doc(hidden)]
 #[path = "internal.rs"]
 pub mod __internal;
 

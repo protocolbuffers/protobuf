@@ -731,4 +731,4 @@ WKTBASES = {
     'google.protobuf.Struct': Struct,
     'google.protobuf.Timestamp': Timestamp,
 }
-# LINT.ThenChange(//depot/google.protobuf/compiler/python/pyi_generator.cc:wktbases)
+# LINT.ThenChange(src/google/protobuf/compiler/python/pyi_generator.cc:wktbases)

@@ -1068,67 +1068,66 @@ static constexpr const ::_pb::EnumDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABL
     file_level_enum_descriptors_google_2fprotobuf_2fwrappers_2eproto = nullptr;
 static constexpr const ::_pb::ServiceDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fwrappers_2eproto = nullptr;
-const ::uint32_t
-    TableStruct_google_2fprotobuf_2fwrappers_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-        protodesc_cold) = {
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::DoubleValue, _impl_._has_bits_),
-        4, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::DoubleValue, _impl_.value_),
-        0,
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FloatValue, _impl_._has_bits_),
-        4, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FloatValue, _impl_.value_),
-        0,
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Int64Value, _impl_._has_bits_),
-        4, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Int64Value, _impl_.value_),
-        0,
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::UInt64Value, _impl_._has_bits_),
-        4, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::UInt64Value, _impl_.value_),
-        0,
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Int32Value, _impl_._has_bits_),
-        4, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Int32Value, _impl_.value_),
-        0,
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::UInt32Value, _impl_._has_bits_),
-        4, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::UInt32Value, _impl_.value_),
-        0,
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::BoolValue, _impl_._has_bits_),
-        4, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::BoolValue, _impl_.value_),
-        0,
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::StringValue, _impl_._has_bits_),
-        4, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::StringValue, _impl_.value_),
-        0,
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::BytesValue, _impl_._has_bits_),
-        4, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::BytesValue, _impl_.value_),
-        0,
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+const ::uint32_t TableStruct_google_2fprotobuf_2fwrappers_2eproto::offsets[] = {
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::DoubleValue, _impl_._has_bits_),
+    4, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::DoubleValue, _impl_.value_),
+    0,
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::FloatValue, _impl_._has_bits_),
+    4, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::FloatValue, _impl_.value_),
+    0,
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Int64Value, _impl_._has_bits_),
+    4, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Int64Value, _impl_.value_),
+    0,
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::UInt64Value, _impl_._has_bits_),
+    4, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::UInt64Value, _impl_.value_),
+    0,
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Int32Value, _impl_._has_bits_),
+    4, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Int32Value, _impl_.value_),
+    0,
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::UInt32Value, _impl_._has_bits_),
+    4, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::UInt32Value, _impl_.value_),
+    0,
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::BoolValue, _impl_._has_bits_),
+    4, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::BoolValue, _impl_.value_),
+    0,
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::StringValue, _impl_._has_bits_),
+    4, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::StringValue, _impl_.value_),
+    0,
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::BytesValue, _impl_._has_bits_),
+    4, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::BytesValue, _impl_.value_),
+    0,
 };
 
-static const ::_pbi::MigrationSchema
-    schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-        {0, sizeof(::google::protobuf::DoubleValue)},
-        {5, sizeof(::google::protobuf::FloatValue)},
-        {10, sizeof(::google::protobuf::Int64Value)},
-        {15, sizeof(::google::protobuf::UInt64Value)},
-        {20, sizeof(::google::protobuf::Int32Value)},
-        {25, sizeof(::google::protobuf::UInt32Value)},
-        {30, sizeof(::google::protobuf::BoolValue)},
-        {35, sizeof(::google::protobuf::StringValue)},
-        {40, sizeof(::google::protobuf::BytesValue)},
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+static const ::_pbi::MigrationSchema schemas[] = {
+    {0, sizeof(::google::protobuf::DoubleValue)},
+    {5, sizeof(::google::protobuf::FloatValue)},
+    {10, sizeof(::google::protobuf::Int64Value)},
+    {15, sizeof(::google::protobuf::UInt64Value)},
+    {20, sizeof(::google::protobuf::Int32Value)},
+    {25, sizeof(::google::protobuf::UInt32Value)},
+    {30, sizeof(::google::protobuf::BoolValue)},
+    {35, sizeof(::google::protobuf::StringValue)},
+    {40, sizeof(::google::protobuf::BytesValue)},
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
@@ -1142,8 +1141,8 @@ static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
         &::google::protobuf::StringValue_globals_,
         &::google::protobuf::BytesValue_globals_,
 };
-const char descriptor_table_protodef_google_2fprotobuf_2fwrappers_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-    protodesc_cold) = {
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+const char descriptor_table_protodef_google_2fprotobuf_2fwrappers_2eproto[] = {
     "\n\036google/protobuf/wrappers.proto\022\017google"
     ".protobuf\"\034\n\013DoubleValue\022\r\n\005value\030\001 \001(\001\""
     "\033\n\nFloatValue\022\r\n\005value\030\001 \001(\002\"\033\n\nInt64Val"
@@ -1214,12 +1213,12 @@ DoubleValue::~DoubleValue() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void DoubleValue::SharedDtor(
     MessageLite& self) {
   DoubleValue& this_ = static_cast<DoubleValue&>(self);
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._impl_.~Impl_();
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
+  this_._impl_.~Impl_();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -1386,12 +1385,12 @@ FloatValue::~FloatValue() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FloatValue::SharedDtor(
     MessageLite& self) {
   FloatValue& this_ = static_cast<FloatValue&>(self);
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._impl_.~Impl_();
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
+  this_._impl_.~Impl_();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -1558,12 +1557,12 @@ Int64Value::~Int64Value() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Int64Value::SharedDtor(
     MessageLite& self) {
   Int64Value& this_ = static_cast<Int64Value&>(self);
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._impl_.~Impl_();
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
+  this_._impl_.~Impl_();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -1731,12 +1730,12 @@ UInt64Value::~UInt64Value() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void UInt64Value::SharedDtor(
     MessageLite& self) {
   UInt64Value& this_ = static_cast<UInt64Value&>(self);
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._impl_.~Impl_();
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
+  this_._impl_.~Impl_();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -1904,12 +1903,12 @@ Int32Value::~Int32Value() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Int32Value::SharedDtor(
     MessageLite& self) {
   Int32Value& this_ = static_cast<Int32Value&>(self);
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._impl_.~Impl_();
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
+  this_._impl_.~Impl_();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -2077,12 +2076,12 @@ UInt32Value::~UInt32Value() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void UInt32Value::SharedDtor(
     MessageLite& self) {
   UInt32Value& this_ = static_cast<UInt32Value&>(self);
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._impl_.~Impl_();
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
+  this_._impl_.~Impl_();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -2250,12 +2249,12 @@ BoolValue::~BoolValue() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void BoolValue::SharedDtor(
     MessageLite& self) {
   BoolValue& this_ = static_cast<BoolValue&>(self);
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._impl_.~Impl_();
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
+  this_._impl_.~Impl_();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -2433,13 +2432,13 @@ StringValue::~StringValue() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void StringValue::SharedDtor(
     MessageLite& self) {
   StringValue& this_ = static_cast<StringValue&>(self);
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.value_.Destroy();
   this_._impl_.~Impl_();
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -2626,13 +2625,13 @@ BytesValue::~BytesValue() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void BytesValue::SharedDtor(
     MessageLite& self) {
   BytesValue& this_ = static_cast<BytesValue&>(self);
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.value_.Destroy();
   this_._impl_.~Impl_();
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL

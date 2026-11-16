@@ -1,25 +1,28 @@
 #!/usr/bin/env bash
 #
-# Builds a local prebuilt protoc zip archive for the current platform and
-# updates bazel/private/oss/toolchains/prebuilt/tool_integrity.bzl in place with
-# a file:// URL and SHA-256 hash pointing to it.
+# Builds a local prebuilt protoc zip archive for the current platform, copies it
+# into .prebuilt_protoc/, and updates
+# bazel/private/oss/toolchains/prebuilt/tool_integrity.bzl in place with its
+# release URL and SHA-256 hash, exactly as an official release would.
 #
 # Usage:
 #   bazel run //pkg:update_prebuilts
 #
+# The recorded URL points at the GitHub release for RELEASE_VERSION, which does
+# not exist for a local build. The repo's .bazelrc (and examples/.bazelrc) set
+# --distdir to .prebuilt_protoc/, so Bazel takes the archive from there instead,
+# since its name and SHA-256 match.
+#
 # Relationship to compute_integrity.sh and build_integrity.sh:
 #   During official releases, the Rapid release pipeline builds prebuilt protoc
 #   archives across all supported platforms and runs compute_integrity.sh (which
-#   delegates to build_integrity.sh) to populate tool_integrity.bzl with
-#   https://github.com/.../releases/download/ URLs and SHA-256 hashes for every
-#   release archive.
+#   delegates to build_integrity.sh) to populate tool_integrity.bzl with the
+#   release URL and SHA-256 hash of every release archive.
 #
 #   On development branches (or before a release is published to GitHub),
 #   tool_integrity.bzl is checked in with an empty RELEASED_BINARY_INTEGRITY
-#   dict. Running this target copies the host platform's prebuilt protoc archive
-#   into .prebuilt_protoc/ and invokes build_integrity.sh with a file:// URL
-#   prefix so that prebuilt protoc toolchain resolution and authenticity
-#   validation can be tested locally and in CI.
+#   dict. This target lets prebuilt protoc toolchain resolution and authenticity
+#   validation be tested locally and in CI.
 
 set -euo pipefail
 
@@ -46,10 +49,9 @@ FILENAME="$(basename "$ZIP_SRC")"
 DEST_ZIP="$PREBUILT_DIR/$FILENAME"
 cp "$ZIP_SRC" "$DEST_ZIP"
 
-URL_PREFIX="file:///${PREBUILT_DIR#/}"
 RELEASE_VERSION="v${PROTOC_VERSION//-rc-/-rc}"
 OUT_FILE="$WORKSPACE_DIR/bazel/private/oss/toolchains/prebuilt/tool_integrity.bzl"
 
-bash "$BUILD_INTEGRITY" "$PREBUILT_DIR" "$RELEASE_VERSION" "$OUT_FILE" "$URL_PREFIX"
+bash "$BUILD_INTEGRITY" "$PREBUILT_DIR" "$RELEASE_VERSION" "$OUT_FILE"
 
 echo "Updated $OUT_FILE with $FILENAME"

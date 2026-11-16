@@ -743,6 +743,55 @@ TEST_F(RustGeneratorTest, DefInitCallsDepDefInits) {
               "::other_crate::other_crate_proto::other_crate_proto_def_init("));
 }
 
+TEST_F(RustGeneratorTest, PublicImportDiamondReexportsEachDepOnce) {
+  CreateTempFile("base.proto", R"schema(
+    syntax = "proto2";
+    package dep;
+    message Base {})schema");
+  CreateTempFile("left.proto", R"schema(
+    syntax = "proto2";
+    package dep;
+    import public "base.proto";
+    message Left {})schema");
+  CreateTempFile("right.proto", R"schema(
+    syntax = "proto2";
+    package dep;
+    import public "base.proto";
+    message Right {})schema");
+  CreateTempFile("same_crate.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    import public "right.proto";
+    message SameCrate {})schema");
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    import public "left.proto";
+    import public "same_crate.proto";)schema");
+  CreateTempFile("mapping.txt",
+                 "other_crate\n3\nbase.proto\nleft.proto\nright.proto\n");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=upb,"
+      "crate_mapping=$tmpdir/mapping.txt "
+      "foo.proto same_crate.proto");
+  ExpectNoErrors();
+
+  std::string rs = FileContents("foo.u.pb.rs");
+  EXPECT_THAT(rs, HasSubstr("pub use ::other_crate::left_proto::Left;"));
+  EXPECT_THAT(rs, HasSubstr("pub use ::other_crate::right_proto::Right;"));
+  EXPECT_THAT(rs, Not(HasSubstr("SameCrate")));
+
+  constexpr absl::string_view kBaseReexport =
+      "pub use ::other_crate::base_proto::Base;";
+  size_t first_pos = rs.find(kBaseReexport);
+  ASSERT_NE(first_pos, std::string::npos) << rs;
+  EXPECT_EQ(rs.find(kBaseReexport, first_pos + kBaseReexport.size()),
+            std::string::npos)
+      << rs;
+}
+
 }  // namespace
 }  // namespace rust
 }  // namespace compiler

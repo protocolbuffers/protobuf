@@ -682,11 +682,20 @@ static const upb_FieldDef* PyUpb_Message_InitAsMsg(PyUpb_Message* m,
   return f;
 }
 
+static void* PyUpb_Message_NewUnsetSubobjMap(void* ctx) {
+  (void)ctx;
+  return PyUpb_WeakMap_New();
+}
+
+static void PyUpb_Message_FreeUnsetSubobjMap(void* ptr) {
+  PyUpb_WeakMap_Free(ptr);
+}
+
 static PyUpb_WeakMap* PyUpb_Message_GetOrCreateUnsetSubobjMap(
     PyUpb_Message* self) {
   return PyUpb_LazyPtr_LazyInit(&self->unset_subobj_map,
-                                (PyUpb_PtrInitFunc)PyUpb_WeakMap_New,
-                                (PyUpb_PtrFreeFunc)PyUpb_WeakMap_Free, NULL);
+                                &PyUpb_Message_NewUnsetSubobjMap,
+                                &PyUpb_Message_FreeUnsetSubobjMap, NULL);
 }
 
 static bool PyUpb_Message_SetField(PyUpb_Message* parent, const upb_FieldDef* f,

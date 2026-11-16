@@ -12,3 +12,8 @@ try-import-if-bazel-version >=9.0.0 %workspace%/../bazel9.bazelrc
 # CI specific configs
 build:ci --experimental_remote_cache_eviction_retries=5
 build:ci --remote_download_outputs=all
+
+# Use a locally built prebuilt protoc from `bazel run //pkg:update_prebuilts`.
+# Bazel only takes an archive from here if its name and SHA-256 match, so this
+# is a no-op when the directory is missing or stale.
+common --distdir=../.prebuilt_protoc

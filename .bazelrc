@@ -120,3 +120,8 @@ build:windows --action_env=BAZEL_SH="C:/Program Files/Git/bin/bash.exe"
 # CI CONFIG
 # ==============================================================================
 common:ci --xcode_version_config=@com_google_protobuf//.github:host_xcodes
+
+# Use a locally built prebuilt protoc from `bazel run //pkg:update_prebuilts`.
+# Bazel only takes an archive from here if its name and SHA-256 match, so this
+# is a no-op when the directory is missing or stale.
+common --distdir=.prebuilt_protoc

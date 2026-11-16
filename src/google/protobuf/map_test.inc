@@ -110,8 +110,13 @@ struct MapTestPeer {
   }
 
   template <typename T>
-  static size_t NumBuckets(T& map) {
+  static size_t NumBuckets(const T& map) {
     return map.num_buckets_;
+  }
+
+  template <typename T>
+  static bool IsSingleBucket(const T& map) {
+    return map.is_single_bucket();
   }
 
   template <typename T>
@@ -1428,8 +1433,6 @@ TEST_P(MapTestCodegenOrDynamic, LookupMapValueSyncsRepeatedFieldRep) {
 }
 
 TEST_F(MapImplTest, SpaceUsed) {
-  constexpr size_t kMinCap = 16 / sizeof(void*);
-
   Map<int32_t, int32_t> m;
   // An newly constructed map should have no space used.
   EXPECT_EQ(m.SpaceUsedExcludingSelfLong(), 0);
@@ -1440,9 +1443,13 @@ TEST_F(MapImplTest, SpaceUsed) {
 
   for (int i = 0; i < 100; ++i) {
     m[i];
-    EXPECT_EQ(m.SpaceUsedExcludingSelfLong(),
-              sizeof(void*) * MapTestPeer::NumBuckets(m) +
-                  m.size() * sizeof(IntIntNode));
+    if (i < static_cast<int>(kMapSooBucketMaxLength)) {
+      EXPECT_EQ(m.SpaceUsedExcludingSelfLong(), m.size() * sizeof(IntIntNode));
+    } else {
+      EXPECT_EQ(m.SpaceUsedExcludingSelfLong(),
+                sizeof(void*) * MapTestPeer::NumBuckets(m) +
+                    m.size() * sizeof(IntIntNode));
+    }
   }
 
   // Test string, and non-scalar keys.
@@ -1454,9 +1461,9 @@ TEST_F(MapImplTest, SpaceUsed) {
     std::pair<std::string, int32_t> kv;
   };
 
-  EXPECT_EQ(m2.SpaceUsedExcludingSelfLong(),
-            sizeof(void*) * kMinCap + sizeof(StringIntNode) +
-                internal::StringSpaceUsedExcludingSelfLong(str));
+  EXPECT_EQ(
+      m2.SpaceUsedExcludingSelfLong(),
+      sizeof(StringIntNode) + internal::StringSpaceUsedExcludingSelfLong(str));
 
   struct IntAllTypesNode : internal::NodeBase {
     std::pair<int32_t, TestAllTypes> kv;
@@ -1466,8 +1473,7 @@ TEST_F(MapImplTest, SpaceUsed) {
   Map<int32_t, TestAllTypes> m3;
   m3[0].set_optional_string(str);
   EXPECT_EQ(m3.SpaceUsedExcludingSelfLong(),
-            sizeof(void*) * kMinCap + sizeof(IntAllTypesNode) +
-                m3[0].SpaceUsedLong() - sizeof(m3[0]));
+            sizeof(IntAllTypesNode) + m3[0].SpaceUsedLong() - sizeof(m3[0]));
 }
 
 // Attempts to verify that a map with keys a and b has a random ordering. This

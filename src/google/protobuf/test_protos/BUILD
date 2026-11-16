@@ -19,6 +19,9 @@ package(
 proto_library(
     name = "test_protos",
     srcs = glob(["*.proto"]),
+    option_deps = [
+        "//src/google/protobuf:cpp_features_proto",
+    ],
     strip_import_prefix = "/src",
     deps = [
         "//:descriptor_proto",

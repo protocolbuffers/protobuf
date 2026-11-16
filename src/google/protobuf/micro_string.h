@@ -606,7 +606,7 @@ void MicroString::SetInChunks(size_t size, const MessageLite& parent, F setter,
 template <size_t RequestedSpace>
 class MicroStringExtraImpl : private MicroString {
   static constexpr size_t RoundUp(size_t n) {
-    return MemoryAlign{alignof(MicroString)}.Ceil(n);
+    return MemoryAlign::Of<MicroString>().Ceil(n);
   }
 
  public:

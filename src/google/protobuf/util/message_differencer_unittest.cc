@@ -60,6 +60,7 @@ class UnsetFieldsMetadataMessageDifferencerTestUtil {
 namespace {
 
 using ::google::protobuf::internal::UnsetFieldsMetadataMessageDifferencerTestUtil;
+using ::testing::HasSubstr;
 
 
 proto3_unittest::TestNoPresenceField MakeTestNoPresenceField() {
@@ -4298,6 +4299,45 @@ TEST(AnyTest, DifferentTypes) {
       difference_string,
       testing::ContainsRegex(
           R"(type_url: ".+/proto2_unittest.TestField\" -> ".+/proto2_unittest.ForeignMessage")"));
+}
+
+TEST(AnyTest, UnpackAnyDisabled) {
+  proto2_unittest::TestField value1, value2;
+  value1.set_a(20);
+  value2.set_a(21);
+
+  proto2_unittest::TestAny m1, m2;
+  ABSL_CHECK(m1.mutable_any_value()->PackFrom(value1));
+  ABSL_CHECK(m2.mutable_any_value()->PackFrom(value2));
+  util::MessageDifferencer message_differencer;
+  message_differencer.set_unpack_any(false);
+  std::string difference_string;
+  message_differencer.ReportDifferencesToString(&difference_string);
+  EXPECT_FALSE(message_differencer.Compare(m1, m2));
+  // The Any is compared as a regular message, so the diff is on the raw value.
+  EXPECT_THAT(difference_string, HasSubstr("modified: any_value.value: "));
+}
+
+TEST(AnyTest, UnpackAnyDisabledComparesRawBytes) {
+  // Two different encodings of the same logical payload: equal when unpacked,
+  // but not equal when compared by raw bytes.
+  proto2_unittest::TestAny m1, m2;
+  m1.mutable_any_value()->set_type_url(
+      "type.googleapis.com/proto2_unittest.TestField");
+  m1.mutable_any_value()->set_value(absl::string_view("\x08\x01", 2));
+  m2.mutable_any_value()->set_type_url(
+      "type.googleapis.com/proto2_unittest.TestField");
+  m2.mutable_any_value()->set_value(absl::string_view("\x08\x00\x08\x01", 4));
+
+  util::MessageDifferencer unpacking_differencer;
+  EXPECT_TRUE(unpacking_differencer.Compare(m1, m2));
+
+  util::MessageDifferencer raw_differencer;
+  raw_differencer.set_unpack_any(false);
+  EXPECT_FALSE(raw_differencer.Compare(m1, m2));
+
+  m2.mutable_any_value()->set_value(m1.any_value().value());
+  EXPECT_TRUE(raw_differencer.Compare(m1, m2));
 }
 
 TEST(Anytest, TreatAsSet) {

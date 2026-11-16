@@ -106,15 +106,6 @@ bool CollectExtensions(const Message& message, FieldDescriptorSet* extensions) {
   return true;
 }
 
-void CollectPublicDependencies(
-    const FileDescriptor* file,
-    absl::flat_hash_set<const FileDescriptor*>* dependencies) {
-  if (file == nullptr || !dependencies->insert(file).second) return;
-  for (int i = 0; file != nullptr && i < file->public_dependency_count(); i++) {
-    CollectPublicDependencies(file->public_dependency(i), dependencies);
-  }
-}
-
 // Finds all extensions for custom options in the given file descriptor with the
 // builder pool which resolves Java features instead of the generated pool.
 void CollectExtensions(const FileDescriptor& file, const Options& options,
@@ -151,10 +142,12 @@ void CollectExtensions(const FileDescriptor& file, const Options& options,
   }
 
   // Check against dependencies to handle option dependencies polluting pool.
-  absl::flat_hash_set<const FileDescriptor*> dependencies;
-  dependencies.insert(&file);
+  absl::flat_hash_set<const FileDescriptor*> dependencies = {&file};
   for (int i = 0; i < file.dependency_count(); i++) {
-    CollectPublicDependencies(file.dependency(i), &dependencies);
+    for (const FileDescriptor* dep :
+         file.dependency(i)->GetPublicImportClosure()) {
+      dependencies.insert(dep);
+    }
   }
   for (auto* extension : *extensions) {
     if (!dependencies.contains(extension->file())) {
@@ -436,7 +429,7 @@ void FileGenerator::Generate(io::Printer* printer) {
       message_generators_[i]->Generate(printer);
     }
   }
-  if (HasGenericServices(file_, context_->EnforceLite())) {
+  if (HasGenericServices(file_, context_->options())) {
     for (int i = 0; i < file_->service_count(); i++) {
       if (NestedInFileClass(*file_->service(i), immutable_api_)) {
         std::unique_ptr<ServiceGenerator> generator(
@@ -715,7 +708,7 @@ void FileGenerator::GenerateSiblings(
         message_generators_[i].get(), google::protobuf::internal::IsOss(),
         &MessageGenerator::Generate);
   }
-  if (HasGenericServices(file_, context_->EnforceLite())) {
+  if (HasGenericServices(file_, context_->options())) {
     for (int i = 0; i < file_->service_count(); i++) {
       if (NestedInFileClass(*file_->service(i), immutable_api_)) continue;
       std::unique_ptr<ServiceGenerator> generator(

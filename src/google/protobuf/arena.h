@@ -418,7 +418,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   // Allocates memory with the specific size and alignment.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD void* PROTOBUF_NONNULL
   AllocateAligned(size_t size, size_t align = 8) {
-    if (align <= internal::ArenaAlignDefault{}.align) {
+    if (align <= internal::ArenaAlignDefault{}.align()) {
       return Allocate(internal::ArenaAlignDefault{}.Ceil(size));
     } else {
       // We are wasting space by over allocating align - 8 bytes. Compared
@@ -816,7 +816,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   }
 
   void* PROTOBUF_NONNULL AllocateAlignedForArray(size_t n, size_t align) {
-    if (align <= internal::ArenaAlignDefault{}.align) {
+    if (align <= internal::ArenaAlignDefault{}.align()) {
       return AllocateForArray(internal::ArenaAlignDefault{}.Ceil(n));
     } else {
       // We are wasting space by over allocating align - 8 bytes. Compared

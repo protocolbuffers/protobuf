@@ -235,6 +235,7 @@ pub unsafe trait UpbGetArena: SealedInternal {
     fn get_arena(&mut self, _private: Private) -> &Arena;
 }
 
+#[doc(hidden)]
 pub trait KernelMessage:
     AssociatedMiniTable + UpbGetArena + UpbGetMessagePtr + UpbGetMessagePtrMut + OwnedMessageInterop
 {
@@ -249,6 +250,7 @@ impl<T> KernelMessage for T where
 {
 }
 
+#[doc(hidden)]
 pub trait KernelMessageView<'msg>:
     UpbGetMessagePtr + MessageViewInterop<'msg> + From<MessageViewInner<'msg, Self::KMessage>>
 {
@@ -262,6 +264,7 @@ where
     type KMessage = T::Msg;
 }
 
+#[doc(hidden)]
 pub trait KernelMessageMut<'msg>:
     UpbGetMessagePtr
     + UpbGetMessagePtrMut
@@ -383,6 +386,9 @@ where
     // - `msg` is a valid mutable message.
     // - `mini_table` is the one associated with `msg`
     // - `msg.arena().raw()` is held for the same lifetime as `msg`.
+    // - `generated_extension_registry()` is never mutated after its `LazyLock` initialization and
+    //   holds only extension mini tables that live for the rest of the process, so they outlive
+    //   `msg`.
     unsafe {
         upb::wire::decode_with_options(
             data,

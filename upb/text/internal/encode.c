@@ -25,7 +25,6 @@
 #include "upb/message/message.h"
 #include "upb/message/unknown_fields.h"
 #include "upb/message/value.h"
-#include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
@@ -172,16 +171,14 @@ void UPB_PRIVATE(_upb_TextEncode_ParseUnknown)(txtenc* e,
       }
     } else {
       UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_AuxField);
-      const struct upb_AuxField* ext_struct = unknown.value.aux_field;
-      const upb_MiniTableExtension* ext =
-          UPB_PRIVATE(_upb_Extension_MiniTableExtension)(ext_struct);
-      upb_MessageValue val_ext = upb_Extension_GetValue(ext_struct);
-      const upb_MiniTableField* f = upb_MiniTableExtension_ToField(ext);
+      const struct upb_AuxField* aux_field = unknown.value.aux_field;
+      upb_MessageValue aux_val = upb_Extension_GetValue(aux_field);
+      const upb_MiniTableField* f = upb_Extension_MiniTableField(aux_field);
       UPB_ASSERT(!upb_MiniTableField_IsMap(f));
       if (upb_MiniTableField_IsArray(f)) {
-        _upb_ArrayDebugString(e, val_ext.array_val, f);
+        _upb_ArrayDebugString(e, aux_val.array_val, f);
       } else {
-        _upb_FieldDebugString(e, val_ext, f, NULL);
+        _upb_FieldDebugString(e, aux_val, f, NULL);
       }
     }
   }

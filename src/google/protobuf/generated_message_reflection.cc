@@ -43,6 +43,7 @@
 #include "absl/synchronization/mutex.h"
 #include "absl/types/span.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/btree_split.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/cpp_file_options.pb.h"
 #include "google/protobuf/descriptor.h"
@@ -117,6 +118,10 @@ Message* MaybeForceCopy(Arena* arena, Message* msg) {
 }  // anonymous namespace
 
 namespace internal {
+
+// Make sure that btree's addressing scheme fits in our reflection address slot.
+static_assert((BtreeSplitAddress::kAddressMask & kAllOffsetTags) == 0);
+
 ReflectionSchema::ReflectionSchema(const Message* default_instance,
                                    const uint32_t* offsets,
                                    const uint32_t* has_bit_indices,
@@ -3764,7 +3769,7 @@ const MapFieldBase* Reflection::GetMapData(const Message& message,
 
 template <typename T>
 static uint32_t AlignTo(uint32_t v) {
-  return static_cast<uint32_t>(internal::MemoryAlign{alignof(T)}.Ceil(v));
+  return static_cast<uint32_t>(internal::MemoryAlign::Of<T>().Ceil(v));
 }
 
 static internal::TailCallParseFunc GetFastParseFunction(
@@ -4035,7 +4040,8 @@ class AssignDescriptorsHelper {
     if (message_globals_data_[0] != nullptr) {
       auto* default_instance =
           MessageGlobalsBase::ToDefaultInstance(message_globals_data_[0]);
-      auto& class_data = *internal::GetClassData(*default_instance);
+      auto& class_data =
+          *internal::PrivateAccess::GetClassDataPrefix(*default_instance);
       // If there is no descriptor_table in the class data, then it is not
       // interested in receiving reflection information either.
       if (class_data.descriptor_table() != nullptr) {

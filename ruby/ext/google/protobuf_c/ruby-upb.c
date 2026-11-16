@@ -4922,7 +4922,6 @@ upb_value upb_inttable_iter_value(const upb_inttable* t, intptr_t iter) {
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -6068,7 +6067,7 @@ static void jsondec_timestamp(jsondec* d, upb_Message* msg,
     }
   }
 
-  if (seconds.int64_val < -62135596800) {
+  if (seconds.int64_val < -62135596800 || seconds.int64_val > 253402300799) {
     jsondec_err(d, "Timestamp out of range");
   }
 
@@ -6486,20 +6485,10 @@ int upb_JsonDecodeDetectingNonconformance(const char* buf, size_t size,
 
   if (size == 0) return true;
 
-  UPB_ASSERT(!((options & upb_JsonDecode_ValidateUtf8_Disable) &&
-               (options & upb_JsonDecode_ValidateUtf8_Enforce)));
-
   if (!(options & upb_JsonDecode_ValidateUtf8_Disable)) {
     if (!utf8_range_IsValid(buf, size)) {
-      if (options & upb_JsonDecode_ValidateUtf8_Enforce) {
-        upb_Status_SetErrorMessage(status, "Invalid UTF-8 in JSON input");
-        return kUpb_JsonDecodeResult_Error;
-      } else {
-        fprintf(
-            stderr,
-            "Invalid UTF-8 in JSON input. This will be rejected starting in "
-            "the 2027-Q1 breaking change\n");
-      }
+      upb_Status_SetErrorMessage(status, "Invalid UTF-8 in JSON input");
+      return kUpb_JsonDecodeResult_Error;
     }
   }
 
@@ -8819,6 +8808,7 @@ bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
   size_t new_size;
   const bool ok = !upb_AddOverflow(arr->UPB_PRIVATE(size), count, &new_size);
   UPB_ASSERT(ok);
+  if (UPB_UNLIKELY(!ok)) return false;
   const size_t oldsize = arr->UPB_PRIVATE(size);
   if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(arr, new_size, arena)) {
     return false;
@@ -9122,19 +9112,21 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
 bool _upb_Map_Reserve(upb_Map* map, size_t size, upb_Arena* arena) {
   UPB_ASSERT(!upb_Map_IsFrozen(map));
   if (size == 0) return true;
+  if (UPB_UNLIKELY(size > SIZE_MAX - 1 - size / 7)) return false;
 
   size_t target = _upb_entries_needed_for(size);
   if (target < 8) target = 8;
   int size_lg2 = upb_Log2Ceiling(target);
+  if (UPB_UNLIKELY(size_lg2 >= 32)) return false;
 
   if (_upb_Map_Capacity(map) >= ((size_t)1 << size_lg2)) {
     return true;
   }
 
   if (map->UPB_PRIVATE(is_strtable)) {
-    return upb_strtable_resize(&map->t.strtable, size_lg2, arena);
+    return upb_strtable_resize(&map->t.strtable, (size_t)size_lg2, arena);
   } else {
-    return upb_inttable_resize(&map->t.inttable, size_lg2, arena);
+    return upb_inttable_resize(&map->t.inttable, (size_t)size_lg2, arena);
   }
 }
 
@@ -10584,6 +10576,9 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
                                const upb_MiniTable* mini_table,
                                upb_Arena* arena) {
   UPB_ASSERT(!upb_Message_IsFrozen(dst));
+  if (UPB_UNLIKELY(mini_table->UPB_PRIVATE(size) < sizeof(upb_Message))) {
+    return NULL;
+  }
   upb_StringView empty_string = upb_StringView_FromDataAndSize(NULL, 0);
   // Only copy message area skipping upb_Message_Internal.
   memcpy(dst + 1, src + 1, mini_table->UPB_PRIVATE(size) - sizeof(upb_Message));
@@ -10775,6 +10770,7 @@ bool upb_Message_MergeFrom(upb_Message* dst, const upb_Message* src,
 }
 
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -10805,25 +10801,15 @@ const upb_AuxField* UPB_PRIVATE(_upb_Message_Getext)(
       msg, upb_MiniTableExtension_ToField(e));
 }
 
-upb_AuxField* UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
-    struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a,
-    upb_TaggedAuxType tag) {
-  UPB_ASSERT(!upb_Message_IsFrozen(msg));
-  UPB_ASSERT(!upb_MiniTableField_IsMap(upb_MiniTableExtension_ToField(e)));
-  // For Canonical Extensions, we check whether the extension has already been
-  // set. If we find an extension with the same pointer and tag, we reuse it to
-  // prevent duplicate entries for the same extension.
-  //
-  // For Non-Canonical Extensions, we do NOT reuse them, matching the behavior
-  // of adding a unknown StringView (through `_upb_Message_AddUnknown`) which
-  // accumulates.
-  if (tag == kUpb_TaggedAuxType_CanonicalExtension) {
-    upb_AuxField* ext = (upb_AuxField*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
-    if (ext) return ext;
-  }
+// Appends a new zero-initialized entry described by `f` to the aux data of
+// `msg`, with the given tag. Returns NULL on allocation failure.
+static upb_AuxField* _upb_Message_AppendAuxField(struct upb_Message* msg,
+                                                 const upb_MiniTableField* f,
+                                                 upb_Arena* a,
+                                                 upb_TaggedAuxType tag) {
   if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, a)) return NULL;
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  upb_AuxField* ext = UPB_PRIVATE(_upb_Extension_New)(e, a);
+  upb_AuxField* ext = UPB_PRIVATE(_upb_Extension_New)(f, a);
   if (!ext) return NULL;
   in->aux_data[in->size++] = upb_TaggedAuxPtr_MakeAuxField(ext, tag);
   return ext;
@@ -10831,14 +10817,59 @@ upb_AuxField* UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
 
 upb_AuxField* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a) {
-  return UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
-      msg, e, a, kUpb_TaggedAuxType_CanonicalExtension);
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  const upb_MiniTableField* f = upb_MiniTableExtension_ToField(e);
+  UPB_ASSERT(!upb_MiniTableField_IsMap(f));
+  // Reuse an existing canonical extension to prevent duplicate entries for the
+  // same extension.
+  upb_AuxField* ext =
+      (upb_AuxField*)UPB_PRIVATE(_upb_Message_GetExtension)(msg, f);
+  if (ext) return ext;
+  return _upb_Message_AppendAuxField(msg, f, a,
+                                     kUpb_TaggedAuxType_CanonicalExtension);
 }
 
-upb_AuxField* UPB_PRIVATE(_upb_Message_CreateNonCanonicalExtension)(
+upb_AuxField* UPB_PRIVATE(_upb_Message_CreateUnknownExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a) {
-  return UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
-      msg, e, a, kUpb_TaggedAuxType_UnknownAuxField);
+  return UPB_PRIVATE(_upb_Message_CreateUnknownField)(
+      msg, upb_MiniTableExtension_ToField(e), a);
+}
+
+upb_AuxField* UPB_PRIVATE(_upb_Message_CreateUnknownField)(
+    struct upb_Message* msg, const upb_MiniTableField* f, upb_Arena* a) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  // Non-canonical entries are never maps.
+  UPB_ASSERT(!upb_MiniTableField_IsMap(f));
+  // Like for an extension field, the value lives in the upb_AuxField and the
+  // entry is present iff it exists, so the field has no offset or presence.
+  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_Offset)(f) == 0);
+  UPB_ASSERT(f->presence == 0);
+  // Like unknown fields (see `_upb_Message_AddUnknown`), non-canonical entries
+  // accumulate; an existing entry for the same field is never reused.
+  return _upb_Message_AppendAuxField(msg, f, a,
+                                     kUpb_TaggedAuxType_UnknownAuxField);
+}
+
+const upb_MiniTableField* upb_MiniTableField_ConvertToAuxField(
+    const upb_MiniTableField* f, upb_Arena* a) {
+  typedef struct {
+    upb_MiniTableField field;
+    upb_MiniTableSubInternal sub;
+  } upb_FieldWithSub;
+  UPB_ASSERT(!upb_MiniTableField_IsExtension(f));
+  const bool has_sub = f->UPB_PRIVATE(submsg_ofs) != kUpb_NoSub;
+  upb_FieldWithSub* ret = upb_Arena_Malloc(
+      a, has_sub ? sizeof(upb_FieldWithSub) : sizeof(upb_MiniTableField));
+  if (!ret) return NULL;
+  upb_MiniTableField* aux = &ret->field;
+  *aux = *f;
+  aux->UPB_PRIVATE(offset) = 0;
+  aux->presence = 0;
+  if (has_sub) {
+    ret->sub = *UPB_PRIVATE(_upb_MiniTableField_Sub)(f);
+    UPB_PRIVATE(_upb_MiniTableField_SetSub)(aux, &ret->sub);
+  }
+  return aux;
 }
 
 
@@ -12707,6 +12738,8 @@ UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
       offsetof(upb_MiniTableExtension,
                UPB_PRIVATE(field).UPB_PRIVATE(number)) == 0,
       "Extension must be first-member-of-struct convertable with uint32_t");
+  // Only actual extension fields can be registered.
+  UPB_ASSERT(upb_MiniTableField_IsExtension(upb_MiniTableExtension_ToField(e)));
   uint32_t fieldnum = upb_MiniTableExtension_Number(e);
   const upb_MiniTable* extendee = upb_MiniTableExtension_Extendee(e);
 
@@ -12722,6 +12755,11 @@ UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
 
 upb_ExtensionRegistryStatus upb_ExtensionRegistry_AddArray(
     upb_ExtensionRegistry* r, const upb_MiniTableExtension** e, size_t count) {
+  size_t byte_len;
+  if (UPB_UNLIKELY(upb_MulOverflow(count, sizeof(*e), &byte_len) ||
+                   (uintptr_t)e > UINTPTR_MAX - byte_len)) {
+    return kUpb_ExtensionRegistryStatus_OutOfMemory;
+  }
   const upb_MiniTableExtension** start = e;
   const upb_MiniTableExtension** end = UPB_PTRADD(e, count);
   upb_ExtensionRegistryStatus status = kUpb_ExtensionRegistryStatus_Ok;
@@ -14238,7 +14276,7 @@ upb_ExtensionRange* _upb_ExtensionRanges_New(
 
 typedef struct {
   size_t len;
-  char str[1];  // Null-terminated string data follows.
+  char str[];  // Null-terminated string data follows.
 } str_t;
 
 struct upb_FieldDef {
@@ -14576,9 +14614,18 @@ static char* make_json_name(const char* name, size_t size, upb_Arena* a) {
   return out;
 }
 
+// Allocates a str_t with room for `len` bytes plus a null terminator.
+static str_t* alloc_str(upb_DefBuilder* ctx, size_t len) {
+  size_t count;
+  if (upb_AddOverflow(len, (size_t)1, &count) ||
+      UPB_SIZEOF_FLEX_WOULD_OVERFLOW(str_t, str, count)) {
+    _upb_DefBuilder_OomErr(ctx);
+  }
+  return _upb_DefBuilder_Alloc(ctx, UPB_SIZEOF_FLEX(str_t, str, count));
+}
+
 static str_t* newstr(upb_DefBuilder* ctx, const char* data, size_t len) {
-  str_t* ret = _upb_DefBuilder_Alloc(ctx, sizeof(*ret) + len);
-  if (!ret) _upb_DefBuilder_OomErr(ctx);
+  str_t* ret = alloc_str(ctx, len);
   ret->len = len;
   if (len) memcpy(ret->str, data, len);
   ret->str[len] = '\0';
@@ -14588,7 +14635,7 @@ static str_t* newstr(upb_DefBuilder* ctx, const char* data, size_t len) {
 static str_t* unescape(upb_DefBuilder* ctx, const upb_FieldDef* f,
                        const char* data, size_t len) {
   // Size here is an upper bound; escape sequences could ultimately shrink it.
-  str_t* ret = _upb_DefBuilder_Alloc(ctx, sizeof(*ret) + len);
+  str_t* ret = alloc_str(ctx, len);
   char* dst = &ret->str[0];
   const char* src = data;
   const char* end = UPB_PTRADD(data, len);
@@ -14603,6 +14650,7 @@ static str_t* unescape(upb_DefBuilder* ctx, const upb_FieldDef* f,
   }
 
   ret->len = dst - &ret->str[0];
+  *dst = '\0';
   return ret;
 }
 

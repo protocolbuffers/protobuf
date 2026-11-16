@@ -165,28 +165,27 @@ static constexpr const ::_pb::EnumDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABL
     file_level_enum_descriptors_google_2fprotobuf_2ftimestamp_2eproto = nullptr;
 static constexpr const ::_pb::ServiceDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2ftimestamp_2eproto = nullptr;
-const ::uint32_t
-    TableStruct_google_2fprotobuf_2ftimestamp_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-        protodesc_cold) = {
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Timestamp, _impl_._has_bits_),
-        5, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Timestamp, _impl_.seconds_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Timestamp, _impl_.nanos_),
-        0,
-        1,
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+const ::uint32_t TableStruct_google_2fprotobuf_2ftimestamp_2eproto::offsets[] = {
+    0x081, // bitmap
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Timestamp, _impl_._has_bits_),
+    5, // hasbit index offset
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Timestamp, _impl_.seconds_),
+    PROTOBUF_FIELD_OFFSET(::google::protobuf::Timestamp, _impl_.nanos_),
+    0,
+    1,
 };
 
-static const ::_pbi::MigrationSchema
-    schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-        {0, sizeof(::google::protobuf::Timestamp)},
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+static const ::_pbi::MigrationSchema schemas[] = {
+    {0, sizeof(::google::protobuf::Timestamp)},
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
         &::google::protobuf::Timestamp_globals_,
 };
-const char descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-    protodesc_cold) = {
+ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+const char descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto[] = {
     "\n\037google/protobuf/timestamp.proto\022\017googl"
     "e.protobuf\"+\n\tTimestamp\022\017\n\007seconds\030\001 \001(\003"
     "\022\r\n\005nanos\030\002 \001(\005B\205\001\n\023com.google.protobufB"
@@ -256,12 +255,12 @@ Timestamp::~Timestamp() {
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Timestamp::SharedDtor(
     MessageLite& self) {
   Timestamp& this_ = static_cast<Timestamp&>(self);
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._impl_.~Impl_();
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
+  this_._impl_.~Impl_();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL

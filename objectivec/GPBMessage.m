@@ -110,12 +110,8 @@ NSString *const GPBMessageExceptionMessageTooLarge =
 
 static id CreateArrayForField(GPBFieldDescriptor *field, GPBMessage *autocreator)
     __attribute__((ns_returns_retained));
-static id GetOrCreateArrayIvarWithField(GPBMessage *self, GPBFieldDescriptor *field);
-static id GetArrayIvarWithField(GPBMessage *self, GPBFieldDescriptor *field);
 static id CreateMapForField(GPBFieldDescriptor *field, GPBMessage *autocreator)
     __attribute__((ns_returns_retained));
-static id GetOrCreateMapIvarWithField(GPBMessage *self, GPBFieldDescriptor *field);
-static id GetMapIvarWithField(GPBMessage *self, GPBFieldDescriptor *field);
 static NSMutableDictionary *CloneExtensionMap(NSDictionary *extensionMap, NSZone *zone)
     __attribute__((ns_returns_retained));
 
@@ -755,18 +751,6 @@ static id CreateMapForField(GPBFieldDescriptor *field, GPBMessage *autocreator) 
   return result;
 }
 
-#if !defined(__clang_analyzer__)
-// These functions are blocked from the analyzer because the analyzer sees the
-// GPBSetRetainedObjectIvarWithFieldPrivate() call as consuming the array/map,
-// so use of the array/map after the call returns is flagged as a use after
-// free.
-// But GPBSetRetainedObjectIvarWithFieldPrivate() is "consuming" the retain
-// count be holding onto the object (it is transferring it), the object is
-// still valid after returning from the call.  The other way to avoid this
-// would be to add a -retain/-autorelease, but that would force every
-// repeated/map field parsed into the autorelease pool which is both a memory
-// and performance hit.
-
 static id GetOrCreateArrayIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
   id array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
   if (!array) {
@@ -846,8 +830,6 @@ static id GetMapIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
   [autocreated release];
   return expected;
 }
-
-#endif  // !defined(__clang_analyzer__)
 
 static void DecodeSingleValueFromInputStream(GPBExtensionDescriptor *extension,
                                              GPBMessage *messageToGetExtension,

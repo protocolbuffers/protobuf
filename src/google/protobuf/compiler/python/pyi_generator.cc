@@ -87,7 +87,7 @@ bool IsWellKnownType(const absl::string_view name) {
           name == "google.protobuf.ListValue" ||
           name == "google.protobuf.Struct" ||
           name == "google.protobuf.Timestamp");
-  // LINT.ThenChange(//depot/google3/net/proto2/python/internal/well_known_types.py:wktbases)
+  // LINT.ThenChange(python/google/protobuf/internal/well_known_types.py:wktbases)
 }
 
 // Checks what modules should be imported for this message

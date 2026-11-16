@@ -57,6 +57,8 @@ struct Options {
 
   // Used by protobuf itself and not supported for direct use by users.
   bool bootstrap = false;
+
+  bool allow_legacy_generic_services = false;
 };
 
 }  // namespace java

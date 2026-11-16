@@ -14,7 +14,9 @@
 #include "upb/hash/ext_table.h"
 #include "upb/mem/arena.h"
 #include "upb/mini_table/extension.h"
+#include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
+#include "upb/port/overflow.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -38,6 +40,8 @@ UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
       offsetof(upb_MiniTableExtension,
                UPB_PRIVATE(field).UPB_PRIVATE(number)) == 0,
       "Extension must be first-member-of-struct convertable with uint32_t");
+  // Only actual extension fields can be registered.
+  UPB_ASSERT(upb_MiniTableField_IsExtension(upb_MiniTableExtension_ToField(e)));
   uint32_t fieldnum = upb_MiniTableExtension_Number(e);
   const upb_MiniTable* extendee = upb_MiniTableExtension_Extendee(e);
 
@@ -53,6 +57,11 @@ UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
 
 upb_ExtensionRegistryStatus upb_ExtensionRegistry_AddArray(
     upb_ExtensionRegistry* r, const upb_MiniTableExtension** e, size_t count) {
+  size_t byte_len;
+  if (UPB_UNLIKELY(upb_MulOverflow(count, sizeof(*e), &byte_len) ||
+                   (uintptr_t)e > UINTPTR_MAX - byte_len)) {
+    return kUpb_ExtensionRegistryStatus_OutOfMemory;
+  }
   const upb_MiniTableExtension** start = e;
   const upb_MiniTableExtension** end = UPB_PTRADD(e, count);
   upb_ExtensionRegistryStatus status = kUpb_ExtensionRegistryStatus_Ok;

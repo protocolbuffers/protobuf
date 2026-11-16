@@ -247,9 +247,10 @@ inline bool HasDescriptorMethods(const FileDescriptor* /* descriptor */,
 }
 
 // Should we generate generic services for this file?
-inline bool HasGenericServices(const FileDescriptor* file, bool enforce_lite) {
-  return file->service_count() > 0 &&
-         HasDescriptorMethods(file, enforce_lite) &&
+inline bool HasGenericServices(const FileDescriptor* file,
+                               const Options& options) {
+  return options.allow_legacy_generic_services && file->service_count() > 0 &&
+         HasDescriptorMethods(file, options.enforce_lite) &&
          file->options().java_generic_services();
 }
 

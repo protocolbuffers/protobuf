@@ -15,6 +15,8 @@
 #include <type_traits>
 #include <utility>
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
@@ -53,6 +55,10 @@ struct WriterOptions {
   // in the unit tests; we intend to remove this setting eventually. See
   // b/234868512.
   bool allow_legacy_nonconformant_behavior = false;
+
+  // The maximum nesting depth of JSON objects and arrays that will be written.
+  // The default should match PrintOptions::recursion_limit.
+  int recursion_limit = 100;
 };
 
 template <typename Tuple, typename F, size_t... i>
@@ -87,8 +93,34 @@ class JsonWriter {
 
   const WriterOptions& options() const { return options_; }
 
-  void Push() { ++indent_; }
-  void Pop() { --indent_; }
+  // RAII guard for one level of JSON object or array nesting; see Push().
+  class NestingGuard {
+   public:
+    NestingGuard(NestingGuard&& other)
+        : writer_(std::exchange(other.writer_, nullptr)) {}
+    NestingGuard& operator=(NestingGuard&&) = delete;
+    ~NestingGuard() {
+      if (writer_ != nullptr) --writer_->indent_;
+    }
+
+   private:
+    friend JsonWriter;
+    explicit NestingGuard(JsonWriter* writer) : writer_(writer) {
+      ++writer_->indent_;
+    }
+
+    JsonWriter* writer_;
+  };
+
+  // Enters one level of JSON object or array nesting, which is left when the
+  // returned guard is destroyed. Fails if that would exceed the recursion
+  // limit.
+  absl::StatusOr<NestingGuard> Push() {
+    if (indent_ >= options_.recursion_limit) {
+      return absl::InvalidArgumentError("max recursion depth exceeded");
+    }
+    return NestingGuard(this);
+  }
 
   // The many overloads of Write() will write a value to the underlying stream.
   // Some values may want to be quoted; the Quoted<> type will automatically add

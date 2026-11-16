@@ -31,7 +31,7 @@ namespace {
 static constexpr size_t kTestOneRepeatedFieldFieldOffset =
     sizeof(MessageLite) + sizeof(void*);
 
-#ifdef PROTOBUF_CUSTOM_VTABLE
+#if defined(PROTOBUF_CUSTOM_VTABLE) && !defined(PROTOBUF_SMALLER_MESSAGE_LITE)
 static constexpr size_t kTestOneRepeatedFieldInternalMetadataOffset = 0;
 #else
 static constexpr size_t kTestOneRepeatedFieldInternalMetadataOffset =
@@ -49,17 +49,27 @@ struct FieldWithInternalMetadataOffset {
 
 struct StructWithInternalMetadata {
   explicit StructWithInternalMetadata(Arena* arena)
-      : _internal_metadata_(arena),
+      :
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+        _arena_(arena),
+#else
+        _internal_metadata_(arena),
+#endif
         field(InternalMetadataOffset::Build<
                   StructWithInternalMetadata,
                   PROTOBUF_FIELD_OFFSET(StructWithInternalMetadata, field)>(),
-              arena) {}
+              arena) {
+  }
 
   Arena* GetArena() const {
     return ResolveArena<&FieldWithInternalMetadataOffset::resolver>(&field);
   }
 
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  Arena* _arena_;
+#else
   InternalMetadata _internal_metadata_;
+#endif
   FieldWithInternalMetadataOffset field;
 };
 
@@ -88,13 +98,19 @@ struct TaggedStructWithInternalMetadata {
   explicit TaggedStructWithInternalMetadata(Arena* arena)
       : TaggedStructWithInternalMetadata(arena, 0) {}
   TaggedStructWithInternalMetadata(Arena* arena, int value)
-      : _internal_metadata_(arena),
+      :
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+        _arena_(arena),
+#else
+        _internal_metadata_(arena),
+#endif
         field(
             InternalMetadataOffset::Build<TaggedStructWithInternalMetadata,
                                           PROTOBUF_FIELD_OFFSET(
                                               TaggedStructWithInternalMetadata,
                                               field)>(),
-            value) {}
+            value) {
+  }
 
   Arena* GetArena() const {
     return ResolveTaggedArena<
@@ -108,7 +124,11 @@ struct TaggedStructWithInternalMetadata {
     field.Swap(other.field);
   }
 
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  Arena* _arena_;
+#else
   InternalMetadata _internal_metadata_;
+#endif
   // Add padding to the struct to manipulate the offset of the
   // `InternalMetadataResolver` in `field`.
   uint8_t padding[kPadding] = {};

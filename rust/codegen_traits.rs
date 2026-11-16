@@ -30,6 +30,7 @@ pub(crate) trait MessageTypeHelper<T> {}
 impl<T: EntityType<Tag = entity_tag::MessageTag>> MessageTypeHelper<entity_tag::MessageTag> for T {}
 
 /// A trait implemented only by Message types.
+#[doc(hidden)]
 pub trait MessageType {}
 impl<T> MessageType for T where T: EntityType + MessageTypeHelper<T::Tag> {}
 
@@ -134,10 +135,12 @@ pub trait MessageMut<'msg>: SealedInternal
 /// whether the entity is a message, enum, primitive, view proxy, or mut proxy. The main purpose of
 /// this is to allow us to have separate blanket implementations of various traits for messages
 /// and enums.
+#[doc(hidden)]
 pub trait EntityType {
     type Tag;
 }
 
+#[doc(hidden)]
 pub mod entity_tag {
     pub struct MessageTag;
     pub struct EnumTag;

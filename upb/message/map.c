@@ -186,19 +186,21 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
 bool _upb_Map_Reserve(upb_Map* map, size_t size, upb_Arena* arena) {
   UPB_ASSERT(!upb_Map_IsFrozen(map));
   if (size == 0) return true;
+  if (UPB_UNLIKELY(size > SIZE_MAX - 1 - size / 7)) return false;
 
   size_t target = _upb_entries_needed_for(size);
   if (target < 8) target = 8;
   int size_lg2 = upb_Log2Ceiling(target);
+  if (UPB_UNLIKELY(size_lg2 >= 32)) return false;
 
   if (_upb_Map_Capacity(map) >= ((size_t)1 << size_lg2)) {
     return true;
   }
 
   if (map->UPB_PRIVATE(is_strtable)) {
-    return upb_strtable_resize(&map->t.strtable, size_lg2, arena);
+    return upb_strtable_resize(&map->t.strtable, (size_t)size_lg2, arena);
   } else {
-    return upb_inttable_resize(&map->t.inttable, size_lg2, arena);
+    return upb_inttable_resize(&map->t.inttable, (size_t)size_lg2, arena);
   }
 }
 

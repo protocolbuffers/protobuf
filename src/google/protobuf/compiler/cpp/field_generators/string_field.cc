@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "absl/log/absl_check.h"
-#include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/field.h"

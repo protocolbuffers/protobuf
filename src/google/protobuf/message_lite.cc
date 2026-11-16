@@ -58,7 +58,7 @@ MessageLite* MessageLite::CopyConstruct(Arena* arena, const MessageLite& from) {
 
 void MessageLite::DestroyInstance() {
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  class_data()->destroy_message(*this);
+  class_data_prefix()->destroy_message(*this);
 #else   // PROTOBUF_CUSTOM_VTABLE
   this->~MessageLite();
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -67,7 +67,7 @@ void MessageLite::DestroyInstance() {
 void MessageLite::DeleteInstance() {
   // Cache the size and pointer because we can't access them after the
   // destruction.
-  const size_t size = GetClassData()->allocation_size();
+  const size_t size = GetClassDataPrefix()->allocation_size();
   void* const ptr = this;
   DestroyInstance();
   internal::SizedDelete(ptr, size);

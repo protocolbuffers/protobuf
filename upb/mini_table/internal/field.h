@@ -17,7 +17,6 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-// LINT.IfChange(struct_definition)
 struct upb_MiniTableField {
   uint32_t UPB_ONLYBITS(number);
   uint16_t UPB_ONLYBITS(offset);
@@ -232,8 +231,6 @@ UPB_INLINE size_t UPB_PRIVATE(_upb_MiniTableField_ElemSizeLg2)(
   const upb_FieldType field_type = upb_MiniTableField_Type(f);
   return UPB_PRIVATE(_upb_FieldType_SizeLg2)(field_type);
 }
-
-// LINT.ThenChange(//depot/google3/third_party/upb/bits/typescript/mini_table_field.ts)
 
 #ifdef __cplusplus
 } /* extern "C" */

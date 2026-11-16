@@ -86,17 +86,14 @@ class PROTOBUF_EXPORT ThreadSafeArena {
     }
   }
 
-  // This function allocates n bytes if the common happy case is true and
-  // returns true. Otherwise does nothing and returns false. This strange
-  // semantics is necessary to allow callers to program functions that only
-  // have fallback function calls in tail position. This substantially improves
-  // code for the happy path.
-  PROTOBUF_NDEBUG_INLINE bool MaybeAllocateAligned(size_t n, void** out) {
+  // This function allocates n bytes if the current block has enough space.
+  // Otherwise does nothing and returns `nullptr`.
+  PROTOBUF_NDEBUG_INLINE void* MaybeAllocateAligned(size_t n) {
     SerialArena* arena = nullptr;
     if (ABSL_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
-      return arena->MaybeAllocateAligned(n, out);
+      return arena->AllocateImpl<SerialArena::AllocationMode::kNoFallback>(n);
     }
-    return false;
+    return nullptr;
   }
 
   void* AllocateAlignedWithCleanup(size_t n, size_t align,

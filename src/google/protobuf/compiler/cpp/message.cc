@@ -2747,14 +2747,14 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
         PROTOBUF_NO_CUSTOM_VTABLE_INLINE void $Msg$::SharedDtor(
             MessageLite& self) {
           $Msg$& this_ = static_cast<$Msg$&>(self);
-          $DCHK$(!::_pbi::HasArena(this_));
           $has_bit_consistency$;
+          this_._internal_metadata_.Delete<$unknown_fields_type$>();
+          $DCHK$(!::_pbi::HasArena(this_));
           $WeakDescriptorSelfPin$;
           $field_dtors$;
           $split_field_dtors$;
           $oneof_field_dtors$;
           $impl_dtor$;
-          this_._internal_metadata_.Delete<$unknown_fields_type$>();
         }
       )cc");
 }

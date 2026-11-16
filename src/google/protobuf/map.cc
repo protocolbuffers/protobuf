@@ -21,7 +21,9 @@
 #include "google/protobuf/field_with_arena.h"
 #include "google/protobuf/memory_align.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/private_access.h"
 
 
 // Must be included last.
@@ -33,8 +35,6 @@ namespace internal {
 
 std::atomic<MapFieldBaseForParse::SyncFunc>
     MapFieldBaseForParse::sync_map_with_repeated{};
-
-NodeBase* const kGlobalEmptyTable[kGlobalEmptyTableSize] = {};
 
 void UntypedMapBase::UntypedMergeFrom(Arena* arena,
                                       const UntypedMapBase& other) {
@@ -141,12 +141,12 @@ void UntypedMapBase::DeleteList(NodeBase* list) {
 }
 
 void UntypedMapBase::ClearTableImpl(Arena* arena, bool reset) {
-  ABSL_DCHECK_NE(num_buckets_, kGlobalEmptyTableSize);
   ABSL_DCHECK_EQ(arena, this->arena());
 
+  NodeBase** table = buckets();
+  ABSL_DCHECK_NE(table, nullptr);
   if (arena == nullptr) {
-    const auto loop = [this](auto destroy_node) {
-      NodeBase** table = table_;
+    const auto loop = [this, table](auto destroy_node) {
       for (map_index_t b = 0, end = num_buckets_; b < end; ++b) {
         for (NodeBase* node = table[b]; node != nullptr;) {
           NodeBase* next = node->next;
@@ -187,17 +187,17 @@ void UntypedMapBase::ClearTableImpl(Arena* arena, bool reset) {
   }
 
   if (reset) {
-    std::fill(table_, table_ + num_buckets_, nullptr);
+    std::fill(table, table + num_buckets_, nullptr);
     num_elements_ = 0;
-  } else {
-    DeleteTable(arena, table_, num_buckets_);
+  } else if (!is_single_bucket()) {
+    DeleteTable(arena, table, num_buckets_);
   }
 }
 
 size_t UntypedMapBase::SpaceUsedExcludingSelfLong() const {
   size_t size = 0;
   // The size of the table.
-  size += sizeof(void*) * num_buckets_;
+  if (!is_single_bucket()) size += sizeof(void*) * num_buckets_;
   // All the nodes.
   size += type_info_.node_size * num_elements_;
   VisitAllNodes([&](auto* key, auto* value) {
@@ -251,7 +251,8 @@ static Offsets AlignAndAddSizeDynamic(
     case UntypedMapBase::TypeKind::kString:
       return AlignAndAddSize<std::string>(v, max_align);
     case UntypedMapBase::TypeKind::kMessage: {
-      auto* class_data = GetClassData(*value_prototype_if_message);
+      auto* class_data =
+          PrivateAccess::GetClassDataPrefix(*value_prototype_if_message);
       v = AlignTo(v, class_data->alignment(), max_align);
       return {v, v + class_data->allocation_size()};
     }

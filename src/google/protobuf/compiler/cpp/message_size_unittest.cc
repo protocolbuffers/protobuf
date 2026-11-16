@@ -16,6 +16,7 @@
 #include "google/protobuf/internal_metadata_locator.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
+#include "google/protobuf/test_protos/message_padding_test.pb.h"
 #include "google/protobuf/unittest.pb.h"
 
 // Must be included last.
@@ -419,6 +420,411 @@ TEST(GeneratedMessageTest, PackedTypesSize) {
                                MockSplitGenerated, MockGenerated>;
 
   EXPECT_EQ(sizeof(proto2_unittest::TestPackedTypes), sizeof(T));
+}
+
+TEST(GeneratedMessageTest, EvenHasbitsAndInt64Size) {
+  // TODO: Currently 176 bytes; moving cached_size after f[33]
+  // eliminates both padding gaps:
+  //   struct MockOptimal : public MockMessageBase {  // 16 bytes
+  //     int has_bits[2];                               // 8 bytes
+  //     int64_t f_int64;                               // 8 bytes
+  //     int32_t f[33];                                 // 132 bytes
+  //     int cached_size;                               // 4 bytes
+  //     PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-1 byte
+  //     // + 0-7 bytes padding
+  //   };  // 168 bytes
+  struct MockGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[2];                               // 8 bytes
+    int cached_size;                               // 4 bytes
+    // + 4 bytes padding
+    int64_t f_int64;               // 8 bytes
+    int32_t f[33];                 // 132 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;  // 0-1 byte
+    // + 4-3 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 176);
+
+  struct MockSplitGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[2];                                    // 8 bytes
+    int cached_size;                                    // 4 bytes
+    // + 4 bytes padding
+    void* split;                   // 8 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;  // 0-1 byte
+    // + 0-7 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockSplitGenerated, 40);
+
+  using Type = std::conditional_t<internal::ForceSplitFieldsInProtoc(),
+                                  MockSplitGenerated, MockGenerated>;
+  EXPECT_EQ(
+      sizeof(protobuf_message_padding_test::MessageWithEvenHasbitsAndInt64),
+      sizeof(Type));
+}
+
+TEST(GeneratedMessageTest, EvenHasbitsAndOneofSize) {
+  // TODO: Currently 184 bytes (56 bytes when split); pairing
+  // cached_size with oneof_case[1] eliminates both padding gaps (176 bytes,
+  // or 48 bytes when split):
+  //   struct MockOptimal : public MockMessageBase {  // 16 bytes
+  //     int has_bits[2];                               // 8 bytes
+  //     int64_t f_int64;                               // 8 bytes
+  //     int32_t f[32];                                 // 128 bytes
+  //     int cached_size;                               // 4 bytes
+  //     uint32_t oneof_case[1];                        // 4 bytes
+  //     int64_t oneof_val;                             // 8 bytes
+  //     PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-1 byte
+  //     // + 0-7 bytes padding
+  //   };  // 176 bytes
+  struct MockGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[2];                               // 8 bytes
+    int cached_size;                               // 4 bytes
+    // + 4 bytes padding
+    int64_t f_int64;               // 8 bytes
+    int32_t f[32];                 // 128 bytes
+    int64_t oneof_val;             // 8 bytes
+    uint32_t oneof_case[1];        // 4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;  // 0-1 byte
+    // + 4-3 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 184);
+
+  struct MockSplitGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[2];                                    // 8 bytes
+    int cached_size;                                    // 4 bytes
+    // + 4 bytes padding
+    void* split;                   // 8 bytes
+    int64_t oneof_val;             // 8 bytes
+    uint32_t oneof_case[1];        // 4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;  // 0-1 byte
+    // + 4-3 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockSplitGenerated, 56);
+
+  using Type = std::conditional_t<internal::ForceSplitFieldsInProtoc(),
+                                  MockSplitGenerated, MockGenerated>;
+  EXPECT_EQ(
+      sizeof(protobuf_message_padding_test::MessageWithEvenHasbitsAndOneof),
+      sizeof(Type));
+}
+
+TEST(GeneratedMessageTest, EvenHasbitsAndOneofNoFieldPaddingSize) {
+  // TODO: Currently 312 bytes (56 bytes when split); pairing
+  // cached_size with oneof_case[1] eliminates both padding gaps (304 bytes,
+  // or 48 bytes when split):
+  //   struct MockOptimal : public MockMessageBase {  // 16 bytes
+  //     int has_bits[2];                               // 8 bytes
+  //     int64_t f[33];                                 // 264 bytes
+  //     int cached_size;                               // 4 bytes
+  //     uint32_t oneof_case[1];                        // 4 bytes
+  //     int64_t oneof_val;                             // 8 bytes
+  //     PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-1 byte
+  //     // + 0-7 bytes padding
+  //   };  // 304 bytes
+  struct MockGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[2];                               // 8 bytes
+    int cached_size;                               // 4 bytes
+    // + 4 bytes padding
+    int64_t f[33];                 // 264 bytes
+    int64_t oneof_val;             // 8 bytes
+    uint32_t oneof_case[1];        // 4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;  // 0-1 byte
+    // + 4-3 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 312);
+
+  struct MockSplitGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[2];                                    // 8 bytes
+    int cached_size;                                    // 4 bytes
+    // + 4 bytes padding
+    void* split;                   // 8 bytes
+    int64_t oneof_val;             // 8 bytes
+    uint32_t oneof_case[1];        // 4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;  // 0-1 byte
+    // + 4-3 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockSplitGenerated, 56);
+
+  using Type = std::conditional_t<internal::ForceSplitFieldsInProtoc(),
+                                  MockSplitGenerated, MockGenerated>;
+  EXPECT_EQ(sizeof(protobuf_message_padding_test::
+                       MessageWithEvenHasbitsAndOneofNoFieldPadding),
+            sizeof(Type));
+}
+
+TEST(GeneratedMessageTest, EvenHasbitsAndPackedFieldSize) {
+  // TODO: Currently 192 bytes; pairing cached_size with
+  // f_packed_cached_byte_size eliminates both padding gaps:
+  //   struct MockOptimal : public MockMessageBase {  // 16 bytes
+  //     int has_bits[2];                               // 8 bytes
+  //     int64_t f_int64;                               // 8 bytes
+  //     MockRepeatedField f_packed;                    // 16 bytes
+  //     int32_t f[32];                                 // 128 bytes
+  //     int cached_size;                               // 4 bytes
+  //     int f_packed_cached_byte_size;                 // 4 bytes
+  //     PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-1 byte
+  //     // + 0-7 bytes padding
+  //   };  // 184 bytes
+  struct MockGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[2];                               // 8 bytes
+    int cached_size;                               // 4 bytes
+    // + 4 bytes padding
+    int64_t f_int64;                // 8 bytes
+    MockRepeatedField f_packed;     // 16 bytes
+    int32_t f[32];                  // 128 bytes
+    int f_packed_cached_byte_size;  // 4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;   // 0-1 byte
+    // + 4-3 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 192);
+
+  struct MockSplitGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[2];                                    // 8 bytes
+    int cached_size;                                    // 4 bytes
+    // + 4 bytes padding
+    void* split;                   // 8 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;  // 0-1 byte
+    // + 0-7 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockSplitGenerated, 40);
+
+  using Type = std::conditional_t<internal::ForceSplitFieldsInProtoc(),
+                                  MockSplitGenerated, MockGenerated>;
+  EXPECT_EQ(
+      sizeof(
+          protobuf_message_padding_test::MessageWithEvenHasbitsAndPackedField),
+      sizeof(Type));
+}
+
+TEST(GeneratedMessageTest, EvenHasbitsAndTwoOneofsSize) {
+  // TODO: Currently 200 bytes; moving cached_size and oneof_case
+  // right after f[33] fills the 4B remainder and avoids the 4B gap after
+  // cached_size:
+  //   struct MockOptimal : public MockMessageBase {  // 16 bytes
+  //     int has_bits[2];                               // 8 bytes
+  //     int64_t f_int64;                               // 8 bytes
+  //     int32_t f[33];                                 // 132 bytes
+  //     int cached_size;                               // 4 bytes
+  //     uint32_t oneof_case[2];                        // 8 bytes
+  //     int64_t oneof_foo;                             // 8 bytes
+  //     int64_t oneof_bar;                             // 8 bytes
+  //     PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-1 byte
+  //     // + 0-7 bytes padding
+  //   };  // 192 bytes
+  struct MockGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[2];                               // 8 bytes
+    int cached_size;                               // 4 bytes
+    // + 4 bytes padding
+    int64_t f_int64;  // 8 bytes
+    int32_t f[33];    // 132 bytes
+    // + 4 bytes padding
+    int64_t oneof_foo;             // 8 bytes
+    int64_t oneof_bar;             // 8 bytes
+    uint32_t oneof_case[2];        // 8 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;  // 0-1 byte
+    // + 0-7 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 200);
+
+  struct MockSplitGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[2];                                    // 8 bytes
+    int cached_size;                                    // 4 bytes
+    // + 4 bytes padding
+    void* split;                   // 8 bytes
+    int64_t oneof_foo;             // 8 bytes
+    int64_t oneof_bar;             // 8 bytes
+    uint32_t oneof_case[2];        // 8 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;  // 0-1 byte
+    // + 0-7 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockSplitGenerated, 64);
+
+  using Type = std::conditional_t<internal::ForceSplitFieldsInProtoc(),
+                                  MockSplitGenerated, MockGenerated>;
+  EXPECT_EQ(
+      sizeof(protobuf_message_padding_test::MessageWithEvenHasbitsAndTwoOneofs),
+      sizeof(Type));
+}
+
+TEST(GeneratedMessageTest, OddHasbitsAndOneofSize) {
+  // TODO: Currently 56 bytes; placing oneof_case[1] right after
+  // f_int32 eliminates both internal and tail padding:
+  //   struct MockOptimal : public MockMessageBase {  // 16 bytes
+  //     int has_bits[1];                               // 4 bytes
+  //     int cached_size;                               // 4 bytes
+  //     int64_t f_int64;                               // 8 bytes
+  //     int32_t f_int32;                               // 4 bytes
+  //     uint32_t oneof_case[1];                        // 4 bytes
+  //     int64_t oneof_val;                             // 8 bytes
+  //     PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-1 byte
+  //     // + 0-7 bytes padding
+  //   };  // 48 bytes
+  struct MockGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[1];                               // 4 bytes
+    int cached_size;                               // 4 bytes
+    int64_t f_int64;                               // 8 bytes
+    int32_t f_int32;                               // 4 bytes
+    // + 4 bytes padding
+    int64_t oneof_val;             // 8 bytes
+    uint32_t oneof_case[1];        // 4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;  // 0-1 byte
+    // + 4-3 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 56);
+
+  struct MockSplitGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[1];                                    // 4 bytes
+    int cached_size;                                    // 4 bytes
+    void* split;                                        // 8 bytes
+    int64_t oneof_val;                                  // 8 bytes
+    uint32_t oneof_case[1];                             // 4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                       // 0-1 byte
+    // + 4-3 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockSplitGenerated, 48);
+
+  using Type = std::conditional_t<internal::ForceSplitFieldsInProtoc(),
+                                  MockSplitGenerated, MockGenerated>;
+  EXPECT_EQ(
+      sizeof(protobuf_message_padding_test::MessageWithOddHasbitsAndOneof),
+      sizeof(Type));
+}
+
+TEST(GeneratedMessageTest, EvenHasbitsAndBoolSize) {
+  // TODO: Currently 176 bytes; moving cached_size after f_bool
+  // eliminates the 4B padding after has_bits[2]:
+  //   struct MockOptimal : public MockMessageBase {  // 16 bytes
+  //     int has_bits[2];                               // 8 bytes
+  //     int64_t f_int64[2];                            // 16 bytes
+  //     int32_t f[30];                                 // 120 bytes
+  //     bool f_bool;                                   // 1 byte
+  //     // + 3 bytes padding
+  //     int cached_size;                               // 4 bytes
+  //     PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-1 byte
+  //     // + 0-7 bytes padding
+  //   };  // 168 bytes
+  struct MockGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[2];                               // 8 bytes
+    int cached_size;                               // 4 bytes
+    // + 4 bytes padding
+    int64_t f_int64[2];            // 16 bytes
+    int32_t f[30];                 // 120 bytes
+    bool f_bool;                   // 1 byte
+    PROTOBUF_TSAN_DECLARE_MEMBER;  // 0-1 byte
+    // + 7-6 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 176);
+
+  struct MockSplitGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[2];                                    // 8 bytes
+    int cached_size;                                    // 4 bytes
+    // + 4 bytes padding
+    void* split;                   // 8 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;  // 0-1 byte
+    // + 0-7 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockSplitGenerated, 40);
+
+  using Type = std::conditional_t<internal::ForceSplitFieldsInProtoc(),
+                                  MockSplitGenerated, MockGenerated>;
+  EXPECT_EQ(
+      sizeof(protobuf_message_padding_test::MessageWithEvenHasbitsAndBool),
+      sizeof(Type));
+}
+
+TEST(GeneratedMessageTest, OddHasbitsBoolAndOneofSize) {
+  // TODO: Currently 56 bytes; placing oneof_case[1] after f_bool
+  // eliminates tail padding and reduces internal padding to 3B:
+  //   struct MockOptimal : public MockMessageBase {  // 16 bytes
+  //     int has_bits[1];                               // 4 bytes
+  //     int cached_size;                               // 4 bytes
+  //     int64_t f_int64;                               // 8 bytes
+  //     bool f_bool;                                   // 1 byte
+  //     // + 3 bytes padding
+  //     uint32_t oneof_case[1];                        // 4 bytes
+  //     int64_t oneof_val;                             // 8 bytes
+  //     PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-1 byte
+  //     // + 0-7 bytes padding
+  //   };  // 48 bytes
+  struct MockGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[1];                               // 4 bytes
+    int cached_size;                               // 4 bytes
+    int64_t f_int64;                               // 8 bytes
+    bool f_bool;                                   // 1 byte
+    // + 7 bytes padding
+    int64_t oneof_val;             // 8 bytes
+    uint32_t oneof_case[1];        // 4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;  // 0-1 byte
+    // + 4-3 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 56);
+
+  struct MockSplitGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[1];                                    // 4 bytes
+    int cached_size;                                    // 4 bytes
+    void* split;                                        // 8 bytes
+    int64_t oneof_val;                                  // 8 bytes
+    uint32_t oneof_case[1];                             // 4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                       // 0-1 byte
+    // + 4-3 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockSplitGenerated, 48);
+
+  using Type = std::conditional_t<internal::ForceSplitFieldsInProtoc(),
+                                  MockSplitGenerated, MockGenerated>;
+  EXPECT_EQ(
+      sizeof(protobuf_message_padding_test::MessageWithOddHasbitsBoolAndOneof),
+      sizeof(Type));
+}
+
+TEST(GeneratedMessageTest, OddHasbitsPackedAndTwoOneofsSize) {
+  // TODO: Currently 88 bytes; placing f_packed_cached_byte_size
+  // and oneof_case[2] right after f_int32 eliminates both padding gaps:
+  //   struct MockOptimal : public MockMessageBase {  // 16 bytes
+  //     int has_bits[1];                               // 4 bytes
+  //     int cached_size;                               // 4 bytes
+  //     int64_t f_int64;                               // 8 bytes
+  //     MockRepeatedField f_packed;                    // 16 bytes
+  //     int32_t f_int32;                               // 4 bytes
+  //     int f_packed_cached_byte_size;                 // 4 bytes
+  //     uint32_t oneof_case[2];                        // 8 bytes
+  //     int64_t foo_int64;                             // 8 bytes
+  //     int64_t bar_int64;                             // 8 bytes
+  //     PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-1 byte
+  //     // + 0-7 bytes padding
+  //   };  // 80 bytes
+  struct MockGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[1];                               // 4 bytes
+    int cached_size;                               // 4 bytes
+    int64_t f_int64;                               // 8 bytes
+    MockRepeatedField f_packed;                    // 16 bytes
+    int32_t f_int32;                               // 4 bytes
+    // + 4 bytes padding
+    int64_t foo_int64;              // 8 bytes
+    int64_t bar_int64;              // 8 bytes
+    uint32_t oneof_case[2];         // 8 bytes
+    int f_packed_cached_byte_size;  // 4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;   // 0-1 byte
+    // + 4-3 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 88);
+
+  struct MockSplitGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[1];                                    // 4 bytes
+    int cached_size;                                    // 4 bytes
+    void* split;                                        // 8 bytes
+    int64_t foo_int64;                                  // 8 bytes
+    int64_t bar_int64;                                  // 8 bytes
+    uint32_t oneof_case[2];                             // 8 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                       // 0-1 byte
+    // + 0-7 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockSplitGenerated, 56);
+
+  using Type = std::conditional_t<internal::ForceSplitFieldsInProtoc(),
+                                  MockSplitGenerated, MockGenerated>;
+  EXPECT_EQ(sizeof(protobuf_message_padding_test::
+                       MessageWithOddHasbitsPackedAndTwoOneofs),
+            sizeof(Type));
 }
 
 }  // namespace cpp_unittest

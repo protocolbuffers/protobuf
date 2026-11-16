@@ -39,36 +39,44 @@ class InternalMetadataOffset {
   // `InternalMetadata` from a containing type `T` given the starting address of
   // the field at offset `FieldOffset` within `T`.
   //
-  // This method expects to find a field with name `_internal_metadata_` in `T`,
-  // and the type of that field should be `InternalMetadata`.
+  // This method expects to find a field with name
+  // `_internal_metadata_`/`_arena_` in `T`, and the type of that field should
+  // be `InternalMetadata`.
   template <typename T, size_t kFieldOffset>
   static constexpr PROTOBUF_ALWAYS_INLINE InternalMetadataOffset Build() {
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+    static_assert(
+        std::is_same_v<std::remove_const_t<decltype(T::_arena_)>, Arena*>,
+        "Field `_arena_` is not of type `Arena*`");
+
+    constexpr int64_t kLocationOffset =
+        static_cast<int64_t>(PROTOBUF_FIELD_OFFSET(T, _arena_));
+#else
     static_assert(
         std::is_same_v<std::remove_const_t<decltype(T::_internal_metadata_)>,
                        InternalMetadata>,
         "Field `_internal_metadata_ is not of type `InternalMetadata`");
 
-    constexpr int64_t kInternalMetadataOffset =
+    constexpr int64_t kLocationOffset =
         static_cast<int64_t>(PROTOBUF_FIELD_OFFSET(T, _internal_metadata_));
+#endif
 
+    static_assert(kLocationOffset - static_cast<int64_t>(kFieldOffset) >=
+                      int64_t{INT32_MIN},
+                  "Offset from `_internal_metadata_`/`_arena_` is underflowing "
+                  "an int32_t, likely meaning your message body is too large.");
+    static_assert(kLocationOffset - static_cast<int64_t>(kFieldOffset) <=
+                      int64_t{INT32_MAX},
+                  "Offset from `_internal_metadata_`/`_arena_` is overflowing "
+                  "an int32_t, likely meaning your message body is too large.");
     static_assert(
-        kInternalMetadataOffset - static_cast<int64_t>(kFieldOffset) >=
-            int64_t{INT32_MIN},
-        "Offset from `_internal_metadata_` is underflowing an int32_t, "
-        "likely meaning your message body is too large.");
-    static_assert(
-        kInternalMetadataOffset - static_cast<int64_t>(kFieldOffset) <=
-            int64_t{INT32_MAX},
-        "Offset from `_internal_metadata_` is overflowing an int32_t, "
-        "likely meaning your message body is too large.");
-    static_assert(
-        kInternalMetadataOffset < kFieldOffset,
+        kLocationOffset < kFieldOffset,
         "The relative offset must be negative. Positive offsets are reserved "
         "for FieldWithArena, which holds a raw arena pointer as opposed to "
         "InternalMetadata.");
 
     return InternalMetadataOffset(
-        static_cast<int32_t>(kInternalMetadataOffset - kFieldOffset));
+        static_cast<int32_t>(kLocationOffset - kFieldOffset));
   }
 
   template <typename T>
@@ -84,32 +92,38 @@ class InternalMetadataOffset {
   // message.
   //
   // This function performs runtime checks to ensure that the offset from
-  // `_internal_metadata_` to the field is within the range of an int32_t. This
-  // is necessary to prevent integer overflow when calculating the offset.
+  // `_internal_metadata_`/`_arena_` to the field is within the range of an
+  // int32_t. This is necessary to prevent integer overflow when calculating the
+  // offset.
   template <typename T>
   static InternalMetadataOffset BuildFromDynamicOffset(size_t field_offset) {
     static_assert(
         std::is_base_of_v<MessageLite, T>,
         "BuildFromDynamicOffset can only be used for `DynamicMessage`");
 
-    constexpr int64_t kInternalMetadataOffset =
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+    constexpr int64_t kLocationOffset =
+        static_cast<int64_t>(PROTOBUF_FIELD_OFFSET(T, _arena_));
+#else
+    constexpr int64_t kLocationOffset =
         static_cast<int64_t>(PROTOBUF_FIELD_OFFSET(T, _internal_metadata_));
+#endif
 
-    ABSL_DCHECK_GE(kInternalMetadataOffset - static_cast<int64_t>(field_offset),
+    ABSL_DCHECK_GE(kLocationOffset - static_cast<int64_t>(field_offset),
                    int64_t{INT32_MIN})
-        << "Offset from `_internal_metadata_` to the field at offset "
+        << "Offset from `_internal_metadata_`/`_arena_` to the field at offset "
         << field_offset
         << " is underflowing an int32_t, likely meaning your message body is "
            "too large.";
-    ABSL_DCHECK_LE(kInternalMetadataOffset - static_cast<int64_t>(field_offset),
+    ABSL_DCHECK_LE(kLocationOffset - static_cast<int64_t>(field_offset),
                    int64_t{INT32_MAX})
-        << "Offset from `_internal_metadata_` to the field at offset "
+        << "Offset from `_internal_metadata_`/`_arena_` to the field at offset "
         << field_offset
         << " is overflowing an int32_t, likely meaning your message body is "
            "too large.";
 
     return InternalMetadataOffset(
-        static_cast<int32_t>(kInternalMetadataOffset - field_offset));
+        static_cast<int32_t>(kLocationOffset - field_offset));
   }
 
   // Translates an offset relative to some class `T` to an offset relative to
@@ -224,14 +238,18 @@ class TaggedInternalMetadataResolver {
   static Arena* FindArena(const T* object) {
     auto& resolver = object->*Resolver;
     int32_t offset = resolver.Offset();
-    if (offset == 0) {
-      return nullptr;
-    } else if (offset > 0) {
+    if (offset == 0) return nullptr;
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+    return *reinterpret_cast<Arena* const*>(
+        reinterpret_cast<const char*>(object) + offset);
+#else
+    if (offset > 0) {
       return *reinterpret_cast<Arena* const*>(
           reinterpret_cast<const char*>(object) + offset);
     } else {
       return resolver.FindInternalMetadata(object).arena();
     }
+#endif
   }
 
   // Finds the `InternalMetadata` by adding the offset to the address of the

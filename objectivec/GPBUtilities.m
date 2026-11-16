@@ -396,9 +396,6 @@ static void GPBMaybeClearOneofPrivate(GPBMessage *self, GPBOneofDescriptor *oneo
 //%            @"%@: All messages should have storage (from init)",
 //%            [self class]);
 //%#endif
-//%#if defined(__clang_analyzer__)
-//%  if (self->messageStorage_ == NULL) return;
-//%#endif
 //%  uint8_t *storage = (uint8_t *)self->messageStorage_;
 //%  TYPE *typePtr = (TYPE *)&storage[fieldDesc->offset];
 //%  *typePtr = value;
@@ -494,19 +491,11 @@ static void GPBSetObjectIvarWithField(GPBMessage *self, GPBFieldDescriptor *fiel
   GPBSetRetainedObjectIvarWithFieldPrivate(self, field, [value retain]);
 }
 
-static void GPBSetCopyObjectIvarWithField(GPBMessage *self, GPBFieldDescriptor *field, id value);
-
-// GPBSetCopyObjectIvarWithField is blocked from the analyzer because it flags
-// a leak for the -copy even though GPBSetRetainedObjectIvarWithFieldPrivate
-// is marked as consuming the value. Note: For some reason this doesn't happen
-// with the -retain in GPBSetObjectIvarWithField.
-#if !defined(__clang_analyzer__)
 // This exists only for bridging some aliased types, nothing else should use it.
 static void GPBSetCopyObjectIvarWithField(GPBMessage *self, GPBFieldDescriptor *field, id value) {
   if (self == nil || field == nil) return;
   GPBSetRetainedObjectIvarWithFieldPrivate(self, field, [value copy]);
 }
-#endif  // !defined(__clang_analyzer__)
 
 void GPBSetObjectIvarWithFieldPrivate(GPBMessage *self, GPBFieldDescriptor *field, id value) {
   GPBSetRetainedObjectIvarWithFieldPrivate(self, field, [value retain]);
@@ -516,9 +505,6 @@ void GPBSetRetainedObjectIvarWithFieldPrivate(GPBMessage *self, GPBFieldDescript
                                               id value) {
   NSCAssert(self->messageStorage_ != NULL, @"%@: All messages should have storage (from init)",
             [self class]);
-#if defined(__clang_analyzer__)
-  if (self->messageStorage_ == NULL) return;
-#endif
   GPBDataType fieldType = GPBGetFieldDataType(field);
   BOOL isMapOrArray = GPBFieldIsMapOrArray(field);
   BOOL fieldIsMessage = GPBDataTypeIsMessage(fieldType);
@@ -804,9 +790,6 @@ void GPBSetInt32IvarWithFieldPrivate(GPBMessage *self,
             @"%@: All messages should have storage (from init)",
             [self class]);
 #endif
-#if defined(__clang_analyzer__)
-  if (self->messageStorage_ == NULL) return;
-#endif
   uint8_t *storage = (uint8_t *)self->messageStorage_;
   int32_t *typePtr = (int32_t *)&storage[fieldDesc->offset];
   *typePtr = value;
@@ -874,9 +857,6 @@ void GPBSetUInt32IvarWithFieldPrivate(GPBMessage *self,
   NSCAssert(self->messageStorage_ != NULL,
             @"%@: All messages should have storage (from init)",
             [self class]);
-#endif
-#if defined(__clang_analyzer__)
-  if (self->messageStorage_ == NULL) return;
 #endif
   uint8_t *storage = (uint8_t *)self->messageStorage_;
   uint32_t *typePtr = (uint32_t *)&storage[fieldDesc->offset];
@@ -946,9 +926,6 @@ void GPBSetInt64IvarWithFieldPrivate(GPBMessage *self,
             @"%@: All messages should have storage (from init)",
             [self class]);
 #endif
-#if defined(__clang_analyzer__)
-  if (self->messageStorage_ == NULL) return;
-#endif
   uint8_t *storage = (uint8_t *)self->messageStorage_;
   int64_t *typePtr = (int64_t *)&storage[fieldDesc->offset];
   *typePtr = value;
@@ -1016,9 +993,6 @@ void GPBSetUInt64IvarWithFieldPrivate(GPBMessage *self,
   NSCAssert(self->messageStorage_ != NULL,
             @"%@: All messages should have storage (from init)",
             [self class]);
-#endif
-#if defined(__clang_analyzer__)
-  if (self->messageStorage_ == NULL) return;
 #endif
   uint8_t *storage = (uint8_t *)self->messageStorage_;
   uint64_t *typePtr = (uint64_t *)&storage[fieldDesc->offset];
@@ -1088,9 +1062,6 @@ void GPBSetFloatIvarWithFieldPrivate(GPBMessage *self,
             @"%@: All messages should have storage (from init)",
             [self class]);
 #endif
-#if defined(__clang_analyzer__)
-  if (self->messageStorage_ == NULL) return;
-#endif
   uint8_t *storage = (uint8_t *)self->messageStorage_;
   float *typePtr = (float *)&storage[fieldDesc->offset];
   *typePtr = value;
@@ -1158,9 +1129,6 @@ void GPBSetDoubleIvarWithFieldPrivate(GPBMessage *self,
   NSCAssert(self->messageStorage_ != NULL,
             @"%@: All messages should have storage (from init)",
             [self class]);
-#endif
-#if defined(__clang_analyzer__)
-  if (self->messageStorage_ == NULL) return;
 #endif
   uint8_t *storage = (uint8_t *)self->messageStorage_;
   double *typePtr = (double *)&storage[fieldDesc->offset];

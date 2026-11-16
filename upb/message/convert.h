@@ -35,9 +35,11 @@ extern "C" {
 // instead of performing a deep copy. Strings and unknown fields are aliased
 // from the input message.
 //
-// Fields present in the source but not the destination will be encoded and
-// added to the destination's unknown fields (or extensions, if the extension
-// registry allows it).
+// Fields present in the source but not the destination are placed into the
+// destination's unknown fields. Fields can be converted between field form and
+// extension form (using the extensions in `extreg`) if the field number and
+// type match. These may reference the source's data and `upb_MiniTable`s
+// (including sub-message and enum tables), which must outlive the result.
 //
 // Returns a new message on success, or NULL on failure. This function may
 // return NULL even for valid inputs, if it encounters a case it does not

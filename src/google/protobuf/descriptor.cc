@@ -1700,7 +1700,7 @@ class DescriptorPool::Tables::ScopedBuildState {
   BuildState state_;
 };
 
-DescriptorPool::Tables::Tables() {}
+DescriptorPool::Tables::Tables() = default;
 
 DescriptorPool::Tables::~Tables() { ABSL_DCHECK(build_state_ == nullptr); }
 
@@ -1821,6 +1821,18 @@ class ABSL_SCOPED_LOCKABLE ReaderMutexLockMaybe {
 };
 }  // namespace
 
+bool DescriptorPool::WithBuildTransaction(ErrorCollector* error_collector,
+                                          absl::FunctionRef<void()> fn) const {
+  DeferredValidation deferred_validation(this, error_collector);
+  {
+    absl::MutexLockMaybe lock(mutex());
+    build_started_ = true;
+    Tables::ScopedBuildState build_state(*tables_, deferred_validation);
+    fn();
+  }
+  return deferred_validation.Validate();
+}
+
 template <typename FindInTable, typename FindInUnderlay,
           typename TryFindInFallbackDb>
 auto DescriptorPool::LookupWithFallback(
@@ -1828,32 +1840,33 @@ auto DescriptorPool::LookupWithFallback(
     TryFindInFallbackDb try_find_in_fallback_db) const {
   using ResultT = decltype(find_in_table(*tables_));
 
-  // 1. Fast path: reader lock on cached tables.
-  if (absl::Mutex* mu = mutex()) {
-    absl::ReaderMutexLock lock(*mu);
+  // 1. Fast path: shared reader lock on cached tables.
+  {
+    ReaderMutexLockMaybe lock(mutex());
     ResultT result = find_in_table(*tables_);
     if (result != nullptr) return result;
   }
 
-  // 2. Slow path: exclusive lock for underlay and fallback database.
-  DeferredValidation deferred_validation(this);
-  ResultT result{};
-  {
-    absl::MutexLockMaybe lock(mutex());
-    result = find_in_table(*tables_);
-    if (result == nullptr && underlay_ != nullptr) {
-      result = find_in_underlay(*underlay_);
-    }
-    if (result == nullptr && fallback_database_ != nullptr) {
-      Tables::ScopedBuildState build_state(*tables_, deferred_validation);
-      if (try_find_in_fallback_db()) {
-        result = find_in_table(*tables_);
-      }
-    }
+  // 2. Check underlay outside this pool's mutex.
+  // The underlay handles its own internal synchronization.
+  if (underlay_ != nullptr) {
+    ResultT result = find_in_underlay(*underlay_);
+    if (result != nullptr) return result;
   }
 
-  // 3. Deferred validation outside the lock.
-  if (!deferred_validation.Validate()) {
+  // If there is no fallback database, nothing can be loaded on-demand.
+  if (fallback_database_ == nullptr) {
+    return ResultT{};
+  }
+
+  // 3. Fallback database query under exclusive build transaction.
+  ResultT result{};
+  if (!WithBuildTransaction(default_error_collector_, [&] {
+        result = find_in_table(*tables_);
+        if (result == nullptr && try_find_in_fallback_db()) {
+          result = find_in_table(*tables_);
+        }
+      })) {
     return ResultT{};
   }
   return result;
@@ -2242,48 +2255,29 @@ absl::string_view DescriptorPool::ErrorCollector::ErrorLocationName(
   return "UNKNOWN";
 }
 
-DescriptorPool::DescriptorPool()
-    : fallback_database_(nullptr),
-      default_error_collector_(nullptr),
-      underlay_(nullptr),
-      tables_(new Tables),
-      enforce_dependencies_(true),
-      lazily_build_dependencies_(false),
-      allow_unknown_(false),
-      enforce_weak_(false),
-      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
-      disallow_enforce_utf8_(false),
-      deprecated_legacy_json_field_conflicts_(false),
-      enforce_naming_style_(false) {}
+DescriptorPool::DescriptorPool() : DescriptorPool(Options{}) {}
 
 DescriptorPool::DescriptorPool(DescriptorDatabase* fallback_database,
                                ErrorCollector* error_collector)
-    : fallback_database_(fallback_database),
-      default_error_collector_(error_collector),
-      underlay_(nullptr),
-      tables_(new Tables),
-      enforce_dependencies_(true),
-      lazily_build_dependencies_(false),
-      allow_unknown_(false),
-      enforce_weak_(false),
-      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
-      disallow_enforce_utf8_(false),
-      deprecated_legacy_json_field_conflicts_(false),
-      enforce_naming_style_(false) {}
+    : DescriptorPool([&] {
+        Options options;
+        options.fallback_database = fallback_database;
+        options.error_collector = error_collector;
+        return options;
+      }()) {}
 
 DescriptorPool::DescriptorPool(const DescriptorPool* underlay)
-    : fallback_database_(nullptr),
-      default_error_collector_(nullptr),
-      underlay_(underlay),
-      tables_(new Tables),
-      enforce_dependencies_(true),
-      lazily_build_dependencies_(false),
-      allow_unknown_(false),
-      enforce_weak_(false),
-      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
-      disallow_enforce_utf8_(false),
-      deprecated_legacy_json_field_conflicts_(false),
-      enforce_naming_style_(false) {}
+    : DescriptorPool([&] {
+        Options options;
+        options.underlay = underlay;
+        return options;
+      }()) {}
+
+DescriptorPool::DescriptorPool(const Options& options)
+    : fallback_database_(options.fallback_database),
+      default_error_collector_(options.error_collector),
+      underlay_(options.underlay),
+      tables_(new Tables) {}
 
 DescriptorPool::~DescriptorPool() = default;
 
@@ -2555,9 +2549,9 @@ void DescriptorPool::FindAllExtensions(
     }
 
     tables_->FindAllExtensions(extendee, &extensions);
-    if (underlay_ != nullptr) {
-      underlay_->FindAllExtensions(extendee, &extensions);
-    }
+  }
+  if (underlay_ != nullptr) {
+    underlay_->FindAllExtensions(extendee, &extensions);
   }
   if (deferred_validation.Validate()) {
     out->insert(out->end(), extensions.begin(), extensions.end());
@@ -4308,20 +4302,15 @@ const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
       << "Cannot call BuildFile on a DescriptorPool that uses a "
          "DescriptorDatabase.  You must instead find a way to get your file "
          "into the underlying database.";
-  ABSL_CHECK(mutex() == nullptr);  // Implied by the above ABSL_CHECK.
-  build_started_ = true;
-  DeferredValidation deferred_validation(this, error_collector);
-  const FileDescriptor* file;
-  {
-    Tables::ScopedBuildState build_state(*tables_, deferred_validation);
-    file =
-        internal::DescriptorBuilder::New(this, tables_.get(), error_collector)
-            ->BuildFile(proto);
+  const FileDescriptor* file = nullptr;
+  if (!WithBuildTransaction(error_collector, [&] {
+        file = internal::DescriptorBuilder::New(this, tables_.get(),
+                                                error_collector)
+                   ->BuildFile(proto);
+      })) {
+    return nullptr;
   }
-  if (deferred_validation.Validate()) {
-    return file;
-  }
-  return nullptr;
+  return file;
 }
 
 const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
@@ -4349,11 +4338,6 @@ const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
 }
 
 absl::Status DescriptorPool::SetFeatureSetDefaults(FeatureSetDefaults spec) {
-  if (build_started_) {
-    return absl::FailedPreconditionError(
-        "Feature set defaults can't be changed once the pool has started "
-        "building.");
-  }
   if (spec.minimum_edition() > spec.maximum_edition()) {
     return absl::InvalidArgumentError(
         absl::StrCat("Invalid edition range ", spec.minimum_edition(), " to ",
@@ -4372,6 +4356,12 @@ absl::Status DescriptorPool::SetFeatureSetDefaults(FeatureSetDefaults spec) {
           edition_default.edition(), "."));
     }
     prev_edition = edition_default.edition();
+  }
+  absl::MutexLockMaybe lock(mutex());
+  if (build_started_) {
+    return absl::FailedPreconditionError(
+        "Feature set defaults can't be changed once the pool has started "
+        "building.");
   }
   feature_set_defaults_spec_ =
       std::make_unique<FeatureSetDefaults>(std::move(spec));
@@ -4409,6 +4399,7 @@ const FeatureSetDefaults& DescriptorPool::GetFeatureSetDefaults() const {
 }
 
 bool DescriptorPool::ResolvesFeaturesForImpl(int extension_number) const {
+  ReaderMutexLockMaybe lock(mutex());
   for (const auto& edition_default : GetFeatureSetDefaults().defaults()) {
     if (!internal::PrivateAccess::GetExtensionSet(
              edition_default.fixed_features())
@@ -5898,11 +5889,8 @@ PROTOBUF_NOINLINE FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
   if (!has_errors()) {
     OptionInterpreter option_interpreter(
         this, /*update_source_code_info=*/info != nullptr);
-    for (std::vector<OptionsToInterpret>::iterator iter =
-             options_to_interpret_.begin();
-         iter != options_to_interpret_.end(); ++iter) {
-      option_interpreter.InterpretNonExtensionOptions(&(*iter));
-    }
+    option_interpreter.InterpretNonExtensionOptions(
+        absl::MakeSpan(options_to_interpret_));
 
     // Handle feature resolution.  This must occur after option interpretation,
     // but before validation.
@@ -5934,11 +5922,8 @@ PROTOBUF_NOINLINE FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
     // Interpret any remaining uninterpreted options gathered into
     // options_to_interpret_ during descriptor building.  Cross-linking has made
     // extension options known, so all interpretations should now succeed.
-    for (std::vector<OptionsToInterpret>::iterator iter =
-             options_to_interpret_.begin();
-         iter != options_to_interpret_.end(); ++iter) {
-      option_interpreter.InterpretOptionExtensions(&(*iter));
-    }
+    option_interpreter.InterpretOptionExtensions(
+        absl::MakeSpan(options_to_interpret_));
     options_to_interpret_.clear();
     if (info != nullptr) {
       option_interpreter.UpdateSourceCodeInfo(info);
@@ -9017,6 +9002,36 @@ const FileDescriptor* FileDescriptor::dependency(int index) const {
                     this);
   }
   return dependencies_[index];
+}
+
+std::vector<const FileDescriptor*> FileDescriptor::GetPublicImportClosure()
+    const {
+  if (public_dependency_count() == 0) {
+    return {this};
+  }
+
+  struct Frame {
+    const FileDescriptor* file;
+    int next_dep;
+  };
+  std::vector<const FileDescriptor*> closure;
+  closure.reserve(public_dependency_count() + 1);
+  absl::flat_hash_set<const FileDescriptor*> visited = {this};
+  std::vector<Frame> stack = {{this, 0}};
+  while (!stack.empty()) {
+    Frame& top = stack.back();
+    if (top.next_dep < top.file->public_dependency_count()) {
+      const FileDescriptor* dep = top.file->public_dependency(top.next_dep++);
+      ABSL_CHECK(dep != nullptr);
+      if (visited.insert(dep).second) {
+        stack.push_back({dep, 0});
+      }
+    } else {
+      closure.push_back(top.file);
+      stack.pop_back();
+    }
+  }
+  return closure;
 }
 
 absl::string_view FileDescriptor::option_dependency_name(int index) const {

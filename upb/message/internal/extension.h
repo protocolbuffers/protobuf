@@ -376,12 +376,6 @@ UPB_API_INLINE struct upb_Map* upb_Extension_GetMutableMap(upb_AuxField* ext) {
   return (struct upb_Map*)upb_Extension_GetMap(ext);
 }
 
-UPB_NODISCARD upb_AuxField* UPB_PRIVATE(
-    _upb_Message_GetOrCreateExtensionWithTag)(struct upb_Message* msg,
-                                              const upb_MiniTableExtension* ext,
-                                              upb_Arena* arena,
-                                              upb_TaggedAuxType tag);
-
 // Adds the given extension data to the given message.
 // |ext| is copied into the message instance.
 // This logically replaces any previously-added extension with this number.
@@ -389,13 +383,35 @@ UPB_NODISCARD upb_AuxField* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* ext,
     upb_Arena* arena);
 
-// Adds the given non-canonical extension data to the given message.
-// |ext| is copied into the message instance.
-// This logically replaces any previously-added extension with this number.
-UPB_NODISCARD upb_AuxField* UPB_PRIVATE(
-    _upb_Message_CreateNonCanonicalExtension)(struct upb_Message* msg,
-                                              const upb_MiniTableExtension* ext,
-                                              upb_Arena* arena);
+// Adds a non-canonical entry for `ext` to the given message, and returns it,
+// or NULL on allocation failure. Equivalent to
+// _upb_Message_CreateUnknownField() with the field of `ext`.
+UPB_NODISCARD upb_AuxField* UPB_PRIVATE(_upb_Message_CreateUnknownExtension)(
+    struct upb_Message* msg, const upb_MiniTableExtension* ext,
+    upb_Arena* arena);
+
+// Adds a non-canonical entry described by `f` to the given message, and returns
+// it, or NULL on allocation failure. Unlike
+// _upb_Message_CreateUnknownExtension(), `f` need not be part of a
+// upb_MiniTableExtension: it may be a freestanding field, e.g. a copy of a
+// regular field of another message. `f` must not be a map, and must have no
+// offset or presence (like an extension field). It must outlive the message.
+UPB_NODISCARD upb_AuxField* UPB_PRIVATE(_upb_Message_CreateUnknownField)(
+    struct upb_Message* msg, const upb_MiniTableField* f, upb_Arena* arena);
+
+// Returns a copy of the regular (non-extension) field `f`, allocated on `a`,
+// that can describe an aux field (e.g. for
+// _upb_Message_CreateUnknownField()), or NULL on allocation failure.
+//
+// The copy has `offset` and `presence` cleared, like an extension field: the
+// value lives in the upb_AuxField rather than at an offset in a message, and
+// the entry is present iff it exists. It is not flagged as an extension
+// (upb_MiniTableField_IsExtension() is false), so it has no extendee. If `f`
+// has a sub-message or closed enum (ie. `submsg_ofs != kUpb_NoSub`), a copy of
+// its sub is allocated right after the field and `submsg_ofs` points at it; the
+// sub-message and enum tables themselves are shared with `f`.
+UPB_NODISCARD const upb_MiniTableField* upb_MiniTableField_ConvertToAuxField(
+    const upb_MiniTableField* f, upb_Arena* a);
 
 // Returns the canonical extension of `msg` that is described by `ext`, or NULL
 // if there is no such extension.

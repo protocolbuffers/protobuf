@@ -29,12 +29,14 @@
 #include <utility>
 
 #include "absl/base/attributes.h"
+#include "absl/base/casts.h"
 #include "absl/base/optimization.h"
 #include "absl/base/prefetch.h"
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/field_with_arena.h"
 #include "google/protobuf/generated_enum_util.h"
@@ -42,6 +44,7 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/serial_arena.h"
 #include "google/protobuf/wire_format_lite.h"
 
 
@@ -165,9 +168,6 @@ struct NodeBase {
   const void* GetVoidKey() const { return this + 1; }
 };
 
-constexpr size_t kGlobalEmptyTableSize = 1;
-PROTOBUF_EXPORT extern NodeBase* const kGlobalEmptyTable[kGlobalEmptyTableSize];
-
 class UntypedMapBase;
 
 class UntypedMapIterator {
@@ -217,6 +217,15 @@ class UntypedMapIterator {
   const UntypedMapBase* m_;
   map_index_t bucket_index_;
 };
+
+inline constexpr map_index_t kMapSooBucketSize = 1;
+// Having an array of 2 buckets is not better than having a single bucket with
+// 2 elements.
+// If the array has one node per bucket, you need two indirections to get to
+// them, which is the worst case for 2 nodes in a soo bucket.
+// If the array has both nodes in the same bucket it is much worse. This
+// happens 50% of the time!
+inline constexpr map_index_t kMapSooBucketMaxLength = 2;
 
 // These properties are depended upon by Rust FFI.
 static_assert(std::is_trivially_default_constructible_v<UntypedMapIterator>,
@@ -303,10 +312,10 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
   constexpr UntypedMapBase(InternalMetadataOffset offset, TypeInfo type_info)
       : num_elements_(0),
-        num_buckets_(internal::kGlobalEmptyTableSize),
+        num_buckets_(kMapSooBucketSize),
         resolver_(offset),
         type_info_(type_info),
-        table_(const_cast<NodeBase**>(internal::kGlobalEmptyTable)) {}
+        buckets_() {}
   explicit constexpr UntypedMapBase(TypeInfo type_info)
       : UntypedMapBase(InternalMetadataOffset(), type_info) {}
 
@@ -334,7 +343,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   }
 
   void ClearTable(Arena* arena, bool reset) {
-    if (num_buckets_ == internal::kGlobalEmptyTableSize) return;
+    if (raw_buckets() == nullptr) return;
     ClearTableImpl(arena, reset);
   }
 
@@ -360,9 +369,10 @@ class PROTOBUF_EXPORT UntypedMapBase {
 #endif
 
  protected:
-  // 16 bytes is the minimum useful size for the array cache in the arena.
-  static constexpr map_index_t kMinTableSize = 16 / sizeof(void*);
   static constexpr map_index_t kMaxTableSize = map_index_t{1} << 31;
+  static constexpr map_index_t kMinTableSize = std::max<map_index_t>(
+      SerialArena::kMinimumReturnedArraySize / sizeof(void*),
+      kMapSooBucketMaxLength * 2);
 
  public:
   Arena* arena() const {
@@ -373,7 +383,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
     std::swap(num_elements_, other->num_elements_);
     std::swap(num_buckets_, other->num_buckets_);
     std::swap(type_info_, other->type_info_);
-    std::swap(table_, other->table_);
+    std::swap(buckets_, other->buckets_);
   }
 
   void UntypedMergeFrom(Arena* arena, const UntypedMapBase& other);
@@ -428,18 +438,35 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
   void ClearTableImpl(Arena* arena, bool reset);
 
+  // A quick-and-dirty mix of the bits to get a single arbitrary bit out of
+  // them. Since the pointers come from the allocator, they are
+  // non-deterministic and we can use that to add instability to the result.
+  static bool ShouldInsertAfterHeadFast(const void* p1, const void* p2) {
+    uint64_t v =
+        reinterpret_cast<uintptr_t>(p1) + reinterpret_cast<uintptr_t>(p2);
+    constexpr uint64_t kMul = 0x517cc1b727220a95;  // Wyhash multiplier
+    return (v * kMul) >> 63;
+  }
+
+  // Like ShouldInsertAfterHeadFast but does more thorough bit mixing.
+  // Only does it in debug mode.
+  static bool ShouldInsertAfterHead(void* node, const void* salt) {
+#ifdef NDEBUG
+    (void)node;
+    (void)salt;
+    return false;
+#else
+    // Doing modulo with a prime mixes the bits more.
+    return absl::HashOf(node, salt) % 13 > 6;
+#endif
+  }
+
   // Returns whether we should insert after the head of the list. For
   // non-optimized builds, we randomly decide whether to insert right at the
   // head of the list or just after the head. This helps add a little bit of
   // non-determinism to the map ordering.
   bool ShouldInsertAfterHead(void* node) {
-#ifdef NDEBUG
-    (void)node;
-    return false;
-#else
-    // Doing modulo with a prime mixes the bits more.
-    return absl::HashOf(node, table_) % 13 > 6;
-#endif
+    return ShouldInsertAfterHead(node, raw_buckets());
   }
 
   // Insert all the nodes in the list. `count` must be the number of nodes in
@@ -490,11 +517,30 @@ class PROTOBUF_EXPORT UntypedMapBase {
   void DeleteNode(NodeBase* node);
   void DeleteList(NodeBase* list);
 
+  bool is_single_bucket() const { return num_buckets_ == 1; }
+  NodeBase** buckets() {
+    return is_single_bucket() ? &buckets_.single : buckets_.array;
+  }
+  NodeBase* const* buckets() const {
+    return is_single_bucket() ? &buckets_.single : buckets_.array;
+  }
+  NodeBase** array_buckets() const {
+    ABSL_DCHECK(!is_single_bucket());
+    return buckets_.array;
+  }
+
+  const void* raw_buckets() const {
+    return absl::bit_cast<const void*>(buckets_);
+  }
+
   map_index_t num_elements_;
   map_index_t num_buckets_;
   InternalMetadataResolver resolver_;
   TypeInfo type_info_;
-  NodeBase** table_;  // an array with num_buckets_ entries
+  union {
+    NodeBase* single;
+    NodeBase** array;
+  } buckets_;
 };
 
 template <typename F>
@@ -567,11 +613,16 @@ auto UntypedMapBase::VisitValue(NodeBase* node, F f) const {
 }
 
 inline UntypedMapIterator UntypedMapBase::begin() const {
+  if (is_single_bucket()) {
+    return UntypedMapIterator{buckets_.single, this, 0};
+  }
+
   map_index_t bucket_index;
   NodeBase* node;
   map_index_t index_of_first_non_null = 0;
+  NodeBase** table = array_buckets();
   while (index_of_first_non_null != num_buckets_) {
-    if (table_[index_of_first_non_null] == nullptr) {
+    if (table[index_of_first_non_null] == nullptr) {
       ++index_of_first_non_null;
     } else {
       break;
@@ -583,7 +634,7 @@ inline UntypedMapIterator UntypedMapBase::begin() const {
     node = nullptr;
   } else {
     bucket_index = index_of_first_non_null;
-    node = table_[bucket_index];
+    node = table[bucket_index];
     PROTOBUF_ASSUME(node != nullptr);
   }
   return UntypedMapIterator{node, this, bucket_index};
@@ -596,7 +647,7 @@ inline void UntypedMapIterator::PlusPlus() {
   }
 
   for (map_index_t i = bucket_index_ + 1; i < m_->num_buckets_; ++i) {
-    NodeBase* node = m_->table_[i];
+    NodeBase* node = m_->array_buckets()[i];
     if (node == nullptr) continue;
     node_ = node;
     bucket_index_ = i;
@@ -748,7 +799,7 @@ class KeyMapBase : public UntypedMapBase {
     b &= (num_buckets_ - 1);
 
     const auto find_prev = [&] {
-      NodeBase** prev = table_ + b;
+      NodeBase** prev = buckets() + b;
       for (; *prev != nullptr && *prev != node; prev = &(*prev)->next) {
       }
       return prev;
@@ -782,15 +833,24 @@ class KeyMapBase : public UntypedMapBase {
     return 0;
   }
 
+  NodeAndBucket FindBucket(typename TS::ViewType k) const {
+    if (is_single_bucket()) {
+      return {buckets_.single, 0};
+    } else {
+      map_index_t b = BucketNumber(k);
+      return {array_buckets()[b], b};
+    }
+  }
+
   NodeAndBucket FindHelper(typename TS::ViewType k) const {
     AssertLoadFactor();
-    map_index_t b = BucketNumber(k);
-    for (auto* node = table_[b]; node != nullptr; node = node->next) {
-      if (TS::ToView(static_cast<KeyNode*>(node)->key()) == k) {
-        return {node, b};
+    auto b = FindBucket(k);
+    for (; b.node != nullptr; b.node = b.node->next) {
+      if (TS::ToView(static_cast<KeyNode*>(b.node)->key()) == k) {
+        break;
       }
     }
-    return {nullptr, b};
+    return b;
   }
 
   // Insert the given node.
@@ -805,22 +865,64 @@ class KeyMapBase : public UntypedMapBase {
       EraseImpl(arena, p.bucket, static_cast<KeyNode*>(p.node),
                 /*do_destroy=*/true);
       is_new = false;
-    } else if (ResizeIfLoadIsOutOfRange(arena, num_elements_ + 1)) {
-      b = BucketNumber(node->key());  // bucket_number
     }
-    InsertUnique(b, node);
+    InsertUniqueWithResize(arena, b, node);
     ++num_elements_;
     return is_new;
   }
 
   // Insert the given nodes.
   // On duplicates we discard the previous values.
+  // REQUIRES: count > 0
   void InsertOrReplaceNodes(Arena* arena, KeyNode* list, map_index_t count) {
-    ResizeIfLoadIsOutOfRangeForMultiInsert(arena, num_elements_ + count);
+    ABSL_DCHECK_NE(count, map_index_t{0});
+
+    const map_index_t new_size_upperbound =
+        static_cast<map_index_t>(CheckedAdd(num_elements_, count));
+
+    if (new_size_upperbound <= kMapSooBucketMaxLength && is_single_bucket()) {
+      static_assert(kMapSooBucketMaxLength == 2,
+                    "We are hand optimizing here.");
+      // We have 3 options here:
+      //   num_elements_ == 0 && count == 1
+      //   num_elements_ == 0 && count == 2
+      //   num_elements_ == 1 && count == 1
+      if (num_elements_ == 0) {
+        ABSL_DCHECK(count == 1 || count == 2);
+        buckets_.single = list;
+        list = static_cast<KeyNode*>(list->next);
+        buckets_.single->next = nullptr;
+        --count;
+        num_elements_ = 1;
+      }
+
+      // Now we have
+      //   num_elements_ == 1 && count == 0
+      //   num_elements_ == 1 && count == 1
+      ABSL_DCHECK(count == 0 || count == 1);
+      if (count != 0) {
+        if (static_cast<KeyNode*>(buckets_.single)->key() == list->key()) {
+          // Collision. Replace the node.
+          NodeBase* to_delete = buckets_.single;
+          buckets_.single = list;
+
+          if (ABSL_PREDICT_FALSE(arena == nullptr)) {
+            DeleteList(to_delete);
+          }
+          return;
+        }
+        PROTOBUF_ASSUME(buckets_.single != nullptr);
+        InsertSingleBucket(list);
+        num_elements_ = 2;
+      }
+      return;
+    }
+
+    ResizeIfLoadIsOutOfRangeForMultiInsert(arena, new_size_upperbound);
 
     map_index_t new_size = num_elements_;
 
-    Inserter inserter(this, table_, num_buckets_);
+    Inserter inserter(array_buckets(), num_buckets_);
     NodeBase* list_to_delete = nullptr;
 
     for (map_index_t i = 0; i < count; ++i) {
@@ -829,7 +931,7 @@ class KeyMapBase : public UntypedMapBase {
       list = static_cast<KeyNode*>(list->next);
 
       const map_index_t b = inserter.BucketNumber(node_to_insert);
-      for (NodeBase** node_prev = &table_[b];;
+      for (NodeBase** node_prev = inserter.bucket(b);;
            node_prev = &(*node_prev)->next) {
         KeyNode* n = static_cast<KeyNode*>(*node_prev);
 
@@ -859,18 +961,40 @@ class KeyMapBase : public UntypedMapBase {
     }
   }
 
+  void InsertSingleBucket(KeyNode* node) {
+    ABSL_DCHECK(is_single_bucket());
+
+    // Because single bucket can have more than one element we need to introduce
+    // randomness even in opt to ensure unstable ordering.
+    NodeBase*& head = buckets_.single;
+    PROTOBUF_ASSUME(node != nullptr);
+    if (head != nullptr && ShouldInsertAfterHeadFast(head, node)) {
+      ABSL_DCHECK(head->next == nullptr)
+          << "Should be null because kMapSooBucketMaxLength==2";
+      node->next = nullptr;
+      head->next = node;
+    } else {
+      node->next = head;
+      head = node;
+    }
+  }
+
   // Insert the given Node in bucket b.  If that would make bucket b too big,
   // and bucket b is not a tree, create a tree for buckets b.
   // Requires count(*KeyPtrFromNodePtr(node)) == 0 and that b is the correct
   // bucket.  num_elements_ is not modified.
-  void InsertUnique(map_index_t b, KeyNode* node) {
+  void InsertUniqueNonSingle(map_index_t b, KeyNode* node) {
+    // We do not want to use InsertUnique for single buckets.
+    // Not efficient, and we can't effectively randomize the ordering.
+    ABSL_DCHECK(!is_single_bucket());
+
     // In practice, the code that led to this point may have already
     // determined whether we are inserting into an empty list, a short list,
     // or whatever.  But it's probably cheap enough to recompute that here;
     // it's likely that we're inserting into an empty or short list.
     ABSL_DCHECK(FindHelper(TS::ToView(node->key())).node == nullptr);
     AssertLoadFactor();
-    auto*& head = table_[b];
+    auto*& head = array_buckets()[b];
     if (head == nullptr) {
       head = node;
       node->next = nullptr;
@@ -883,16 +1007,32 @@ class KeyMapBase : public UntypedMapBase {
     }
   }
 
+  map_index_t InsertUniqueWithResize(Arena* arena, map_index_t b,
+                                     KeyNode* node) {
+    if (is_single_bucket() &&
+        num_elements_ < internal::kMapSooBucketMaxLength) {
+      InsertSingleBucket(node);
+    } else {
+      if (ResizeIfLoadIsOutOfRange(arena, this->num_elements_ + 1)) {
+        b = BucketNumber(node->key());
+      }
+      InsertUniqueNonSingle(b, node);
+    }
+    return b;
+  }
+
   // Have it a separate function for testing.
   static size_type CalculateHiCutoff(size_type num_buckets) {
     // We want the high cutoff to follow this rules:
-    //  - When num_buckets_ == kGlobalEmptyTableSize, then make it 0 to force an
-    //    allocation.
+    //  - When we are in SOO mode, allow 2 nodes in the single bucket.
+    //    See kMapSooBucketMaxLength for details.
     //  - When num_buckets_ < 8, then make it num_buckets_ to avoid
     //    a reallocation. A large load factor is not that important on small
     //    tables and saves memory.
     //  - Otherwise, make it 75% of num_buckets_.
-    return num_buckets - num_buckets / 16 * 4 - num_buckets % 2;
+    PROTOBUF_ASSUME(num_buckets != 0);
+    if (num_buckets == kMapSooBucketSize) return kMapSooBucketMaxLength;
+    return num_buckets - num_buckets / 16 * 4;
   }
 
   // For a particular size, calculate the lowest capacity `cap` where
@@ -904,9 +1044,7 @@ class KeyMapBase : public UntypedMapBase {
       return kMaxTableSize;
     }
 
-    map_index_t capacity = static_cast<map_index_t>(
-        size_type{1} << (std::numeric_limits<size_type>::digits -
-                         absl::countl_zero(size - 1)));
+    map_index_t capacity = static_cast<map_index_t>(absl::bit_ceil(size));
 
     if (size > CalculateHiCutoff(capacity)) {
       capacity *= 2;
@@ -929,18 +1067,23 @@ class KeyMapBase : public UntypedMapBase {
   // keep O(size()) = O(number of buckets) if they want that.
   bool ResizeIfLoadIsOutOfRange(Arena* arena, size_type new_size) {
     ABSL_DCHECK_EQ(arena, this->arena());
+    if (auto resize_size = GetResizeSizeIfNeeded(new_size);
+        resize_size.has_value()) {
+      Resize(arena, *resize_size);
+      return true;
+    }
+    return false;
+  }
 
+  PROTOBUF_ALWAYS_INLINE absl::optional<map_index_t> GetResizeSizeIfNeeded(
+      size_type new_size) {
     const size_type hi_cutoff = CalculateHiCutoff(num_buckets_);
     const size_type lo_cutoff = hi_cutoff / 4;
-    // We don't care how many elements are in trees.  If a lot are,
-    // we may resize even though there are many empty buckets.  In
-    // practice, this seems fine.
     if (ABSL_PREDICT_FALSE(new_size > hi_cutoff)) {
       if (num_buckets_ <= max_size() / 2) {
-        Resize(arena, kMinTableSize > kGlobalEmptyTableSize * 2
-                          ? std::max(kMinTableSize, num_buckets_ * 2)
-                          : num_buckets_ * 2);
-        return true;
+        return kMinTableSize > kMapSooBucketSize * 2
+                   ? std::max(kMinTableSize, num_buckets_ * 2)
+                   : num_buckets_ * 2;
       }
     } else if (ABSL_PREDICT_FALSE(new_size <= lo_cutoff &&
                                   num_buckets_ > kMinTableSize)) {
@@ -956,15 +1099,17 @@ class KeyMapBase : public UntypedMapBase {
       map_index_t new_num_buckets =
           std::max(kMinTableSize, num_buckets_ >> lg2_of_size_reduction_factor);
       if (new_num_buckets != num_buckets_) {
-        Resize(arena, new_num_buckets);
-        return true;
+        return new_num_buckets;
       }
     }
-    return false;
+    return absl::nullopt;
   }
 
   void ResizeIfLoadIsOutOfRangeForMultiInsert(Arena* arena,
                                               size_type new_size) {
+    // We should not be calling this if we are a single bucket and the elements
+    // fit in a single bucket.
+    ABSL_DCHECK(!is_single_bucket() || new_size > kMapSooBucketMaxLength);
     if (const map_index_t needed_capacity = CalculateCapacityForSize(new_size);
         needed_capacity != this->num_buckets_) {
       Resize(arena, std::max(kMinTableSize, needed_capacity));
@@ -980,10 +1125,16 @@ class KeyMapBase : public UntypedMapBase {
     ABSL_DCHECK_NE(num_nodes, size_t{0});
     ABSL_DCHECK_EQ(arena, this->arena());
 
-    ResizeIfLoadIsOutOfRangeForMultiInsert(arena, num_nodes);
     num_elements_ = static_cast<map_index_t>(num_nodes);
+
+    if (is_single_bucket() && num_nodes <= kMapSooBucketMaxLength) {
+      buckets_.single = head;
+      return;
+    }
+
+    ResizeIfLoadIsOutOfRangeForMultiInsert(arena, num_nodes);
     AssertLoadFactor();
-    Inserter inserter(this, table_, num_buckets_);
+    Inserter inserter(buckets(), num_buckets_);
     for (size_t i = 0; i < num_nodes; ++i) {
       KeyNode* node = static_cast<KeyNode*>(head);
       ABSL_DCHECK_NE(node, nullptr);
@@ -999,29 +1150,30 @@ class KeyMapBase : public UntypedMapBase {
     ABSL_DCHECK(absl::has_single_bit(new_num_buckets));
     ABSL_DCHECK_EQ(arena, this->arena());
 
-    if (num_buckets_ == kGlobalEmptyTableSize) {
-      // This is the global empty array.
-      // Just overwrite with a new one. No need to transfer or free anything.
-      num_buckets_ = new_num_buckets;
-      table_ = CreateEmptyTable(arena, num_buckets_);
-      return;
-    }
+    NodeBase** table = CreateEmptyTable(arena, new_num_buckets);
+    Inserter inserter(table, new_num_buckets);
 
-    ABSL_DCHECK_GE(new_num_buckets, kMinTableSize);
-    const auto old_table = table_;
-    const map_index_t old_table_size = num_buckets_;
-    num_buckets_ = new_num_buckets;
-    NodeBase** table = table_ = CreateEmptyTable(arena, num_buckets_);
-    Inserter inserter(this, table, new_num_buckets);
-    for (map_index_t i = 0; i < old_table_size; ++i) {
-      for (KeyNode* node = static_cast<KeyNode*>(old_table[i]);
-           node != nullptr;) {
+    const auto move_bucket = [&](NodeBase* bucket) {
+      for (KeyNode* node = static_cast<KeyNode*>(bucket); node != nullptr;) {
         auto* next = static_cast<KeyNode*>(node->next);
         inserter.InsertUnique(node);
         node = next;
       }
+    };
+    if (is_single_bucket()) {
+      move_bucket(buckets_.single);
+    } else {
+      NodeBase** old_table = array_buckets();
+      const map_index_t old_table_size = num_buckets_;
+      for (map_index_t i = 0; i < old_table_size; ++i) {
+        move_bucket(old_table[i]);
+      }
+      DeleteTable(arena, old_table, old_table_size);
     }
-    DeleteTable(arena, old_table, old_table_size);
+
+    buckets_.array = table;
+    num_buckets_ = new_num_buckets;
+    ABSL_DCHECK(!is_single_bucket());
     AssertLoadFactor();
   }
 
@@ -1030,9 +1182,14 @@ class KeyMapBase : public UntypedMapBase {
   // It allows inserting multiple nodes in a row with reduced cost.
   class Inserter {
    public:
-    explicit Inserter(KeyMapBase* map, NodeBase** table,
-                      map_index_t num_buckets)
-        : table_(table), mask_(num_buckets - 1), map_(map) {}
+    explicit Inserter(NodeBase** table, map_index_t num_buckets)
+        : table_(table), mask_(num_buckets - 1) {
+      // We do not want to use the inserter for single buckets.
+      // Not efficient, and we can't effectively randomize the ordering.
+      ABSL_DCHECK_NE(mask_, 0u);
+    }
+
+    NodeBase** bucket(map_index_t b) const { return table_ + b; }
 
     map_index_t BucketNumber(KeyNode* node) const {
       return Hash(node->key(), table_) & mask_;
@@ -1040,8 +1197,8 @@ class KeyMapBase : public UntypedMapBase {
 
     void InsertUnique(KeyNode* node, map_index_t bucket) {
       ABSL_DCHECK_EQ(bucket, BucketNumber(node));
-      auto*& head = table_[bucket];
-      if (head != nullptr && map_->ShouldInsertAfterHead(node)) {
+      NodeBase*& head = table_[bucket];
+      if (head != nullptr && ShouldInsertAfterHead(node, table_)) {
         node->next = head->next;
         head->next = node;
       } else {
@@ -1055,11 +1212,11 @@ class KeyMapBase : public UntypedMapBase {
    private:
     NodeBase** const table_;
     const map_index_t mask_;
-    KeyMapBase* const map_;
   };
 
   map_index_t BucketNumber(typename TS::ViewType k) const {
-    return Hash(k, table_) & (num_buckets_ - 1);
+    return is_single_bucket() ? 0
+                              : Hash(k, array_buckets()) & (num_buckets_ - 1);
   }
 };
 
@@ -1696,12 +1853,10 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
     }
     // Case 2: insert.
     Arena* arena = this->arena();
-    if (this->ResizeIfLoadIsOutOfRange(arena, this->num_elements_ + 1)) {
-      b = this->BucketNumber(TS::ToView(k));
-    }
     auto* node =
         CreateNode(arena, std::forward<K>(k), std::forward<Args>(args)...);
-    this->InsertUnique(b, node);
+
+    b = this->InsertUniqueWithResize(arena, b, node);
     ++this->num_elements_;
     return std::make_pair(iterator(internal::UntypedMapIterator{node, this, b}),
                           true);
@@ -1711,8 +1866,9 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
   size_t EraseIfImpl(Pred pred) {
     size_t n = 0;
     auto* arena = this->arena();
-    for (internal::NodeBase **bucket = this->table_,
-                            **end = this->table_ + this->num_buckets_;
+    internal::NodeBase** table = this->buckets();
+    for (internal::NodeBase **bucket = table,
+                            **end = table + this->num_buckets_;
          bucket != end; ++bucket) {
       for (internal::NodeBase** prev = bucket; *prev != nullptr;) {
         Node* node = static_cast<Node*>(*prev);
