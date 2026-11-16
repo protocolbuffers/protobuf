@@ -165,6 +165,42 @@ class UnknownFieldsTest(unittest.TestCase):
         'discard', text_format.MessageToString(msg, print_unknown_fields=True)
     )
 
+  def _BuildRecursiveMessageWithUnknown(self, depth, add_unknown=True):
+    msg = unittest_pb2.TestRecursiveMessage()
+    sub = msg
+    for _ in range(depth):
+      sub = sub.a
+    sub.i = 1
+    if add_unknown:
+      unknown_bytes = unittest_pb2.TestAllTypes(
+          optional_string='discard'
+      ).SerializeToString()
+      sub.MergeFromString(unknown_bytes)
+    return msg
+
+  def testDiscardUnknownFieldsAtDefaultMaxDepth(self):
+    clean_bytes = self._BuildRecursiveMessageWithUnknown(
+        100, add_unknown=False
+    ).SerializeToString()
+    dirty_bytes = self._BuildRecursiveMessageWithUnknown(
+        100
+    ).SerializeToString()
+    self.assertNotEqual(dirty_bytes, clean_bytes)
+
+    parsed = unittest_pb2.TestRecursiveMessage()
+    parsed.ParseFromString(dirty_bytes)
+    parsed.DiscardUnknownFields()
+    self.assertEqual(parsed.SerializeToString(), clean_bytes)
+
+  @unittest.skipIf(
+      api_implementation.Type() != 'upb',
+      'DiscardUnknownFields depth limit is only enforced in upb.',
+  )
+  def testDiscardUnknownFieldsExceedingDefaultDepth(self):
+    msg = self._BuildRecursiveMessageWithUnknown(101)
+    with self.assertRaises(RecursionError):
+      msg.DiscardUnknownFields()
+
 
 @testing_refleaks.TestCase
 class UnknownFieldsAccessorsTest(unittest.TestCase):
