@@ -340,6 +340,15 @@ class MessageReflection {
         Message defaultInstance)
         throws IOException;
 
+    /**
+     * Stores the given lazy field, merging it into the existing value without parsing either if
+     * that is also lazy. Returns false, without storing it, if the field holds a parsed value or
+     * the target doesn't support lazy fields.
+     */
+    default boolean mergeLazyField(FieldDescriptor field, InternalLazyField lazyField) {
+      return false;
+    }
+
     /** Returns the UTF8 validation level for the field. */
     WireFormat.Utf8Validation getUtf8Validation(Descriptors.FieldDescriptor descriptor);
 
@@ -583,6 +592,14 @@ class MessageReflection {
       if (!field.isRepeated()) {
         Message.Builder subBuilder;
         if (hasField(field)) {
+          FieldSet.Builder<FieldDescriptor> extensions =
+              field.isExtension() ? getExtensions() : null;
+          InternalLazyField lazyField = extensions != null ? extensions.getLazyField(field) : null;
+          if (lazyField != null) {
+            Object unused =
+                setField(field, InternalLazyField.mergeFrom(lazyField, input, extensionRegistry));
+            return;
+          }
           subBuilder = getFieldBuilder(field);
           if (subBuilder != null) {
             input.readMessage(subBuilder, extensionRegistry);
@@ -601,6 +618,24 @@ class MessageReflection {
         input.readMessage(subBuilder, extensionRegistry);
         Object unused = addRepeatedField(field, subBuilder.buildPartial());
       }
+    }
+
+    @Override
+    public boolean mergeLazyField(FieldDescriptor field, InternalLazyField lazyField) {
+      FieldSet.Builder<FieldDescriptor> extensions = getExtensions();
+      return extensions != null && extensions.mergeLazyField(field, lazyField);
+    }
+
+    /** Returns the field set storing the extensions of the builder, or null if it is unknown. */
+    @SuppressWarnings("PatternMatchingInstanceof") // Java 8 compatibility.
+    private FieldSet.Builder<FieldDescriptor> getExtensions() {
+      if (builder instanceof DynamicMessage.Builder) {
+        return ((DynamicMessage.Builder) builder).fields;
+      }
+      if (builder instanceof GeneratedMessage.ExtendableBuilder) {
+        return ((GeneratedMessage.ExtendableBuilder<?, ?>) builder).internalGetMutableExtensions();
+      }
+      return null;
     }
 
     private Message.Builder newMessageFieldInstance(
@@ -1076,7 +1111,7 @@ class MessageReflection {
                 && !field.getContainingType().isDescriptorProtoType();
         if (hasField(field)) {
           InternalLazyField lazyField = extensions.getLazyField(field);
-          if (isLazyField && lazyField != null) {
+          if (lazyField != null) {
             Object unused =
                 setField(field, InternalLazyField.mergeFrom(lazyField, input, extensionRegistry));
             return;
@@ -1110,6 +1145,11 @@ class MessageReflection {
         input.readMessage(subBuilder, extensionRegistry);
         Object unused = addRepeatedField(field, subBuilder.buildPartial());
       }
+    }
+
+    @Override
+    public boolean mergeLazyField(FieldDescriptor field, InternalLazyField lazyField) {
+      return extensions.mergeLazyField(field, lazyField);
     }
 
     @Override
@@ -1415,12 +1455,13 @@ class MessageReflection {
       throws IOException {
 
     Descriptors.FieldDescriptor field = extension.descriptor;
-    boolean hasOriginalValue = target.hasField(field);
 
-    // TODO: b/535485217 - Consider letting InternalLazyField to concat the bytes to avoid parsing
-    // if the existing field is a lazy field with lazy bytes.
-    if (hasOriginalValue || ExtensionRegistryLite.isEagerlyParseMessageSets()) {
-      // If the field already exists, we just parse the field.
+    // Store the item lazily if possible, merging it into an existing lazy field without parsing it,
+    // so that lazy fields are only parsed when they are accessed.
+    if (ExtensionRegistryLite.isEagerlyParseMessageSets()
+        || !target.mergeLazyField(
+            field, new InternalLazyField(extension.defaultInstance, extensionRegistry, rawBytes))) {
+      // Otherwise, parse the item, merging it into the existing value if any.
       int remainingInputRecursionLimit = input.getRemainingRecursionDepth();
       if (--remainingInputRecursionLimit < 0) {
         throw InvalidProtocolBufferException.recursionLimitExceeded();
@@ -1430,11 +1471,6 @@ class MessageReflection {
       Object value =
           target.parseMessage(subInput, extensionRegistry, field, extension.defaultInstance);
       target.setField(field, value);
-    } else {
-      // Use InternalLazyField to load MessageSet lazily.
-      InternalLazyField lazyField =
-          new InternalLazyField(extension.defaultInstance, extensionRegistry, rawBytes);
-      target.setField(field, lazyField);
     }
   }
 

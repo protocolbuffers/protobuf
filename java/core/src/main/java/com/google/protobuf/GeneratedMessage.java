@@ -1481,6 +1481,13 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       }
     }
 
+    /** Returns the extensions for merging into them in place, marking the builder as changed. */
+    FieldSet.Builder<FieldDescriptor> internalGetMutableExtensions() {
+      ensureExtensionsIsMutable();
+      onChanged();
+      return extensions;
+    }
+
     private void verifyExtensionContainingType(final Extension<MessageT, ?> extension) {
       if (extension.getDescriptor().getContainingType() != getDescriptorForType()) {
         // This can only happen if someone uses unchecked operations.

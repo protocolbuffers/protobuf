@@ -1138,6 +1138,21 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
       return null;
     }
 
+    /**
+     * Stores the given lazy field, merging it into the existing value without parsing either if
+     * that is also lazy. Returns false, without storing it, if the field holds a parsed value.
+     */
+    boolean mergeLazyField(final T descriptor, InternalLazyField lazyField) {
+      InternalLazyField existing = getLazyField(descriptor);
+      if (existing != null) {
+        lazyField = InternalLazyField.mergeFrom(existing, lazyField);
+      } else if (hasField(descriptor)) {
+        return false;
+      }
+      setField(descriptor, lazyField);
+      return true;
+    }
+
     private void ensureIsMutable() {
       if (!isMutable) {
         fields = cloneAllFieldsMap(fields, /* copyList= */ true, /* resolveLazyFields= */ false);

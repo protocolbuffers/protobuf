@@ -18,6 +18,7 @@ import proto2_unittest.UnittestMset.TestMessageSetExtension3;
 import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
 import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSetWireFormatContainer;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.After;
@@ -269,6 +270,12 @@ public class LazilyParsedMessageSetTest {
       ExtensionRegistry registry = ExtensionRegistry.newInstance();
       registry.add(TestMessageSetExtension1.messageSetExtension);
 
+      if (!eager) {
+        // Item 2 is concatenated to the lazy Item 1 without parsing either, so the nested payload
+        // is only parsed, one level at a time, when it is accessed.
+        TestMessageSet unused = TestMessageSet.parseFrom(payload, registry);
+        return;
+      }
       Throwable exception =
           assertThrows(
               InvalidProtocolBufferException.class,
@@ -287,5 +294,88 @@ public class LazilyParsedMessageSetTest {
   @Test
   public void testRecursionLimit_lazyMessageSet() throws Exception {
     testMessageSetRecursionLimit(/* eager= */ false);
+  }
+
+  // Returns a TestMessageSet nested `depth` times. Each level has a TestMessageSetExtension1 item,
+  // whose `recursive` field holds the next level, followed by `duplicate`, which is merged into
+  // that (lazily parsed) item.
+  private static ByteString makeRecursiveLazyPayload(int depth, ByteString duplicate)
+      throws IOException {
+    ByteString payload = ByteString.EMPTY;
+    for (int i = 0; i < depth; ++i) {
+      ByteString.Output extension = ByteString.newOutput();
+      CodedOutputStream extensionOutput = CodedOutputStream.newInstance(extension);
+      extensionOutput.writeBytes(16, payload); // TestMessageSetExtension1.recursive
+      extensionOutput.flush();
+      payload = messageSetItem(extension.toByteString()).concat(duplicate);
+    }
+    return payload;
+  }
+
+  private static ByteString messageSetItem(ByteString message) {
+    return RawMessageSet.newBuilder()
+        .addItem(RawMessageSet.Item.newBuilder().setTypeId(TYPE_ID_1).setMessage(message))
+        .build()
+        .toByteString();
+  }
+
+  // Returns the TestMessageSetExtension1 extension encoded as a regular field rather than as a
+  // MessageSet item.
+  private static ByteString extensionField(ByteString message) throws IOException {
+    ByteString.Output field = ByteString.newOutput();
+    CodedOutputStream fieldOutput = CodedOutputStream.newInstance(field);
+    fieldOutput.writeBytes(TYPE_ID_1, message);
+    fieldOutput.flush();
+    return field.toByteString();
+  }
+
+  // Checks that each level of the payload is parsed only when it is accessed.
+  private static void assertParsesLevelByLevel(int depth, ByteString duplicate) throws Exception {
+    ExtensionRegistry registry = ExtensionRegistry.newInstance();
+    registry.add(TestMessageSetExtension1.messageSetExtension);
+    TestMessageSet message =
+        TestMessageSet.parseFrom(makeRecursiveLazyPayload(depth, duplicate), registry);
+
+    int levels = 0;
+    while (message.hasExtension(TestMessageSetExtension1.messageSetExtension)) {
+      message = message.getExtension(TestMessageSetExtension1.messageSetExtension).getRecursive();
+      levels++;
+    }
+    assertThat(levels).isEqualTo(depth);
+  }
+
+  @Test
+  public void testRecursionLimit_duplicateMessageSetItem() throws Exception {
+    assertParsesLevelByLevel(2000, messageSetItem(ByteString.EMPTY));
+  }
+
+  @Test
+  public void testRecursionLimit_duplicateExtensionField() throws Exception {
+    assertParsesLevelByLevel(2000, extensionField(ByteString.EMPTY));
+  }
+
+  @Test
+  public void testRecursionLimit_dynamicMessage() throws Exception {
+    Descriptors.FieldDescriptor extension =
+        TestMessageSetExtension1.messageSetExtension.getDescriptor();
+    Descriptors.FieldDescriptor recursive =
+        TestMessageSetExtension1.getDescriptor().findFieldByName("recursive");
+    // A DynamicMessage default instance makes the nested levels DynamicMessages too.
+    ExtensionRegistry registry = ExtensionRegistry.newInstance();
+    registry.add(
+        extension, DynamicMessage.getDefaultInstance(TestMessageSetExtension1.getDescriptor()));
+    for (ByteString duplicate :
+        Arrays.asList(messageSetItem(ByteString.EMPTY), extensionField(ByteString.EMPTY))) {
+      DynamicMessage message =
+          DynamicMessage.parseFrom(
+              TestMessageSet.getDescriptor(), makeRecursiveLazyPayload(2000, duplicate), registry);
+
+      int depth = 0;
+      while (message.hasField(extension)) {
+        message = (DynamicMessage) ((Message) message.getField(extension)).getField(recursive);
+        depth++;
+      }
+      assertThat(depth).isEqualTo(2000);
+    }
   }
 }
