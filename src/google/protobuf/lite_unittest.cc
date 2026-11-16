@@ -212,7 +212,7 @@ TYPED_TEST(LiteTest, AllLite2) {
 }
 
 TYPED_TEST(LiteTest, AllLite3) {
-  TypeParam data, packed_data;
+  TypeParam packed_data;
 
   {
     proto2_unittest::TestPackedTypesLite message, message2, message3;
@@ -249,8 +249,6 @@ TYPED_TEST(LiteTest, AllLite3) {
 }
 
 TYPED_TEST(LiteTest, AllLite5) {
-  TypeParam data;
-
   {
     // Test that if an optional or required message/group field appears multiple
     // times in the input, they need to be merged.
@@ -789,7 +787,7 @@ TYPED_TEST(LiteTest, AllLite34) {
 }
 
 TYPED_TEST(LiteTest, AllLite35) {
-  std::string data;
+  [[maybe_unused]] std::string data;
 
   {
     // DuplicatedKeyWireFormat
@@ -805,7 +803,7 @@ TYPED_TEST(LiteTest, AllLite35) {
 }
 
 TYPED_TEST(LiteTest, AllLite36) {
-  std::string data;
+  [[maybe_unused]] std::string data;
 
   {
     // DuplicatedValueWireFormat
@@ -837,7 +835,7 @@ TYPED_TEST(LiteTest, AllLite37) {
 }
 
 TYPED_TEST(LiteTest, AllLite38) {
-  std::string data;
+  [[maybe_unused]] std::string data;
 
   {
     // MissedValueWireFormat

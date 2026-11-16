@@ -145,7 +145,7 @@ absl::StatusOr<ConformanceResponse> Harness::RunTest(
     return absl::NotFoundError(
         absl::StrCat("No such message type: ", request.message_type()));
   }
-  std::string type_url =
+  [[maybe_unused]] std::string type_url =
       absl::StrCat("type.googleapis.com/", request.message_type());
 
   std::unique_ptr<Message> test_message(

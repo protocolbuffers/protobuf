@@ -174,7 +174,6 @@ int RunConformanceTests(int argc, char *argv[],
   }
 
   std::string program;
-  std::string testee;
   std::vector<std::string> program_args;
   bool performance = false;
   bool debug = false;
