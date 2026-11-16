@@ -1849,7 +1849,14 @@ static PyObject* PyUpb_Message_DiscardUnknownFields(PyUpb_Message* self,
   if (!PyUpb_Message_AssureWritable(self)) return NULL;
   const upb_MessageDef* msgdef = _PyUpb_Message_GetMsgdef(self);
   const upb_DefPool* ext_pool = upb_FileDef_Pool(upb_MessageDef_File(msgdef));
-  upb_Message_DiscardUnknown(self->ptr.msg, msgdef, ext_pool, 64);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  int max_depth = state->allow_oversize_protos
+                      ? UINT16_MAX
+                      : (int)upb_EncodeOptions_GetEffectiveMaxDepth(0);
+  if (!upb_Message_DiscardUnknown(self->ptr.msg, msgdef, ext_pool, max_depth)) {
+    PyErr_SetString(PyExc_RecursionError, "Messages nested too deeply.");
+    return NULL;
+  }
   Py_RETURN_NONE;
 }
 

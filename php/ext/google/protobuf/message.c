@@ -657,8 +657,12 @@ PHP_METHOD(Message, __construct) {
  */
 PHP_METHOD(Message, discardUnknownFields) {
   Message* intern = (Message*)Z_OBJ_P(getThis());
-  upb_Message_DiscardUnknown(intern->msg, intern->desc->msgdef,
-                             DescriptorPool_GetSymbolTable(), 64);
+  int max_depth = (int)upb_EncodeOptions_GetEffectiveMaxDepth(0);
+  if (!upb_Message_DiscardUnknown(intern->msg, intern->desc->msgdef,
+                                  DescriptorPool_GetSymbolTable(), max_depth)) {
+    zend_throw_exception_ex(NULL, 0, "Max nesting exceeded");
+    return;
+  }
 }
 
 /**
