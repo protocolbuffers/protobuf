@@ -9,12 +9,14 @@
 
 #include <list>
 #include <memory>
+#include <string>
 
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/compiler/command_line_interface.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
+#include "google/protobuf/compiler/ruby/rbs_generator.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -112,6 +114,8 @@ class RubyGeneratorCliTest : public CommandLineInterfaceTester {
   RubyGeneratorCliTest() {
     RegisterGenerator("--ruby_out", std::make_unique<Generator>(),
                       "Ruby test generator");
+    RegisterGenerator("--rbs_out", std::make_unique<RBSGenerator>(),
+                      "RBS test generator");
 
     CreateTempFile(
         "google/protobuf/descriptor.proto",
@@ -174,6 +178,111 @@ TEST_F(RubyGeneratorCliTest, RubyPackageNewlineRejected) {
       "protocol_compiler --proto_path=$tmpdir --ruby_out=$tmpdir foo.proto");
 
   ExpectErrorSubstring("Invalid");
+}
+
+TEST_F(RubyGeneratorCliTest, InvalidImportPathRejected) {
+  CreateTempFile("google/protobuf';puts 'INJECTED';#.proto",
+                 "syntax = \"proto3\";\n"
+                 "message Dep {}\n");
+  CreateTempFile("main.proto",
+                 "syntax = \"proto3\";\n"
+                 "import \"google/protobuf';puts 'INJECTED';#.proto\";\n"
+                 "message Main {}\n");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --ruby_out=$tmpdir main.proto");
+
+  ExpectErrorSubstring("Invalid character");
+}
+
+TEST_F(RubyGeneratorCliTest, DescriptorSetInInvalidDependencyPathRejected) {
+  FileDescriptorSet fds;
+  FileDescriptorProto* dep = fds.add_file();
+  dep->set_name("google/protobuf';puts 'INJECTED';#.proto");
+  dep->set_syntax("proto3");
+  dep->add_message_type()->set_name("Dep");
+
+  FileDescriptorProto* main_file = fds.add_file();
+  main_file->set_name("main.proto");
+  main_file->set_syntax("proto3");
+  main_file->add_dependency(dep->name());
+  main_file->add_message_type()->set_name("Main");
+
+  std::string serialized;
+  ASSERT_TRUE(fds.SerializeToString(&serialized));
+  CreateTempFile("desc.pb", serialized);
+
+  RunProtoc(
+      "protocol_compiler --descriptor_set_in=$tmpdir/desc.pb "
+      "--ruby_out=$tmpdir main.proto");
+
+  ExpectErrorSubstring("Invalid character");
+}
+
+TEST_F(RubyGeneratorCliTest, DescriptorSetInInvalidFileNameNewlineRejected) {
+  FileDescriptorSet fds;
+  FileDescriptorProto* main_file = fds.add_file();
+  main_file->set_name("foo\nputs 'INJECTED'.proto");
+  main_file->set_syntax("proto3");
+  main_file->add_message_type()->set_name("Main");
+
+  std::string serialized;
+  ASSERT_TRUE(fds.SerializeToString(&serialized));
+  CreateTempFile("desc.pb", serialized);
+
+  RunProtocWithArgs({"protocol_compiler", "--descriptor_set_in=$tmpdir/desc.pb",
+                     "--ruby_out=$tmpdir", "foo\nputs 'INJECTED'.proto"});
+  ExpectErrorSubstring("Invalid control character");
+
+  RunProtocWithArgs({"protocol_compiler", "--descriptor_set_in=$tmpdir/desc.pb",
+                     "--rbs_out=$tmpdir", "foo\nputs 'INJECTED'.proto"});
+  ExpectErrorSubstring("Invalid control character");
+}
+
+TEST_F(RubyGeneratorCliTest, DescriptorSetInParentReferenceDependencyRejected) {
+  FileDescriptorSet fds;
+  FileDescriptorProto* dep = fds.add_file();
+  dep->set_name("../../evil.proto");
+  dep->set_syntax("proto3");
+  dep->add_message_type()->set_name("Dep");
+
+  FileDescriptorProto* main_file = fds.add_file();
+  main_file->set_name("main.proto");
+  main_file->set_syntax("proto3");
+  main_file->add_dependency(dep->name());
+  main_file->add_message_type()->set_name("Main");
+
+  std::string serialized;
+  ASSERT_TRUE(fds.SerializeToString(&serialized));
+  CreateTempFile("desc.pb", serialized);
+
+  RunProtoc(
+      "protocol_compiler --descriptor_set_in=$tmpdir/desc.pb "
+      "--ruby_out=$tmpdir main.proto");
+
+  ExpectErrorSubstring("must not contain \"..\" path segments");
+}
+
+TEST_F(RubyGeneratorCliTest, DescriptorSetInParentReferenceFileNameRejected) {
+  FileDescriptorSet fds;
+  FileDescriptorProto* main_file = fds.add_file();
+  main_file->set_name("foo/../../evil.proto");
+  main_file->set_syntax("proto3");
+  main_file->add_message_type()->set_name("Main");
+
+  std::string serialized;
+  ASSERT_TRUE(fds.SerializeToString(&serialized));
+  CreateTempFile("desc.pb", serialized);
+
+  RunProtoc(
+      "protocol_compiler --descriptor_set_in=$tmpdir/desc.pb "
+      "--ruby_out=$tmpdir foo/../../evil.proto");
+  ExpectErrorSubstring("must not contain \"..\" path segments");
+
+  RunProtoc(
+      "protocol_compiler --descriptor_set_in=$tmpdir/desc.pb "
+      "--rbs_out=$tmpdir foo/../../evil.proto");
+  ExpectErrorSubstring("must not contain \"..\" path segments");
 }
 
 }  // namespace
