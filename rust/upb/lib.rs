@@ -14,7 +14,7 @@ mod associated_mini_table;
 pub use associated_mini_table::{AssociatedMiniTable, AssociatedMiniTableEnum};
 
 mod text;
-pub use text::{debug_string, encode_to_string_with, TextEncodeOptions};
+pub use text::{debug_string, encode_to_string_with, EncodeError, TextEncodeOptions};
 
 mod message;
 pub use message::MessagePtr;
@@ -31,6 +31,8 @@ extern crate sys;
 #[path = "sys/lib.rs"]
 mod sys;
 
+#[cfg(not(bzl))]
+pub mod json;
 #[cfg(not(bzl))]
 pub mod reflection;
 

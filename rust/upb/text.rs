@@ -33,29 +33,43 @@ impl TextEncodeOptions {
     }
 }
 
-/// Encodes `snprintf`-style upb text output into an owned `String`.
+/// Error returned by [`encode_to_string_with`] when a upb encoder reports failure (`usize::MAX`,
+/// i.e. `(size_t)-1`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct EncodeError;
+
+/// Encodes `snprintf`-style upb output into an owned `String`, or returns `Err(EncodeError)` if
+/// the encoder reports failure (`usize::MAX`, i.e. `(size_t)-1`).
 ///
 /// It uses a stack-allocated fast path for outputs under 1 KiB, falling back to a heap buffer
 /// when the output reaches or exceeds the stack buffer size.
-pub fn encode_to_string_with(encode_fn: impl Fn(&mut [u8]) -> usize) -> String {
+pub fn encode_to_string_with(
+    encode_fn: impl Fn(&mut [u8]) -> usize,
+) -> Result<String, EncodeError> {
     let mut stack_buf = [0u8; 1024];
     let min_len = encode_fn(&mut stack_buf);
+    if min_len == usize::MAX {
+        return Err(EncodeError);
+    }
 
     // Fast path: the output fits in the stack buffer.
     if min_len < stack_buf.len() {
-        return String::from_utf8_lossy(&stack_buf[..min_len]).into_owned();
+        return Ok(String::from_utf8_lossy(&stack_buf[..min_len]).into_owned());
     }
 
     assert!(min_len < isize::MAX as usize);
     // +1 for the trailing NULL
     let mut buf = vec![0u8; min_len + 1];
     let written_len = encode_fn(&mut buf);
+    if written_len == usize::MAX {
+        return Err(EncodeError);
+    }
     assert_eq!(min_len, written_len);
     // Drop the trailing NULL written by upb's encoder.
     buf.truncate(written_len);
     // TODO: Use `String::from_utf8_lossy_owned(buf)` once MSRV >= 1.99.
-    String::from_utf8(buf)
-        .unwrap_or_else(|err| String::from_utf8_lossy(err.as_bytes()).into_owned())
+    Ok(String::from_utf8(buf)
+        .unwrap_or_else(|err| String::from_utf8_lossy(err.as_bytes()).into_owned()))
 }
 
 /// Returns a string of field number to value entries of a message.
@@ -72,6 +86,7 @@ pub unsafe fn debug_string<T: AssociatedMiniTable>(msg: MessagePtr<T>) -> String
         // - `buf` is a mutable slice, so `buf.as_mut_ptr()` is writable for `buf.len()` bytes.
         unsafe { upb_DebugString(msg, mt, 0, buf.as_mut_ptr(), buf.len()) }
     })
+    .expect("upb_DebugString should never fail")
 }
 
 #[cfg(test)]
@@ -100,7 +115,8 @@ mod tests {
         let encoded = encode_to_string_with(|buf| {
             encoder_calls.set(encoder_calls.get() + 1);
             fake_encode(output, buf)
-        });
+        })
+        .expect("fake_encode never fails");
         (encoded, encoder_calls.get())
     }
 
@@ -161,5 +177,30 @@ mod tests {
 
         let _ =
             encode_to_string_with(|_buf| if is_first_call.replace(false) { 2000 } else { 1999 });
+    }
+
+    #[gtest]
+    fn test_encoder_returning_usize_max_returns_err() {
+        let encoder_calls = Cell::new(0);
+        let result = encode_to_string_with(|_buf| {
+            encoder_calls.set(encoder_calls.get() + 1);
+            usize::MAX
+        });
+
+        expect_eq!(result, Err(EncodeError));
+        expect_eq!(encoder_calls.get(), 1);
+    }
+
+    #[gtest]
+    fn test_encoder_returning_usize_max_on_second_call_returns_err() {
+        // Reports an output of 2000 bytes on the first call and failure on the second.
+        let is_first_call = Cell::new(true);
+
+        let result =
+            encode_to_string_with(
+                |_buf| if is_first_call.replace(false) { 2000 } else { usize::MAX },
+            );
+
+        expect_eq!(result, Err(EncodeError));
     }
 }

@@ -36,6 +36,27 @@ rust_library(
 )
 
 rust_library(
+    name = "json",
+    srcs = [
+        "json.rs",
+    ],
+    aliases = {
+        "//rust/upb/sys:json": "sys_json",
+    },
+    edition = "2024",
+    rustc_flags = ["--cfg=bzl"],
+    visibility = [
+        "//rust:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [
+        ":reflection",
+        ":upb",
+        "//rust/upb/sys:json",
+    ],
+)
+
+rust_library(
     name = "reflection",
     srcs = [
         "reflection.rs",

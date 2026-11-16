@@ -42,6 +42,24 @@ rust_library(
 )
 
 rust_library(
+    name = "json",
+    srcs = [
+        "json/json.rs",
+        "json/mod.rs",
+        "json/test_helpers.rs",
+    ],
+    crate_root = "json/mod.rs",
+    edition = "2024",
+    rustc_flags = ["--cfg=bzl"],
+    visibility = ["//rust/upb:__subpackages__"],
+    deps = [
+        ":reflection",
+        ":sys",
+        "//upb/json",
+    ],
+)
+
+rust_library(
     name = "reflection",
     srcs = [
         "reflection/def_pool.rs",
@@ -60,6 +78,16 @@ rust_library(
         "//upb/reflection",
         "//upb/reflection:def_pool_init",
         "//upb/text",
+    ],
+)
+
+rust_test(
+    name = "sys_json_test",
+    crate = ":json",
+    edition = "2024",
+    rustc_flags = ["--cfg=bzl"],
+    deps = [
+        "@crate_index//:googletest",
     ],
 )
 

@@ -166,6 +166,7 @@ upb_amalgamation(
         "//upb/base",
         "//upb/base:internal",
         "//upb/hash:hash",
+        "//upb/json",
         "//upb/lex:lex",
         "//upb/mem",
         "//upb/mem:internal",
