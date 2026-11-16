@@ -17,8 +17,10 @@
 //       Yields(WhenParsed(EqualsTextProto(R"pb(optional_int32: 1)pb"))));
 //
 // The leaf matchers (WhenParsed, RawPayload, IsParseError, ...) only look at
-// the TestResult, so they compose with other gMock matchers:
-// Yields(AnyOf(IsParseError(), WhenParsed(m))) works as expected.
+// the result, so they compose with other gMock matchers:
+// Yields(AnyOf(IsParseError(), WhenParsed(m))) works as expected.  They match
+// the YieldedResult that Yields() hands them rather than the TestResult, so a
+// leaf matcher applied to a TestResult without Yields() does not compile.
 // EqualsTextProto() and EqualsBinaryProto() match a `const Message&` and are
 // meant to be used inside WhenParsed().
 //
@@ -70,6 +72,26 @@ namespace protobuf {
 namespace conformance {
 namespace internal {
 
+// The view of a TestResult that Yields() hands to its inner matcher.  The
+// leaf matchers match this rather than the TestResult itself, which is what
+// makes a forgotten Yields() a compile error:
+//
+//   EXPECT_THAT(Testee().ParseBinary(type, input).SerializeBinary(),
+//               IsParseError());  // error: TestResult isn't a YieldedResult
+//
+// It is a view: the result must outlive it.  Only Yields() and the tests of
+// the leaf matchers construct one.
+class YieldedResult {
+ public:
+  explicit YieldedResult(const TestResult& result) : result_(&result) {}
+  YieldedResult(TestResult&&) = delete;
+
+  const TestResult& result() const { return *result_; }
+
+ private:
+  const TestResult* absl_nonnull result_;
+};
+
 // Prints a TestResult in gtest failure output.  The output has the test's
 // priority and name and a short form of the response.  Long payloads are
 // truncated.  Binary payloads are also decoded as the test's message type.
@@ -81,13 +103,13 @@ void PrintTo(const TestResult& result, std::ostream* absl_nonnull os);
 // Implements WhenParsed() and WhenParsedAs() below.  The payload is
 // decoded as `type_override` if it is non-null, and as the test's message type
 // otherwise.
-testing::Matcher<const TestResult&> MakeWhenParsedMatcher(
+testing::Matcher<const YieldedResult&> MakeWhenParsedMatcher(
     testing::Matcher<const Message&> m,
     const Descriptor* absl_nullable type_override = nullptr);
 
 // Implements Yields(): see the function below for the semantics.
 testing::Matcher<const TestResult&> MakeYieldsMatcher(
-    testing::Matcher<const TestResult&> inner);
+    testing::Matcher<const YieldedResult&> inner);
 
 }  // namespace internal
 
@@ -104,7 +126,7 @@ testing::Matcher<const TestResult&> MakeYieldsMatcher(
 // JSON output can't be decoded yet (b/410122158) and fails with a message
 // saying so.  Use RawPayload() for it.
 template <typename M>
-testing::Matcher<const internal::TestResult&> WhenParsed(M m) {
+testing::Matcher<const internal::YieldedResult&> WhenParsed(M m) {
   return internal::MakeWhenParsedMatcher(
       testing::SafeMatcherCast<const Message&>(std::move(m)));
 }
@@ -120,7 +142,7 @@ testing::Matcher<const internal::TestResult&> WhenParsed(M m) {
 //
 // Failure messages are the same as WhenParsed()'s.
 template <typename T, typename M>
-testing::Matcher<const internal::TestResult&> WhenParsedAs(M m) {
+testing::Matcher<const internal::YieldedResult&> WhenParsedAs(M m) {
   return internal::MakeWhenParsedMatcher(
       testing::SafeMatcherCast<const Message&>(std::move(m)), T::descriptor());
 }
@@ -137,7 +159,7 @@ testing::Matcher<const internal::TestResult&> WhenParsedAs(M m) {
 // result, an error, a skipped test and the wrong output format.  A PROTOBUF
 // payload must also be parseable as the test's message type.  Otherwise it
 // fails with "Protobuf output we received from test was unparseable."
-testing::Matcher<const internal::TestResult&> RawPayload(Wire bytes);
+testing::Matcher<const internal::YieldedResult&> RawPayload(Wire bytes);
 
 // Matches a message equivalent to `text`, parsed as the actual message's type.
 // Messages are compared with MessageDifferencer, with NaN equal to NaN.
@@ -165,7 +187,7 @@ testing::Matcher<const Message&> EqualsBinaryProto(Wire bytes);
 // Any other response fails with "Should have failed to parse, but didn't."  A
 // runtime error fails with "Should have failed to parse, but raised an error
 // instead."
-testing::Matcher<const internal::TestResult&> IsParseError();
+testing::Matcher<const internal::YieldedResult&> IsParseError();
 
 // Matches a response that reports a serialize error.
 //
@@ -174,18 +196,20 @@ testing::Matcher<const internal::TestResult&> IsParseError();
 //
 // Any other response fails like it does for IsParseError(), with the
 // corresponding "Should have failed to serialize, ..." messages.
-testing::Matcher<const internal::TestResult&> IsSerializeError();
+testing::Matcher<const internal::YieldedResult&> IsSerializeError();
 
 // Wraps the matcher of every conformance test's EXPECT_THAT.
 //
 //   EXPECT_THAT(Testee().ParseBinary(type, input).SerializeBinary(),
 //               Yields(WhenParsed(EqualsBinaryProto(input))));
 //
-// Yields() evaluates `inner` against the TestResult, reports the outcome to
-// the global ResultLedger and applies the failure list and priority rules
-// described at the top of this file.  Its verdict is not simply `inner`'s: an
-// expected failure passes and an unexpected success fails.  Do not wrap
-// Yields() in Not() or other combinators.  Compose `inner` instead.
+// Yields() evaluates `inner` against the result, wrapped in an
+// internal::YieldedResult (which is what the leaf matchers match), reports
+// the outcome to the global ResultLedger and applies the failure list and
+// priority rules described at the top of this file.  Its verdict is not
+// simply `inner`'s: an expected failure passes and an unexpected success
+// fails.  Do not wrap Yields() in Not() or other combinators.  Compose `inner`
+// instead.
 //
 // Each result is meant to be checked once.  The ResultLedger counts a test
 // the first time it is reported, so gtest's second evaluation of a failing
@@ -196,7 +220,8 @@ testing::Matcher<const internal::TestResult&> IsSerializeError();
 template <typename M>
 testing::Matcher<const internal::TestResult&> Yields(M inner) {
   return internal::MakeYieldsMatcher(
-      testing::SafeMatcherCast<const internal::TestResult&>(std::move(inner)));
+      testing::SafeMatcherCast<const internal::YieldedResult&>(
+          std::move(inner)));
 }
 
 }  // namespace conformance

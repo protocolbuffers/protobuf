@@ -87,10 +87,12 @@ namespace internal {
 
 // The final result of a conformance test: the testee's response and what the
 // test asked of it.  Hand it to exactly one EXPECT_THAT(..., Yields(...)),
-// which records the outcome against the failure list (see matchers.h).  The
-// test environment fails a gtest test that runs a conformance test but never
-// checks its result (see Testee::tests_run()).
-class TestResult {
+// which records the outcome against the failure list (see matchers.h).
+// Dropping a result does not compile, and neither does a leaf matcher applied
+// to one without Yields() (see YieldedResult in matchers.h).  The test
+// environment fails a gtest test that runs a conformance test but never
+// checks its result in any other way (see Testee::tests_run()).
+class [[nodiscard]] TestResult {
  public:
   // The name of the test that was run, useful for failure matching and
   // reporting.

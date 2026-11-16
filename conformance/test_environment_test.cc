@@ -61,6 +61,7 @@ using ::testing::IsEmpty;
 using ::testing::NiceMock;
 using ::testing::Not;
 using ::testing::Pair;
+using ::testing::Property;
 using ::testing::Return;
 
 // The name the testee sees for a kP0 test named "Foo" that parses
@@ -332,10 +333,13 @@ TEST_F(ConformanceEnvironmentTest, ResultsThatAreNeverCheckedFailTheTest) {
   internal::ScopedGlobalConformanceEnvironment env({/*runner=*/&fake_runner_});
   env->SetUp();
 
-  // A discarded result and one checked with a bare leaf matcher both leave
-  // the ResultLedger in the dark; only what Yields() records reaches it.
-  RunP0("Foo");
-  EXPECT_THAT(RunP0("Bar"), Not(IsParseError()));
+  // A result that is stored but never checked and one matched without
+  // Yields() both leave the ResultLedger in the dark; only what Yields()
+  // records reaches it.  (Dropping a result or applying a leaf matcher to it
+  // without Yields() does not compile; see YieldedResult in matchers.h.)
+  internal::TestResult unchecked = RunP0("Foo");
+  EXPECT_THAT(RunP0("Bar"),
+              Property(&internal::TestResult::name, HasSubstr("Bar")));
   EXPECT_THAT(RunP0("Baz"),
               Yields(WhenParsed(EqualsTextProto(R"pb(optional_int32: 99)pb"))));
 
@@ -356,7 +360,7 @@ TEST_F(ConformanceEnvironmentTest,
        UncheckedResultsAreBlamedOnTheTestThatRanThem) {
   internal::ScopedGlobalConformanceEnvironment env({/*runner=*/&fake_runner_});
   env->SetUp();
-  RunP0("Foo");
+  internal::TestResult unchecked = RunP0("Foo");
 
   const testing::TestInfo& test_info =
       *testing::UnitTest::GetInstance()->current_test_info();
@@ -377,7 +381,7 @@ TEST_F(ConformanceEnvironmentTest,
 TEST_F(ConformanceEnvironmentTest, TearDownReportsResultsThatWereNeverChecked) {
   internal::ScopedGlobalConformanceEnvironment env({/*runner=*/&fake_runner_});
   env->SetUp();
-  RunP0("Foo");
+  internal::TestResult unchecked = RunP0("Foo");
   EXPECT_NONFATAL_FAILURE(
       env->TearDown(),
       absl::StrCat("TestResult for ", kFooTestName,
@@ -1010,9 +1014,11 @@ TEST(ConformanceEnvironmentDeathTest,
   EXPECT_EXIT(
       {
         internal::ScopedGlobalConformanceEnvironment env({/*runner=*/&runner});
-        CreateP0Test("Foo")
-            .ParseBinary(TestAllTypesProto3::descriptor(), VarintField(1, 99))
-            .SerializeBinary();
+        internal::TestResult unchecked =
+            CreateP0Test("Foo")
+                .ParseBinary(TestAllTypesProto3::descriptor(),
+                             VarintField(1, 99))
+                .SerializeBinary();
         // What ASSERT_* records before returning.
         [] { FAIL() << "fatal failure"; }();
         ABSL_CHECK(testing::Test::HasFatalFailure());
@@ -1032,9 +1038,11 @@ TEST(ConformanceEnvironmentDeathTest,
   EXPECT_EXIT(
       {
         internal::ScopedGlobalConformanceEnvironment env({/*runner=*/&runner});
-        CreateP0Test("Foo")
-            .ParseBinary(TestAllTypesProto3::descriptor(), VarintField(1, 99))
-            .SerializeBinary();
+        internal::TestResult unchecked =
+            CreateP0Test("Foo")
+                .ParseBinary(TestAllTypesProto3::descriptor(),
+                             VarintField(1, 99))
+                .SerializeBinary();
         [] { GTEST_SKIP() << "skipped"; }();
         ABSL_CHECK(testing::Test::IsSkipped());
         testing::Mock::AllowLeak(&runner);

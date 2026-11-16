@@ -46,6 +46,7 @@ using ::google::protobuf::conformance::internal::ReportFailure;
 using ::google::protobuf::conformance::internal::ReportSkip;
 using ::google::protobuf::conformance::internal::ReportSuccess;
 using ::google::protobuf::conformance::internal::TestResult;
+using ::google::protobuf::conformance::internal::YieldedResult;
 
 // Implements EqualsTextProto() and EqualsBinaryProto(): matches a message
 // equivalent to the one obtained by decoding `expected` (in `format`) as the
@@ -123,8 +124,9 @@ class FailureMatcher {
         failure_message_(failure_message),
         runtime_error_failure_message_(runtime_error_failure_message) {}
 
-  bool MatchAndExplain(const TestResult& result,
+  bool MatchAndExplain(const YieldedResult& yielded,
                        testing::MatchResultListener* listener) const {
+    const TestResult& result = yielded.result();
     ConformanceResponse::ResultCase actual = result.response().result_case();
     if (actual == expected_result_) {
       return true;
@@ -327,7 +329,7 @@ class PayloadMatcher {
 
   virtual ~PayloadMatcher() = default;
 
-  bool MatchAndExplain(const TestResult& result,
+  bool MatchAndExplain(const YieldedResult& yielded,
                        testing::MatchResultListener* listener) const;
   void DescribeTo(std::ostream* os) const {
     DescribeInnerTo(os, /*negation=*/false);
@@ -353,7 +355,9 @@ class PayloadMatcher {
 };
 
 bool PayloadMatcher::MatchAndExplain(
-    const TestResult& result, testing::MatchResultListener* listener) const {
+    const YieldedResult& yielded,
+    testing::MatchResultListener* listener) const {
+  const TestResult& result = yielded.result();
   const ConformanceResponse& response = result.response();
   switch (response.result_case()) {
     case ConformanceResponse::RESULT_NOT_SET:
@@ -487,7 +491,7 @@ bool RawPayloadMatcher::MatchPayload(
 // contradicts an earlier one of the same result fails instead.
 class YieldsMatcherImpl : public testing::MatcherInterface<const TestResult&> {
  public:
-  explicit YieldsMatcherImpl(testing::Matcher<const TestResult&> inner)
+  explicit YieldsMatcherImpl(testing::Matcher<const YieldedResult&> inner)
       : inner_(std::move(inner)) {}
 
   bool MatchAndExplain(const TestResult& result,
@@ -525,7 +529,8 @@ class YieldsMatcherImpl : public testing::MatcherInterface<const TestResult&> {
     }
 
     testing::StringMatchResultListener inner_listener;
-    bool matched = inner_.MatchAndExplain(result, &inner_listener);
+    bool matched =
+        inner_.MatchAndExplain(YieldedResult(result), &inner_listener);
     std::string message = inner_listener.str();
 
     if (matched) {
@@ -535,7 +540,7 @@ class YieldsMatcherImpl : public testing::MatcherInterface<const TestResult&> {
     if (message.empty()) {
       message = absl::StrCat(
           "which doesn't match (",
-          testing::DescribeMatcher<const TestResult&>(inner_), ")");
+          testing::DescribeMatcher<const YieldedResult&>(inner_), ")");
     }
 
     // The failure list decides whether the failure is expected (listed),
@@ -548,7 +553,7 @@ class YieldsMatcherImpl : public testing::MatcherInterface<const TestResult&> {
                         absl::StrCat(message, "\n", verdict.message()));
   }
 
-  testing::Matcher<const TestResult&> inner_;
+  testing::Matcher<const YieldedResult&> inner_;
 };
 
 }  // namespace
@@ -571,20 +576,20 @@ void PrintTo(const TestResult& result, std::ostream* absl_nonnull os) {
   }
 }
 
-testing::Matcher<const TestResult&> MakeWhenParsedMatcher(
+testing::Matcher<const YieldedResult&> MakeWhenParsedMatcher(
     testing::Matcher<const Message&> m,
     const Descriptor* absl_nullable type_override) {
   return WhenParsedMatcher(std::move(m), type_override);
 }
 
 testing::Matcher<const TestResult&> MakeYieldsMatcher(
-    testing::Matcher<const TestResult&> inner) {
+    testing::Matcher<const YieldedResult&> inner) {
   return testing::MakeMatcher(new YieldsMatcherImpl(std::move(inner)));
 }
 
 }  // namespace internal
 
-testing::Matcher<const internal::TestResult&> RawPayload(Wire bytes) {
+testing::Matcher<const internal::YieldedResult&> RawPayload(Wire bytes) {
   return RawPayloadMatcher(std::move(bytes).str());
 }
 
@@ -598,14 +603,14 @@ testing::Matcher<const Message&> EqualsBinaryProto(Wire bytes) {
                                   std::move(bytes).str());
 }
 
-testing::Matcher<const internal::TestResult&> IsParseError() {
+testing::Matcher<const internal::YieldedResult&> IsParseError() {
   return FailureMatcher(
       "parse error", ConformanceResponse::kParseError,
       "Should have failed to parse, but didn't.",
       "Should have failed to parse, but raised an error instead.");
 }
 
-testing::Matcher<const internal::TestResult&> IsSerializeError() {
+testing::Matcher<const internal::YieldedResult&> IsSerializeError() {
   return FailureMatcher(
       "serialize error", ConformanceResponse::kSerializeError,
       "Should have failed to serialize, but didn't.",

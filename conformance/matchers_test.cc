@@ -12,6 +12,7 @@
 #include <iterator>
 #include <ostream>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include <gmock/gmock.h>
@@ -79,6 +80,7 @@ using ::conformance::WireFormat;
 using ::google::protobuf::conformance::TestPriority;
 using ::google::protobuf::conformance::internal::ResultLedger;
 using ::google::protobuf::conformance::internal::TestResult;
+using ::google::protobuf::conformance::internal::YieldedResult;
 using ::protobuf_test_messages::proto2::TestAllTypesProto2;
 using ::protobuf_test_messages::proto2::UnknownToTestAllTypes;
 using ::testing::_;
@@ -161,14 +163,14 @@ ConformanceResponse ResponseFromText(absl::string_view textproto) {
   return response;
 }
 
-template <class M>
-std::string Describe(const M& m) {
-  return testing::DescribeMatcher<const TestResult&>(m, /*negation=*/false);
+template <class T>
+std::string Describe(const testing::Matcher<T>& m) {
+  return testing::DescribeMatcher<T>(m, /*negation=*/false);
 }
 
-template <class M>
-std::string DescribeNegation(const M& m) {
-  return testing::DescribeMatcher<const TestResult&>(m, /*negation=*/true);
+template <class T>
+std::string DescribeNegation(const testing::Matcher<T>& m) {
+  return testing::DescribeMatcher<T>(m, /*negation=*/true);
 }
 
 // Runs `m` on `arg` once.  The returned AssertionResult succeeds iff `m`
@@ -180,6 +182,13 @@ testing::AssertionResult Explain(const M& m, const T& arg) {
   const bool matched = testing::ExplainMatchResult(m, arg, &listener);
   return (matched ? testing::AssertionSuccess() : testing::AssertionFailure())
          << listener.str();
+}
+
+// The leaf matchers match a YieldedResult; this overload wraps `result` in
+// one, so that their tests can pass the TestResult.
+testing::AssertionResult Explain(
+    const testing::Matcher<const YieldedResult&>& m, const TestResult& result) {
+  return Explain(m, YieldedResult(result));
 }
 
 // Matches an Explain() result whose matcher accepted the value and whose
@@ -292,6 +301,15 @@ TEST(PrintTestResultTest, LargePayloadsAreTruncated) {
       absl::StrCat(kPrintedRequiredTest, " with response {text_payload: \"",
                    std::string(200, 'a'), "...(truncated)\"}"));
 }
+
+// ---------------------------------------------------------------------------
+// YieldedResult
+// ---------------------------------------------------------------------------
+
+// What makes a forgotten Yields() a compile error: the leaf matchers match a
+// YieldedResult, and a TestResult does not convert to one.
+static_assert(!std::is_convertible_v<const TestResult&, YieldedResult>);
+static_assert(!std::is_constructible_v<YieldedResult, TestResult>);
 
 // ---------------------------------------------------------------------------
 // Descriptions
@@ -503,8 +521,8 @@ TEST(WhenParsedTest, TextOutput) {
       "foo", ::conformance::TEXT_FORMAT,
       ResponseFromText(R"pb(text_payload: "optional_int32: 9")pb"));
 
-  EXPECT_TRUE(
-      Value(result, WhenParsed(EqualsTextProto(R"pb(optional_int32: 9)pb"))));
+  EXPECT_TRUE(Value(YieldedResult(result),
+                    WhenParsed(EqualsTextProto(R"pb(optional_int32: 9)pb"))));
 }
 
 TEST(WhenParsedTest, TextOutputFieldNumbersAccepted) {
@@ -514,8 +532,8 @@ TEST(WhenParsedTest, TextOutputFieldNumbersAccepted) {
       CreateResult("foo", ::conformance::TEXT_FORMAT,
                    ResponseFromText(R"pb(text_payload: "1: 9")pb"));
 
-  EXPECT_TRUE(
-      Value(result, WhenParsed(EqualsTextProto(R"pb(optional_int32: 9)pb"))));
+  EXPECT_TRUE(Value(YieldedResult(result),
+                    WhenParsed(EqualsTextProto(R"pb(optional_int32: 9)pb"))));
 }
 
 TEST(WhenParsedTest, EqualsTextProtoMismatch) {
@@ -536,7 +554,7 @@ TEST(WhenParsedTest, EqualsTextProtoMatchesNan) {
       CreateResult("foo", ::conformance::PROTOBUF,
                    ProtobufPayload(Wire(message.SerializeAsString())));
 
-  EXPECT_TRUE(Value(result, WhenParsed(EqualsTextProto(R"pb(
+  EXPECT_TRUE(Value(YieldedResult(result), WhenParsed(EqualsTextProto(R"pb(
                       optional_float: nan
                       optional_double: nan
                     )pb"))));
@@ -556,8 +574,8 @@ TEST(WhenParsedTest, EqualsBinaryProto) {
                                    ProtobufPayload(VarintField(1, 2)));
 
   // Equivalent, but not byte-identical (over-long varint encoding).
-  EXPECT_TRUE(
-      Value(result, WhenParsed(EqualsBinaryProto(LongVarintField(1, 2, 1)))));
+  EXPECT_TRUE(Value(YieldedResult(result),
+                    WhenParsed(EqualsBinaryProto(LongVarintField(1, 2, 1)))));
 }
 
 TEST(WhenParsedTest, EqualsBinaryProtoWithTextOutput) {
@@ -565,7 +583,8 @@ TEST(WhenParsedTest, EqualsBinaryProtoWithTextOutput) {
       "foo", ::conformance::TEXT_FORMAT,
       ResponseFromText(R"pb(text_payload: "optional_int32: 9")pb"));
 
-  EXPECT_TRUE(Value(result, WhenParsed(EqualsBinaryProto(VarintField(1, 9)))));
+  EXPECT_TRUE(Value(YieldedResult(result),
+                    WhenParsed(EqualsBinaryProto(VarintField(1, 9)))));
 }
 
 TEST(WhenParsedTest, EqualsBinaryProtoMismatch) {
@@ -590,9 +609,9 @@ TEST(WhenParsedTest, AcceptsAnyMessageMatcher) {
   TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
                                    ProtobufPayload(VarintField(1, 2)));
 
-  EXPECT_TRUE(Value(result, WhenParsed(_)));
+  EXPECT_TRUE(Value(YieldedResult(result), WhenParsed(_)));
   EXPECT_TRUE(Value(
-      result,
+      YieldedResult(result),
       WhenParsed(AllOf(EqualsTextProto(R"pb(optional_int32: 2)pb"),
                        Not(EqualsTextProto(R"pb(optional_int32: 3)pb"))))));
 }
@@ -614,11 +633,12 @@ TEST(WhenParsedTest, ComposesWithGMock) {
   TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
                                    ProtobufPayload(VarintField(1, 2)));
 
-  EXPECT_TRUE(Value(result, Not(WhenParsed(EqualsTextProto("")))));
+  YieldedResult yielded(result);
+  EXPECT_TRUE(Value(yielded, Not(WhenParsed(EqualsTextProto("")))));
   EXPECT_TRUE(Value(
-      result, AnyOf(IsParseError(),
-                    WhenParsed(EqualsTextProto(R"pb(optional_int32: 2)pb")))));
-  EXPECT_TRUE(Value(result, AllOf(Not(IsParseError()), WhenParsed(_))));
+      yielded, AnyOf(IsParseError(),
+                     WhenParsed(EqualsTextProto(R"pb(optional_int32: 2)pb")))));
+  EXPECT_TRUE(Value(yielded, AllOf(Not(IsParseError()), WhenParsed(_))));
 }
 
 // ---------------------------------------------------------------------------
@@ -721,7 +741,7 @@ TEST(RawPayloadTest, MatchesBytes) {
   TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
                                    ProtobufPayload(VarintField(1, 2)));
 
-  EXPECT_TRUE(Value(result, RawPayload(VarintField(1, 2))));
+  EXPECT_TRUE(Value(YieldedResult(result), RawPayload(VarintField(1, 2))));
   EXPECT_THAT(Explain(RawPayload(VarintField(1, 2)), result),
               Accepts(IsEmpty()));
 }
@@ -753,12 +773,13 @@ TEST(RawPayloadTest, TextOutput) {
       "foo", ::conformance::TEXT_FORMAT,
       ResponseFromText(R"pb(text_payload: "optional_int32: 9")pb"));
 
-  EXPECT_TRUE(Value(result, RawPayload(Wire("optional_int32: 9"))));
+  EXPECT_TRUE(
+      Value(YieldedResult(result), RawPayload(Wire("optional_int32: 9"))));
   // Text output isn't required to be parseable.
-  EXPECT_TRUE(Value(
+  TestResult nonsense =
       CreateResult("bar", ::conformance::TEXT_FORMAT,
-                   ResponseFromText(R"pb(text_payload: "nonsense: 1")pb")),
-      RawPayload(Wire("nonsense: 1"))));
+                   ResponseFromText(R"pb(text_payload: "nonsense: 1")pb"));
+  EXPECT_TRUE(Value(YieldedResult(nonsense), RawPayload(Wire("nonsense: 1"))));
 }
 
 TEST(RawPayloadTest, JsonOutput) {
@@ -767,7 +788,7 @@ TEST(RawPayloadTest, JsonOutput) {
       CreateResult("foo", ::conformance::JSON,
                    ResponseFromText(R"pb(json_payload: "{}")pb"));
 
-  EXPECT_TRUE(Value(result, RawPayload(Wire("{}"))));
+  EXPECT_TRUE(Value(YieldedResult(result), RawPayload(Wire("{}"))));
 }
 
 // ---------------------------------------------------------------------------
@@ -843,7 +864,7 @@ TEST(FailureMatcherTest, ParseErrorMatches) {
                    ResponseFromText(R"pb(parse_error: "failed to parse")pb"));
 
   EXPECT_THAT(Explain(IsParseError(), result), Accepts(IsEmpty()));
-  EXPECT_FALSE(Value(result, IsSerializeError()));
+  EXPECT_FALSE(Value(YieldedResult(result), IsSerializeError()));
 }
 
 TEST(FailureMatcherTest, ParseErrorWithPayload) {
@@ -897,7 +918,7 @@ TEST(FailureMatcherTest, SerializeErrorMatches) {
                    ResponseFromText(R"pb(serialize_error: "failed")pb"));
 
   EXPECT_THAT(Explain(IsSerializeError(), result), Accepts(IsEmpty()));
-  EXPECT_FALSE(Value(result, IsParseError()));
+  EXPECT_FALSE(Value(YieldedResult(result), IsParseError()));
 }
 
 TEST(FailureMatcherTest, SerializeErrorWithPayload) {
@@ -923,9 +944,11 @@ TEST(FailureMatcherTest, ComposesWithGMock) {
       CreateResult("foo", ::conformance::PROTOBUF,
                    ResponseFromText(R"pb(parse_error: "failed to parse")pb"));
 
-  EXPECT_TRUE(Value(result, Not(IsSerializeError())));
-  EXPECT_TRUE(Value(result, AnyOf(IsSerializeError(), IsParseError())));
-  EXPECT_FALSE(Value(result, AllOf(IsSerializeError(), IsParseError())));
+  EXPECT_TRUE(Value(YieldedResult(result), Not(IsSerializeError())));
+  EXPECT_TRUE(
+      Value(YieldedResult(result), AnyOf(IsSerializeError(), IsParseError())));
+  EXPECT_FALSE(
+      Value(YieldedResult(result), AllOf(IsSerializeError(), IsParseError())));
 }
 
 // ---------------------------------------------------------------------------
@@ -1074,6 +1097,18 @@ TEST_F(YieldsTest, UnlistedSuccessPasses) {
   EXPECT_THAT(Run(kPayload2, TestPriority::kP0, "other"), matcher);
   EXPECT_EQ(GetCounts(ledger_), (Counts{/*expected_successes=*/2}));
   EXPECT_THAT(ledger_.Finalize(), IsOk());
+}
+
+TEST_F(YieldsTest, InnerMatcherSeesTheResultAsAYieldedResult) {
+  const TestResult* seen = nullptr;
+  auto matcher = Yields(Truly([&](const YieldedResult& yielded) {
+    seen = &yielded.result();
+    return true;
+  }));
+  TestResult result = Run(kPayload2);
+
+  EXPECT_THAT(Explain(matcher, result), Accepts(IsEmpty()));
+  EXPECT_EQ(seen, &result);
 }
 
 TEST_F(YieldsTest, UnlistedFailureFails) {
@@ -1345,7 +1380,7 @@ TEST_F(YieldsTest, UnlistedSkipPasses) {
 
   // The inner matcher never gets to see a skipped result.
   bool inner_called = false;
-  auto matcher = Yields(Truly([&](const TestResult&) {
+  auto matcher = Yields(Truly([&](const YieldedResult&) {
     inner_called = true;
     return false;
   }));

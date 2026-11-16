@@ -231,7 +231,7 @@ TEST(TesteeTest, DuplicateTestName) {
           .SerializeBinary();
 
   EXPECT_DEATH(
-      testee.CreateTest("foo", TestPriority::kP0)
+      (void)testee.CreateTest("foo", TestPriority::kP0)
           .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
           .SerializeBinary(),
       "Duplicated test name: Required.Proto2.ProtobufInput.foo.ProtobufOutput");
@@ -243,10 +243,10 @@ TEST(TesteeTest, RecordsTheTestsRun) {
   EXPECT_CALL(mock, RunTest).WillRepeatedly(Return(std::string("\004")));
   EXPECT_THAT(testee.tests_run(), IsEmpty());
 
-  testee.CreateTest("foo", TestPriority::kP0)
+  (void)testee.CreateTest("foo", TestPriority::kP0)
       .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
       .SerializeBinary();
-  testee.CreateTest("bar", TestPriority::kP1)
+  (void)testee.CreateTest("bar", TestPriority::kP1)
       .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
       .SerializeText();
 
