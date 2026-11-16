@@ -641,6 +641,74 @@ TEST(EncodedDescriptorDatabaseExtraTest,
   EXPECT_EQ(found_final.name(), "good.proto");
 }
 
+TEST(EncodedDescriptorDatabaseExtraTest, LazySymbolIndexing) {
+  FileDescriptorProto file1;
+  file1.set_name("pkg/file1.proto");
+  file1.set_package("pkg");
+  file1.add_message_type()->set_name("Msg1");
+  auto* ext1 = file1.add_extension();
+  ext1->set_name("ext1");
+  ext1->set_extendee(".pkg.Target");
+  ext1->set_number(101);
+  std::string data1 = file1.SerializeAsString();
+
+  FileDescriptorProto file2;
+  file2.set_name("pkg/file2.proto");
+  file2.set_package("pkg");
+  file2.add_message_type()->set_name("Msg2");
+  auto* ext2 = file2.add_extension();
+  ext2->set_name("ext2");
+  ext2->set_extendee(".pkg.Target");
+  ext2->set_number(102);
+  std::string data2 = file2.SerializeAsString();
+
+  EncodedDescriptorDatabase db;
+  db.SetLazySymbolIndexing(true);
+  EXPECT_TRUE(db.lazy_symbol_indexing());
+
+  EXPECT_TRUE(db.Add(data1.data(), static_cast<int>(data1.size())));
+  EXPECT_TRUE(
+      db.Add(data2.data(), static_cast<int>(data2.size()), "pkg/file2.proto"));
+
+  // 1. Find by filename works without indexing symbols.
+  FileDescriptorProto found1;
+  EXPECT_TRUE(db.FindFileByName("pkg/file1.proto", &found1));
+  EXPECT_EQ(found1.name(), "pkg/file1.proto");
+  EXPECT_EQ(found1.message_type(0).name(), "Msg1");
+
+  FileDescriptorProto found2;
+  EXPECT_TRUE(db.FindFileByName("pkg/file2.proto", &found2));
+  EXPECT_EQ(found2.name(), "pkg/file2.proto");
+  EXPECT_EQ(found2.message_type(0).name(), "Msg2");
+
+  std::vector<std::string> all_files;
+  EXPECT_TRUE(db.FindAllFileNames(&all_files));
+  EXPECT_THAT(all_files, testing::UnorderedElementsAre("pkg/file1.proto",
+                                                       "pkg/file2.proto"));
+
+  // 2. FindFileContainingSymbol lazily indexes and resolves symbols.
+  FileDescriptorProto found_sym;
+  EXPECT_TRUE(db.FindFileContainingSymbol("pkg.Msg2", &found_sym));
+  EXPECT_EQ(found_sym.name(), "pkg/file2.proto");
+
+  // 3. FindFileContainingExtension lazily indexes and resolves extensions.
+  FileDescriptorProto found_ext;
+  EXPECT_TRUE(db.FindFileContainingExtension("pkg.Target", 101, &found_ext));
+  EXPECT_EQ(found_ext.name(), "pkg/file1.proto");
+
+  std::vector<int> ext_numbers;
+  EXPECT_TRUE(db.FindAllExtensionNumbers("pkg.Target", &ext_numbers));
+  EXPECT_THAT(ext_numbers, testing::UnorderedElementsAre(101, 102));
+
+  // 4. Adding duplicate file fails at Add time even with lazy indexing.
+  EXPECT_FALSE(db.Add(data1.data(), static_cast<int>(data1.size())));
+
+  // 5. Malformed or truncated filename prefixes are rejected safely.
+  EXPECT_FALSE(db.Add("\x0a", 1));
+  EXPECT_FALSE(db.Add("\x0a\x80", 2));
+  EXPECT_FALSE(db.Add("\x0a\x80\x80\x80\x80\x08", 6));
+}
+
 TEST(SimpleDescriptorDatabaseExtraTest, FindAllFileNames) {
   FileDescriptorProto f;
   f.set_name("foo.proto");

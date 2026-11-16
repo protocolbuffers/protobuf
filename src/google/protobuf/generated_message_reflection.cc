@@ -4157,7 +4157,8 @@ void AddDescriptorsImpl(const DescriptorTable* table) {
   }
 
   // Register the descriptor of this file.
-  DescriptorPool::InternalAddGeneratedFile(table->descriptor, table->size);
+  DescriptorPool::InternalAddGeneratedFile(table->descriptor, table->size,
+                                           table->filename);
   MessageFactory::InternalRegisterGeneratedFile(table);
 
   // Ensure that any lazily loaded static initializers from the generated pool

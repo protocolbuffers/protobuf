@@ -2730,6 +2730,8 @@ class PROTOBUF_EXPORT DescriptorPool {
   // permanent string (e.g. a string literal).
   static void InternalAddGeneratedFile(const void* encoded_file_descriptor,
                                        int size);
+  static void InternalAddGeneratedFile(const void* encoded_file_descriptor,
+                                       int size, absl::string_view filename);
 
   // Disallow [enforce_utf8 = false] in .proto files.
   void DisallowEnforceUtf8() { disallow_enforce_utf8_ = true; }
