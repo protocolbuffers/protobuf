@@ -16,6 +16,7 @@ import static com.google.protobuf.WireFormat.WIRETYPE_LENGTH_DELIMITED;
 import static com.google.protobuf.WireFormat.WIRETYPE_START_GROUP;
 import static com.google.protobuf.WireFormat.WIRETYPE_VARINT;
 
+import com.google.protobuf.Internal.EnumVerifier;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -953,6 +954,68 @@ final class CodedInputStreamReader {
           throw InvalidProtocolBufferException.invalidWireType();
       }
     }
+  }
+
+  /**
+   * Reads a repeated enum field like {@link #readEnumList(List)}, except that values rejected by
+   * {@code enumVerifier} are stored as unknown fields instead of being added to {@code target}. A
+   * null {@code enumVerifier} accepts all values.
+   *
+   * @return {@code unknownFields}, or the unknown fields of {@code containerMessage} if {@code
+   *     unknownFields} was null and a value was rejected
+   */
+  public <UT, UB> UB readEnumList(
+      IntArrayList target,
+      Object containerMessage,
+      int number,
+      EnumVerifier enumVerifier,
+      UB unknownFields,
+      UnknownFieldSchema<UT, UB> unknownFieldSchema)
+      throws IOException {
+    if (enumVerifier == null) {
+      readEnumList(target);
+      return unknownFields;
+    }
+    switch (WireFormat.getTagWireType(tag)) {
+      case WIRETYPE_LENGTH_DELIMITED:
+        final int bytes = input.readUInt32();
+        int endPos = input.getTotalBytesRead() + bytes;
+        while (input.getTotalBytesRead() < endPos) {
+          int enumValue = input.readEnum();
+          if (enumVerifier.isInRange(enumValue)) {
+            target.addInt(enumValue);
+          } else {
+            unknownFields =
+                SchemaUtil.storeUnknownEnum(
+                    containerMessage, number, enumValue, unknownFields, unknownFieldSchema);
+          }
+        }
+        requirePosition(endPos);
+        break;
+      case WIRETYPE_VARINT:
+        while (true) {
+          int enumValue = input.readEnum();
+          if (enumVerifier.isInRange(enumValue)) {
+            target.addInt(enumValue);
+          } else {
+            unknownFields =
+                SchemaUtil.storeUnknownEnum(
+                    containerMessage, number, enumValue, unknownFields, unknownFieldSchema);
+          }
+          if (input.isAtEnd()) {
+            return unknownFields;
+          }
+          int nextTag = input.readTag();
+          if (nextTag != tag) {
+            // We've reached the end of the repeated field. Save the next tag value.
+            this.nextTag = nextTag;
+            return unknownFields;
+          }
+        }
+      default:
+        throw InvalidProtocolBufferException.invalidWireType();
+    }
+    return unknownFields;
   }
 
   public void readSFixed32List(List<Integer> target) throws IOException {
