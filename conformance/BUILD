@@ -709,6 +709,7 @@ cc_test(
         ":testee",
         "//src/google/protobuf",
         "@abseil-cpp//absl/flags:flag",
+        "@abseil-cpp//absl/flags:parse",
         "@abseil-cpp//absl/flags:reflection",
         "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
