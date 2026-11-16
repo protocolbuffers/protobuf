@@ -133,8 +133,9 @@ std::string GenerateConditionMaybeWithProbability(
 }
 
 std::string GenerateConditionMaybeWithProbabilityForField(
-    int has_bit_index, const FieldDescriptor* field, const Options& options) {
-  auto prob = GetPresenceProbability(field, options);
+    int has_bit_index, const FieldDescriptor* field, const Options& options,
+    PresenceType presence_type) {
+  auto prob = GetPresenceProbability(field, options, presence_type);
   return GenerateConditionMaybeWithProbability(
       1u << (has_bit_index % 32), prob,
       /*use_cached_has_bits*/ true,
@@ -144,8 +145,8 @@ std::string GenerateConditionMaybeWithProbabilityForField(
 
 std::string GenerateConditionMaybeWithProbabilityForGroup(
     uint32_t mask, const std::vector<const FieldDescriptor*>& fields,
-    const Options& options) {
-  auto prob = GetFieldGroupPresenceProbability(fields, options);
+    const Options& options, PresenceType presence_type) {
+  auto prob = GetFieldGroupPresenceProbability(fields, options, presence_type);
   return GenerateConditionMaybeWithProbability(
       mask, prob,
       /*use_cached_has_bits*/ true,
@@ -155,10 +156,11 @@ std::string GenerateConditionMaybeWithProbabilityForGroup(
 
 void PrintPresenceCheckCondition(const FieldDescriptor* field,
                                  const FieldLayout& field_layout,
-                                 io::Printer* p, const Options& options) {
+                                 io::Printer* p, const Options& options,
+                                 PresenceType presence_type) {
   int has_bit_index = field_layout.GetHasBitIndex(field).value();
   p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
-                             has_bit_index, field, options)}},
+                             has_bit_index, field, options, presence_type)}},
           R"cc($condition$)cc");
 }
 
@@ -1144,8 +1146,9 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
   }
 
   int has_bit_index = field_layout_.GetHasBitIndex(field).value();
-  p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
-                             has_bit_index, field, options_)},
+  p->Emit({{"condition",
+            GenerateConditionMaybeWithProbabilityForField(
+                has_bit_index, field, options_, PresenceType::kSerialize)},
            {"check_nondefault_and_emit_body",
             [&] {
               // Note that it's possible that the field has explicit presence.
@@ -2945,7 +2948,8 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
     } else {
       int has_bit_index = field_layout_.GetHasBitIndex(field).value();
       p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
-                                 has_bit_index, field, options_)}},
+                                 has_bit_index, field, options_,
+                                 PresenceType::kSerializeParse)}},
               "$condition$");
     }
   };
@@ -3287,7 +3291,7 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
         return field_layout_.GetHasWordIndex(f);
       });
   enclosing_if_chunks = PartitionToMinimizeExpectedBranches(
-      std::move(enclosing_if_chunks), options_);
+      std::move(enclosing_if_chunks), options_, PresenceType::kSerializeParse);
 
   int cached_has_word_index = -1;
 
@@ -3308,7 +3312,8 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
         p->Emit({{"cond",
                   [&] {
                     PrintPresenceCheckCondition(field, field_layout_, p,
-                                                options_);
+                                                options_,
+                                                PresenceType::kSerializeParse);
                   }},
                  {"clear_field", [&] { emit_clear_field(field); }}},
                 R"cc(
@@ -3328,7 +3333,7 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
       ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
 
       const std::string cond = GenerateConditionMaybeWithProbabilityForGroup(
-          chunk_mask, fields, options_);
+          chunk_mask, fields, options_, PresenceType::kSerializeParse);
       p->Emit({{"cond", cond}, {"clear_field_chunk", print_clear_field_chunk}},
               R"cc(
                 if ($cond$) {
@@ -3827,7 +3832,8 @@ void MessageGenerator::GenerateMergeImplForField(io::Printer* p,
     int has_bit_index = field_layout_.GetHasBitIndex(field).value();
 
     p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
-                               has_bit_index, field, options_)},
+                               has_bit_index, field, options_,
+                               PresenceType::kSerializeParse)},
              {"merge_field",
               [&] {
                 if (GetFieldHasbitMode(field, options_) ==
@@ -3880,7 +3886,8 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
       ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
 
       p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForGroup(
-                                 chunk_mask, fields, options_)}},
+                                 chunk_mask, fields, options_,
+                                 PresenceType::kSerializeParse)}},
               R"cc(
                 if ($condition$) {
               )cc");
@@ -3906,7 +3913,8 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
         return field_layout_.GetHasWordIndex(f);
       },
       [&](const auto* f) { return ShouldSplit(f, options_) == is_split; });
-  chunks = PartitionToMinimizeExpectedBranches(std::move(chunks), options_);
+  chunks = PartitionToMinimizeExpectedBranches(std::move(chunks), options_,
+                                               PresenceType::kSerializeParse);
 
   for (const FieldChunk& chunk : chunks) {
     emit_merge_chunk(chunk.fields);
@@ -4181,8 +4189,9 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
             {"cond",
              GenerateConditionMaybeWithProbability(
                  1u << (has_bit_index % 32),
-                 GetPresenceProbability(field, options_), use_cached_has_bits,
-                 has_word_index, /*is_batch=*/false)},
+                 GetPresenceProbability(field, options_,
+                                        PresenceType::kSerialize),
+                 use_cached_has_bits, has_word_index, /*is_batch=*/false)},
         },
         R"cc(
           if ($cond$) {
@@ -4477,7 +4486,8 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
         p_->Emit(
             {
                 {"cond", GenerateConditionMaybeWithProbabilityForGroup(
-                             chunk_mask, fields_chunk.fields, mg_->options_)},
+                             chunk_mask, fields_chunk.fields, mg_->options_,
+                             PresenceType::kSerialize)},
                 {"body", generate_serialize_fields},
             },
             R"cc(
@@ -4521,7 +4531,8 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
 
   std::vector<SerializeChunk> chunks =
       CollectMaximalSerializeChunks(descriptor_, field_layout_, options_);
-  chunks = PartitionToMinimizeExpectedBranches(std::move(chunks), options_);
+  chunks = PartitionToMinimizeExpectedBranches(std::move(chunks), options_,
+                                               PresenceType::kSerialize);
 
   int num_ext_chunks = absl::c_count_if(chunks, [](const auto& chunk) {
     return std::holds_alternative<ExtensionRangeChunk>(chunk);
@@ -4727,7 +4738,8 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
         return std::make_tuple(f->is_required(),
                                field_layout_.GetHasWordIndex(f));
       });
-  chunks = PartitionToMinimizeExpectedBranches(std::move(chunks), options_);
+  chunks = PartitionToMinimizeExpectedBranches(std::move(chunks), options_,
+                                               PresenceType::kSerialize);
 
   // Interleave the fixed chunks in the right place to be able to reuse
   // cached_has_bits if available. Otherwise, add them to the end.
@@ -4811,7 +4823,8 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
 
                 p->Emit({{"condition",
                           GenerateConditionMaybeWithProbabilityForGroup(
-                              chunk_mask, fields, options_)}},
+                              chunk_mask, fields, options_,
+                              PresenceType::kSerialize)}},
                         "if ($condition$)");
               }}},
             R"cc(

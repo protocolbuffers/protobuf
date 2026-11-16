@@ -101,13 +101,15 @@ inline double ExpectedNumberOfBranchesTaken(size_t size, double p_none) {
 }
 
 inline double GetAbsenceProbability(const FieldDescriptor* field,
-                                    const Options& options) {
+                                    const Options& options,
+                                    PresenceType presence_type) {
   // The default value of 0.0 is chosen for two reasons:
   // 1. We batch in other generated methods when the PdProto data isn't
   // available and the value of 0.0f promotes batching.
   // 2. It has shown the best performance in the protogen_micro benchmark when
   // compared do 1.0f and 0.5f.
-  return 1.0 - GetPresenceProbability(field, options).value_or(0.0f);
+  return 1.0 -
+         GetPresenceProbability(field, options, presence_type).value_or(0.0f);
 }
 
 }  // namespace field_chunk_internal
@@ -115,14 +117,15 @@ inline double GetAbsenceProbability(const FieldDescriptor* field,
 // Partitions the fields sharing a hasbit word into batches using dynamic
 // programming to minimize the expected number of branch checks executed.
 template <typename Chunk>
-std::vector<Chunk> PartitionToMinimizeExpectedBranches(const Chunk& chunk,
-                                                       const Options& options) {
+std::vector<Chunk> PartitionToMinimizeExpectedBranches(
+    const Chunk& chunk, const Options& options, PresenceType presence_type) {
   const auto& fields = chunk.fields;
   const int n = fields.size();
   if (n == 0) return {};
 
   const auto p_absent = [&](int i) {
-    return field_chunk_internal::GetAbsenceProbability(fields[i], options);
+    return field_chunk_internal::GetAbsenceProbability(fields[i], options,
+                                                       presence_type);
   };
   // `min_cost[i]` is the minimum expected number of branch checks for the
   // suffix `fields[i..n)`.
@@ -160,13 +163,15 @@ std::vector<Chunk> PartitionToMinimizeExpectedBranches(const Chunk& chunk,
 
 template <typename Chunk>
 std::vector<Chunk> PartitionToMinimizeExpectedBranches(
-    std::vector<Chunk> chunks, const Options& options) {
+    std::vector<Chunk> chunks, const Options& options,
+    PresenceType presence_type) {
   std::vector<Chunk> result;
 
   for (Chunk& chunk : chunks) {
     const auto* partitionable = GetPartitionableChunk(chunk);
     if (partitionable != nullptr && partitionable->fields.size() > 1) {
-      absl::c_move(PartitionToMinimizeExpectedBranches(*partitionable, options),
+      absl::c_move(PartitionToMinimizeExpectedBranches(*partitionable, options,
+                                                       presence_type),
                    std::back_inserter(result));
     } else {
       result.push_back(std::move(chunk));

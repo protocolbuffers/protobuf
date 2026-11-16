@@ -390,15 +390,28 @@ PROTOC_EXPORT bool IsRarelyPresent(const FieldDescriptor* field,
 // Returns true if `field` is likely to be present based on PDProto profile.
 bool IsLikelyPresent(const FieldDescriptor* field, const Options& options);
 
+enum class PresenceType {
+  kSerialize,
+  kParse,
+  kSerializeParse,
+};
+
+// TODO: Remove this overload once all callers are migrated to
+// directional counters via the `PresenceType` overload below.
 PROTOC_EXPORT absl::optional<float> GetPresenceProbability(
     const FieldDescriptor* field, const Options& options);
+
+PROTOC_EXPORT absl::optional<float> GetPresenceProbability(
+    const FieldDescriptor* field, const Options& options,
+    PresenceType presence_type);
 
 // GetFieldGroupPresenceProbability computes presence probability for a group of
 // fields. It uses the absence probability (easier to compute)
 // (1 - p1) * (1 - p2) * ... * (1 - pn), and in the end the aggregate presence
 // probability can be expressed as (1 - all_absent_probability).
 absl::optional<float> GetFieldGroupPresenceProbability(
-    const std::vector<const FieldDescriptor*>& fields, const Options& options);
+    const std::vector<const FieldDescriptor*>& fields, const Options& options,
+    PresenceType presence_type);
 
 // Returns the "hasbit mode" of the field, which may depend on profile data.
 internal::cpp::HasbitMode GetFieldHasbitMode(const FieldDescriptor* field,
