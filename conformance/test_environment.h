@@ -108,7 +108,8 @@ struct ConformanceEnvironmentOptions {
   bool performance = false;
 
   // Rewrites the failure list at the end of the run.  Entries that no longer
-  // fail are dropped.  New failures are added with their messages.
+  // fail are dropped.  New failures are added with their messages.  The rules,
+  // wildcard entries included, are those of ResultLedger::SaveFailureList().
   //
   // Refused when only a subset of the binary's tests ran, because of
   // --gtest_filter, sharding or --gtest_fail_fast.  A test failure is reported

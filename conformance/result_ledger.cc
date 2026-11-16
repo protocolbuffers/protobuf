@@ -8,7 +8,6 @@
 #include "conformance/result_ledger.h"
 
 #include <algorithm>
-#include <cctype>
 #include <cstddef>
 #include <fstream>
 #include <ios>
@@ -17,6 +16,7 @@
 #include <vector>
 
 #include "absl/algorithm/container.h"
+#include "absl/container/btree_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
@@ -35,6 +35,9 @@ namespace conformance {
 namespace internal {
 namespace {
 
+// Formats an entry line for SaveFailureList(): the test name padded to
+// `alignment`, then " # " and the message, or the name alone if the line has
+// no message.  A comment or blank line is only stripped.
 std::string ReformatLine(size_t alignment, absl::string_view line) {
   size_t comment_pos = line.find('#');
   absl::string_view test_name =
@@ -42,11 +45,33 @@ std::string ReformatLine(size_t alignment, absl::string_view line) {
   if (test_name.empty()) {
     return std::string(absl::StripAsciiWhitespace(line));
   }
-  absl::string_view message =
-      absl::StripAsciiWhitespace(line.substr(comment_pos + 1));
+  absl::string_view message;
+  if (comment_pos != absl::string_view::npos) {
+    message = absl::StripAsciiWhitespace(line.substr(comment_pos + 1));
+  }
+  if (message.empty()) {
+    return std::string(test_name);
+  }
   ABSL_CHECK_GE(alignment, test_name.length());
   std::string whitespace(alignment - test_name.length(), ' ');
   return absl::StrCat(test_name, whitespace, " # ", message);
+}
+
+// The failure list line for `test_name` failing with `message`, which may be
+// empty; ReformatLine() aligns it.
+std::string EntryLine(absl::string_view test_name, absl::string_view message) {
+  if (message.empty()) return std::string(test_name);
+  return absl::StrCat(test_name, " # ", message);
+}
+
+// The test name (or wildcard) of a failure list line, i.e. what precedes its
+// comment, with all whitespace removed: the key entries are loaded and looked
+// up by, so that LoadFailureList() and AppendSavedLines() agree on it.
+std::string EntryKeyOf(absl::string_view line) {
+  std::string key(line.substr(0, line.find('#')));
+  key.erase(std::remove_if(key.begin(), key.end(), absl::ascii_isspace),
+            key.end());
+  return key;
 }
 
 }  // namespace
@@ -69,34 +94,25 @@ absl::Status ResultLedger::LoadFailureList(absl::string_view filename) {
   for (std::string line; std::getline(infile, line);) {
     failure_list_lines_.push_back(line);
 
-    // Remove comments.
-    std::string test_name = line.substr(0, line.find('#'));
+    std::string test_name = EntryKeyOf(line);
 
-    test_name.erase(
-        std::remove_if(test_name.begin(), test_name.end(), ::isspace),
-        test_name.end());
-
-    if (test_name.empty()) {  // Skip empty lines.
+    if (test_name.empty()) {  // Skip empty lines and comments.
       continue;
     }
 
-    // If we remove whitespace from the beginning of a line, and what we have
-    // left at first is a '#', then we have a comment.
-    if (test_name[0] != '#') {
-      // Find our failure message if it exists. Will be set to an empty string
-      // if no message is found. Empty failure messages also pass our tests.
-      size_t comment_pos = line.find('#');
-      std::string message;
-      if (comment_pos != std::string::npos) {
-        message = line.substr(comment_pos + 1);  // +1 to skip the delimiter
-        // If we had only whitespace after the delimiter, we will have an empty
-        // failure message and the test will still pass.
-        message = std::string(absl::StripAsciiWhitespace(message));
-      }
-      if (absl::Status status = AddExpectedFailure(test_name, message);
-          !status.ok()) {
-        return status;
-      }
+    // Find our failure message if it exists.  Will be set to an empty string
+    // if no message is found.  Empty failure messages also pass our tests.
+    size_t comment_pos = line.find('#');
+    std::string message;
+    if (comment_pos != std::string::npos) {
+      message = line.substr(comment_pos + 1);  // +1 to skip the delimiter
+      // If we had only whitespace after the delimiter, we will have an empty
+      // failure message and the test will still pass.
+      message = std::string(absl::StripAsciiWhitespace(message));
+    }
+    if (absl::Status status = AddExpectedFailure(test_name, message);
+        !status.ok()) {
+      return status;
     }
   }
 
@@ -121,9 +137,16 @@ absl::Status ResultLedger::SaveFailureList(absl::string_view filename) const {
         "Couldn't open failure list file for writing: ", filename));
   }
 
+  // The loaded lines with unseen entries dropped and changed entries rewritten
+  // (see AppendSavedLines()); the new failures are merged in below.
+  std::vector<std::string> lines;
+  for (const std::string& line : failure_list_lines_) {
+    AppendSavedLines(line, lines);
+  }
+
   // Calculate alignment.
   size_t alignment = 0;
-  for (const std::string& line : failure_list_lines_) {
+  for (const std::string& line : lines) {
     absl::string_view test_name = absl::StripAsciiWhitespace(
         absl::string_view(line).substr(0, line.find('#')));
     alignment = std::max(alignment, test_name.length());
@@ -132,19 +155,14 @@ absl::Status ResultLedger::SaveFailureList(absl::string_view filename) const {
     alignment = std::max(alignment, failure.first.length());
   }
 
-  // Output existing failure list, stripping out unseen tests and inserting
-  // new failures.
+  // Output the lines, inserting the new failures by name.
   auto to_add = new_failures_.begin();
-  for (const std::string& line : failure_list_lines_) {
+  for (const std::string& line : lines) {
     absl::string_view test_name = absl::StripAsciiWhitespace(
         absl::string_view(line).substr(0, line.find('#')));
-    if (unseen_expected_failures_.contains(test_name) ||
-        seen_unexpected_successes_.contains(test_name)) {
-      continue;
-    }
     while (to_add != new_failures_.end() && test_name > to_add->first) {
-      outfile << ReformatLine(alignment, absl::StrCat(to_add->first, " # ",
-                                                      to_add->second))
+      outfile << ReformatLine(alignment,
+                              EntryLine(to_add->first, to_add->second))
               << "\n";
       ++to_add;
     }
@@ -153,8 +171,7 @@ absl::Status ResultLedger::SaveFailureList(absl::string_view filename) const {
 
   // Add any remaining new failures.
   while (to_add != new_failures_.end()) {
-    outfile << ReformatLine(alignment,
-                            absl::StrCat(to_add->first, " # ", to_add->second))
+    outfile << ReformatLine(alignment, EntryLine(to_add->first, to_add->second))
             << "\n";
     ++to_add;
   }
@@ -165,6 +182,65 @@ absl::Status ResultLedger::SaveFailureList(absl::string_view filename) const {
         absl::StrCat("Failed to write failure list file: ", filename));
   }
   return absl::OkStatus();
+}
+
+void ResultLedger::AppendSavedLines(absl::string_view line,
+                                    std::vector<std::string>& lines) const {
+  const std::string entry = EntryKeyOf(line);
+  if (entry.empty()) {
+    // A comment or blank line.
+    lines.emplace_back(line);
+    return;
+  }
+
+  auto it = entry_matches_.find(entry);
+  if (it == entry_matches_.end()) {
+    // No test matched the entry with a verdict: it is unseen and goes.
+    return;
+  }
+  const absl::btree_map<std::string, MatchOutcome>& matches = it->second;
+
+  // Kept verbatim unless a matched test succeeded or failed with a different
+  // message.
+  const bool changed = absl::c_any_of(matches, [](const auto& match) {
+    return match.second.kind == MatchOutcome::kSuccess ||
+           match.second.kind == MatchOutcome::kOtherFailure;
+  });
+  if (!changed) {
+    lines.emplace_back(line);
+    return;
+  }
+
+  // Kept as the entry (a wildcard included) with the new message if every
+  // matched test failed with that same message.
+  const MatchOutcome& first = matches.begin()->second;
+  const bool same_new_message =
+      first.kind == MatchOutcome::kOtherFailure &&
+      absl::c_all_of(matches, [&](const auto& match) {
+        return match.second.kind == MatchOutcome::kOtherFailure &&
+               match.second.message == first.message;
+      });
+  if (same_new_message) {
+    lines.push_back(EntryLine(entry, first.message));
+    return;
+  }
+
+  // Otherwise the matched set diverged: one line per matched test that still
+  // fails or was skipped (which for an exact entry that succeeded is none).
+  const std::string expected_message = *failure_list_.ExpectedMessage(entry);
+  for (const auto& [test_name, outcome] : matches) {
+    switch (outcome.kind) {
+      case MatchOutcome::kSuccess:
+        break;
+      case MatchOutcome::kOtherFailure:
+        lines.push_back(EntryLine(test_name, outcome.message));
+        break;
+      case MatchOutcome::kExpectedFailure:
+      case MatchOutcome::kSkip:
+        lines.push_back(EntryLine(test_name, expected_message));
+        break;
+    }
+  }
 }
 
 absl::Status ResultLedger::ReportSuccess(absl::string_view test_name) {
@@ -181,7 +257,8 @@ absl::Status ResultLedger::ReportSuccess(absl::string_view test_name) {
     ++unexpected_successes_;
     unexpected_success_matches_[test_name] = *failure_match;
     unseen_expected_failures_.erase(*failure_match);
-    seen_unexpected_successes_.insert(*failure_match);
+    entry_matches_[*failure_match][test_name] = {
+        /*kind=*/MatchOutcome::kSuccess};
   } else {
     // This wasn't expected to fail.
     ++expected_successes_;
@@ -222,25 +299,25 @@ absl::Status ResultLedger::ReportFailure(absl::string_view test_name,
     return verdict;
   }
 
+  // The entry is seen either way: Finalize() is about entries no test
+  // reached, and a message mismatch is already reported by the verdict, by
+  // UnexpectedFailures() and by SaveFailureList().
+  unseen_expected_failures_.erase(*failure_match);
   // A listed test's verdict only depends on its message, which the list
   // matches as a prefix of the actual one.
   if (!verdict.ok()) {
     record_unexpected_failure();
-    // TODO: Keying the replacement by the (possibly wildcard)
-    // entry duplicates the line if another test later matches the entry with
-    // the expected message: with `foo.*.bar # abc` listed,
-    // ReportFailure("foo.a.bar", "xyz") + ReportFailure("foo.b.bar", "abc")
-    // makes SaveFailureList() keep the original line and add a second
-    // `foo.*.bar` line, which LoadFailureList() then rejects.
-    new_failures_[*failure_match] = formatted_failure_message;
-    return verdict;
+    entry_matches_[*failure_match][test_name] = {
+        /*kind=*/MatchOutcome::kOtherFailure,
+        /*message=*/formatted_failure_message};
+  } else {
+    entry_matches_[*failure_match][test_name] = {
+        /*kind=*/MatchOutcome::kExpectedFailure};
+    ++number_of_matches_[*failure_match];
+    ++expected_failures_;
+    ABSL_LOG(INFO) << "Ignoring expected failure for test " << test_name << ": "
+                   << absl::StripTrailingAsciiWhitespace(failure_message);
   }
-
-  unseen_expected_failures_.erase(*failure_match);
-  ++number_of_matches_[*failure_match];
-  ++expected_failures_;
-  ABSL_LOG(INFO) << "Ignoring expected failure for test " << test_name << ": "
-                 << absl::StripTrailingAsciiWhitespace(failure_message);
   return verdict;
 }
 
@@ -265,6 +342,7 @@ absl::Status ResultLedger::ReportSkip(absl::string_view test_name,
   // test a wildcard matched: the cap is about real outcomes hidden by a
   // wildcard, and a skip isn't one.
   unseen_expected_failures_.erase(*failure_match);
+  entry_matches_[*failure_match][test_name] = {/*kind=*/MatchOutcome::kSkip};
   ++listed_skips_;
   listed_skip_matches_[test_name] = *failure_match;
   return verdict;
