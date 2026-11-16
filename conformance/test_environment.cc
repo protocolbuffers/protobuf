@@ -24,6 +24,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "conformance/fork_pipe_runner.h"
 #include "conformance/global_test_environment.h"
 #include "conformance/result_ledger.h"
@@ -113,6 +114,24 @@ class ForwardingEnvironment : public testing::Environment {
 
 }  // namespace
 
+// Hooks ReportUncheckedResults() into the end of every gtest test.  gtest
+// still attributes failures to the test at that point (it forgets the current
+// test only after the listeners ran).
+class ConformanceEnvironment::UncheckedResultReporter
+    : public testing::EmptyTestEventListener {
+ public:
+  explicit UncheckedResultReporter(
+      ConformanceEnvironment* absl_nonnull environment)
+      : environment_(environment) {}
+
+  void OnTestEnd(const testing::TestInfo& test_info) override {
+    environment_->ReportUncheckedResults(&test_info);
+  }
+
+ private:
+  ConformanceEnvironment* const absl_nonnull environment_;
+};
+
 absl::Status ReportSuccess(absl::string_view test_name) {
   return ConformanceEnvironment::Get().ledger().ReportSuccess(test_name);
 }
@@ -135,7 +154,8 @@ ConformanceEnvironment::ConformanceEnvironment(
       owned_runner_(TakeOwnedRunner(options_)),
       testee_(std::make_unique<Testee>(
           options_.runner != nullptr ? options_.runner : owned_runner_.get())),
-      result_listener_(new ResultListener(&ledger_)) {
+      result_listener_(new ResultListener(&ledger_)),
+      unchecked_result_reporter_(new UncheckedResultReporter(this)) {
   ABSL_CHECK(global_environment == nullptr)
       << "A global ConformanceEnvironment is already set.";
   global_environment = this;
@@ -144,12 +164,17 @@ ConformanceEnvironment::ConformanceEnvironment(
   // the one place the maximum edition is clamped; see the option's comment.
   options_.maximum_edition = std::max(options_.maximum_edition, EDITION_PROTO3);
   ledger_.set_enforcement_level(options_.enforcement_level);
-  testing::UnitTest::GetInstance()->listeners().Append(result_listener_);
+  testing::TestEventListeners& listeners =
+      testing::UnitTest::GetInstance()->listeners();
+  listeners.Append(result_listener_);
+  listeners.Append(unchecked_result_reporter_);
 }
 
 ConformanceEnvironment::~ConformanceEnvironment() {
-  delete testing::UnitTest::GetInstance()->listeners().Release(
-      result_listener_);
+  testing::TestEventListeners& listeners =
+      testing::UnitTest::GetInstance()->listeners();
+  delete listeners.Release(unchecked_result_reporter_);
+  delete listeners.Release(result_listener_);
   // ResultLedger insists on being finalized before destruction.  An installed
   // environment is never destroyed (see Install()), so this only runs for
   // environments constructed by ScopedGlobalConformanceEnvironment in unit
@@ -185,6 +210,32 @@ ConformanceEnvironment& ConformanceEnvironment::Get() {
   return *global_environment;
 }
 
+void ConformanceEnvironment::ReportUncheckedResults(
+    const testing::TestInfo* absl_nullable test_info) {
+  if (testee_ == nullptr) {
+    return;  // TearDown() has already run.
+  }
+  absl::Span<const std::string> tests_run = testee_->tests_run();
+  absl::Span<const std::string> new_tests =
+      tests_run.subspan(results_reconciled_);
+  results_reconciled_ = tests_run.size();
+  // Don't pile a second failure onto a test that bailed out before it could
+  // check its results.
+  if (testing::Test::HasFatalFailure() || testing::Test::IsSkipped()) {
+    return;
+  }
+  // Blame the test that ran the testee rather than this file.
+  const char* file = test_info != nullptr ? test_info->file() : __FILE__;
+  int line = test_info != nullptr ? test_info->line() : __LINE__;
+  for (const std::string& test_name : new_tests) {
+    if (!ledger_.WasReported(test_name)) {
+      ADD_FAILURE_AT(file, line)
+          << "TestResult for " << test_name
+          << " was never checked; wrap the matcher in Yields()";
+    }
+  }
+}
+
 Testee& ConformanceEnvironment::testee() {
   ABSL_CHECK(testee_ != nullptr)
       << "The testee has already been shut down by "
@@ -203,6 +254,9 @@ void ConformanceEnvironment::SetUp() {
 }
 
 void ConformanceEnvironment::TearDown() {
+  // Results run after the last test (e.g. in a TearDownTestSuite()) are only
+  // checked here.
+  ReportUncheckedResults();
   Statistics::From(ledger_).RecordProperties();
   for (const std::string& entry : ledger_.OverexpandedWildcards()) {
     ADD_FAILURE() << "The failure list entry " << entry << " matched more than "

@@ -30,6 +30,7 @@
 #ifndef GOOGLE_PROTOBUF_CONFORMANCE_TEST_ENVIRONMENT_H__
 #define GOOGLE_PROTOBUF_CONFORMANCE_TEST_ENVIRONMENT_H__
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <vector>
@@ -158,7 +159,9 @@ class ScopedPartialRunOverride;
 // matchers.h), which reports its outcome to the ResultLedger.  The
 // ResultListener (result_listener.h) the environment registers with gtest
 // records, at the end of each gtest test (and test suite), the statistics of
-// what was checked in it as its properties.
+// what was checked in it as its properties.  The environment itself fails the
+// test for every result the testee ran that was never checked (see
+// ReportUncheckedResults()).
 //
 // Single-threaded.  See the file comment.
 class ConformanceEnvironment : public testing::Environment {
@@ -189,21 +192,35 @@ class ConformanceEnvironment : public testing::Environment {
 
   // Finishes the run.  gtest runs this after the last test (see Install()).
   //
-  // Records the run's statistics as test properties.  Fails for every failure
-  // list entry that matched too many tests (see
-  // ResultLedger::OverexpandedWildcards()).  Rewrites the failure list if
-  // `fix` was requested and all of the tests ran.  Fails if expected failures
-  // were never seen, unless `check_unseen_expected_failures` is false or only
-  // a subset of the tests ran (see `fix`).  Finally releases the testee.  An
-  // owned runner is destroyed, which for a ForkPipeRunner stops the process.
-  // For a caller-owned runner only our reference is dropped, so the caller may
-  // destroy the runner right after RUN_ALL_TESTS().  The merged runner relies
-  // on this.
+  // Fails for every result run after the last test that was never checked
+  // (see ReportUncheckedResults()) and records the run's statistics as test
+  // properties.  Fails for every failure list entry that matched too many
+  // tests (see ResultLedger::OverexpandedWildcards()).  Rewrites the failure
+  // list if `fix` was requested and all of the tests ran.  Fails if expected
+  // failures were never seen, unless `check_unseen_expected_failures` is false
+  // or only a subset of the tests ran (see `fix`).  Finally releases the
+  // testee.  An owned runner is destroyed, which for a ForkPipeRunner stops
+  // the process.  For a caller-owned runner only our reference is dropped, so
+  // the caller may destroy the runner right after RUN_ALL_TESTS().  The merged
+  // runner relies on this.
   //
   // Also safe to call if SetUp() never ran because gtest selected no test.  It
   // then records empty statistics, skips --fix and the unseen check, and
   // releases the testee.  conformance_test_main relies on this.
   void TearDown() override;
+
+  // Fails the current gtest test for every conformance test the testee has
+  // run since the previous call whose result was never checked with Yields().
+  // Otherwise the outcome of such a test would silently bypass the failure
+  // list.  A checked result is one whose outcome Yields() has reported to the
+  // ledger.  A listener the environment registers with gtest calls it when a
+  // test ends, and TearDown() for anything run after the last test.  A test
+  // that failed fatally or was skipped is left alone: an ASSERT_* that didn't
+  // hold or a GTEST_SKIP() returned before the test could check its results.
+  // The failures are attributed to `test_info`, the test that just ended, if
+  // there is one.
+  void ReportUncheckedResults(
+      const testing::TestInfo* absl_nullable test_info = nullptr);
 
   // Where the tests' outcomes are recorded.  Yields() reports to it through
   // the Report*() seams in global_test_environment.h.  The transitional merged
@@ -220,6 +237,7 @@ class ConformanceEnvironment : public testing::Environment {
  private:
   friend class ScopedGlobalConformanceEnvironment;
   friend class ScopedPartialRunOverride;
+  class UncheckedResultReporter;
 
   // Creates an environment and makes it the process-global one.  Check-fails if
   // there already is one.  The testee connection is created eagerly, though a
@@ -247,6 +265,13 @@ class ConformanceEnvironment : public testing::Environment {
   // properties at the end of every gtest test and suite.  gtest owns it while
   // it is registered; the destructor takes it back.
   ResultListener* absl_nonnull result_listener_;
+
+  // Calls ReportUncheckedResults() at the end of every gtest test.  gtest owns
+  // it like result_listener_.
+  UncheckedResultReporter* absl_nonnull unchecked_result_reporter_;
+
+  // How many of testee().tests_run() ReportUncheckedResults() has looked at.
+  size_t results_reconciled_ = 0;
 };
 
 }  // namespace internal

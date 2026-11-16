@@ -42,6 +42,7 @@ namespace conformance {
 namespace {
 
 using ::testing::AllOf;
+using ::testing::AnyOf;
 using ::testing::HasSubstr;
 using ::testing::Not;
 
@@ -54,6 +55,8 @@ constexpr absl::string_view kP1Failure =
     "Recommended.Proto3.ProtobufInput.SampleP1Failure.ProtobufOutput";
 constexpr absl::string_view kNeverRuns =
     "Required.Proto3.ProtobufInput.SampleNeverRuns.ProtobufOutput";
+constexpr absl::string_view kUncheckedResult =
+    "Required.Proto3.ProtobufInput.SampleUncheckedResult.ProtobufOutput";
 constexpr absl::string_view kFailureMessage =
     "Should have failed to parse, but didn't.";
 
@@ -296,6 +299,28 @@ TEST_F(TestEnvironmentIntegrationTest, EnforcementLevelToleratesP1Failures) {
       AllOf(HasSubstr("[  FAILED  ] SampleConformanceTest.SampleP1Failure"),
             HasSubstr(
                 absl::StrCat("Unexpected failure for test: ", kP1Failure))));
+}
+
+TEST_F(TestEnvironmentIntegrationTest, AResultThatIsNeverCheckedFailsItsTest) {
+  // The sample test that forgets Yields() is disabled, so that the other runs
+  // stay clean; this run asks for it by name.
+  RunResult run =
+      RunSample({absl::StrCat(kGtestFlag, "also_run_disabled_tests"),
+                 absl::StrCat(kGtestFlag, "filter=*SampleUncheckedResult")});
+  EXPECT_NE(run.exit_code, 0);
+  EXPECT_THAT(
+      run.output,
+      AllOf(HasSubstr("[  FAILED  ] "
+                      "SampleConformanceTest.DISABLED_SampleUncheckedResult"),
+            // The failure points at the test, not at the environment (gtest
+            // prints "file(line)" on MSVC and "file:line" elsewhere).  Not a
+            // regex: gtest's own engine, used on Windows, has no bracket
+            // expressions.
+            AnyOf(HasSubstr("sample_conformance_test.cc:"),
+                  HasSubstr("sample_conformance_test.cc(")),
+            HasSubstr(absl::StrCat(
+                "TestResult for ", kUncheckedResult,
+                " was never checked; wrap the matcher in Yields()"))));
 }
 
 TEST_F(TestEnvironmentIntegrationTest, ListsTestsWithoutATestee) {

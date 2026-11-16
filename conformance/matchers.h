@@ -190,7 +190,9 @@ testing::Matcher<const internal::TestResult&> IsSerializeError();
 // Each result is meant to be checked once.  The ResultLedger counts a test
 // the first time it is reported, so gtest's second evaluation of a failing
 // matcher, to explain the failure, changes nothing.  Any other check of a
-// result that was already checked is judged on its own but never counted.
+// result that was already checked is judged on its own but never counted.  A
+// gtest test that runs a conformance test but never checks its result fails
+// too (see ConformanceEnvironment in test_environment.h).
 template <typename M>
 testing::Matcher<const internal::TestResult&> Yields(M inner) {
   return internal::MakeYieldsMatcher(

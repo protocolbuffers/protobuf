@@ -57,6 +57,7 @@ using ::testing::_;
 using ::testing::Contains;
 using ::testing::ElementsAre;
 using ::testing::HasSubstr;
+using ::testing::IsEmpty;
 using ::testing::NiceMock;
 using ::testing::Not;
 using ::testing::Pair;
@@ -164,6 +165,16 @@ class ScopedWorkingDirectory {
   std::string old_directory_;
 };
 
+// The messages of the failures in `failures`.
+std::vector<std::string> Messages(
+    const testing::TestPartResultArray& failures) {
+  std::vector<std::string> messages;
+  for (int i = 0; i < failures.size(); ++i) {
+    messages.push_back(failures.GetTestPartResult(i).message());
+  }
+  return messages;
+}
+
 // The properties of `result`, as (key, value) pairs.
 std::vector<std::pair<std::string, std::string>> Properties(
     const testing::TestResult& result) {
@@ -173,6 +184,26 @@ std::vector<std::pair<std::string, std::string>> Properties(
     properties.emplace_back(property.key(), property.value());
   }
   return properties;
+}
+
+// Runs ReportUncheckedResults() on `env` and returns the messages of the
+// failures it reports.
+std::vector<std::string> UncheckedResultFailures(ConformanceEnvironment& env) {
+  testing::TestPartResultArray failures;
+  {
+    testing::ScopedFakeTestPartResultReporter reporter(
+        testing::ScopedFakeTestPartResultReporter::
+            INTERCEPT_ONLY_CURRENT_THREAD,
+        &failures);
+    env.ReportUncheckedResults();
+  }
+  return Messages(failures);
+}
+
+// Creates a kP0 test named `name` against the global testee, as the fixture's
+// Testee() would.
+internal::Test CreateP0Test(absl::string_view name) {
+  return ConformanceEnvironment::Get().testee().CreateTest(name, kP0);
 }
 
 // Tears down `env` in a full run, expecting it to report unseen expected
@@ -297,6 +328,69 @@ TEST_F(ConformanceEnvironmentTest, UnexpectedFailureFailsTheTest) {
   env->TearDown();
 }
 
+TEST_F(ConformanceEnvironmentTest, ResultsThatAreNeverCheckedFailTheTest) {
+  internal::ScopedGlobalConformanceEnvironment env({/*runner=*/&fake_runner_});
+  env->SetUp();
+
+  // A discarded result and one checked with a bare leaf matcher both leave
+  // the ResultLedger in the dark; only what Yields() records reaches it.
+  RunP0("Foo");
+  EXPECT_THAT(RunP0("Bar"), Not(IsParseError()));
+  EXPECT_THAT(RunP0("Baz"),
+              Yields(WhenParsed(EqualsTextProto(R"pb(optional_int32: 99)pb"))));
+
+  EXPECT_THAT(
+      UncheckedResultFailures(env.environment()),
+      ElementsAre(HasSubstr(absl::StrCat(
+                      "TestResult for ", kFooTestName,
+                      " was never checked; wrap the matcher in Yields()")),
+                  HasSubstr(absl::StrCat(
+                      "TestResult for ", kBarTestName,
+                      " was never checked; wrap the matcher in Yields()"))));
+  // Each result is reported once.
+  EXPECT_THAT(UncheckedResultFailures(env.environment()), IsEmpty());
+  env->TearDown();
+}
+
+TEST_F(ConformanceEnvironmentTest,
+       UncheckedResultsAreBlamedOnTheTestThatRanThem) {
+  internal::ScopedGlobalConformanceEnvironment env({/*runner=*/&fake_runner_});
+  env->SetUp();
+  RunP0("Foo");
+
+  const testing::TestInfo& test_info =
+      *testing::UnitTest::GetInstance()->current_test_info();
+  testing::TestPartResultArray failures;
+  {
+    testing::ScopedFakeTestPartResultReporter reporter(
+        testing::ScopedFakeTestPartResultReporter::
+            INTERCEPT_ONLY_CURRENT_THREAD,
+        &failures);
+    env->ReportUncheckedResults(&test_info);
+  }
+  ASSERT_EQ(failures.size(), 1);
+  EXPECT_STREQ(failures.GetTestPartResult(0).file_name(), test_info.file());
+  EXPECT_EQ(failures.GetTestPartResult(0).line_number(), test_info.line());
+  env->TearDown();
+}
+
+TEST_F(ConformanceEnvironmentTest, TearDownReportsResultsThatWereNeverChecked) {
+  internal::ScopedGlobalConformanceEnvironment env({/*runner=*/&fake_runner_});
+  env->SetUp();
+  RunP0("Foo");
+  EXPECT_NONFATAL_FAILURE(
+      env->TearDown(),
+      absl::StrCat("TestResult for ", kFooTestName,
+                   " was never checked; wrap the matcher in Yields()"));
+}
+
+TEST_F(ConformanceEnvironmentTest, ReportUncheckedResultsIsANoOpAfterTearDown) {
+  internal::ScopedGlobalConformanceEnvironment env({/*runner=*/&fake_runner_});
+  env->SetUp();
+  env->TearDown();
+  EXPECT_THAT(UncheckedResultFailures(env.environment()), IsEmpty());
+}
+
 TEST_F(ConformanceEnvironmentTest, YieldsReportsToTheEnvironmentsLedger) {
   internal::ScopedGlobalConformanceEnvironment env({/*runner=*/&fake_runner_});
   env->SetUp();
@@ -312,7 +406,9 @@ TEST_F(ConformanceEnvironmentTest, YieldsReportsToTheEnvironmentsLedger) {
 // shows through an environment that outlives the test body, like the one a
 // test binary installs.  This suite keeps one alive across its tests, and
 // until the suite itself has ended, and inspects what the listener did after
-// each body has returned.
+// each body has returned.  The failure the environment adds for an unchecked
+// result is a real one, so that is checked end to end in
+// test_environment_integration_test.cc instead.
 class LongLivedEnvironmentTest : public testing::Test {
  protected:
   struct SuiteState {
@@ -352,8 +448,8 @@ class LongLivedEnvironmentTest : public testing::Test {
         new SuiteEndChecker(unit_test.current_test_suite()));
     suite_ = new SuiteState();
     // A result checked outside any test is the suite's.  It is tallied at
-    // once, before the first test starts, so it doesn't count toward that
-    // test's statistics.
+    // once, before the first test starts, so it is neither counted toward that
+    // test's statistics nor reported as unchecked when it ends.
     EXPECT_THAT(
         ConformanceEnvironment::Get()
             .testee()
@@ -382,9 +478,7 @@ LongLivedEnvironmentTest::SuiteState* LongLivedEnvironmentTest::suite_ =
 
 TEST_F(LongLivedEnvironmentTest, ReportsStatisticsWhenTheTestEnds) {
   EXPECT_THAT(
-      ConformanceEnvironment::Get()
-          .testee()
-          .CreateTest("Bar", kP0)
+      CreateP0Test("Bar")
           .ParseBinary(TestAllTypesProto3::descriptor(), VarintField(1, 99))
           .SerializeBinary(),
       Yields(WhenParsed(EqualsTextProto(R"pb(optional_int32: 99)pb"))));
@@ -904,6 +998,50 @@ TEST_F(ConformanceEnvironmentTest, OwnedRunnerDiesWithTheEnvironment) {
 
 TEST(ConformanceEnvironmentDeathTest, GetWithoutInstall) {
   EXPECT_DEATH(ConformanceEnvironment::Get(), "Install");
+}
+
+TEST(ConformanceEnvironmentDeathTest,
+     UncheckedResultsAreNotReportedAfterAFatalFailure) {
+  // An ASSERT_* that doesn't hold returns from the test before it can check
+  // its results.  A real (non-intercepted) fatal failure would fail this test,
+  // so the scenario runs in a death test child that exits with the number of
+  // stray failures.
+  FakeTestRunner runner;
+  EXPECT_EXIT(
+      {
+        internal::ScopedGlobalConformanceEnvironment env({/*runner=*/&runner});
+        CreateP0Test("Foo")
+            .ParseBinary(TestAllTypesProto3::descriptor(), VarintField(1, 99))
+            .SerializeBinary();
+        // What ASSERT_* records before returning.
+        [] { FAIL() << "fatal failure"; }();
+        ABSL_CHECK(testing::Test::HasFatalFailure());
+        // std::exit() runs no destructors, so the mock is leaked on purpose.
+        testing::Mock::AllowLeak(&runner);
+        std::exit(static_cast<int>(
+            UncheckedResultFailures(env.environment()).size()));
+      },
+      testing::ExitedWithCode(0), "");
+}
+
+TEST(ConformanceEnvironmentDeathTest,
+     UncheckedResultsAreNotReportedAfterASkip) {
+  // Likewise for a GTEST_SKIP() that returned before the test could check its
+  // results.
+  FakeTestRunner runner;
+  EXPECT_EXIT(
+      {
+        internal::ScopedGlobalConformanceEnvironment env({/*runner=*/&runner});
+        CreateP0Test("Foo")
+            .ParseBinary(TestAllTypesProto3::descriptor(), VarintField(1, 99))
+            .SerializeBinary();
+        [] { GTEST_SKIP() << "skipped"; }();
+        ABSL_CHECK(testing::Test::IsSkipped());
+        testing::Mock::AllowLeak(&runner);
+        std::exit(static_cast<int>(
+            UncheckedResultFailures(env.environment()).size()));
+      },
+      testing::ExitedWithCode(0), "");
 }
 
 TEST(ConformanceEnvironmentDeathTest, RequiresExactlyOneTestee) {
