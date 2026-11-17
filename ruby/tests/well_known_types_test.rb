@@ -239,4 +239,75 @@ class TestWellKnownTypes < Test::Unit::TestCase
     pb = Google::Protobuf::Value.from_ruby([1, 2, 3])
     assert_equal Google::Protobuf::ListValue.from_a([1, 2, 3]), pb.list_value
   end
+
+  def test_wkt_recursion_depth_limits_and_cycles
+    build_nested_hash = lambda do |levels|
+      h = { "leaf" => "ok" }
+      (levels - 1).times { h = { "nested" => h } }
+      h
+    end
+    build_nested_array = lambda do |levels|
+      a = ["ok"]
+      (levels - 1).times { a = [a] }
+      a
+    end
+
+    # Nesting depth 100 succeeds and preserves values across Struct, ListValue, and Value:
+    hash_100 = build_nested_hash.call(100)
+    struct_100 = Google::Protobuf::Struct.from_hash(hash_100)
+    assert_equal hash_100, struct_100.to_h
+
+    val_hash_100 = Google::Protobuf::Value.from_ruby(hash_100)
+    assert_equal hash_100, val_hash_100.to_ruby(true)
+
+    arr_100 = build_nested_array.call(100)
+    list_100 = Google::Protobuf::ListValue.from_a(arr_100)
+    assert_equal arr_100, list_100.to_a
+
+    val_arr_100 = Google::Protobuf::Value.from_ruby(arr_100)
+    assert_equal arr_100, val_arr_100.to_ruby(true)
+
+    # Struct#[]=, ListValue#<<, and ListValue#[]= count the outer container as level 1,
+    # so assigning a 99-deep Hash/Array succeeds (total depth 100) and 100-deep fails (depth 101):
+    s = Google::Protobuf::Struct.new
+    s["ok"] = build_nested_hash.call(99)
+    assert_equal build_nested_hash.call(99), s["ok"].to_h
+    s["keep"] = "intact"
+    assert_raises(ArgumentError) { s["keep"] = build_nested_hash.call(100) }
+    assert_equal "intact", s["keep"]
+
+    lv = Google::Protobuf::ListValue.new
+    lv << build_nested_array.call(99)
+    assert_equal 1, lv.length
+    assert_raises(ArgumentError) { lv << build_nested_array.call(100) }
+    assert_equal 1, lv.length
+    assert_raises(ArgumentError) { lv[0] = build_nested_array.call(100) }
+    assert_equal build_nested_array.call(99), lv[0].to_a
+
+    # Nesting depth 101 and 5,000-deep structures raise ArgumentError (never SystemStackError):
+    hash_101 = build_nested_hash.call(101)
+    arr_101 = build_nested_array.call(101)
+    assert_raises(ArgumentError) { Google::Protobuf::Struct.from_hash(hash_101) }
+    assert_raises(ArgumentError) { Google::Protobuf::Value.from_ruby(hash_101) }
+    assert_raises(ArgumentError) { Google::Protobuf::ListValue.from_a(arr_101) }
+    assert_raises(ArgumentError) { Google::Protobuf::Value.from_ruby(arr_101) }
+
+    existing_val = Google::Protobuf::Value.from_ruby("keep")
+    assert_raises(ArgumentError) { existing_val.from_ruby(hash_101) }
+    assert_equal "keep", existing_val.to_ruby
+
+    assert_raises(ArgumentError) { Google::Protobuf::Struct.from_hash(build_nested_hash.call(5000)) }
+    assert_raises(ArgumentError) { Google::Protobuf::ListValue.from_a(build_nested_array.call(5000)) }
+
+    # Cyclic Ruby Hash and Array inputs raise ArgumentError without stack overflow:
+    cyclic_arr = []
+    cyclic_arr << cyclic_arr
+    assert_raises(ArgumentError) { Google::Protobuf::ListValue.from_a(cyclic_arr) }
+    assert_raises(ArgumentError) { Google::Protobuf::Value.from_ruby(cyclic_arr) }
+
+    cyclic_hash = {}
+    cyclic_hash["self"] = cyclic_hash
+    assert_raises(ArgumentError) { Google::Protobuf::Struct.from_hash(cyclic_hash) }
+    assert_raises(ArgumentError) { Google::Protobuf::Value.from_ruby(cyclic_hash) }
+  end
 end

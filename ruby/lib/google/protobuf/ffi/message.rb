@@ -290,9 +290,12 @@ module Google
 
           def self.encode_json(message, options = {})
             encoding_options = 0
+            from_to_h = false
             unless options.is_a? Hash
               if options.respond_to? :to_h
                 options = options.to_h
+                raise ArgumentError.new "Expected hash arguments" unless options.is_a? Hash
+                from_to_h = true
               else
                 #TODO can this error message be improve to include what was received?
                 raise ArgumentError.new "Expected hash arguments"
@@ -307,6 +310,13 @@ module Google
             end
             if options[:format_enums_as_integers]
               encoding_options |= Google::Protobuf::FFI::Upb_JsonEncode_FormatEnumsAsIntegers
+            end
+            max_nesting = options[:max_nesting]
+            if !max_nesting.nil? && max_nesting != false && !(from_to_h && max_nesting == 0)
+              unless max_nesting.is_a?(Integer) && max_nesting >= 1
+                raise ArgumentError.new "Expected positive integer for max_nesting."
+              end
+              encoding_options |= Google::Protobuf::FFI.json_encode_max_depth(max_nesting)
             end
 
             buffer_size = 1024
@@ -558,9 +568,9 @@ module Google
           setup_accessors!
           setup_oneof_accessors!
 
-          def self.private_constructor(arena, msg: nil, initial_value: nil)
+          def self.private_constructor(arena, msg: nil, initial_value: nil, depth: 0)
             instance = allocate
-            instance.send(:initialize, initial_value, arena, msg)
+            instance.send(:initialize, initial_value, arena, msg, depth)
             instance
           end
 
@@ -672,7 +682,7 @@ module Google
 
           #TODO - well known types keeps us on our toes by overloading methods.
           # How much of the public API needs to be defended?
-          def index_assign_internal(value, name: nil, field_descriptor: nil, wrap: false)
+          def index_assign_internal(value, name: nil, field_descriptor: nil, wrap: false, depth: 0)
             raise FrozenError.new "can't modify frozen #{self.class}" if frozen?
             if field_descriptor.nil?
               field_descriptor = self.class.descriptor.lookup(name)
@@ -680,7 +690,7 @@ module Google
                 raise ArgumentError.new "Unknown field: #{name}"
               end
             end
-            unless field_descriptor.send :set_value_on_message, value, @msg, @arena, wrap: wrap
+            unless field_descriptor.send :set_value_on_message, value, @msg, @arena, wrap: wrap, depth: depth
               raise RuntimeError.new "allocation failed"
             end
           end
@@ -690,11 +700,12 @@ module Google
           # @param arena [Arena] Optional; Arena where this message will be allocated
           # @param msg [::FFI::Pointer] Optional; Message to initialize; creates
           #   one if omitted or nil.
-          def initialize(initial_value = nil, arena = nil, msg = nil)
+          def initialize(initial_value = nil, arena = nil, msg = nil, depth = 0)
             @arena = arena || Google::Protobuf::FFI.create_arena
             @msg = msg || Google::Protobuf::FFI.new_message_from_def(Google::Protobuf::FFI.get_mini_table(self.class.descriptor), @arena)
 
             unless initial_value.nil?
+              raise ArgumentError.new "Maximum recursion depth exceeded" if depth > Google::Protobuf::Internal::Convert::MAX_INIT_DEPTH
               raise ArgumentError.new "Expected hash arguments or message, not #{initial_value.class}" unless initial_value.respond_to? :each
 
               field_def_ptr = ::FFI::MemoryPointer.new :pointer
@@ -713,11 +724,11 @@ module Google
 
                 next if value.nil?
                 if field_descriptor.map?
-                  index_assign_internal(Google::Protobuf::Map.send(:construct_for_field, field_descriptor, arena: @arena, value: value), name: key.to_s)
+                  index_assign_internal(Google::Protobuf::Map.send(:construct_for_field, field_descriptor, arena: @arena, value: value, depth: depth), name: key.to_s)
                 elsif field_descriptor.repeated?
-                  index_assign_internal(RepeatedField.send(:construct_for_field, field_descriptor, arena: @arena, values: value), name: key.to_s)
+                  index_assign_internal(RepeatedField.send(:construct_for_field, field_descriptor, arena: @arena, values: value, depth: depth), name: key.to_s)
                 else
-                  index_assign_internal(value, name: key.to_s)
+                  index_assign_internal(value, name: key.to_s, depth: depth)
                 end
               end
             end

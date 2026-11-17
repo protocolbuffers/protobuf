@@ -80,6 +80,118 @@ module Google
 
     class UnexpectedStructType < Google::Protobuf::Error; end
 
+    module StructBuilder
+      MAX_STRUCT_NESTING = 100
+      private_constant :MAX_STRUCT_NESTING
+
+      def self.populate_value(target, value, depth = 0)
+        case value
+        when Hash
+          target.struct_value = populate_struct(Struct.new, value, depth + 1)
+        when Array
+          target.list_value = populate_list_value(ListValue.new, value, depth + 1)
+        else
+          assign_scalar_or_message(target, value)
+        end
+        target
+      end
+
+      def self.populate_struct(struct_msg, hash, depth = 1)
+        if depth > MAX_STRUCT_NESTING
+          raise ArgumentError, "Maximum recursion depth exceeded"
+        end
+        stack = []
+        enqueue_struct_entries(struct_msg, hash, depth, stack)
+        drain_value_stack(stack)
+        struct_msg
+      end
+
+      def self.populate_list_value(list_msg, arr, depth = 1)
+        if depth > MAX_STRUCT_NESTING
+          raise ArgumentError, "Maximum recursion depth exceeded"
+        end
+        stack = []
+        enqueue_list_entries(list_msg, arr, depth, stack)
+        drain_value_stack(stack)
+        list_msg
+      end
+
+      def self.enqueue_struct_entries(struct_msg, hash, depth, stack)
+        pairs = []
+        hash.each do |key, val|
+          unless key.is_a?(String)
+            raise UnexpectedStructType, "Struct keys must be strings."
+          end
+          entry_val = Google::Protobuf::Value.new
+          struct_msg.fields[key] = entry_val
+          pairs << [entry_val, val, depth]
+        end
+        pairs.reverse_each { |item| stack << item }
+      end
+      private_class_method :enqueue_struct_entries
+
+      def self.enqueue_list_entries(list_msg, arr, depth, stack)
+        items = []
+        arr.each do |val|
+          elem_val = Google::Protobuf::Value.new
+          list_msg.values << elem_val
+          items << [elem_val, val, depth]
+        end
+        items.reverse_each { |item| stack << item }
+      end
+      private_class_method :enqueue_list_entries
+
+      def self.assign_scalar_or_message(target, value)
+        case value
+        when NilClass
+          target.null_value = :NULL_VALUE
+        when Numeric
+          target.number_value = value
+        when String
+          target.string_value = value
+        when TrueClass
+          target.bool_value = true
+        when FalseClass
+          target.bool_value = false
+        when Struct
+          target.struct_value = value
+        when ListValue
+          target.list_value = value
+        else
+          raise UnexpectedStructType
+        end
+      end
+      private_class_method :assign_scalar_or_message
+
+      def self.drain_value_stack(stack)
+        until stack.empty?
+          target, value, depth = stack.pop
+          case value
+          when Hash
+            next_depth = depth + 1
+            if next_depth > MAX_STRUCT_NESTING
+              raise ArgumentError, "Maximum recursion depth exceeded"
+            end
+            sub_struct = Struct.new
+            target.struct_value = sub_struct
+            enqueue_struct_entries(sub_struct, value, next_depth, stack)
+          when Array
+            next_depth = depth + 1
+            if next_depth > MAX_STRUCT_NESTING
+              raise ArgumentError, "Maximum recursion depth exceeded"
+            end
+            sub_list = ListValue.new
+            target.list_value = sub_list
+            enqueue_list_entries(sub_list, value, next_depth, stack)
+          else
+            assign_scalar_or_message(target, value)
+          end
+        end
+      end
+      private_class_method :drain_value_stack
+    end
+    private_constant :StructBuilder
+
     Value.class_eval do
       def to_ruby(recursive = false)
         case self.kind
@@ -113,29 +225,7 @@ module Google
       end
 
       def from_ruby(value)
-        case value
-        when NilClass
-          self.null_value = :NULL_VALUE
-        when Numeric
-          self.number_value = value
-        when String
-          self.string_value = value
-        when TrueClass
-          self.bool_value = true
-        when FalseClass
-          self.bool_value = false
-        when Struct
-          self.struct_value = value
-        when Hash
-          self.struct_value = Struct.from_hash(value)
-        when ListValue
-          self.list_value = value
-        when Array
-          self.list_value = ListValue.from_a(value)
-        else
-          raise UnexpectedStructType
-        end
-
+        StructBuilder.populate_value(self, value, 0)
         self
       end
     end
@@ -151,8 +241,9 @@ module Google
         unless key.is_a?(String)
           raise UnexpectedStructType, "Struct keys must be strings."
         end
-        self.fields[key] ||= Google::Protobuf::Value.new
-        self.fields[key].from_ruby(value)
+        wrapper = Google::Protobuf::Value.new
+        StructBuilder.populate_value(wrapper, value, 1)
+        self.fields[key] = wrapper
       end
 
       def to_h
@@ -163,7 +254,7 @@ module Google
 
       def self.from_hash(hash)
         ret = Struct.new
-        hash.each { |key, val| ret[key] = val }
+        StructBuilder.populate_struct(ret, hash, 1)
         ret
       end
 
@@ -184,12 +275,16 @@ module Google
       end
 
       def []=(index, value)
-        self.values[index].from_ruby(value)
+        target = self.values[index]
+        return target.from_ruby(value) if target.nil?
+        wrapper = Google::Protobuf::Value.new
+        StructBuilder.populate_value(wrapper, value, 1)
+        self.values[index] = wrapper
       end
 
       def <<(value)
         wrapper = Google::Protobuf::Value.new
-        wrapper.from_ruby(value)
+        StructBuilder.populate_value(wrapper, value, 1)
         self.values << wrapper
       end
 
@@ -203,7 +298,7 @@ module Google
 
       def self.from_a(arr)
         ret = ListValue.new
-        arr.each { |val| ret << val }
+        StructBuilder.populate_list_value(ret, arr, 1)
         ret
       end
     end

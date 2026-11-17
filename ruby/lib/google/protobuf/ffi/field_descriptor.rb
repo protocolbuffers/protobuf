@@ -265,7 +265,7 @@ module Google
       # @param value [Object] Value to be set
       # @param msg [::FFI::Pointer] Pointer the the upb_Message
       # @param arena [Arena] Arena of the message that owns msg
-      def set_value_on_message(value, msg, arena, wrap: false)
+      def set_value_on_message(value, msg, arena, wrap: false, depth: 0)
         message_to_alter = msg
         field_def_to_set = self
         if map?
@@ -304,7 +304,7 @@ module Google
             message_to_alter = Google::Protobuf::FFI.get_mutable_message(msg, self, arena)[:msg]
             field_def_to_set = value_field_def
           else
-            message_value = convert_ruby_to_upb(value, arena, c_type, subtype)
+            message_value = convert_ruby_to_upb(value, arena, c_type, subtype, depth: depth)
           end
         end
         Google::Protobuf::FFI.set_message_field message_to_alter, field_def_to_set, message_value, arena
