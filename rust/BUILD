@@ -182,7 +182,7 @@ rust_library(
     srcs = ["protobuf_lite.rs"],
     edition = "2024",
     rustc_flags = ["--cfg=upb_kernel"],
-    visibility = [":protobuf_internal"],
+    visibility = ["//visibility:private"],
     deps = [":protobuf_upb"],
 )
 
@@ -252,7 +252,7 @@ rust_library(
     srcs = ["protobuf_lite.rs"],
     edition = "2024",
     rustc_flags = ["--cfg=cpp_kernel"],
-    visibility = [":protobuf_internal"],
+    visibility = ["//visibility:private"],
     deps = [":protobuf_cpp"],
 )
 
