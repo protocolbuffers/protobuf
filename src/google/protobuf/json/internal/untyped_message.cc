@@ -67,6 +67,17 @@ absl::StatusOr<const ResolverPool::Enum*> ResolverPool::Field::EnumType()
   return reinterpret_cast<const Enum*>(type_);
 }
 
+ResolverPool::Message::Message(ResolverPool* pool) : pool_(pool) {}
+ResolverPool::Message::~Message() = default;
+
+const UntypedMessage& ResolverPool::Message::default_instance() const {
+  if (default_instance_ == nullptr) {
+    default_instance_ =
+        std::unique_ptr<UntypedMessage>(new UntypedMessage(this));
+  }
+  return *default_instance_;
+}
+
 absl::Span<const ResolverPool::Field> ResolverPool::Message::FieldsByIndex()
     const {
   if (raw_.fields_size() > 0 && fields_ == nullptr) {

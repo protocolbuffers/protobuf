@@ -54,6 +54,8 @@ struct SizeVisitor {
   }
 };
 
+class UntypedMessage;
+
 // A DescriptorPool-like type for caching lookups from a TypeResolver.
 //
 // This type and all of its nested types are thread-hostile.
@@ -87,10 +89,12 @@ class ResolverPool {
    public:
     Message(const Message&) = delete;
     Message& operator=(const Message&) = delete;
+    ~Message();
 
     absl::Span<const Field> FieldsByIndex() const;
     const Field* FindField(absl::string_view name) const;
     const Field* FindField(int32_t number) const;
+    const UntypedMessage& default_instance() const;
 
     const google::protobuf::Type& proto() const { return raw_; }
     ResolverPool* pool() const { return pool_; }
@@ -98,11 +102,12 @@ class ResolverPool {
    private:
     friend class ResolverPool;
 
-    explicit Message(ResolverPool* pool) : pool_(pool) {}
+    explicit Message(ResolverPool* pool);
 
     ResolverPool* pool_;
     google::protobuf::Type raw_;
     mutable std::unique_ptr<Field[]> fields_;
+    mutable std::unique_ptr<UntypedMessage> default_instance_;
     mutable absl::flat_hash_map<absl::string_view, const Field*>
         fields_by_name_;
     mutable absl::flat_hash_map<int32_t, const Field*> fields_by_number_;
@@ -210,6 +215,7 @@ class UntypedMessage final {
   const ResolverPool::Message& desc() const { return *desc_; }
 
  private:
+  friend class ResolverPool;
   enum Cardinality { kSingular, kRepeated };
 
   explicit UntypedMessage(const ResolverPool::Message* desc) : desc_(desc) {}

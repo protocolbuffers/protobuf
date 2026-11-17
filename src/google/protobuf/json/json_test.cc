@@ -46,6 +46,8 @@ namespace json {
 namespace {
 using ::google::protobuf::util::TypeResolver;
 using ::proto3::MapIn;
+using ::proto3::MapOut;
+using ::proto3::MapOutWireFormat;
 using ::proto3::TestAny;
 using ::proto3::TestEnumValue;
 using ::proto3::TestMap;
@@ -110,6 +112,28 @@ class JsonTest : public testing::TestWithParam<Codec> {
         resolver_.get(),
         absl::StrCat("type.googleapis.com/", proto.GetTypeName()), &in, &out,
         options));
+    return result;
+  }
+
+  template <typename T>
+  absl::StatusOr<std::string> WireToJson(const std::string& proto_data,
+                                         PrintOptions options = {}) {
+    if (GetParam() == Codec::kReflective) {
+      T proto;
+      if (!proto.ParseFromString(proto_data)) {
+        return absl::InvalidArgumentError("ParseFromString failed");
+      }
+      std::string result;
+      RETURN_IF_ERROR(MessageToJsonString(proto, &result, options));
+      return result;
+    }
+    io::ArrayInputStream in(proto_data.data(), proto_data.size());
+    std::string result;
+    io::StringOutputStream out(&result);
+    RETURN_IF_ERROR(BinaryToJsonStream(
+        resolver_.get(),
+        absl::StrCat("type.googleapis.com/", T::descriptor()->full_name()), &in,
+        &out, options));
     return result;
   }
 
@@ -712,6 +736,63 @@ TEST_P(JsonTest, BinaryToJsonStreamMapEntryWithNoKeyOrValue) {
   ASSERT_OK(status);
 
   ASSERT_EQ(printed, R"({"stringMap":{"":""}})");
+}
+
+TEST_P(JsonTest, MapEntryWithNoMessageValue) {
+  MapOutWireFormat emulated;
+  emulated.add_map1()->set_key("hello");
+  std::string wire = emulated.SerializeAsString();
+
+  EXPECT_THAT(WireToJson<MapOut>(wire),
+              IsOkAndHolds(R"({"map1":{"hello":{}}})"));
+
+  PrintOptions options;
+  options.always_print_fields_with_no_presence = true;
+  EXPECT_THAT(WireToJson<MapOut>(wire, options),
+              IsOkAndHolds(R"({"map1":{"hello":{"foo":""}},)"
+                           R"("map2":{},"map3":{},"bar":"","map4":{}})"));
+}
+
+TEST_P(JsonTest, MapEntryWithNoKeyOrMessageValue) {
+  MapOutWireFormat emulated;
+  (void)emulated.add_map1();
+  EXPECT_THAT(WireToJson<MapOut>(emulated.SerializeAsString()),
+              IsOkAndHolds(R"({"map1":{"":{}}})"));
+
+  MapOutWireFormat recursive_emulated;
+  recursive_emulated.add_map2()->set_key("nested");
+  EXPECT_THAT(WireToJson<MapOut>(recursive_emulated.SerializeAsString()),
+              IsOkAndHolds(R"({"map2":{"nested":{}}})"));
+}
+
+TEST_P(JsonTest, MapEntryWithNoMessageValueRepeatedReflection) {
+  MapOut proto;
+  const FieldDescriptor* map_field =
+      MapOut::descriptor()->FindFieldByName("map1");
+  Message* entry = proto.GetReflection()->AddMessage(&proto, map_field);
+  entry->GetReflection()->SetString(entry, entry->GetDescriptor()->map_key(),
+                                    "hello");
+
+  EXPECT_THAT(ToJson(proto), IsOkAndHolds(R"({"map1":{"hello":{}}})"));
+}
+
+TEST_P(JsonTest, MapEntryWithNoGoogleProtobufValue) {
+  // TestStringMapOverlay (repeated {1: string, 2: ...} at field 1) shares the
+  // wire layout of google.protobuf.Struct's `map<string, Value> fields = 1`
+  // when field 2 (value) is omitted on the wire.
+  TestStringMapOverlay omitted_entry;
+  omitted_entry.add_string_map()->set_key("empty");
+  std::string omitted_wire = omitted_entry.SerializeAsString();
+
+  EXPECT_THAT(WireToJson<google::protobuf::Struct>(omitted_wire),
+              IsOkAndHolds("{}"));
+
+  google::protobuf::Struct with_present;
+  (*with_present.mutable_fields())["present"].set_string_value("world");
+  std::string combined_wire =
+      absl::StrCat(with_present.SerializeAsString(), omitted_wire);
+  EXPECT_THAT(WireToJson<google::protobuf::Struct>(combined_wire),
+              IsOkAndHolds(R"({"present":"world"})"));
 }
 
 TEST_P(JsonTest, BinaryToJsonStreamDuplicateNonRepeatedField) {

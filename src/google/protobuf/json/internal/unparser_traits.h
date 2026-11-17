@@ -589,7 +589,12 @@ struct UnparseProto3Type : Proto3Type {
   static absl::StatusOr<const Msg*> GetMessage(Field f, const Msg& msg) {
     auto span = msg.Get<Msg>(f->proto().number());
     if (span.empty()) {
-      return GetMessage(f);
+      // Match Reflection::GetMessage by returning an empty default instance
+      // when a message field (such as a map entry's value) is absent on the
+      // wire.
+      auto type = f->MessageType();
+      RETURN_IF_ERROR(type.status());
+      return &(*type)->default_instance();
     }
     if (span.size() > 1) {
       return absl::InternalError(absl::StrCat(
