@@ -7,11 +7,13 @@
 
 #include "google/protobuf/json/internal/parser.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <limits>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include "google/protobuf/type.pb.h"
@@ -25,6 +27,7 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
@@ -167,31 +170,115 @@ absl::StatusOr<absl::Span<char>> DecodeBase64InPlace(absl::Span<char> base64) {
   return absl::MakeSpan(base64).first(static_cast<size_t>(out - base64.data()));
 }
 
+// Parses a decimal number that may have a fraction and/or an exponent (such as
+// "1.0" or "12e3") as an integer of type T, without going through a double, so
+// that values above 2^53 are not rounded.
 template <typename T>
 static absl::Status ParseFloatStringAsInt(
-    const LocationWith<MaybeOwnedString>& x, T* out, double lo, double hi) {
-  double d;
-  if (!absl::SimpleAtod(x.value.AsView(), &d) || !std::isfinite(d)) {
-    return x.loc.Invalid(
-        absl::StrFormat("invalid number: '%s'", x.value.AsView()));
+    const LocationWith<MaybeOwnedString>& x, T* out) {
+  absl::string_view str = x.value.AsView();
+  auto invalid = [&] {
+    return x.loc.Invalid(absl::StrFormat("invalid number: '%s'", str));
+  };
+
+  absl::string_view rest = str;
+  bool negative = false;
+  if (!rest.empty() && (rest.front() == '-' || rest.front() == '+')) {
+    negative = rest.front() == '-';
+    rest.remove_prefix(1);
   }
 
-  // Conversion overflow here would be UB.
-  if (lo > d || d > hi) {
-    return x.loc.Invalid("JSON number out of range for int");
+  // Collect the significant digits of the mantissa (without the decimal point)
+  // and the power of ten that scales them to the integer value.
+  size_t i = 0;
+  while (i < rest.size() && absl::ascii_isdigit(rest[i])) ++i;
+  absl::string_view int_digits = rest.substr(0, i);
+  absl::string_view frac_digits;
+  if (i < rest.size() && rest[i] == '.') {
+    size_t start = ++i;
+    while (i < rest.size() && absl::ascii_isdigit(rest[i])) ++i;
+    frac_digits = rest.substr(start, i - start);
   }
-  *out = static_cast<T>(d);
-  if (d - static_cast<double>(*out) != 0) {
+  if (int_digits.empty() && frac_digits.empty()) return invalid();
+
+  // The exponent saturates at a bound larger than any adjustment made to it
+  // below (which is limited by the length of the string), so a saturated
+  // exponent still yields the right verdict: out of range for a positive one
+  // and fractional for a negative one, unless the mantissa is 0.
+  const int64_t kMaxExponent = static_cast<int64_t>(rest.size()) + 100;
+  int64_t exponent = 0;
+  if (i < rest.size() && (rest[i] == 'e' || rest[i] == 'E')) {
+    ++i;
+    bool exponent_negative = false;
+    if (i < rest.size() && (rest[i] == '-' || rest[i] == '+')) {
+      exponent_negative = rest[i] == '-';
+      ++i;
+    }
+    size_t start = i;
+    for (; i < rest.size() && absl::ascii_isdigit(rest[i]); ++i) {
+      exponent =
+          std::min<int64_t>(exponent * 10 + (rest[i] - '0'), kMaxExponent);
+    }
+    if (i == start) return invalid();
+    if (exponent_negative) exponent = -exponent;
+  }
+  if (i != rest.size()) return invalid();
+
+  // Drop leading zeros, then trailing zeros of the fraction and the integer
+  // part, folding the latter into the exponent.
+  std::string digits = absl::StrCat(int_digits, frac_digits);
+  exponent -= static_cast<int64_t>(frac_digits.size());
+  size_t first = digits.find_first_not_of('0');
+  if (first == std::string::npos) {
+    *out = 0;
+    return absl::OkStatus();
+  }
+  size_t last = digits.find_last_not_of('0');
+  exponent += static_cast<int64_t>(digits.size() - 1 - last);
+  digits = digits.substr(first, last - first + 1);
+
+  if (exponent < 0) {
     return x.loc.Invalid(
         "expected integer, but JSON number had fractional part");
   }
 
-  return absl::OkStatus();
+  // Build the magnitude in a uint64_t, bailing out on overflow.
+  uint64_t magnitude = 0;
+  bool overflow = exponent > 20 || digits.size() > 20;
+  for (size_t d = 0; !overflow && d < digits.size(); ++d) {
+    overflow = magnitude > (std::numeric_limits<uint64_t>::max() -
+                            static_cast<uint64_t>(digits[d] - '0')) /
+                               10;
+    magnitude = magnitude * 10 + static_cast<uint64_t>(digits[d] - '0');
+  }
+  for (int64_t e = 0; !overflow && e < exponent; ++e) {
+    overflow = magnitude > std::numeric_limits<uint64_t>::max() / 10;
+    magnitude *= 10;
+  }
+
+  if (!overflow) {
+    if (negative) {
+      // The magnitude of the minimum of a signed type is one more than the
+      // maximum; unsigned types admit no negative values at all.
+      uint64_t limit =
+          std::is_signed_v<T>
+              ? static_cast<uint64_t>(std::numeric_limits<T>::max()) + 1
+              : 0;
+      if (magnitude <= limit) {
+        *out = static_cast<T>(0 - magnitude);
+        return absl::OkStatus();
+      }
+    } else if (magnitude <=
+               static_cast<uint64_t>(std::numeric_limits<T>::max())) {
+      *out = static_cast<T>(magnitude);
+      return absl::OkStatus();
+    }
+  }
+  return x.loc.Invalid("JSON number out of range for int");
 }
 
 template <typename T>
-absl::StatusOr<LocationWith<T>> ParseIntInner(JsonLexer& lex, double lo,
-                                              double hi) {
+absl::StatusOr<LocationWith<T>> ParseIntInner(JsonLexer& lex) {
   absl::StatusOr<JsonLexer::Kind> kind = lex.PeekKind();
   RETURN_IF_ERROR(kind.status());
 
@@ -205,7 +292,7 @@ absl::StatusOr<LocationWith<T>> ParseIntInner(JsonLexer& lex, double lo,
         break;
       }
 
-      RETURN_IF_ERROR(ParseFloatStringAsInt<T>(*x, &n.value, lo, hi));
+      RETURN_IF_ERROR(ParseFloatStringAsInt<T>(*x, &n.value));
       break;
     }
     case JsonLexer::kStr: {
@@ -225,7 +312,7 @@ absl::StatusOr<LocationWith<T>> ParseIntInner(JsonLexer& lex, double lo,
         break;
       }
 
-      RETURN_IF_ERROR(ParseFloatStringAsInt<T>(*str, &n.value, lo, hi));
+      RETURN_IF_ERROR(ParseFloatStringAsInt<T>(*str, &n.value));
       break;
     }
     default:
@@ -237,8 +324,7 @@ absl::StatusOr<LocationWith<T>> ParseIntInner(JsonLexer& lex, double lo,
 
 template <typename Traits>
 absl::StatusOr<int64_t> ParseInt(JsonLexer& lex, Field<Traits> field) {
-  absl::StatusOr<LocationWith<int64_t>> n =
-      ParseIntInner<int64_t>(lex, -9007199254740992.0, 9007199254740992.0);
+  absl::StatusOr<LocationWith<int64_t>> n = ParseIntInner<int64_t>(lex);
   RETURN_IF_ERROR(n.status());
 
   if (Traits::Is32Bit(field)) {
@@ -254,7 +340,7 @@ absl::StatusOr<int64_t> ParseInt(JsonLexer& lex, Field<Traits> field) {
 template <typename Traits>
 absl::StatusOr<uint64_t> ParseUInt(JsonLexer& lex, Field<Traits> field) {
   absl::StatusOr<LocationWith<uint64_t>> n =
-      ParseIntInner<uint64_t>(lex, 0, 18014398509481984.0);
+      ParseIntInner<uint64_t>(lex);
   RETURN_IF_ERROR(n.status());
 
   if (Traits::Is32Bit(field)) {
