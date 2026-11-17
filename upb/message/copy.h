@@ -8,6 +8,8 @@
 #ifndef UPB_MESSAGE_COPY_H_
 #define UPB_MESSAGE_COPY_H_
 
+#include <stdbool.h>
+
 #include "upb/base/descriptor_constants.h"
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
@@ -35,6 +37,24 @@ extern "C" {
 UPB_NODISCARD upb_Message* upb_Message_DeepClone(const upb_Message* msg,
                                                  const upb_MiniTable* m,
                                                  upb_Arena* arena);
+
+// Deep clones `msg` into `arena`, like `upb_Message_DeepClone()`, while
+// enforcing `max_depth`.
+//
+// `max_depth` uses the same submessage nesting depth counting as
+// `upb_EncodeOptions_MaxDepth` (the root message is at depth 0, map entries do
+// not add an extra wrapper level, and serialized unknown fields are copied
+// opaquely), except that 0 literally allows zero nested submessages rather than
+// selecting a default; negative values fail immediately. Values above
+// `UINT16_MAX` (65535) are clamped to `UINT16_MAX`. Callers should choose
+// `max_depth` to fit their available call stack.
+//
+// Returns NULL on failure (both allocation failure and exceeding or passing a
+// negative `max_depth` fail identically). Any partial allocations made before
+// failure remain in `arena`.
+UPB_NODISCARD upb_Message* upb_Message_DeepCloneWithMaxDepth(
+    const upb_Message* msg, const upb_MiniTable* m, upb_Arena* arena,
+    int max_depth);
 
 // Shallow clones a message using the provided target arena.
 // `msg` must outlive the returned message since all strings, repeated fields,
@@ -69,6 +89,20 @@ UPB_NODISCARD bool upb_Message_DeepCopy(upb_Message* dst,
                                         const upb_Message* src,
                                         const upb_MiniTable* m,
                                         upb_Arena* arena);
+
+// Deep copies the message from `src` to `dst`, allocating from `arena`, like
+// `upb_Message_DeepCopy()`, while enforcing `max_depth` as in
+// `upb_Message_DeepCloneWithMaxDepth()`.
+//
+// `dst` is cleared first (including when `max_depth` is negative). Returns
+// false on failure (both allocation failure and exceeding or passing a
+// negative `max_depth` fail identically), in which case `dst` remains cleared
+// and any partial allocations remain in `arena`.
+UPB_NODISCARD bool upb_Message_DeepCopyWithMaxDepth(upb_Message* dst,
+                                                    const upb_Message* src,
+                                                    const upb_MiniTable* m,
+                                                    upb_Arena* arena,
+                                                    int max_depth);
 
 // Shallow copies the message from src to dst.
 // `src` must outlive `dst` since all strings, repeated fields, maps, and

@@ -23,6 +23,8 @@
 #include <gtest/gtest.h>
 #include "google/protobuf/test_messages_proto2.upb.h"
 #include "google/protobuf/test_messages_proto2.upb_minitable.h"
+#include "upb/base/descriptor_constants.h"
+#include "upb/base/status.h"
 #include "upb/base/string_view.h"
 #include "upb/base/upcast.h"
 #include "upb/mem/arena.h"
@@ -33,6 +35,9 @@
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/unknown_fields.h"
+#include "upb/mini_descriptor/decode.h"
+#include "upb/mini_descriptor/internal/encode.hpp"
+#include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
@@ -787,6 +792,730 @@ TEST(GeneratedCode, DeepCloneMessageNonCanonicalExtensions) {
                              upb_StringView_FromString("LifecycleValue")));
 
   upb_Arena_Free(arena);
+}
+
+protobuf_test_messages_proto2_TestAllTypesProto2* MakeRecursiveChain(
+    upb_Arena* arena, int depth, int32_t leaf_value) {
+  auto* root = protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
+  auto* cur = root;
+  for (int i = 0; i < depth; ++i) {
+    auto* child = protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
+    protobuf_test_messages_proto2_TestAllTypesProto2_set_recursive_message(
+        cur, child);
+    cur = child;
+  }
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_int32(
+      cur, leaf_value);
+  return root;
+}
+
+const protobuf_test_messages_proto2_TestAllTypesProto2* FollowRecursiveChain(
+    const protobuf_test_messages_proto2_TestAllTypesProto2* msg, int depth) {
+  const auto* cur = msg;
+  for (int i = 0; i < depth; ++i) {
+    if (cur == nullptr) return nullptr;
+    cur =
+        protobuf_test_messages_proto2_TestAllTypesProto2_recursive_message(cur);
+  }
+  return cur;
+}
+
+const upb_MiniTableExtension* BuildSubMessageExt(const upb_MiniTable* extendee,
+                                                 const upb_MiniTable* sub,
+                                                 int field_number,
+                                                 upb_Arena* arena) {
+  upb::MtDataEncoder ext_encoder;
+  EXPECT_TRUE(
+      ext_encoder.EncodeExtension(kUpb_FieldType_Message, field_number, 0));
+  upb_Status status;
+  upb_Status_Clear(&status);
+  const upb_MiniTableExtension* ext = upb_MiniTableExtension_BuildMessage(
+      ext_encoder.data().data(), ext_encoder.data().size(), extendee, sub,
+      arena, &status);
+  EXPECT_TRUE(status.ok) << status.msg;
+  EXPECT_NE(ext, nullptr);
+  return ext;
+}
+
+const upb_MiniTableExtension* BuildTestAllTypesProto2Ext(
+    const upb_MiniTable* extendee, int field_number, upb_Arena* arena) {
+  return BuildSubMessageExt(
+      extendee, &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
+      field_number, arena);
+}
+
+TEST(GeneratedCode, DeepCloneWithMaxDepthZeroAllowsFlatMessage) {
+  upb_Arena* src_arena = upb_Arena_New();
+  upb_Arena* dst_arena = upb_Arena_New();
+  const upb_MiniTable* mt =
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init;
+
+  auto* flat = MakeRecursiveChain(src_arena, /*depth=*/0, /*leaf_value=*/42);
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_string(
+      flat, upb_StringView_FromString("flat"));
+  protobuf_test_messages_proto2_TestAllTypesProto2_map_int32_int32_set(
+      flat, 7, 13, src_arena);
+
+  auto* clone = (protobuf_test_messages_proto2_TestAllTypesProto2*)
+      upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(flat), mt, dst_arena,
+                                        /*max_depth=*/0);
+  ASSERT_NE(clone, nullptr);
+  EXPECT_EQ(
+      protobuf_test_messages_proto2_TestAllTypesProto2_optional_int32(clone),
+      42);
+  EXPECT_TRUE(upb_StringView_IsEqual(
+      protobuf_test_messages_proto2_TestAllTypesProto2_optional_string(clone),
+      upb_StringView_FromString("flat")));
+  int32_t map_val = 0;
+  EXPECT_TRUE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_map_int32_int32_get(
+          clone, 7, &map_val));
+  EXPECT_EQ(map_val, 13);
+
+  upb_Arena_Free(src_arena);
+  upb_Arena_Free(dst_arena);
+}
+
+TEST(GeneratedCode, DeepCloneWithMaxDepthNegativeFails) {
+  upb_Arena* src_arena = upb_Arena_New();
+  upb_Arena* dst_arena = upb_Arena_New();
+  const upb_MiniTable* mt =
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init;
+
+  auto* flat = protobuf_test_messages_proto2_TestAllTypesProto2_new(src_arena);
+  EXPECT_EQ(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(flat), mt, dst_arena,
+                                              /*max_depth=*/-1),
+            nullptr);
+
+  upb_Arena_Free(src_arena);
+  upb_Arena_Free(dst_arena);
+}
+
+TEST(GeneratedCode, DeepCloneWithMaxDepthScalarChainBoundary) {
+  upb_Arena* src_arena = upb_Arena_New();
+  upb_Arena* dst_arena = upb_Arena_New();
+  const upb_MiniTable* mt =
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init;
+
+  auto* chain = MakeRecursiveChain(src_arena, /*depth=*/3, /*leaf_value=*/123);
+  EXPECT_EQ(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(chain), mt, dst_arena,
+                                              /*max_depth=*/2),
+            nullptr);
+
+  auto* clone = (protobuf_test_messages_proto2_TestAllTypesProto2*)
+      upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(chain), mt, dst_arena,
+                                        /*max_depth=*/3);
+  ASSERT_NE(clone, nullptr);
+  const auto* leaf = FollowRecursiveChain(clone, 3);
+  ASSERT_NE(leaf, nullptr);
+  EXPECT_EQ(
+      protobuf_test_messages_proto2_TestAllTypesProto2_optional_int32(leaf),
+      123);
+
+  upb_Arena_Free(src_arena);
+  upb_Arena_Free(dst_arena);
+}
+
+TEST(GeneratedCode, DeepCloneWithMaxDepthRepeatedSubmessageBoundary) {
+  upb_Arena* src_arena = upb_Arena_New();
+  upb_Arena* dst_arena = upb_Arena_New();
+  const upb_MiniTable* mt =
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init;
+
+  // Depth 1: repeated_nested_message.
+  auto* depth1 =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(src_arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_add_repeated_nested_message(
+      depth1, src_arena);
+  EXPECT_EQ(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(depth1), mt, dst_arena,
+                                              /*max_depth=*/0),
+            nullptr);
+  EXPECT_NE(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(depth1), mt, dst_arena,
+                                              /*max_depth=*/1),
+            nullptr);
+
+  // Depth 2: repeated_nested_message -> corecursive.
+  auto* depth2 =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(src_arena);
+  auto* item =
+      protobuf_test_messages_proto2_TestAllTypesProto2_add_repeated_nested_message(
+          depth2, src_arena);
+  auto* leaf = protobuf_test_messages_proto2_TestAllTypesProto2_new(src_arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_int32(leaf, 77);
+  protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_set_corecursive(
+      item, leaf);
+  EXPECT_EQ(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(depth2), mt, dst_arena,
+                                              /*max_depth=*/1),
+            nullptr);
+  EXPECT_NE(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(depth2), mt, dst_arena,
+                                              /*max_depth=*/2),
+            nullptr);
+
+  upb_Arena_Free(src_arena);
+  upb_Arena_Free(dst_arena);
+}
+
+TEST(GeneratedCode, DeepCloneWithMaxDepthMapSubmessageBoundary) {
+  upb_Arena* src_arena = upb_Arena_New();
+  upb_Arena* dst_arena = upb_Arena_New();
+  const upb_MiniTable* mt =
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init;
+
+  // Depth 1: map_int32_nested_message.
+  auto* depth1 =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(src_arena);
+  auto* val1 =
+      protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_new(
+          src_arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_map_int32_nested_message_set(
+      depth1, 1, val1, src_arena);
+  EXPECT_EQ(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(depth1), mt, dst_arena,
+                                              /*max_depth=*/0),
+            nullptr);
+  EXPECT_NE(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(depth1), mt, dst_arena,
+                                              /*max_depth=*/1),
+            nullptr);
+
+  // Depth 2: map_int32_nested_message -> corecursive.
+  auto* depth2 =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(src_arena);
+  auto* val2 =
+      protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_new(
+          src_arena);
+  auto* leaf = protobuf_test_messages_proto2_TestAllTypesProto2_new(src_arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_int32(leaf, 88);
+  protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_set_corecursive(
+      val2, leaf);
+  protobuf_test_messages_proto2_TestAllTypesProto2_map_int32_nested_message_set(
+      depth2, 1, val2, src_arena);
+  EXPECT_EQ(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(depth2), mt, dst_arena,
+                                              /*max_depth=*/1),
+            nullptr);
+  EXPECT_NE(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(depth2), mt, dst_arena,
+                                              /*max_depth=*/2),
+            nullptr);
+
+  upb_Arena_Free(src_arena);
+  upb_Arena_Free(dst_arena);
+}
+
+TEST(GeneratedCode, DeepCloneWithMaxDepthCanonicalExtensionBoundary) {
+  upb_Arena* src_arena = upb_Arena_New();
+  upb_Arena* dst_arena = upb_Arena_New();
+  const upb_MiniTable* mt = &upb_0test__ModelWithExtensions_msg_init;
+
+  auto* ext_root = upb_test_ModelWithExtensions_new(src_arena);
+  auto* ext1 = upb_test_ModelExtension1_new(src_arena);
+  upb_test_ModelExtension1_set_str(ext1, upb_StringView_FromString("ext"));
+  upb_test_ModelExtension1_set_model_ext(ext_root, ext1, src_arena);
+
+  EXPECT_EQ(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(ext_root), mt,
+                                              dst_arena, /*max_depth=*/0),
+            nullptr);
+  EXPECT_NE(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(ext_root), mt,
+                                              dst_arena, /*max_depth=*/1),
+            nullptr);
+
+  upb_Arena_Free(src_arena);
+  upb_Arena_Free(dst_arena);
+}
+
+TEST(GeneratedCode, DeepCloneAndCopyWithMaxDepthNonCanonicalExtensionBoundary) {
+  upb_Arena* src_arena = upb_Arena_New();
+  upb_Arena* dst_arena = upb_Arena_New();
+  const upb_MiniTable* mt =
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init;
+  const upb_MiniTableExtension* ext =
+      BuildTestAllTypesProto2Ext(mt, /*field_number=*/125, src_arena);
+  ASSERT_NE(ext, nullptr);
+
+  // Depth 1 non-canonical extension fails at max_depth=0, succeeds at 1.
+  auto* root1 = protobuf_test_messages_proto2_TestAllTypesProto2_new(src_arena);
+  auto* ext_val1 = MakeRecursiveChain(src_arena, /*depth=*/0, /*leaf_value=*/5);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(root1), ext, &ext_val1, src_arena));
+  EXPECT_EQ(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(root1), mt, dst_arena,
+                                              /*max_depth=*/0),
+            nullptr);
+  EXPECT_NE(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(root1), mt, dst_arena,
+                                              /*max_depth=*/1),
+            nullptr);
+
+  // Root -> non-canonical ext -> child (total depth 2) fails at max_depth=1
+  // and succeeds at max_depth=2 (verifying encoder depth forwarding).
+  auto* root2 = protobuf_test_messages_proto2_TestAllTypesProto2_new(src_arena);
+  auto* ext_val2 = MakeRecursiveChain(src_arena, /*depth=*/1, /*leaf_value=*/7);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(root2), ext, &ext_val2, src_arena));
+
+  EXPECT_EQ(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(root2), mt, dst_arena,
+                                              /*max_depth=*/1),
+            nullptr);
+  EXPECT_NE(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(root2), mt, dst_arena,
+                                              /*max_depth=*/2),
+            nullptr);
+
+  auto* dst = protobuf_test_messages_proto2_TestAllTypesProto2_new(dst_arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_int32(dst, 19);
+  EXPECT_FALSE(upb_Message_DeepCopyWithMaxDepth(
+      UPB_UPCAST(dst), UPB_UPCAST(root2), mt, dst_arena, /*max_depth=*/1));
+  EXPECT_FALSE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_int32(dst));
+  EXPECT_TRUE(upb_Message_DeepCopyWithMaxDepth(
+      UPB_UPCAST(dst), UPB_UPCAST(root2), mt, dst_arena, /*max_depth=*/2));
+
+  upb_Arena_Free(src_arena);
+  upb_Arena_Free(dst_arena);
+}
+
+TEST(GeneratedCode, DeepCopyWithMaxDepthAtLimitSucceeds) {
+  upb_Arena* src_arena = upb_Arena_New();
+  upb_Arena* dst_arena = upb_Arena_New();
+  const upb_MiniTable* mt =
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init;
+
+  auto* flat = MakeRecursiveChain(src_arena, /*depth=*/0, /*leaf_value=*/55);
+  auto* dst = protobuf_test_messages_proto2_TestAllTypesProto2_new(dst_arena);
+  ASSERT_TRUE(upb_Message_DeepCopyWithMaxDepth(
+      UPB_UPCAST(dst), UPB_UPCAST(flat), mt, dst_arena, /*max_depth=*/0));
+  EXPECT_EQ(
+      protobuf_test_messages_proto2_TestAllTypesProto2_optional_int32(dst), 55);
+
+  auto* chain = MakeRecursiveChain(src_arena, /*depth=*/3, /*leaf_value=*/234);
+  ASSERT_TRUE(upb_Message_DeepCopyWithMaxDepth(
+      UPB_UPCAST(dst), UPB_UPCAST(chain), mt, dst_arena, /*max_depth=*/3));
+  const auto* leaf = FollowRecursiveChain(dst, 3);
+  ASSERT_NE(leaf, nullptr);
+  EXPECT_EQ(
+      protobuf_test_messages_proto2_TestAllTypesProto2_optional_int32(leaf),
+      234);
+
+  upb_Arena_Free(src_arena);
+  upb_Arena_Free(dst_arena);
+}
+
+TEST(GeneratedCode, DeepCopyWithMaxDepthOverLimitClearsDst) {
+  upb_Arena* src_arena = upb_Arena_New();
+  upb_Arena* dst_arena = upb_Arena_New();
+  const upb_MiniTable* mt =
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init;
+  const upb_MiniTableExtension* ext =
+      BuildTestAllTypesProto2Ext(mt, /*field_number=*/125, src_arena);
+  ASSERT_NE(ext, nullptr);
+
+  auto* dst = protobuf_test_messages_proto2_TestAllTypesProto2_new(dst_arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_int32(dst, 99);
+  // Field 1001, wire type 0 (varint), value 2 (reserved/unknown field number).
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(dst), "\xc8\x3e\x02", 3, dst_arena, kUpb_AddUnknown_Copy));
+
+  // Populate base fields and an unknown field before a submessage extension
+  // that exceeds max_depth=1 so _upb_Message_Copy() copies partial state into
+  // `dst` before hitting the rollback path (`err: upb_Message_Clear`).
+  auto* src = protobuf_test_messages_proto2_TestAllTypesProto2_new(src_arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_int32(src, 42);
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_string(
+      src, upb_StringView_FromString("partial"));
+  ASSERT_TRUE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_add_repeated_int32(
+          src, 7, src_arena));
+  ASSERT_TRUE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_map_int32_int32_set(
+          src, 1, 2, src_arena));
+  // Field 1000, wire type 0 (varint), value 1 (reserved/unknown field number).
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(src), "\xc0\x3e\x01", 3, src_arena, kUpb_AddUnknown_Copy));
+
+  auto* ext_val = MakeRecursiveChain(src_arena, /*depth=*/1, /*leaf_value=*/7);
+  upb_AuxField* ext_entry = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+      UPB_UPCAST(src), ext, src_arena);
+  ASSERT_NE(ext_entry, nullptr);
+  upb_Extension_SetMessage(ext_entry, UPB_UPCAST(ext_val));
+
+  EXPECT_FALSE(upb_Message_DeepCopyWithMaxDepth(
+      UPB_UPCAST(dst), UPB_UPCAST(src), mt, dst_arena, /*max_depth=*/1));
+  EXPECT_FALSE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_int32(dst));
+  EXPECT_FALSE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_string(
+          dst));
+  size_t repeated_size = 0;
+  protobuf_test_messages_proto2_TestAllTypesProto2_repeated_int32(
+      dst, &repeated_size);
+  EXPECT_EQ(repeated_size, 0u);
+  EXPECT_EQ(
+      protobuf_test_messages_proto2_TestAllTypesProto2_map_int32_int32_size(
+          dst),
+      0u);
+  EXPECT_FALSE(upb_Message_HasExtension(UPB_UPCAST(dst), ext));
+  EXPECT_TRUE(GetUnknownFields(UPB_UPCAST(dst)).empty());
+
+  upb_Arena_Free(src_arena);
+  upb_Arena_Free(dst_arena);
+}
+
+TEST(GeneratedCode, DeepCopyWithMaxDepthNegativeClearsDst) {
+  upb_Arena* src_arena = upb_Arena_New();
+  upb_Arena* dst_arena = upb_Arena_New();
+  const upb_MiniTable* mt =
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init;
+
+  auto* dst = protobuf_test_messages_proto2_TestAllTypesProto2_new(dst_arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_int32(dst, 99);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(dst), "\xc8\x3e\x02", 3, dst_arena, kUpb_AddUnknown_Copy));
+
+  auto* chain = MakeRecursiveChain(src_arena, /*depth=*/0, /*leaf_value=*/7);
+  EXPECT_FALSE(upb_Message_DeepCopyWithMaxDepth(
+      UPB_UPCAST(dst), UPB_UPCAST(chain), mt, dst_arena, /*max_depth=*/-1));
+  EXPECT_FALSE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_int32(dst));
+  EXPECT_TRUE(GetUnknownFields(UPB_UPCAST(dst)).empty());
+
+  upb_Arena_Free(src_arena);
+  upb_Arena_Free(dst_arena);
+}
+
+TEST(GeneratedCode, DeepCloneAndCopyWithMaxDepthRejectCycles) {
+  upb_Arena* src_arena = upb_Arena_New();
+  upb_Arena* dst_arena = upb_Arena_New();
+  const upb_MiniTable* mt =
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init;
+
+  // 1. Scalar self-cycle.
+  auto* self = protobuf_test_messages_proto2_TestAllTypesProto2_new(src_arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_recursive_message(self,
+                                                                         self);
+  EXPECT_EQ(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(self), mt, dst_arena,
+                                              /*max_depth=*/100),
+            nullptr);
+
+  auto* dst = protobuf_test_messages_proto2_TestAllTypesProto2_new(dst_arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_int32(dst, 5);
+  EXPECT_FALSE(upb_Message_DeepCopyWithMaxDepth(
+      UPB_UPCAST(dst), UPB_UPCAST(self), mt, dst_arena, /*max_depth=*/100));
+  EXPECT_FALSE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_int32(dst));
+
+  // 2. Repeated submessage cycle.
+  auto* rep_root =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(src_arena);
+  auto* rep_item =
+      protobuf_test_messages_proto2_TestAllTypesProto2_add_repeated_nested_message(
+          rep_root, src_arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_set_corecursive(
+      rep_item, rep_root);
+  EXPECT_EQ(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(rep_root), mt,
+                                              dst_arena, /*max_depth=*/100),
+            nullptr);
+  EXPECT_FALSE(upb_Message_DeepCopyWithMaxDepth(
+      UPB_UPCAST(dst), UPB_UPCAST(rep_root), mt, dst_arena, /*max_depth=*/100));
+
+  // 3. Map submessage value cycle.
+  auto* map_root =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(src_arena);
+  auto* map_val =
+      protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_new(
+          src_arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_set_corecursive(
+      map_val, map_root);
+  protobuf_test_messages_proto2_TestAllTypesProto2_map_int32_nested_message_set(
+      map_root, 1, map_val, src_arena);
+  EXPECT_EQ(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(map_root), mt,
+                                              dst_arena, /*max_depth=*/100),
+            nullptr);
+  EXPECT_FALSE(upb_Message_DeepCopyWithMaxDepth(
+      UPB_UPCAST(dst), UPB_UPCAST(map_root), mt, dst_arena, /*max_depth=*/100));
+
+  // 4. Canonical extension cycle.
+  const upb_MiniTableExtension* self_ext =
+      BuildTestAllTypesProto2Ext(mt, /*field_number=*/126, src_arena);
+  ASSERT_NE(self_ext, nullptr);
+  auto* canon_cycle =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(src_arena);
+  upb_AuxField* ext_entry = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+      UPB_UPCAST(canon_cycle), self_ext, src_arena);
+  ASSERT_NE(ext_entry, nullptr);
+  upb_Extension_SetMessage(ext_entry, UPB_UPCAST(canon_cycle));
+  EXPECT_EQ(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(canon_cycle), mt,
+                                              dst_arena, /*max_depth=*/100),
+            nullptr);
+  EXPECT_FALSE(upb_Message_DeepCopyWithMaxDepth(UPB_UPCAST(dst),
+                                                UPB_UPCAST(canon_cycle), mt,
+                                                dst_arena, /*max_depth=*/100));
+
+  // 5. Non-canonical extension cycle.
+  auto* non_canon_cycle =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(src_arena);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(non_canon_cycle), self_ext, &non_canon_cycle, src_arena));
+  EXPECT_EQ(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(non_canon_cycle), mt,
+                                              dst_arena, /*max_depth=*/100),
+            nullptr);
+  EXPECT_FALSE(upb_Message_DeepCopyWithMaxDepth(UPB_UPCAST(dst),
+                                                UPB_UPCAST(non_canon_cycle), mt,
+                                                dst_arena, /*max_depth=*/100));
+
+  upb_Arena_Free(src_arena);
+  upb_Arena_Free(dst_arena);
+}
+
+TEST(GeneratedCode, DeepCloneAndCopyDefaultUnlimitedBehaviorUnchanged) {
+  upb_Arena* src_arena = upb_Arena_New();
+  upb_Arena* dst_arena = upb_Arena_New();
+  const upb_MiniTable* mt =
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init;
+
+  // Deeper than kUpb_WireFormat_DefaultDepthLimit (100).
+  constexpr int kDeepDepth = 105;
+  auto* deep = MakeRecursiveChain(src_arena, kDeepDepth, 987);
+
+  auto* clone =
+      (protobuf_test_messages_proto2_TestAllTypesProto2*)upb_Message_DeepClone(
+          UPB_UPCAST(deep), mt, dst_arena);
+  ASSERT_NE(clone, nullptr);
+  const auto* clone_leaf = FollowRecursiveChain(clone, kDeepDepth);
+  ASSERT_NE(clone_leaf, nullptr);
+  EXPECT_EQ(protobuf_test_messages_proto2_TestAllTypesProto2_optional_int32(
+                clone_leaf),
+            987);
+
+  auto* dst = protobuf_test_messages_proto2_TestAllTypesProto2_new(dst_arena);
+  ASSERT_TRUE(
+      upb_Message_DeepCopy(UPB_UPCAST(dst), UPB_UPCAST(deep), mt, dst_arena));
+  const auto* copy_leaf = FollowRecursiveChain(dst, kDeepDepth);
+  ASSERT_NE(copy_leaf, nullptr);
+  EXPECT_EQ(protobuf_test_messages_proto2_TestAllTypesProto2_optional_int32(
+                copy_leaf),
+            987);
+
+  // Nested non-canonical extension deeper than encoder default (100):
+  // default DeepClone/DeepCopy continue failing with encoder default 100,
+  // while DeepCloneWithMaxDepth with an explicit higher bound succeeds.
+  const upb_MiniTableExtension* ext =
+      BuildTestAllTypesProto2Ext(mt, /*field_number=*/125, src_arena);
+  ASSERT_NE(ext, nullptr);
+  auto* outer = protobuf_test_messages_proto2_TestAllTypesProto2_new(src_arena);
+  auto* middle =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(src_arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_recursive_message(
+      outer, middle);
+  auto* deep_ext_val = MakeRecursiveChain(src_arena, /*depth=*/105, 88);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(middle), ext, &deep_ext_val, src_arena));
+
+  EXPECT_EQ(upb_Message_DeepClone(UPB_UPCAST(outer), mt, dst_arena), nullptr);
+  EXPECT_FALSE(
+      upb_Message_DeepCopy(UPB_UPCAST(dst), UPB_UPCAST(outer), mt, dst_arena));
+  EXPECT_NE(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(outer), mt, dst_arena,
+                                              /*max_depth=*/107),
+            nullptr);
+
+  upb_Arena_Free(src_arena);
+  upb_Arena_Free(dst_arena);
+}
+
+TEST(GeneratedCode, DeepCloneAndCopyWithMaxDepthCanonicalMessageSet) {
+  upb_Arena* src_arena = upb_Arena_New();
+  upb_Arena* dst_arena = upb_Arena_New();
+  const upb_MiniTable* mset_mt =
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2__MessageSetCorrect_msg_init;
+
+  auto* mset =
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect_new(
+          src_arena);
+  auto* mset_ext =
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension1_new(
+          src_arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension1_set_str(
+      mset_ext, upb_StringView_FromString("mset"));
+  protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension1_set_message_set_extension(
+      mset, mset_ext, src_arena);
+
+  EXPECT_EQ(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(mset), mset_mt,
+                                              dst_arena, /*max_depth=*/0),
+            nullptr);
+  EXPECT_NE(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(mset), mset_mt,
+                                              dst_arena, /*max_depth=*/1),
+            nullptr);
+
+  auto* dst =
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect_new(
+          dst_arena);
+  EXPECT_FALSE(upb_Message_DeepCopyWithMaxDepth(
+      UPB_UPCAST(dst), UPB_UPCAST(mset), mset_mt, dst_arena, /*max_depth=*/0));
+  EXPECT_TRUE(upb_Message_DeepCopyWithMaxDepth(
+      UPB_UPCAST(dst), UPB_UPCAST(mset), mset_mt, dst_arena, /*max_depth=*/1));
+
+  upb_Arena_Free(src_arena);
+  upb_Arena_Free(dst_arena);
+}
+
+TEST(GeneratedCode, DeepCloneAndCopyWithMaxDepthNonCanonicalMessageSet) {
+  upb_Arena* src_arena = upb_Arena_New();
+  upb_Arena* dst_arena = upb_Arena_New();
+  const upb_MiniTable* mset_mt =
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2__MessageSetCorrect_msg_init;
+  const upb_MiniTableExtension* non_canon_ext =
+      BuildTestAllTypesProto2Ext(mset_mt, /*field_number=*/4000, src_arena);
+  ASSERT_NE(non_canon_ext, nullptr);
+
+  // Flat MessageSet item (total depth 1) fails at 0 and succeeds at 1.
+  auto* flat_mset =
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect_new(
+          src_arena);
+  auto* flat_item =
+      MakeRecursiveChain(src_arena, /*depth=*/0, /*leaf_value=*/3);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(flat_mset), non_canon_ext, &flat_item, src_arena));
+  EXPECT_EQ(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(flat_mset), mset_mt,
+                                              dst_arena, /*max_depth=*/0),
+            nullptr);
+  EXPECT_NE(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(flat_mset), mset_mt,
+                                              dst_arena, /*max_depth=*/1),
+            nullptr);
+
+  // Depth-1 scalar item (total depth 2) fails at max_depth=1 and succeeds at 2.
+  auto* mset_d1 =
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect_new(
+          src_arena);
+  auto* item_d1 = MakeRecursiveChain(src_arena, /*depth=*/1, /*leaf_value=*/5);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(mset_d1), non_canon_ext, &item_d1, src_arena));
+  EXPECT_EQ(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(mset_d1), mset_mt,
+                                              dst_arena, /*max_depth=*/1),
+            nullptr);
+  EXPECT_NE(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(mset_d1), mset_mt,
+                                              dst_arena, /*max_depth=*/2),
+            nullptr);
+
+  auto* dst_mset =
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect_new(
+          dst_arena);
+  EXPECT_FALSE(upb_Message_DeepCopyWithMaxDepth(UPB_UPCAST(dst_mset),
+                                                UPB_UPCAST(mset_d1), mset_mt,
+                                                dst_arena, /*max_depth=*/1));
+  EXPECT_TRUE(upb_Message_DeepCopyWithMaxDepth(UPB_UPCAST(dst_mset),
+                                               UPB_UPCAST(mset_d1), mset_mt,
+                                               dst_arena, /*max_depth=*/2));
+
+  // Depth-1 repeated submessage item (total depth 2) fails at max_depth=1 and
+  // succeeds at max_depth=2.
+  auto* mset_rep =
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect_new(
+          src_arena);
+  auto* item_rep =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(src_arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_add_repeated_nested_message(
+      item_rep, src_arena);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(mset_rep), non_canon_ext, &item_rep, src_arena));
+  EXPECT_EQ(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(mset_rep), mset_mt,
+                                              dst_arena, /*max_depth=*/1),
+            nullptr);
+  EXPECT_NE(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(mset_rep), mset_mt,
+                                              dst_arena, /*max_depth=*/2),
+            nullptr);
+
+  // Depth-2 item payload (total depth 3) fails at max_depth=2 and succeeds at
+  // max_depth=3 (and above UINT16_MAX) for both Clone and Copy.
+  auto* deep_mset =
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect_new(
+          src_arena);
+  auto* deep_item =
+      MakeRecursiveChain(src_arena, /*depth=*/2, /*leaf_value=*/9);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(deep_mset), non_canon_ext, &deep_item, src_arena));
+  EXPECT_EQ(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(deep_mset), mset_mt,
+                                              dst_arena, /*max_depth=*/2),
+            nullptr);
+  EXPECT_NE(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(deep_mset), mset_mt,
+                                              dst_arena, /*max_depth=*/3),
+            nullptr);
+  EXPECT_NE(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(deep_mset), mset_mt,
+                                              dst_arena, /*max_depth=*/100000),
+            nullptr);
+
+  EXPECT_FALSE(upb_Message_DeepCopyWithMaxDepth(UPB_UPCAST(dst_mset),
+                                                UPB_UPCAST(deep_mset), mset_mt,
+                                                dst_arena, /*max_depth=*/2));
+  EXPECT_TRUE(upb_Message_DeepCopyWithMaxDepth(UPB_UPCAST(dst_mset),
+                                               UPB_UPCAST(deep_mset), mset_mt,
+                                               dst_arena, /*max_depth=*/3));
+
+  upb_Arena_Free(src_arena);
+  upb_Arena_Free(dst_arena);
+}
+
+TEST(GeneratedCode, DeepCloneAndCopyWithMaxDepthNestedMessageSetChainAndCycle) {
+  upb_Arena* src_arena = upb_Arena_New();
+  upb_Arena* dst_arena = upb_Arena_New();
+  const upb_MiniTable* mset_mt =
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2__MessageSetCorrect_msg_init;
+  const upb_MiniTableExtension* mset_item_ext =
+      BuildSubMessageExt(mset_mt, mset_mt, /*field_number=*/4001, src_arena);
+  ASSERT_NE(mset_item_ext, nullptr);
+
+  // Non-canonical MessageSet -> MessageSet chain (total depth 2): fails at
+  // max_depth=1 and succeeds at max_depth=2.
+  auto* mset0 =
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect_new(
+          src_arena);
+  auto* item1 =
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect_new(
+          src_arena);
+  auto* item2 =
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect_new(
+          src_arena);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(item1), mset_item_ext, &item2, src_arena));
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(mset0), mset_item_ext, &item1, src_arena));
+  EXPECT_EQ(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(mset0), mset_mt,
+                                              dst_arena, /*max_depth=*/1),
+            nullptr);
+  EXPECT_NE(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(mset0), mset_mt,
+                                              dst_arena, /*max_depth=*/2),
+            nullptr);
+
+  auto* dst =
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect_new(
+          dst_arena);
+  EXPECT_FALSE(upb_Message_DeepCopyWithMaxDepth(
+      UPB_UPCAST(dst), UPB_UPCAST(mset0), mset_mt, dst_arena, /*max_depth=*/1));
+  EXPECT_TRUE(upb_Message_DeepCopyWithMaxDepth(
+      UPB_UPCAST(dst), UPB_UPCAST(mset0), mset_mt, dst_arena, /*max_depth=*/2));
+
+  // Non-canonical MessageSet self-cycle fails cleanly without stack overflow.
+  auto* nc_cycle =
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect_new(
+          src_arena);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(nc_cycle), mset_item_ext, &nc_cycle, src_arena));
+  EXPECT_EQ(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(nc_cycle), mset_mt,
+                                              dst_arena, /*max_depth=*/100),
+            nullptr);
+  EXPECT_FALSE(upb_Message_DeepCopyWithMaxDepth(UPB_UPCAST(dst),
+                                                UPB_UPCAST(nc_cycle), mset_mt,
+                                                dst_arena, /*max_depth=*/100));
+
+  // Canonical MessageSet self-cycle fails cleanly without stack overflow.
+  auto* canon_cycle =
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect_new(
+          src_arena);
+  upb_AuxField* ext_entry = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+      UPB_UPCAST(canon_cycle), mset_item_ext, src_arena);
+  ASSERT_NE(ext_entry, nullptr);
+  upb_Extension_SetMessage(ext_entry, UPB_UPCAST(canon_cycle));
+  EXPECT_EQ(upb_Message_DeepCloneWithMaxDepth(UPB_UPCAST(canon_cycle), mset_mt,
+                                              dst_arena, /*max_depth=*/100),
+            nullptr);
+  EXPECT_FALSE(upb_Message_DeepCopyWithMaxDepth(
+      UPB_UPCAST(dst), UPB_UPCAST(canon_cycle), mset_mt, dst_arena,
+      /*max_depth=*/100));
+
+  upb_Arena_Free(src_arena);
+  upb_Arena_Free(dst_arena);
 }
 
 }  // namespace
