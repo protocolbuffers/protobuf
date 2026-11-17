@@ -7,11 +7,14 @@
 
 #include "google/protobuf/json/internal/message_path.h"
 
+#include <cstddef>
 #include <string>
 
 #include "absl/strings/str_cat.h"
 
 // Must be included last.
+#include "absl/strings/string_view.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/port_def.inc"
 
 namespace google {
