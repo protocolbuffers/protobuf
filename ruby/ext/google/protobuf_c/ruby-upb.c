@@ -15466,15 +15466,69 @@ void _upb_FileDef_SetExtensionMiniTable(upb_FileDef* f, int i,
   f->ext_layouts[i] = ext;
 }
 
-// Note: Import cycles are not allowed so this will terminate.
 bool upb_FileDef_Resolves(const upb_FileDef* f, const char* path) {
-  if (!strcmp(f->name, path)) return true;
+  if (strcmp(f->name, path) == 0) return true;
+  if (f->public_dep_count == 0) return false;
+  const upb_FileDef* target = upb_DefPool_FindFileByName(f->symtab, path);
+  if (!target) return false;
 
-  for (int i = 0; i < upb_FileDef_PublicDependencyCount(f); i++) {
-    const upb_FileDef* dep = upb_FileDef_PublicDependency(f, i);
-    if (upb_FileDef_Resolves(dep, path)) return true;
+  // Allocate an arena for:
+  // - stack: stack of files to visit
+  // - visited: set of visited files
+  bool ret = false;
+  upb_Arena* tmp = upb_Arena_New();
+  if (!tmp) return false;
+  upb_inttable visited;
+  size_t cap = 16;
+  const upb_FileDef** stack = upb_Arena_Malloc(tmp, cap * sizeof(*stack));
+  if (!stack || !upb_inttable_init(&visited, tmp) ||
+      !upb_inttable_insert(&visited, (uintptr_t)f, upb_value_bool(true), tmp)) {
+    goto done;
   }
-  return false;
+
+  size_t len = 0;
+  stack[len++] = f;
+
+  while (len > 0) {
+    const upb_FileDef* cur = stack[--len];
+    for (int i = 0; i < cur->public_dep_count; i++) {
+      const upb_FileDef* dep = upb_FileDef_PublicDependency(cur, i);
+      if (dep == target) {
+        ret = true;
+        goto done;
+      }
+      if (dep->public_dep_count == 0) continue;
+
+      // Check if the current dependency has already been visited.
+      bool replaced = false;
+      if (!upb_inttable_insert_or_replace(
+              &visited, (uintptr_t)dep, upb_value_bool(true), &replaced, tmp)) {
+        goto done;
+      }
+      if (replaced) continue;
+
+      // Grow stack if necessary.
+      if (len == cap) {
+        size_t new_cap, old_bytes, new_bytes;
+        if (upb_MulOverflow(cap, (size_t)2, &new_cap) ||
+            upb_MulOverflow(cap, sizeof(*stack), &old_bytes) ||
+            upb_MulOverflow(new_cap, sizeof(*stack), &new_bytes)) {
+          goto done;
+        }
+        const upb_FileDef** new_stack =
+            upb_Arena_Realloc(tmp, stack, old_bytes, new_bytes);
+        if (!new_stack) goto done;
+        stack = new_stack;
+        cap = new_cap;
+      }
+
+      stack[len++] = dep;
+    }
+  }
+
+done:
+  upb_Arena_Free(tmp);
+  return ret;
 }
 
 static char* _strviewdup(upb_DefBuilder* ctx, upb_StringView view) {
