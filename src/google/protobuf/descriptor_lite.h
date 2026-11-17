@@ -20,6 +20,8 @@ namespace internal {
 
 class FieldDescriptorLite {
  public:
+  static constexpr uint32_t kMaxNumber = (1 << 29) - 1;
+
   // Identifies a field type.  0 is reserved for errors.
   // The order is weird for historical reasons.
   // Types 12 and up are new in proto2.

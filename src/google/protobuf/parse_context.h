@@ -65,6 +65,12 @@ class LazyField;
 PROTOBUF_EXPORT void WriteVarint(uint32_t num, uint64_t val, std::string* s);
 PROTOBUF_EXPORT void WriteLengthDelimited(uint32_t num, absl::string_view val,
                                           std::string* s);
+// Writes a complete MessageSet::Item (start group, type_id, message, end group)
+// to `s`. Used to preserve unknown MessageSet items whose type_id is too large
+// to be encoded as a regular field tag.
+PROTOBUF_EXPORT void WriteMessageSetItem(uint32_t type_id,
+                                         absl::string_view payload,
+                                         std::string* s);
 // Inline because it is just forwarding to s->WriteVarint
 inline void WriteVarint(uint32_t num, uint64_t val, UnknownFieldSet* unknown);
 inline void WriteLengthDelimited(uint32_t num, absl::string_view val,

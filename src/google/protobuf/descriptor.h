@@ -953,7 +953,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // };
 
   // Valid field numbers are positive integers up to kMaxNumber.
-  static const int kMaxNumber = (1 << 29) - 1;
+  static const int kMaxNumber = internal::FieldDescriptorLite::kMaxNumber;
 
   // First field number reserved for the protocol buffer library implementation.
   // Users may not declare fields that use reserved numbers.

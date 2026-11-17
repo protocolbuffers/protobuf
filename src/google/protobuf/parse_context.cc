@@ -502,6 +502,17 @@ void WriteLengthDelimited(uint32_t num, absl::string_view val, std::string* s) {
   s->append(val.data(), val.size());
 }
 
+void WriteMessageSetItem(uint32_t type_id, absl::string_view payload,
+                         std::string* s) {
+  WriteVarint(WireFormatLite::kMessageSetItemStartTag, s);
+  WriteVarint(WireFormatLite::kMessageSetTypeIdTag, s);
+  WriteVarint(type_id, s);
+  WriteVarint(WireFormatLite::kMessageSetMessageTag, s);
+  WriteVarint(payload.size(), s);
+  s->append(payload.data(), payload.size());
+  WriteVarint(WireFormatLite::kMessageSetItemEndTag, s);
+}
+
 std::pair<const char*, uint32_t> VarintParseSlow32(const char* p,
                                                    uint32_t res) {
   for (std::uint32_t i = 1; i < 5; i++) {
