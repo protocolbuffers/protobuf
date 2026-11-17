@@ -880,7 +880,7 @@ public class GeneratedMessageTest {
         TestAllExtensions.newBuilder()
             .setExtension(UnittestProto.optionalInt32Extension, 1)
             .build();
-    TestAllExtensions merged = TestAllExtensions.newBuilder().mergeFrom(original).build();
+    TestAllExtensions merged = original.toBuilder().build();
     assertThat(merged.hasExtension(UnittestProto.optionalInt32Extension)).isTrue();
     assertThat((int) merged.getExtension(UnittestProto.optionalInt32Extension)).isEqualTo(1);
   }

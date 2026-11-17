@@ -1130,8 +1130,7 @@ public class DescriptorsTest {
           Descriptors.FileDescriptor.buildFrom(barProto, new FileDescriptor[0]);
       FileDescriptor forwardFile =
           Descriptors.FileDescriptor.buildFrom(forwardProto, new FileDescriptor[] {barFile});
-      FileDescriptor unused =
-          Descriptors.FileDescriptor.buildFrom(fooProto, new FileDescriptor[] {forwardFile});
+      var _ = Descriptors.FileDescriptor.buildFrom(fooProto, new FileDescriptor[] {forwardFile});
     }
 
     /** Tests the translate/crosslink for an example with a more complex namespace referencing. */

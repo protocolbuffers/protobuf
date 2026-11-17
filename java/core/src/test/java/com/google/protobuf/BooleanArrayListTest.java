@@ -358,7 +358,7 @@ public class BooleanArrayListTest {
     assertThat(list.remove(Boolean.TRUE)).isFalse();
     assertThat(list).containsExactly(false);
 
-    assertThat((boolean) list.remove(0)).isEqualTo(false);
+    assertThat((boolean) list.remove(0)).isFalse();
     assertThat(list).isEmpty();
 
     try {

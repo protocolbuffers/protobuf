@@ -228,7 +228,7 @@ public class LazyStringArrayListTest {
 
     try {
       list.addAllByteString(asList(BYTE_STRING_A));
-      assertWithMessage("expected exception").fail();;
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }

@@ -2176,7 +2176,8 @@ public class CodedInputStreamTest {
       input.readRawBytes(4);
       assertWithMessage("Should have thrown truncatedMessage").fail();
     } catch (InvalidProtocolBufferException expected) {
-      assertThat(expected.getMessage())
+      assertThat(expected)
+          .hasMessageThat()
           .isEqualTo(InvalidProtocolBufferException.truncatedMessage().getMessage());
     }
 

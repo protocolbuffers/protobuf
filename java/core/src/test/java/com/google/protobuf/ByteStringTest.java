@@ -733,8 +733,7 @@ public class ByteStringTest {
 
   @Test
   public void testToString() {
-    String toString =
-        ByteString.copyFrom("Here are some bytes: \t\u00a1".getBytes(StandardCharsets.UTF_8)).toString();
+    String toString = ByteString.copyFromUtf8("Here are some bytes: \t\u00a1").toString();
     assertWithMessage(toString).that(toString.contains("size=24")).isTrue();
     assertWithMessage(toString)
         .that(toString.contains("contents=\"Here are some bytes: \\t\\302\\241\""))
