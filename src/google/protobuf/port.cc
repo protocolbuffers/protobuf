@@ -186,6 +186,12 @@ void HandleAddOverflow(absl::int128 a, absl::int128 b) {
   ABSL_LOG(FATAL) << "Integer overflow in CheckedAdd: " << a << " + " << b;
 }
 
+void HandleNarrowOverflow(absl::int128 value, absl::int128 min,
+                          absl::int128 max) {
+  ABSL_LOG(FATAL) << "Integer overflow in CheckedNarrow: " << value
+                  << " not in [" << min << ", " << max << "]";
+}
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

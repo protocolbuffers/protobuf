@@ -261,12 +261,6 @@ static Offsets AlignAndAddSizeDynamic(
   }
 }
 
-template <typename T, typename U>
-T Narrow(U value) {
-  ABSL_CHECK_EQ(value, static_cast<T>(value));
-  return static_cast<T>(value);
-}
-
 UntypedMapBase::TypeInfo UntypedMapBase::GetTypeInfoDynamic(
     TypeKind key_type, TypeKind value_type,
     const MessageLite* value_prototype_if_message) {
@@ -276,9 +270,9 @@ UntypedMapBase::TypeInfo UntypedMapBase::GetTypeInfoDynamic(
   const auto value_offsets = AlignAndAddSizeDynamic(
       key_offsets.end, value_type, value_prototype_if_message, max_align);
   return TypeInfo{
-      Narrow<uint16_t>(AlignTo(value_offsets.end, max_align, max_align)),
-      Narrow<uint8_t>(value_offsets.start), static_cast<uint8_t>(key_type),
-      static_cast<uint8_t>(value_type)};
+      CheckedNarrow<uint16_t>(AlignTo(value_offsets.end, max_align, max_align)),
+      CheckedNarrow<uint8_t>(value_offsets.start),
+      static_cast<uint8_t>(key_type), static_cast<uint8_t>(value_type)};
 }
 
 void UntypedMapBase::InsertOrReplaceNodes(Arena* arena, NodeBase* list,

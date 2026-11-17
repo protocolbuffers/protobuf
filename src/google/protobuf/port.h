@@ -17,6 +17,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <new>
 #include <string>
 #include <type_traits>
@@ -1005,6 +1006,38 @@ inline int CheckedAdd(ScalarType1 a, ScalarType2 b) {
   return sum;
 }
 #endif
+
+[[noreturn]] PROTOBUF_EXPORT PROTOBUF_NOINLINE void HandleNarrowOverflow(
+    absl::int128 value, absl::int128 min, absl::int128 max);
+
+template <typename T, typename U>
+[[noreturn]] PROTOBUF_NOINLINE void HandleNarrowOverflow(U value) {
+  HandleNarrowOverflow(absl::int128(value),
+                       absl::int128(std::numeric_limits<T>::min()),
+                       absl::int128(std::numeric_limits<T>::max()));
+}
+
+template <typename T, typename U>
+inline T CheckedNarrow(U value) {
+  static_assert(std::is_integral_v<T> && std::is_integral_v<U>);
+  static_assert(!std::is_same_v<std::remove_cv_t<T>, bool> &&
+                !std::is_same_v<std::remove_cv_t<U>, bool>);
+  static_assert(sizeof(T) <= 8 && sizeof(U) <= 8);
+#if ABSL_HAVE_BUILTIN(__builtin_add_overflow)
+  T result;
+  if (ABSL_PREDICT_FALSE(__builtin_add_overflow(value, 0, &result))) {
+    HandleNarrowOverflow<T>(value);
+  }
+  return result;
+#else
+  const absl::int128 v128 = absl::int128(value);
+  const T result = static_cast<T>(value);
+  if (ABSL_PREDICT_FALSE(v128 != absl::int128(result))) {
+    HandleNarrowOverflow<T>(value);
+  }
+  return result;
+#endif
+}
 
 enum class BoundsCheckMode { kNoEnforcement, kReturnDefault, kAbort };
 

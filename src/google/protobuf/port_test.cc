@@ -169,6 +169,43 @@ TEST(PortTest, CheckedAddWithLargerTypes) {
                HasSubstr("Integer overflow in CheckedAdd: -2147483658 + 0"));
 }
 
+TEST(PortTest, CheckedNarrow) {
+  EXPECT_EQ(CheckedNarrow<uint8_t>(0), 0);
+  EXPECT_EQ(CheckedNarrow<uint8_t>(255), 255);
+  EXPECT_DEATH(
+      CheckedNarrow<uint8_t>(256),
+      HasSubstr("Integer overflow in CheckedNarrow: 256 not in [0, 255]"));
+  EXPECT_DEATH(
+      CheckedNarrow<uint8_t>(-1),
+      HasSubstr("Integer overflow in CheckedNarrow: -1 not in [0, 255]"));
+
+  EXPECT_EQ(CheckedNarrow<int8_t>(-128), -128);
+  EXPECT_EQ(CheckedNarrow<int8_t>(127), 127);
+  EXPECT_DEATH(
+      CheckedNarrow<int8_t>(-129),
+      HasSubstr("Integer overflow in CheckedNarrow: -129 not in [-128, 127]"));
+  EXPECT_DEATH(
+      CheckedNarrow<int8_t>(128),
+      HasSubstr("Integer overflow in CheckedNarrow: 128 not in [-128, 127]"));
+
+  EXPECT_EQ(CheckedNarrow<uint16_t>(size_t{65535}), 65535);
+  EXPECT_DEATH(
+      CheckedNarrow<uint16_t>(size_t{65536}),
+      HasSubstr("Integer overflow in CheckedNarrow: 65536 not in [0, 65535]"));
+
+  EXPECT_EQ(CheckedNarrow<uint32_t>(int32_t{0}), 0u);
+  EXPECT_DEATH(CheckedNarrow<uint32_t>(int32_t{-1}),
+               HasSubstr("Integer overflow in CheckedNarrow: -1 not in [0, "
+                         "4294967295]"));
+
+  EXPECT_EQ(
+      CheckedNarrow<int64_t>(uint64_t{std::numeric_limits<int64_t>::max()}),
+      std::numeric_limits<int64_t>::max());
+  EXPECT_DEATH(CheckedNarrow<int64_t>(std::numeric_limits<uint64_t>::max()),
+               HasSubstr("Integer overflow in CheckedNarrow: "
+                         "18446744073709551615 not in ["));
+}
+
 }  // namespace
 }  // namespace internal
 }  // namespace protobuf
@@ -183,7 +220,12 @@ int CodegenCheckedAddSizeT(int a, size_t b) {
   return google::protobuf::internal::CheckedAdd(a, b);
 }
 
+uint16_t CodegenCheckedNarrowU16(size_t v) {
+  return google::protobuf::internal::CheckedNarrow<uint16_t>(v);
+}
+
 int odr_use = (google::protobuf::internal::StrongPointer(&CodegenCheckedAddInt),
-               google::protobuf::internal::StrongPointer(&CodegenCheckedAddSizeT), 1);
+               google::protobuf::internal::StrongPointer(&CodegenCheckedAddSizeT),
+               google::protobuf::internal::StrongPointer(&CodegenCheckedNarrowU16), 1);
 
 #include "google/protobuf/port_undef.inc"
