@@ -375,6 +375,23 @@ void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m) {
     _upb_FieldDef_Resolve(ctx, m->full_name, f);
   }
 
+  if (upb_MessageDef_IsMapEntry(m)) {
+    if (m->field_count != 2) {
+      _upb_DefBuilder_Errf(ctx, "map_entry must have two fields (%s)",
+                           m->full_name);
+    }
+    const upb_FieldDef* key = upb_MessageDef_Field(m, 0);
+    const upb_FieldDef* value = upb_MessageDef_Field(m, 1);
+    if (upb_FieldDef_Number(key) != 1) {
+      _upb_DefBuilder_Errf(ctx, "map_entry key must be field 1 (%s)",
+                           m->full_name);
+    }
+    if (upb_FieldDef_Number(value) != 2) {
+      _upb_DefBuilder_Errf(ctx, "map_entry value must be field 2 (%s)",
+                           m->full_name);
+    }
+  }
+
   m->in_message_set = false;
   for (int i = 0; i < upb_MessageDef_NestedExtensionCount(m); i++) {
     upb_FieldDef* ext = (upb_FieldDef*)upb_MessageDef_NestedExtension(m, i);
