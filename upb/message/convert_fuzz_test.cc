@@ -616,6 +616,14 @@ TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression_b529945368) {
                   20),
       372456973, 1140553636);
 }
+
+TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression_b574481307) {
+  ArbitraryMiniTableConvertFuzz(
+      upb::fuzz::MiniTableFuzzInput{
+          {"&", "", "%%%", "", ""}, {}, "#3", {0, 2884765147, 4294967295}},
+      upb::fuzz::MiniTableFuzzInput{{"&"}, {}, "", {1}},
+      std::string("\n\000", 2), 623911074, 3917243171);
+}
 }  // namespace
 
 }  // namespace upb
