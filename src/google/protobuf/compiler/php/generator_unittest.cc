@@ -252,15 +252,37 @@ TEST_F(PhpGeneratorTest, CustomEnumNames) {
       MY_ENUM_UNKNOWN = 0;
       MY_ENUM_BAR = 1 [(pb.enumvalue.json).string = "custom_bar"];
       MY_ENUM_BAZ = 2;
+      MY_ENUM_EMPTY_OPT = 3 [(pb.enumvalue.json) = {}];
+      MY_ENUM_EMPTY_STR = 4 [(pb.enumvalue.json).string = ""];
+    }
+  )schema");
+
+  CreateTempFile("only_empty.proto", R"schema(
+    edition = "2026";
+    package foo;
+    import "google/protobuf/json_enumvalue_options.proto";
+    enum OnlyEmptyEnum {
+      ONLY_EMPTY_UNKNOWN = 0 [(pb.enumvalue.json) = {}];
+      ONLY_EMPTY_FIRST = 1 [(pb.enumvalue.json) = {}];
     }
   )schema");
 
   RunProtoc(
-      "protocol_compiler --proto_path=$tmpdir --php_out=$tmpdir foo.proto");
+      "protocol_compiler --proto_path=$tmpdir --php_out=$tmpdir "
+      "foo.proto only_empty.proto");
 
   ExpectNoErrors();
   ExpectFileContentContainsSubstring(
       "GPBMetadata/Foo.php", "\"foo.MyEnum.MY_ENUM_BAR\" => \"custom_bar\"");
+  ExpectFileContentContainsSubstring(
+      "GPBMetadata/Foo.php", "\"foo.MyEnum.MY_ENUM_EMPTY_STR\" => \"\"");
+  ExpectFileContentNotContainsSubstring("GPBMetadata/Foo.php",
+                                        "\"foo.MyEnum.MY_ENUM_BAZ\"");
+  ExpectFileContentNotContainsSubstring("GPBMetadata/Foo.php",
+                                        "\"foo.MyEnum.MY_ENUM_EMPTY_OPT\"");
+  ExpectFileContentContainsSubstring("GPBMetadata/OnlyEmpty.php", ", true);");
+  ExpectFileContentNotContainsSubstring("GPBMetadata/OnlyEmpty.php",
+                                        "foo.OnlyEmptyEnum");
 }
 
 }  // namespace

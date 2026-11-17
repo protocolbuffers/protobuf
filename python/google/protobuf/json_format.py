@@ -974,11 +974,14 @@ def _GetJsonEnumValueOption(ev, extension_descriptor):
     extension_descriptor: The extension descriptor for 'pb.enumvalue.json'.
 
   Returns:
-    The JsonEnumValueOptions message if the extension is present,
-    otherwise None.
+    The JsonEnumValueOptions message if the extension and its 'string' field are
+    present, otherwise None.
   """
-  if ev.GetOptions().HasExtension(extension_descriptor):
-    return ev.GetOptions().Extensions[extension_descriptor]
+  options = ev.GetOptions()
+  if options.HasExtension(extension_descriptor):
+    option = options.Extensions[extension_descriptor]
+    if option.HasField('string'):
+      return option
   return None
 
 
@@ -1011,11 +1014,9 @@ def _GetCustomJsonEnumNames(
 
   if enumvalue_json_extension is not None:
     for ev in enum_type.values:
-      options = ev.GetOptions()
-      if options.HasExtension(enumvalue_json_extension):
-        option = options.Extensions[enumvalue_json_extension]
-        if option.HasField('string'):
-          custom_names[option.string] = ev
+      option = _GetJsonEnumValueOption(ev, enumvalue_json_extension)
+      if option is not None:
+        custom_names[option.string] = ev
 
   custom_enum_names_cache[enum_type] = custom_names
   return custom_names

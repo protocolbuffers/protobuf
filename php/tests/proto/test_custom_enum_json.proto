@@ -24,6 +24,24 @@ enum Armor {
   ARMOR_SABATON = 7 [(pb.enumvalue.json).string = "sabaton"];
   ARMOR_SOLLERET = 7 [(pb.enumvalue.json).string = "sabaton"];
   ARMOR_HACHI_MAI_DO = 8 [(pb.enumvalue.json).string = "8"];
+  ARMOR_VAMBRACE = 9 [(pb.enumvalue.json) = {}];
+  ARMOR_GREAVES = 10 [(pb.enumvalue.json) = {}];
+  ARMOR_CUIRASS = 11 [(pb.enumvalue.json) = {}];
+  ARMOR_BREASTPLATE = 11;
+  ARMOR_TASSET = 12;
+  ARMOR_FAULD = 12 [(pb.enumvalue.json) = {}];
+}
+
+enum Weapon {
+  WEAPON_UNKNOWN = 0 [(pb.enumvalue.json) = {}];
+  WEAPON_SWORD = 1 [(pb.enumvalue.json) = {}];
+  WEAPON_MACE = 2 [(pb.enumvalue.json) = {}];
+}
+
+enum EmptyOptionOrder {
+  VAL_UNSPECIFIED = 0;
+  VAL_EMPTY_OPT = 1 [(pb.enumvalue.json) = {}];
+  VAL_EMPTY_STR = 2 [(pb.enumvalue.json).string = ""];
 }
 
 message Knight {
@@ -36,4 +54,7 @@ message Knight {
     SHIELD_BUCKLER = 1 [(pb.enumvalue.json).string = "buckler-custom"];
   }
   Shield shield = 4;
+  Weapon weapon = 5;
+  EmptyOptionOrder empty_option_order = 6;
+  repeated Weapon weapons = 7;
 }
