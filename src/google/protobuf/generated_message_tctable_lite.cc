@@ -336,16 +336,17 @@ const TcParseTableBase::FieldEntry* TcParser::FindFieldEntry(
     PROTOBUF_ASSUME(entry != nullptr);
     return entry;
   }
+  ABSL_DCHECK_LT(field_num, 0xFFFFFFFFu);
   const uint16_t* lookup_table = table->field_lookup_begin();
   for (;;) {
 #ifdef ABSL_IS_LITTLE_ENDIAN
     memcpy(&fstart, lookup_table, sizeof(fstart));
 #else
-    fstart = lookup_table[0] | (lookup_table[1] << 16);
+    fstart = uint32_t{lookup_table[0]} | (uint32_t{lookup_table[1]} << 16);
 #endif
+    if (field_num < fstart) return nullptr;
     lookup_table += sizeof(fstart) / sizeof(*lookup_table);
     uint32_t num_skip_entries = *lookup_table++;
-    if (field_num < fstart) return nullptr;
     adj_fnum = field_num - fstart;
     uint32_t skip_num = adj_fnum / 16;
     if (ABSL_PREDICT_TRUE(skip_num < num_skip_entries)) {

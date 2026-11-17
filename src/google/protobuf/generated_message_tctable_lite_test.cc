@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <cstring>
 #include <memory>
+#include <new>
 #include <utility>
 
 #include "google/protobuf/descriptor.pb.h"
@@ -346,6 +347,10 @@ TEST(IsEntryForFieldNumTest, Matcher) {
 class FindFieldEntryTest : public ::testing::Test {
  public:
   // Calls the private `FindFieldEntry` function.
+  static const TcParseTableBase::FieldEntry* FindFieldEntry(
+      const TcParseTableBase* table, uint32_t field_num) {
+    return TcParser::FindFieldEntry(table, field_num);
+  }
   template <size_t kFastTableSizeLog2, size_t kNumEntries, size_t kNumFieldAux,
             size_t kNameTableSize, size_t kFieldLookupTableSize>
   static const TcParseTableBase::FieldEntry* FindFieldEntry(
@@ -648,6 +653,33 @@ TEST_F(FindFieldEntryTest, EmptyMessage) {
     EXPECT_THAT(FindFieldEntry(table, i), Eq(nullptr));
   }
   EXPECT_THAT(MessageName(table), Eq("MessageName"));
+}
+
+TEST_F(FindFieldEntryTest, SentinelDoesNotReadPastEnd) {
+  constexpr uint16_t kLookupOffset = sizeof(TcParseTableBase);
+  constexpr uint16_t kSentinel[] = {0xFFFF, 0xFFFF};
+  constexpr size_t kByteSize = kLookupOffset + sizeof(kSentinel);
+
+  void* mem =
+      AllocateAligned(kByteSize, std::align_val_t{alignof(TcParseTableBase)});
+  auto* table = ::new (mem)
+      TcParseTableBase(0, 0, 0, 0, kLookupOffset, 0xFFFFFFFFu, kLookupOffset, 0,
+                       0, kLookupOffset, kByteSize, nullptr, nullptr, nullptr);
+  std::memcpy(table->field_lookup_begin(), kSentinel, sizeof(kSentinel));
+
+  for (uint32_t field_num : {0u, 33u, 0x1FFFFFFFu}) {
+    EXPECT_THAT(FindFieldEntry(table, field_num), Eq(nullptr))
+        << "field_num=" << field_num;
+  }
+  SizedAlignedDelete(mem, kByteSize,
+                     std::align_val_t{alignof(TcParseTableBase)});
+
+  DynamicMessageFactory factory;
+  std::unique_ptr<Message> msg(
+      factory.GetPrototype(proto2_unittest::TestEmptyMessage::descriptor())
+          ->New());
+  EXPECT_FALSE(msg->ParseFromString(absl::string_view("\x00", 1)));
+  EXPECT_TRUE(msg->ParseFromString(absl::string_view("\x88\x02\x00", 3)));
 }
 
 // Make a monster with lots of field numbers
