@@ -437,10 +437,11 @@ const char* EpsCopyInputStream::ReadCordFallback(const char* ptr, int size,
 
 const char* EpsCopyInputStream::InitFrom(io::ZeroCopyInputStream* zcis) {
   zcis_ = zcis;
-  const void* data;
-  int size;
+  const void* data = nullptr;
+  int size = 0;
   limit_ = INT_MAX;
-  if (zcis->Next(&data, &size)) {
+  // Next() may return zero-size buffers. Hence we loop.
+  while (zcis->Next(&data, &size)) {
     overall_limit_ -= size;
     if (size > kSlopBytes) {
       auto ptr = static_cast<const char*>(data);
@@ -449,7 +450,7 @@ const char* EpsCopyInputStream::InitFrom(io::ZeroCopyInputStream* zcis) {
       next_chunk_ = patch_buffer_;
       if (aliasing_ == kOnPatch) aliasing_ = kNoDelta;
       return ptr;
-    } else {
+    } else if (size > 0) {
       limit_end_ = buffer_end_ = patch_buffer_ + kSlopBytes;
       next_chunk_ = patch_buffer_;
       auto ptr = patch_buffer_ + kPatchBufferSize - size;

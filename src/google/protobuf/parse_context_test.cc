@@ -519,6 +519,101 @@ PB_TEST(ReadPackedFixedTest, HugeLengthReserveIsCapped) {
   EXPECT_EQ(space_allocated(2 * uint32_t{kSafeStringSize}), at_cap);
 }
 
+// Wraps TestZeroCopyInputStream to leave *data untouched or set *data = nullptr
+// on legal size == 0 chunks.
+class EmptyChunkInputStream final : public io::ZeroCopyInputStream {
+ public:
+  EmptyChunkInputStream(const std::vector<std::string>& chunks,
+                        bool null_on_empty)
+      : inner_(chunks), null_on_empty_(null_on_empty) {}
+
+  bool Next(const void** data, int* size) override {
+    const void* inner_data = nullptr;
+    if (!inner_.Next(&inner_data, size)) return false;
+    if (*size > 0) {
+      *data = inner_data;
+    } else if (null_on_empty_) {
+      *data = nullptr;
+    }
+    return true;
+  }
+  void BackUp(int count) override { inner_.BackUp(count); }
+  bool Skip(int count) override { return inner_.Skip(count); }
+  int64_t ByteCount() const override { return inner_.ByteCount(); }
+
+ private:
+  io::internal::TestZeroCopyInputStream inner_;
+  bool null_on_empty_;
+};
+
+PB_TEST(InitFromZeroCopyStreamTest, SkipsEmptyChunks) {
+  const bool null_on_empty =
+      PB_TEST_CHOOSE_VALUE((false, true), {"untouched_data", "null_data"});
+
+  {
+    EmptyChunkInputStream stream({"", ""}, null_on_empty);
+    const char* ptr = nullptr;
+    ParseContext ctx(kMaxLimit, false, &ptr, &stream);
+    EXPECT_GT(ctx.BytesAvailable(ptr), 0);
+    EXPECT_TRUE(ctx.Done(&ptr));
+    EXPECT_TRUE(ctx.EndedAtEndOfStream());
+  }
+  {
+    EmptyChunkInputStream stream({"", "", "hello"}, null_on_empty);
+    const char* ptr = nullptr;
+    ParseContext ctx(kMaxLimit, false, &ptr, &stream);
+    EXPECT_EQ(ctx.BytesAvailable(ptr), 5);
+    std::string out;
+    ptr = ctx.ReadString(ptr, 5, &out);
+    ASSERT_NE(ptr, nullptr);
+    EXPECT_EQ(out, "hello");
+    EXPECT_TRUE(ctx.Done(&ptr));
+    EXPECT_TRUE(ctx.EndedAtEndOfStream());
+  }
+  {
+    const std::string large(32, 'x');
+    EmptyChunkInputStream stream({"", "", large}, null_on_empty);
+    const char* ptr = nullptr;
+    ParseContext ctx(kMaxLimit, false, &ptr, &stream);
+    EXPECT_EQ(ctx.BytesAvailable(ptr), static_cast<int>(large.size()));
+    std::string out;
+    ptr = ctx.ReadString(ptr, static_cast<int>(large.size()), &out);
+    ASSERT_NE(ptr, nullptr);
+    EXPECT_EQ(out, large);
+    EXPECT_TRUE(ctx.Done(&ptr));
+    EXPECT_TRUE(ctx.EndedAtEndOfStream());
+  }
+  {
+    EmptyChunkInputStream stream({"", "", "hello", "extra"}, null_on_empty);
+    const char* ptr = nullptr;
+    ParseContext ctx(kMaxLimit, false, &ptr, &stream, /*limit=*/5);
+    std::string out;
+    ptr = ctx.ReadString(ptr, 5, &out);
+    ASSERT_NE(ptr, nullptr);
+    EXPECT_EQ(out, "hello");
+    EXPECT_TRUE(ctx.Done(&ptr));
+    EXPECT_TRUE(ctx.EndedAtLimit());
+  }
+  {
+    const std::string cord_payload(EpsCopyInputStream::kMaxCordBytesToCopy + 32,
+                                   'c');
+    EmptyChunkInputStream stream({cord_payload, "", "", "tail"}, null_on_empty);
+    const char* ptr = nullptr;
+    ParseContext ctx(kMaxLimit, false, &ptr, &stream);
+    absl::Cord cord;
+    ptr = ctx.ReadCord(ptr, static_cast<int>(cord_payload.size()), &cord);
+    ASSERT_NE(ptr, nullptr);
+    EXPECT_EQ(cord, cord_payload);
+    EXPECT_EQ(ctx.BytesAvailable(ptr), 4);
+    std::string tail;
+    ptr = ctx.ReadString(ptr, 4, &tail);
+    ASSERT_NE(ptr, nullptr);
+    EXPECT_EQ(tail, "tail");
+    EXPECT_TRUE(ctx.Done(&ptr));
+    EXPECT_TRUE(ctx.EndedAtEndOfStream());
+  }
+}
+
 }  // namespace
 }  // namespace internal
 }  // namespace protobuf
