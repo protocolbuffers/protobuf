@@ -236,7 +236,7 @@ struct ABSL_ATTRIBUTE_WARN_UNUSED ArenaOptions final {
 // This is a thread-safe implementation: multiple threads may allocate from the
 // arena concurrently. Destruction is not thread-safe and the destructing
 // thread must synchronize with users of the arena first.
-class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
+class PROTOBUF_EXPORT
 #ifdef __clang__
     // TODO: Enable this for GCC.
     ABSL_ATTRIBUTE_WARN_UNUSED
@@ -676,7 +676,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   };
 
  private:
-  internal::ThreadSafeArena impl_;
+  alignas(8) internal::ThreadSafeArena impl_;
 
   static constexpr void StaticAssertArenaLayout();
 

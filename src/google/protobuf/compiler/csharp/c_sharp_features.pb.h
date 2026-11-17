@@ -49,7 +49,7 @@ namespace pb {
 class CSharpFeatures;
 struct CSharpFeaturesGlobalsTypeInternal;
 PROTOC_EXPORT extern const CSharpFeaturesGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) CSharpFeatures_globals_;
+    CSharpFeatures_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 }  // namespace pb
 namespace google {
 namespace protobuf {
