@@ -746,5 +746,29 @@ TEST(ReflectionTest, DefPoolFindMethodsRespectSize) {
   }
 }
 
+TEST(ReflectionTest, FileDefResolvesDiamondDag) {
+  google::protobuf::FileDescriptorSet set;
+  for (absl::string_view name : {"f_0.proto", "priv.proto"}) {
+    set.add_file()->set_name(name);
+  }
+  for (int k = 1; k <= 32; ++k) {
+    for (char c : {'a', 'b'}) {
+      google::protobuf::FileDescriptorProto* f = set.add_file();
+      f->set_name(absl::StrFormat("%c_%d.proto", c, k));
+      for (char p : absl::string_view(k == 1 ? "f" : "ab")) {
+        f->add_public_dependency(f->dependency_size());
+        f->add_dependency(absl::StrFormat("%c_%d.proto", p, k - 1));
+      }
+      if (k == 32 && c == 'a') f->add_dependency("priv.proto");
+    }
+  }
+  absl::StatusOr<upb::DefPool> pool = LoadDescriptorSetFromProto(set);
+  ASSERT_TRUE(pool.ok()) << pool.status();
+  upb::FileDefPtr top = pool->FindFileByName("a_32.proto");
+  ASSERT_TRUE(top);
+  EXPECT_TRUE(top.resolves("f_0.proto"));
+  EXPECT_FALSE(top.resolves("priv.proto"));
+}
+
 }  // namespace
 }  // namespace upb_test
