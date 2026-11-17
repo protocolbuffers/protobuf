@@ -53,7 +53,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
               //~ Note that a nullptr received from upb manifests as Option::None
               submsg
                   .map(|ptr| unsafe { $pbr$::MessageViewInner::wrap(ptr).into() })
-                 .unwrap_or($msg_type$View::default())
+                  .unwrap_or_default()
               )rs");
                 } else {
                   ctx.Emit({{"getter_thunk", ThunkName(ctx, field, "get")}},
