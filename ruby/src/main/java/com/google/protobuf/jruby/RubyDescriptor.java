@@ -175,11 +175,16 @@ public class RubyDescriptor extends RubyObject {
     return descriptor.findFieldByName(name);
   }
 
+  protected RubyDescriptorPool getPool() {
+    return pool;
+  }
+
   protected void setDescriptor(
       ThreadContext context, Descriptor descriptor, RubyDescriptorPool pool) {
     Ruby runtime = context.runtime;
     Map<FieldDescriptor, RubyFieldDescriptor> cache = new HashMap();
     this.descriptor = descriptor;
+    this.pool = pool;
 
     // Populate the field caches
     fieldDescriptors = new HashMap<IRubyObject, RubyFieldDescriptor>();
@@ -237,6 +242,7 @@ public class RubyDescriptor extends RubyObject {
   private static RubyClass cOneofDescriptor;
 
   private Descriptor descriptor;
+  private RubyDescriptorPool pool;
   private IRubyObject name;
   private Map<IRubyObject, RubyFieldDescriptor> fieldDescriptors;
   private Map<IRubyObject, RubyOneofDescriptor> oneofDescriptors;

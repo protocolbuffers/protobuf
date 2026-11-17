@@ -14,6 +14,7 @@ import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.ServiceDescriptor;
+import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
@@ -169,7 +170,7 @@ public class RubyDescriptorPool extends RubyObject {
   private void registerExtension(
       ThreadContext context, FieldDescriptor descriptor, String parentPath) {
     if (descriptor.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
-      registry.add(descriptor, descriptor.toProto());
+      registry.add(descriptor, DynamicMessage.getDefaultInstance(descriptor.getMessageType()));
     } else {
       registry.add(descriptor);
     }
