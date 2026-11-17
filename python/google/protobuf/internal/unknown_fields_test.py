@@ -17,6 +17,7 @@ from google.protobuf import descriptor
 from google.protobuf import text_format
 from google.protobuf import unknown_fields
 from google.protobuf.internal import api_implementation
+from google.protobuf.internal import decoder
 from google.protobuf.internal import encoder
 from google.protobuf.internal import message_set_extensions_pb2
 from google.protobuf.internal import missing_enum_values_pb2
@@ -164,6 +165,86 @@ class UnknownFieldsTest(unittest.TestCase):
     self.assertNotIn(
         'discard', text_format.MessageToString(msg, print_unknown_fields=True)
     )
+
+  def _BuildRecursiveMessageWithUnknownFields(self, depth, unknown_depths):
+    unknown_bytes = unittest_pb2.TestAllTypes(
+        optional_string='discard'
+    ).SerializeToString()
+    msg = unittest_pb2.TestRecursiveMessage()
+    sub = msg
+    for level in range(depth + 1):
+      if level in unknown_depths:
+        sub.MergeFromString(unknown_bytes)
+      if level < depth:
+        sub = sub.a
+    sub.i = 1
+    return msg
+
+  def testDiscardUnknownFieldsAtDefaultMaxDepth(self):
+    if api_implementation.Type() != 'python':
+      api_implementation._c_module.SetAllowOversizeProtos(False)
+    clean_bytes = self._BuildRecursiveMessageWithUnknownFields(
+        100, ()
+    ).SerializeToString()
+    dirty_bytes = self._BuildRecursiveMessageWithUnknownFields(
+        100, (63, 75, 100)
+    ).SerializeToString()
+    self.assertNotEqual(dirty_bytes, clean_bytes)
+
+    parsed = unittest_pb2.TestRecursiveMessage()
+    parsed.ParseFromString(dirty_bytes)
+    parsed.DiscardUnknownFields()
+    self.assertEqual(parsed.SerializeToString(), clean_bytes)
+
+    leaf = parsed
+    for _ in range(100):
+      leaf = leaf.a
+    self.assertEqual(len(unknown_fields.UnknownFieldSet(leaf)), 0)
+
+  def testDiscardUnknownFieldsExceedingDefaultDepth(self):
+    if api_implementation.Type() != 'python':
+      api_implementation._c_module.SetAllowOversizeProtos(False)
+    msg = self._BuildRecursiveMessageWithUnknownFields(101, (101,))
+    leaf = msg
+    for _ in range(101):
+      leaf = leaf.a
+    if api_implementation.Type() == 'upb':
+      with self.assertRaises(RecursionError) as context:
+        msg.DiscardUnknownFields()
+      self.assertIsInstance(context.exception, RuntimeError)
+      self.assertGreater(len(unknown_fields.UnknownFieldSet(leaf)), 0)
+    else:
+      msg.DiscardUnknownFields()
+      self.assertEqual(len(unknown_fields.UnknownFieldSet(leaf)), 0)
+
+  def testDiscardUnknownFieldsOversizeProtos(self):
+    if api_implementation.Type() == 'python':
+      decoder.SetRecursionLimit(200)
+    else:
+      api_implementation._c_module.SetAllowOversizeProtos(True)
+    try:
+      clean_bytes = self._BuildRecursiveMessageWithUnknownFields(
+          150, ()
+      ).SerializeToString()
+      dirty_bytes = self._BuildRecursiveMessageWithUnknownFields(
+          150, (100, 150)
+      ).SerializeToString()
+      self.assertNotEqual(dirty_bytes, clean_bytes)
+
+      parsed = unittest_pb2.TestRecursiveMessage()
+      parsed.ParseFromString(dirty_bytes)
+      parsed.DiscardUnknownFields()
+      self.assertEqual(parsed.SerializeToString(), clean_bytes)
+
+      leaf = parsed
+      for _ in range(150):
+        leaf = leaf.a
+      self.assertEqual(len(unknown_fields.UnknownFieldSet(leaf)), 0)
+    finally:
+      if api_implementation.Type() == 'python':
+        decoder.SetRecursionLimit(decoder.DEFAULT_RECURSION_LIMIT)
+      else:
+        api_implementation._c_module.SetAllowOversizeProtos(False)
 
 
 @testing_refleaks.TestCase
