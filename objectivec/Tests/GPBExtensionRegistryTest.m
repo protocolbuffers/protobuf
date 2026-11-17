@@ -62,6 +62,10 @@ GPB_TEST_HAND_WRITTEN_INT32_EXTENSION(gParseExtensionEntry, kParseExtensionField
 
 #pragma clang diagnostic pop
 
+// Internal test hook defined in GPBExtensionRegistry.m.
+extern GPBExtensionSectionEntry *GPBFindExtensionSectionEntryInEntriesForTesting(
+    GPBExtensionSectionEntry *entries, size_t entryCount, Class messageClass, ssize_t fieldNumber);
+
 // What a generated extension function does: resolve the entry's descriptor.
 static GPBExtensionDescriptor *ResolveHandWrittenEntry(GPBExtensionSectionEntry *entry) {
   return GPBResolveExtensionSectionEntry(entry,
@@ -654,6 +658,114 @@ static GPBTestFakeImageSection *CreateFakeImageSections(size_t imageCount) {
   XCTAssertEqual(mismatchedSharedKeyResults, (size_t)0);
 
   free(sharedKeyResults);
+  GPBExtensionSectionIndexListDestroyForTesting(list);
+  free(sections);
+}
+
+- (void)testNilDescriptorAndMissingContainingClass {
+  GPBDescriptor *nilDescriptor = (GPBDescriptor *_Nonnull)(id)nil;
+  GPBExtensionDescriptor *nilExtension = (GPBExtensionDescriptor *_Nonnull)(id)nil;
+
+  GPBExtensionRegistry *registry = [[[GPBExtensionRegistry alloc] init] autorelease];
+  XCTAssertNil([registry extensionForDescriptor:nilDescriptor fieldNumber:1]);
+
+  [registry addExtension:nilExtension];
+  [registry addExtension:OptionalInt32Extension()];
+  XCTAssertNil([registry extensionForDescriptor:nilDescriptor fieldNumber:1]);
+
+  GPBExtensionRegistry *copied = [[registry copy] autorelease];
+  XCTAssertNil([copied extensionForDescriptor:nilDescriptor fieldNumber:1]);
+
+  GPBExtensionRegistry *globalRegistry = [GPBExtensionRegistry globalExtensionRegistry];
+  XCTAssertNil([globalRegistry extensionForDescriptor:nilDescriptor fieldNumber:1]);
+  XCTAssertNil([globalRegistry extensionForDescriptor:nilDescriptor
+                                          fieldNumber:kLookupExtensionFieldNumber]);
+
+  [registry addExtensions:globalRegistry];
+  XCTAssertNil([registry extensionForDescriptor:nilDescriptor
+                                    fieldNumber:kLookupExtensionFieldNumber]);
+
+  static GPBExtensionDescription missingClassDescription = {
+      .defaultValue.valueInt32 = 0,
+      .singletonName = "GPBExtensionRegistryTest_missingContainingClass",
+      .extendedClass.clazz = Nil,
+      .messageOrGroupClass.clazz = Nil,
+      .enumDescriptorFunc = NULL,
+      .fieldNumber = 40900,
+      .dataType = GPBDataTypeInt32,
+      .options = GPBExtensionNone,
+  };
+  static GPBExtensionSectionEntry missingClassEntry = {
+      .description = &missingClassDescription,
+      .descriptor = nil,
+  };
+  GPBExtensionDescriptor *malformedExtension = ResolveHandWrittenEntry(&missingClassEntry);
+  XCTAssertNotNil(malformedExtension);
+  XCTAssertNil(malformedExtension.containingMessageClass);
+#if !defined(NS_BLOCK_ASSERTIONS)
+  XCTAssertThrows([registry addExtension:malformedExtension]);
+#else
+  [registry addExtension:malformedExtension];
+#endif
+  XCTAssertNil([registry extensionForDescriptor:nilDescriptor fieldNumber:40900]);
+  XCTAssertNil([registry extensionForDescriptor:[TestAllExtensions descriptor] fieldNumber:40900]);
+}
+
+- (void)testExtensionSectionEntriesNilClassAndMalformedEntries {
+  const size_t kImageCount = 2;
+  GPBTestFakeImageSection *sections = CreateFakeImageSections(kImageCount);
+  GPBExtensionSectionIndexList *list = GPBExtensionSectionIndexListCreateForTesting();
+
+  XCTAssertTrue(
+      GPBExtensionSectionIndexListFindForTesting(list, Nil, kFakeImageSharedFieldNumber) == NULL);
+  GPBExtensionSectionIndexListAppendForTesting(list, sections[0].entries,
+                                               kFakeImageEntriesPerImage);
+  XCTAssertTrue(
+      GPBExtensionSectionIndexListFindForTesting(list, Nil, kFakeImageSharedFieldNumber) == NULL);
+
+  GPBExtensionDescription missingClassDescription = {
+      .singletonName = "GPBExtensionRegistryTest_malformedNilExtendedClass",
+      .extendedClass.clazz = Nil,
+      .fieldNumber = 40901,
+      .dataType = GPBDataTypeInt32,
+      .options = GPBExtensionNone,
+  };
+  GPBExtensionDescription validDescription = {
+      .singletonName = "GPBExtensionRegistryTest_validAfterMalformed",
+      .extendedClass.clazz = [TestAllExtensions class],
+      .fieldNumber = 40902,
+      .dataType = GPBDataTypeInt32,
+      .options = GPBExtensionNone,
+  };
+  GPBExtensionSectionEntry entries[3] = {
+      {.description = NULL, .descriptor = nil},
+      {.description = &missingClassDescription, .descriptor = nil},
+      {.description = &validDescription, .descriptor = nil},
+  };
+
+  // Nil messageClass returns NULL before inspecting any entry.
+  XCTAssertTrue(GPBFindExtensionSectionEntryInEntriesForTesting(entries, 3, Nil, 40901) == NULL);
+  XCTAssertTrue(GPBFindExtensionSectionEntryInEntriesForTesting(entries, 3, Nil, 40902) == NULL);
+
+#if !defined(NS_BLOCK_ASSERTIONS)
+  XCTAssertThrows(GPBFindExtensionSectionEntryInEntriesForTesting(
+      &entries[0], 1, [TestAllExtensions class], 40902));
+  XCTAssertThrows(GPBFindExtensionSectionEntryInEntriesForTesting(
+      &entries[1], 1, [TestAllExtensions class], 40901));
+  XCTAssertThrows(GPBExtensionSectionIndexListAppendForTesting(list, entries, 3));
+#else
+  XCTAssertTrue(GPBFindExtensionSectionEntryInEntriesForTesting(
+                    entries, 3, [TestAllExtensions class], 40901) == NULL);
+  XCTAssertTrue(GPBFindExtensionSectionEntryInEntriesForTesting(
+                    entries, 3, [TestAllExtensions class], 40902) == &entries[2]);
+  GPBExtensionSectionIndexListAppendForTesting(list, entries, 2);
+  XCTAssertEqual(GPBExtensionSectionIndexListCountForTesting(list), (size_t)1);
+  GPBExtensionSectionIndexListAppendForTesting(list, entries, 3);
+  XCTAssertEqual(GPBExtensionSectionIndexListCountForTesting(list), (size_t)2);
+  XCTAssertTrue(GPBExtensionSectionIndexListFindForTesting(list, [TestAllExtensions class],
+                                                           40902) == &entries[2]);
+#endif
+
   GPBExtensionSectionIndexListDestroyForTesting(list);
   free(sections);
 }

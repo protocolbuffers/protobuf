@@ -183,6 +183,9 @@ static void GPBAppendExtensionSectionImageIndex(GPBExtensionSectionIndexList *li
 // `list`, oldest image first, so the first loaded image wins.
 static GPBExtensionSectionEntry *GPBFindExtensionSectionEntryInIndexList(
     GPBExtensionSectionIndexList *list, Class messageClass, ssize_t fieldNumber) {
+  if (messageClass == Nil) {
+    return NULL;
+  }
   for (GPBExtensionSectionImageIndex *imageIndex =
            atomic_load_explicit(&list->head, memory_order_acquire);
        imageIndex != NULL;
@@ -194,6 +197,26 @@ static GPBExtensionSectionEntry *GPBFindExtensionSectionEntryInIndexList(
     GPBExtensionSectionEntry *entry =
         (GPBExtensionSectionEntry *)CFDictionaryGetValue(fieldMap, (const void *)fieldNumber);
     if (entry != NULL) {
+      return entry;
+    }
+  }
+  return NULL;
+}
+
+// Looks up (extended class, field number) in the section entries of one image
+// without building an index.
+static GPBExtensionSectionEntry *GPBFindExtensionSectionEntryInEntries(
+    GPBExtensionSectionEntry *entries, size_t entryCount, Class messageClass, ssize_t fieldNumber) {
+  if (messageClass == Nil) {
+    return NULL;
+  }
+  for (size_t entryIndex = 0; entryIndex < entryCount; ++entryIndex) {
+    GPBExtensionSectionEntry *entry = &entries[entryIndex];
+    Class extendedClass = GPBExtendedClassOfSectionEntry(entry);
+    if (extendedClass == Nil) {
+      continue;
+    }
+    if (extendedClass == messageClass && entry->description->fieldNumber == fieldNumber) {
       return entry;
     }
   }
@@ -267,6 +290,14 @@ void GPBExtensionSectionIndexListDestroyForTesting(GPBExtensionSectionIndexList 
     imageIndex = next;
   }
   free(list);
+}
+
+// Declared in GPBExtensionRegistryTest.m to avoid modifying shared headers.
+GPBExtensionSectionEntry *GPBFindExtensionSectionEntryInEntriesForTesting(
+    GPBExtensionSectionEntry *entries, size_t entryCount, Class messageClass, ssize_t fieldNumber);
+GPBExtensionSectionEntry *GPBFindExtensionSectionEntryInEntriesForTesting(
+    GPBExtensionSectionEntry *entries, size_t entryCount, Class messageClass, ssize_t fieldNumber) {
+  return GPBFindExtensionSectionEntryInEntries(entries, entryCount, messageClass, fieldNumber);
 }
 
 // Starts indexing the extension sections the first time it is called, and
@@ -349,6 +380,9 @@ static GPBExtensionSectionEntry *GPBFindExtensionSectionEntryInIndexes(Class mes
 // thread is still inside _dyld_register_func_for_add_image().
 static GPBExtensionSectionEntry *GPBFindExtensionSectionEntryInLoadedImages(Class messageClass,
                                                                             ssize_t fieldNumber) {
+  if (messageClass == Nil) {
+    return NULL;
+  }
   uint32_t imageCount = _dyld_image_count();
   for (uint32_t imageIndex = 0; imageIndex < imageCount; ++imageIndex) {
     const struct mach_header *header = _dyld_get_image_header(imageIndex);
@@ -358,12 +392,10 @@ static GPBExtensionSectionEntry *GPBFindExtensionSectionEntryInLoadedImages(Clas
     }
     size_t entryCount = 0;
     GPBExtensionSectionEntry *entries = GPBExtensionSectionOfImage(header, &entryCount);
-    for (size_t entryIndex = 0; entryIndex < entryCount; ++entryIndex) {
-      GPBExtensionSectionEntry *entry = &entries[entryIndex];
-      if (GPBExtendedClassOfSectionEntry(entry) == messageClass &&
-          entry->description->fieldNumber == fieldNumber) {
-        return entry;
-      }
+    GPBExtensionSectionEntry *entry =
+        GPBFindExtensionSectionEntryInEntries(entries, entryCount, messageClass, fieldNumber);
+    if (entry != NULL) {
+      return entry;
     }
   }
   return NULL;
@@ -384,8 +416,11 @@ static GPBExtensionSectionEntry *GPBFindExtensionSectionEntryInLoadedImages(Clas
 // the generated extension functions also use.
 static GPBExtensionDescriptor *GPBGlobalSectionExtensionForDescriptor(GPBDescriptor *descriptor,
                                                                       NSInteger fieldNumber) {
-  GPBExtensionSectionIndexingState state = GPBStartIndexingExtensionSections();
   Class messageClass = descriptor.messageClass;
+  if (messageClass == Nil) {
+    return nil;
+  }
+  GPBExtensionSectionIndexingState state = GPBStartIndexingExtensionSections();
   ssize_t key = fieldNumber;
   GPBExtensionSectionEntry *entry =
       (state == GPBExtensionSectionIndexingStateIndexed)
@@ -471,6 +506,11 @@ static BOOL GPBIsImmutableGlobalExtensionRegistry(GPBExtensionRegistry *registry
   }
 
   Class containingMessageClass = extension.containingMessageClass;
+  NSCAssert(containingMessageClass != Nil, @"Extension %@ missing containingMessageClass.",
+            extension);
+  if (containingMessageClass == Nil) {
+    return;
+  }
   CFMutableDictionaryRef extensionMap =
       (CFMutableDictionaryRef)CFDictionaryGetValue(mutableClassMap_, containingMessageClass);
   if (extensionMap == nil) {
@@ -489,6 +529,9 @@ static BOOL GPBIsImmutableGlobalExtensionRegistry(GPBExtensionRegistry *registry
 - (GPBExtensionDescriptor *)extensionForDescriptor:(GPBDescriptor *)descriptor
                                        fieldNumber:(NSInteger)fieldNumber {
   Class messageClass = descriptor.messageClass;
+  if (messageClass == Nil) {
+    return nil;
+  }
   CFMutableDictionaryRef extensionMap =
       (CFMutableDictionaryRef)CFDictionaryGetValue(mutableClassMap_, messageClass);
   ssize_t key = fieldNumber;
