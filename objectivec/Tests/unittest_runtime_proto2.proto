@@ -106,4 +106,5 @@ message Message2 {
   map<int32   , bytes   > map_int32_bytes       = 86;
   map<int32   , Enum    > map_int32_enum        = 87;
   map<int32   , Message2> map_int32_message     = 88;
+  map<bool    , Enum    > map_bool_enum         = 89;
 }

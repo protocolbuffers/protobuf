@@ -1396,19 +1396,41 @@
       initWithValidationFunction:Proto2MapEnumPlusExtra_IsValidValue] autorelease];
   [orig.knownMapField setEnum:Proto2MapEnumPlusExtra_EProto2MapEnumFoo forKey:0];
   [orig.unknownMapField setEnum:Proto2MapEnumPlusExtra_EProto2MapEnumExtra forKey:0];
+  orig.knownBoolMapField = [[[GPBBoolEnumDictionary alloc]
+      initWithValidationFunction:Proto2MapEnumPlusExtra_IsValidValue] autorelease];
+  orig.unknownBoolMapField = [[[GPBBoolEnumDictionary alloc]
+      initWithValidationFunction:Proto2MapEnumPlusExtra_IsValidValue] autorelease];
+  [orig.knownBoolMapField setEnum:Proto2MapEnumPlusExtra_EProto2MapEnumFoo forKey:NO];
+  [orig.knownBoolMapField setEnum:Proto2MapEnumPlusExtra_EProto2MapEnumBar forKey:YES];
+  [orig.unknownBoolMapField setEnum:Proto2MapEnumPlusExtra_EProto2MapEnumBaz forKey:NO];
+  [orig.unknownBoolMapField setEnum:Proto2MapEnumPlusExtra_EProto2MapEnumExtra forKey:YES];
 
   NSData *data = [orig data];
   XCTAssertNotNil(data);
+  XCTAssertEqual([orig serializedSize], data.length);
   TestEnumMap *msg1 = [TestEnumMap parseFromData:data error:NULL];
   XCTAssertEqual(msg1.knownMapField.count, 1U);
   int32_t val = -1;
   XCTAssertTrue([msg1.knownMapField getEnum:&val forKey:0]);
   XCTAssertEqual(val, Proto2MapEnum_Proto2MapEnumFoo);
+  XCTAssertEqual(msg1.knownBoolMapField.count, 2U);
+  val = -1;
+  XCTAssertTrue([msg1.knownBoolMapField getEnum:&val forKey:NO]);
+  XCTAssertEqual(val, Proto2MapEnum_Proto2MapEnumFoo);
+  val = -1;
+  XCTAssertTrue([msg1.knownBoolMapField getEnum:&val forKey:YES]);
+  XCTAssertEqual(val, Proto2MapEnum_Proto2MapEnumBar);
+  XCTAssertEqual(msg1.unknownBoolMapField.count, 1U);
+  val = -1;
+  XCTAssertTrue([msg1.unknownBoolMapField getEnum:&val forKey:NO]);
+  XCTAssertEqual(val, Proto2MapEnum_Proto2MapEnumBaz);
+  XCTAssertFalse([msg1.unknownBoolMapField getEnum:&val forKey:YES]);
   GPBUnknownFields *ufs = [[GPBUnknownFields alloc] initFromMessage:msg1];
-  XCTAssertEqual(ufs.count, 1U);
+  XCTAssertEqual(ufs.count, 2U);
   [ufs release];
 
   data = [msg1 data];
+  XCTAssertEqual([msg1 serializedSize], data.length);
   TestEnumMapPlusExtra *msg2 = [TestEnumMapPlusExtra parseFromData:data error:NULL];
   val = -1;
   XCTAssertEqual(msg2.knownMapField.count, 1U);
@@ -1417,6 +1439,20 @@
   val = -1;
   XCTAssertEqual(msg2.unknownMapField.count, 1U);
   XCTAssertTrue([msg2.unknownMapField getEnum:&val forKey:0]);
+  XCTAssertEqual(val, Proto2MapEnumPlusExtra_EProto2MapEnumExtra);
+  XCTAssertEqual(msg2.knownBoolMapField.count, 2U);
+  val = -1;
+  XCTAssertTrue([msg2.knownBoolMapField getEnum:&val forKey:NO]);
+  XCTAssertEqual(val, Proto2MapEnumPlusExtra_EProto2MapEnumFoo);
+  val = -1;
+  XCTAssertTrue([msg2.knownBoolMapField getEnum:&val forKey:YES]);
+  XCTAssertEqual(val, Proto2MapEnumPlusExtra_EProto2MapEnumBar);
+  XCTAssertEqual(msg2.unknownBoolMapField.count, 2U);
+  val = -1;
+  XCTAssertTrue([msg2.unknownBoolMapField getEnum:&val forKey:NO]);
+  XCTAssertEqual(val, Proto2MapEnumPlusExtra_EProto2MapEnumBaz);
+  val = -1;
+  XCTAssertTrue([msg2.unknownBoolMapField getEnum:&val forKey:YES]);
   XCTAssertEqual(val, Proto2MapEnumPlusExtra_EProto2MapEnumExtra);
   ufs = [[GPBUnknownFields alloc] initFromMessage:msg2];
   XCTAssertTrue(ufs.empty);
@@ -1485,6 +1521,8 @@
   val4.optionalInt32 = 135;
   [msg.mapInt32Message setObject:val3 forKey:234];
   [msg.mapInt32Message setObject:val4 forKey:2035];
+  [msg.mapBoolEnum setEnum:Message2_Enum_Bar forKey:false];
+  [msg.mapBoolEnum setEnum:Message2_Enum_Baz forKey:true];
 
   NSData *data = [msg data];
   XCTAssertNotNil(data);
@@ -1497,6 +1535,32 @@
   [val3 release];
   [val2 release];
   [val1 release];
+  [msg2 release];
+  [msg release];
+}
+
+- (void)testProto3MapBoolEnumRoundTripping {
+  Message3 *msg = [[Message3 alloc] init];
+  [msg.mapBoolEnum setEnum:Message3_Enum_Bar forKey:NO];
+  // Negative unknown raw enum value exercises 10-byte sign-extended int32 varints.
+  [msg.mapBoolEnum setRawValue:-1 forKey:YES];
+
+  NSData *data = [msg data];
+  XCTAssertNotNil(data);
+  XCTAssertEqual([msg serializedSize], data.length);
+
+  Message3 *msg2 = [[Message3 alloc] initWithData:data error:NULL];
+  XCTAssertNotNil(msg2);
+  XCTAssertEqualObjects(msg2, msg);
+
+  int32_t val = 0;
+  XCTAssertTrue([msg2.mapBoolEnum getEnum:&val forKey:NO]);
+  XCTAssertEqual(val, Message3_Enum_Bar);
+  XCTAssertTrue([msg2.mapBoolEnum getEnum:&val forKey:YES]);
+  XCTAssertEqual(val, Message3_Enum_GPBUnrecognizedEnumeratorValue);
+  XCTAssertTrue([msg2.mapBoolEnum getRawValue:&val forKey:YES]);
+  XCTAssertEqual(val, -1);
+
   [msg2 release];
   [msg release];
 }

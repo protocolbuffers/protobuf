@@ -11764,7 +11764,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
     if (_valueSet[i]) {
       ++count;
       size_t msgSize = ComputeDictBoolFieldSize((i == 1), kMapKeyFieldNumber, GPBDataTypeBool);
-      msgSize += ComputeDictInt32FieldSize(_values[i], kMapValueFieldNumber, valueDataType);
+      msgSize += ComputeDictEnumFieldSize(_values[i], kMapValueFieldNumber, valueDataType);
       result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
     }
   }
@@ -11783,11 +11783,11 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
       [outputStream writeInt32NoTag:tag];
       // Write the size of the message.
       size_t msgSize = ComputeDictBoolFieldSize((i == 1), kMapKeyFieldNumber, GPBDataTypeBool);
-      msgSize += ComputeDictInt32FieldSize(_values[i], kMapValueFieldNumber, valueDataType);
+      msgSize += ComputeDictEnumFieldSize(_values[i], kMapValueFieldNumber, valueDataType);
       [outputStream writeInt32NoTag:(int32_t)msgSize];
       // Write the fields.
       WriteDictBoolField(outputStream, (i == 1), kMapKeyFieldNumber, GPBDataTypeBool);
-      WriteDictInt32Field(outputStream, _values[i], kMapValueFieldNumber, valueDataType);
+      WriteDictEnumField(outputStream, _values[i], kMapValueFieldNumber, valueDataType);
     }
   }
 }

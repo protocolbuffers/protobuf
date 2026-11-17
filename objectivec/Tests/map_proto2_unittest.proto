@@ -30,11 +30,15 @@ enum Proto2MapEnumPlusExtra {
 message TestEnumMap {
   map<int32, Proto2MapEnum> known_map_field = 101;
   map<int32, Proto2MapEnum> unknown_map_field = 102;
+  map<bool, Proto2MapEnum> known_bool_map_field = 103;
+  map<bool, Proto2MapEnum> unknown_bool_map_field = 104;
 }
 
 message TestEnumMapPlusExtra {
   map<int32, Proto2MapEnumPlusExtra> known_map_field = 101;
   map<int32, Proto2MapEnumPlusExtra> unknown_map_field = 102;
+  map<bool, Proto2MapEnumPlusExtra> known_bool_map_field = 103;
+  map<bool, Proto2MapEnumPlusExtra> unknown_bool_map_field = 104;
 }
 
 message TestImportEnumMap {
