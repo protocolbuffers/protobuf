@@ -25,6 +25,7 @@ class Descriptor
     private $previous_klass;
     private $options;
     private $oneof_decl = [];
+    private $proto;
 
     public function __construct()
     {
@@ -160,6 +161,33 @@ class Descriptor
         return $this->options;
     }
 
+    public function toProto()
+    {
+        // Older google/cloud-bigquery-storage releases (<= 2.5.1) declare a
+        // placeholder Google\Protobuf\DescriptorProto class that is not a
+        // message.
+        if (!is_subclass_of(\Google\Protobuf\DescriptorProto::class, Message::class)) {
+            throw new \Exception(
+                'Google\Protobuf\DescriptorProto is not a generated protobuf ' .
+                'message class. An outdated package (such as ' .
+                'google/cloud-bigquery-storage <= 2.5.1) has declared a ' .
+                'placeholder for it. Please upgrade google/cloud-bigquery-storage.'
+            );
+        }
+        $proto = new \Google\Protobuf\DescriptorProto();
+        if ($this->proto !== null) {
+            $proto->mergeFromString($this->proto->serializeToString());
+        } else {
+            $full_name = trim((string) $this->full_name, '.');
+            $last_dot = strrpos($full_name, '.');
+            $short_name = $last_dot === false ? $full_name : substr($full_name, $last_dot + 1);
+            if ($short_name !== '') {
+                $proto->setName($short_name);
+            }
+        }
+        return $proto;
+    }
+
     public static function buildFromProto($proto, $file_proto, $containing, $custom_json_names = [])
     {
         $edition = FileDescriptor::resolveEdition($file_proto);
@@ -181,6 +209,7 @@ class Descriptor
         int $edition
     ) {
         $desc = new Descriptor();
+        $desc->proto = $proto;
 
         $message_name_without_package  = "";
         $classname = "";

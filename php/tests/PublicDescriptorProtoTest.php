@@ -22,6 +22,9 @@ use Google\Protobuf\OneofDescriptorProto;
 use Google\Protobuf\UninterpretedOption;
 use Google\Protobuf\UninterpretedOption\NamePart;
 use Test_descriptor_proto\TestProtoSchema;
+use Descriptors\TestDescriptorsMessage;
+use Presence_packing_proto2\TestProto2PresencePacking;
+use Presence_packing_editions\TestEditionsPresencePacking;
 
 class PublicDescriptorProtoTest extends TestBase
 {
@@ -202,5 +205,137 @@ class PublicDescriptorProtoTest extends TestBase
 
         $this->assertSame('PublicMsg', $publicProto->getName());
         $this->assertSame('InternalMsg', $internalProto->getName());
+    }
+
+    public function testDescriptorToProtoProto3AndSchemaExport(): void
+    {
+        new TestDescriptorsMessage();
+        $pool = DescriptorPool::getGeneratedPool();
+        $desc = $pool->getDescriptorByClassName(TestDescriptorsMessage::class);
+        $this->assertNotNull($desc);
+
+        $proto = $desc->toProto();
+        $this->assertInstanceOf(DescriptorProto::class, $proto);
+        $this->assertSame('TestDescriptorsMessage', $proto->getName());
+        $this->assertCount(8, $proto->getField());
+        $this->assertGreaterThanOrEqual(1, count($proto->getNestedType()));
+        $this->assertCount(2, $proto->getOneofDecl());
+        $this->assertSame('my_oneof', $proto->getOneofDecl()[0]->getName());
+
+        // Verify field metadata (types, numbers, proto3_optional).
+        $fieldsByNumber = [];
+        foreach ($proto->getField() as $f) {
+            $fieldsByNumber[$f->getNumber()] = $f;
+        }
+        $this->assertSame('optional_int32', $fieldsByNumber[1]->getName());
+        $this->assertSame(Type::TYPE_INT32, $fieldsByNumber[1]->getType());
+        $this->assertSame(Label::LABEL_OPTIONAL, $fieldsByNumber[1]->getLabel());
+        $this->assertSame('repeated_int32', $fieldsByNumber[31]->getName());
+        $this->assertSame(Label::LABEL_REPEATED, $fieldsByNumber[31]->getLabel());
+        $this->assertTrue($fieldsByNumber[52]->getProto3Optional());
+
+        // End-to-end BigQueryStorage workflow: set $desc->toProto() on ProtoSchema and round-trip.
+        $schema = new TestProtoSchema(['proto_descriptor' => $proto]);
+        $decodedSchema = new TestProtoSchema();
+        $decodedSchema->mergeFromString($schema->serializeToString());
+        $this->assertSame('TestDescriptorsMessage', $decodedSchema->getProtoDescriptor()->getName());
+        $this->assertCount(8, $decodedSchema->getProtoDescriptor()->getField());
+    }
+
+    public function testDescriptorToProtoProto2AndEditions(): void
+    {
+        new TestProto2PresencePacking();
+        new TestEditionsPresencePacking();
+        $pool = DescriptorPool::getGeneratedPool();
+
+        // Proto2 descriptor export (custom defaults + packing options).
+        $proto2Desc = $pool->getDescriptorByClassName(TestProto2PresencePacking::class);
+        $proto2 = $proto2Desc->toProto();
+        $this->assertSame('TestProto2PresencePacking', $proto2->getName());
+        $proto2Fields = [];
+        foreach ($proto2->getField() as $f) {
+            $proto2Fields[$f->getName()] = $f;
+        }
+        $this->assertSame('42', $proto2Fields['default_int32']->getDefaultValue());
+        $this->assertSame('custom', $proto2Fields['default_string']->getDefaultValue());
+        $this->assertTrue($proto2Fields['repeated_packed']->getOptions()->getPacked());
+        $this->assertFalse($proto2Fields['repeated_unpacked']->getOptions()->getPacked());
+
+        // Edition 2023 descriptor export (field features).
+        $editionsDesc = $pool->getDescriptorByClassName(TestEditionsPresencePacking::class);
+        $editionsProto = $editionsDesc->toProto();
+        $this->assertSame('TestEditionsPresencePacking', $editionsProto->getName());
+        $editionsFields = [];
+        foreach ($editionsProto->getField() as $f) {
+            $editionsFields[$f->getName()] = $f;
+        }
+        $this->assertSame(
+            FieldPresence::IMPLICIT,
+            $editionsFields['implicit_int32']->getOptions()->getFeatures()->getFieldPresence()
+        );
+    }
+
+    public function testDescriptorToProtoReturnsFreshCopy(): void
+    {
+        new TestDescriptorsMessage();
+        $desc = DescriptorPool::getGeneratedPool()
+            ->getDescriptorByClassName(TestDescriptorsMessage::class);
+
+        $copy1 = $desc->toProto();
+        $copy1->setName('MutatedName');
+        $copy1->setField([]);
+
+        $copy2 = $desc->toProto();
+        $this->assertSame('TestDescriptorsMessage', $copy2->getName());
+        $this->assertCount(8, $copy2->getField());
+    }
+
+    public function testDescriptorToProtoRejectsPlaceholderClass(): void
+    {
+        // google/cloud-bigquery-storage <= 2.5.1 declares a placeholder
+        // Google\Protobuf\DescriptorProto via Composer "autoload.files". Run in
+        // a child process so the placeholder doesn't leak into other tests.
+        $script = <<<'PHP'
+<?php
+namespace Google\Protobuf {
+    class DescriptorProto
+    {
+        public function __construct()
+        {
+            throw new \LogicException('Proto2 classes are not supported');
+        }
+    }
+}
+namespace {
+    require $argv[1] . '/vendor/autoload.php';
+    new \Descriptors\TestDescriptorsMessage();
+    $desc = \Google\Protobuf\DescriptorPool::getGeneratedPool()
+        ->getDescriptorByClassName(\Descriptors\TestDescriptorsMessage::class);
+    try {
+        $desc->toProto();
+        echo "NO_EXCEPTION";
+    } catch (\Exception $e) {
+        echo get_class($e) . ': ' . $e->getMessage();
+    }
+}
+PHP;
+        $file = tempnam(sys_get_temp_dir(), 'pb_placeholder_');
+        file_put_contents($file, $script);
+
+        $php_root = dirname(__DIR__);
+        $cmd = escapeshellarg(PHP_BINARY);
+        if (extension_loaded('protobuf')) {
+            $cmd .= ' -dextension=' . escapeshellarg(
+                $php_root . '/ext/google/protobuf/modules/protobuf.so');
+        }
+        $cmd .= ' ' . escapeshellarg($file) . ' ' . escapeshellarg($php_root);
+        $output = shell_exec($cmd . ' 2>&1');
+        unlink($file);
+
+        $this->assertIsString($output);
+        $this->assertStringNotContainsString('NO_EXCEPTION', $output);
+        $this->assertStringNotContainsString('LogicException', $output);
+        $this->assertStringContainsString(
+            'Please upgrade google/cloud-bigquery-storage', $output);
     }
 }

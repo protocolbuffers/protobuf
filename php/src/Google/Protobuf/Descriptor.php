@@ -82,4 +82,12 @@ class Descriptor
     {
         return $this->internal_desc->getRealOneofDeclCount();
     }
+
+    /**
+     * @return DescriptorProto
+     */
+    public function toProto()
+    {
+        return $this->internal_desc->toProto();
+    }
 }
