@@ -462,7 +462,7 @@ about your project (name and website) so we can add an entry for you.
 1.  Cybozu
 
     *   Website: https://github.com/cybozu/protobuf
-    *   Extension: 1179
+    *   Extensions: 1179, 1392
 
 1.  EngFlow
 
