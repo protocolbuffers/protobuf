@@ -28,6 +28,7 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/unittest.pb.h"
+#include "third_party/tcmalloc/malloc_hook.h"
 
 
 // Must be included last.
