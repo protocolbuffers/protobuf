@@ -23,6 +23,7 @@
 #include "upb/base/string_view.h"
 #include "upb/mem/alloc.h"
 #include "upb/mem/arena.hpp"
+#include "upb/mini_table/extension.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
 #include "upb/reflection/internal/def_pool.h"
@@ -743,6 +744,57 @@ TEST(ReflectionTest, DefPoolFindMethodsRespectSize) {
     EXPECT_TRUE(pool.FindExtensionByName(full_name));
     EXPECT_FALSE(
         pool.FindExtensionByName(full_name.substr(0, 11)));  // "pkg.test_ex"
+  }
+}
+
+TEST(ReflectionTest, MoreThanUint16MaxExtensions) {
+  // upb_FieldDef::layout_index indexes the file's flat extension table, and
+  // every extension in the file (top level plus nested) gets its own slot. A
+  // file with more than UINT16_MAX extensions must still give each extension
+  // a distinct mini-table instead of wrapping the index.
+  google::protobuf::FileDescriptorProto proto;
+  proto.set_name("many_exts.proto");
+  proto.set_package("pkg");
+  proto.set_syntax("proto2");
+
+  google::protobuf::DescriptorProto* msg = proto.add_message_type();
+  msg->set_name("M");
+  google::protobuf::DescriptorProto::ExtensionRange* range =
+      msg->add_extension_range();
+  range->set_start(1);
+  range->set_end(200000);
+
+  const int kCount = 70000;  // > UINT16_MAX
+  int number = 1;
+  for (int i = 0; i < kCount; i++) {
+    // Field numbers [19000, 20000) are reserved and cannot be used.
+    if (number >= 19000 && number < 20000) number = 20000;
+    google::protobuf::FieldDescriptorProto* ext = proto.add_extension();
+    ext->set_name(absl::StrFormat("ext_%d", i));
+    ext->set_number(number++);
+    ext->set_label(google::protobuf::FieldDescriptorProto::LABEL_OPTIONAL);
+    ext->set_type(google::protobuf::FieldDescriptorProto::TYPE_INT32);
+    ext->set_extendee(".pkg.M");
+  }
+
+  google::protobuf::FileDescriptorSet set;
+  *set.add_file() = proto;
+  absl::StatusOr<upb::DefPool> pool = LoadDescriptorSetFromProto(set);
+  ASSERT_TRUE(pool.ok()) << pool.status();
+
+  upb::MessageDefPtr m = pool->FindMessageByName("pkg.M");
+  ASSERT_TRUE(m);
+  for (int i : {0, 65535, 65536, kCount - 1}) {
+    upb::FieldDefPtr f =
+        pool->FindExtensionByName(absl::StrFormat("pkg.ext_%d", i));
+    ASSERT_TRUE(f) << i;
+    EXPECT_EQ(f.layout_index(), static_cast<uint32_t>(i));
+    EXPECT_EQ(upb_MiniTableExtension_Number(
+                  upb_FieldDef_MiniTableExtension(f.ptr())),
+              f.number());
+    EXPECT_EQ(upb_DefPool_FindExtensionByNumber(pool->ptr(), m.ptr(),
+                                                f.number()),
+              f.ptr());
   }
 }
 
