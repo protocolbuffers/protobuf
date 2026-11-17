@@ -26,25 +26,28 @@ namespace JsonEnumvalCustomString {
           string.Concat(
             "CjVnb29nbGUvcHJvdG9idWYvanNvbi9qc29uX2VudW12YWxfY3VzdG9tX3N0",
             "cmluZy5wcm90bxIaanNvbl9lbnVtdmFsX2N1c3RvbV9zdHJpbmcaImdvb2ds",
-            "ZS9wcm90b2J1Zi9qc29uX29wdGlvbnMucHJvdG8ihgIKBktuaWdodBIwCgVh",
+            "ZS9wcm90b2J1Zi9qc29uX29wdGlvbnMucHJvdG8iugIKBktuaWdodBIwCgVh",
             "cm1vchgBIAEoDjIhLmpzb25fZW51bXZhbF9jdXN0b21fc3RyaW5nLkFybW9y",
             "EjEKBmFybW9ycxgCIAMoDjIhLmpzb25fZW51bXZhbF9jdXN0b21fc3RyaW5n",
             "LkFybW9yEkMKCWFybW9yX21hcBgDIAMoCzIwLmpzb25fZW51bXZhbF9jdXN0",
-            "b21fc3RyaW5nLktuaWdodC5Bcm1vck1hcEVudHJ5GlIKDUFybW9yTWFwRW50",
-            "cnkSCwoDa2V5GAEgASgJEjAKBXZhbHVlGAIgASgOMiEuanNvbl9lbnVtdmFs",
-            "X2N1c3RvbV9zdHJpbmcuQXJtb3I6AjgBKtgCCgVBcm1vchIRCg1BUk1PUl9V",
-            "TktOT1dOEAASIwoQQVJNT1JfR1JFQVRfSEVMTRABGg2yPgoKCGdyOCBoZWxt",
-            "EhAKDEFSTU9SX0dPUkdFVBACEhwKDkFSTU9SX0dBVU5UTEVUEAMaCLI+BQoD",
-            "YSJiEh0KC0FSTU9SX1BMQVRFEAQaDLI+CQoHInBsYXRlIhIVCgpBUk1PUl9D",
-            "T0lGEAUaBbI+AgoAEiMKDkFSTU9SX1BBVUxEUk9OEAYaD7I+DAoKcAlhdWwK",
-            "ZHJvbhIfCg1BUk1PUl9TQUJBVE9OEAcaDLI+CQoHc2FiYXRvbhIgCg5BUk1P",
-            "Ul9TT0xMRVJFVBAHGgyyPgkKB3NhYmF0b24SHgoSQVJNT1JfSEFDSElfTUFJ",
-            "X0RPEAgaBrI+AwoBOBIlCg1BUk1PUl9HUkVBVkVTEAkaErI+DwoNQVJNT1Jf",
-            "R1JFQVZFUxoCEAFiCGVkaXRpb25zcOoH"));
+            "b21fc3RyaW5nLktuaWdodC5Bcm1vck1hcEVudHJ5EjIKBndlYXBvbhgEIAEo",
+            "DjIiLmpzb25fZW51bXZhbF9jdXN0b21fc3RyaW5nLldlYXBvbhpSCg1Bcm1v",
+            "ck1hcEVudHJ5EgsKA2tleRgBIAEoCRIwCgV2YWx1ZRgCIAEoDjIhLmpzb25f",
+            "ZW51bXZhbF9jdXN0b21fc3RyaW5nLkFybW9yOgI4ASrYAgoFQXJtb3ISEQoN",
+            "QVJNT1JfVU5LTk9XThAAEiMKEEFSTU9SX0dSRUFUX0hFTE0QARoNsj4KCghn",
+            "cjggaGVsbRIQCgxBUk1PUl9HT1JHRVQQAhIcCg5BUk1PUl9HQVVOVExFVBAD",
+            "GgiyPgUKA2EiYhIdCgtBUk1PUl9QTEFURRAEGgyyPgkKByJwbGF0ZSISFQoK",
+            "QVJNT1JfQ09JRhAFGgWyPgIKABIjCg5BUk1PUl9QQVVMRFJPThAGGg+yPgwK",
+            "CnAJYXVsCmRyb24SHwoNQVJNT1JfU0FCQVRPThAHGgyyPgkKB3NhYmF0b24S",
+            "IAoOQVJNT1JfU09MTEVSRVQQBxoMsj4JCgdzYWJhdG9uEh4KEkFSTU9SX0hB",
+            "Q0hJX01BSV9ETxAIGgayPgMKATgSJQoNQVJNT1JfR1JFQVZFUxAJGhKyPg8K",
+            "DUFSTU9SX0dSRUFWRVMaAhABKloKBldlYXBvbhISCg5XRUFQT05fVU5LTk9X",
+            "ThAAEhUKDFdFQVBPTl9TV09SRBABGgOyPgASEAoMV0VBUE9OX0JMQURFEAES",
+            "DwoLV0VBUE9OX01BQ0UQAhoCEAFiCGVkaXRpb25zcOoH"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Pb.JsonOptionsReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::JsonEnumvalCustomString.Armor), }, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::JsonEnumvalCustomString.Knight), global::JsonEnumvalCustomString.Knight.Parser, new[]{ "Armor", "Armors", "ArmorMap" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, })
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::JsonEnumvalCustomString.Armor), typeof(global::JsonEnumvalCustomString.Weapon), }, null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::JsonEnumvalCustomString.Knight), global::JsonEnumvalCustomString.Knight.Parser, new[]{ "Armor", "Armors", "ArmorMap", "Weapon" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, })
           }));
     }
     #endregion
@@ -63,6 +66,13 @@ namespace JsonEnumvalCustomString {
     [pbr::OriginalName("ARMOR_SOLLERET", PreferredAlias = false)] Solleret = 7,
     [pbr::OriginalName("ARMOR_HACHI_MAI_DO")] HachiMaiDo = 8,
     [pbr::OriginalName("ARMOR_GREAVES")] Greaves = 9,
+  }
+
+  public enum Weapon {
+    [pbr::OriginalName("WEAPON_UNKNOWN")] Unknown = 0,
+    [pbr::OriginalName("WEAPON_SWORD")] Sword = 1,
+    [pbr::OriginalName("WEAPON_BLADE", PreferredAlias = false)] Blade = 1,
+    [pbr::OriginalName("WEAPON_MACE")] Mace = 2,
   }
 
   #endregion
@@ -108,6 +118,7 @@ namespace JsonEnumvalCustomString {
       armor_ = other.armor_;
       armors_ = other.armors_.Clone();
       armorMap_ = other.armorMap_.Clone();
+      weapon_ = other.weapon_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -166,6 +177,33 @@ namespace JsonEnumvalCustomString {
       get { return armorMap_; }
     }
 
+    /// <summary>Field number for the "weapon" field.</summary>
+    public const int WeaponFieldNumber = 4;
+    private readonly static global::JsonEnumvalCustomString.Weapon WeaponDefaultValue = global::JsonEnumvalCustomString.Weapon.Unknown;
+
+    private global::JsonEnumvalCustomString.Weapon weapon_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::JsonEnumvalCustomString.Weapon Weapon {
+      get { if ((_hasBits0 & 2) != 0) { return weapon_; } else { return WeaponDefaultValue; } }
+      set {
+        _hasBits0 |= 2;
+        weapon_ = value;
+      }
+    }
+    /// <summary>Gets whether the "weapon" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasWeapon {
+      get { return (_hasBits0 & 2) != 0; }
+    }
+    /// <summary>Clears the value of the "weapon" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearWeapon() {
+      _hasBits0 &= ~2;
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -184,6 +222,7 @@ namespace JsonEnumvalCustomString {
       if (Armor != other.Armor) return false;
       if(!armors_.Equals(other.armors_)) return false;
       if (!ArmorMap.Equals(other.ArmorMap)) return false;
+      if (Weapon != other.Weapon) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -194,6 +233,7 @@ namespace JsonEnumvalCustomString {
       if (HasArmor) hash ^= Armor.GetHashCode();
       hash ^= armors_.GetHashCode();
       hash ^= ArmorMap.GetHashCode();
+      if (HasWeapon) hash ^= Weapon.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -218,6 +258,10 @@ namespace JsonEnumvalCustomString {
       }
       armors_.WriteTo(output, _repeated_armors_codec);
       armorMap_.WriteTo(output, _map_armorMap_codec);
+      if (HasWeapon) {
+        output.WriteRawTag(32);
+        output.WriteEnum((int) Weapon);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -234,6 +278,10 @@ namespace JsonEnumvalCustomString {
       }
       armors_.WriteTo(ref output, _repeated_armors_codec);
       armorMap_.WriteTo(ref output, _map_armorMap_codec);
+      if (HasWeapon) {
+        output.WriteRawTag(32);
+        output.WriteEnum((int) Weapon);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -249,6 +297,9 @@ namespace JsonEnumvalCustomString {
       }
       size += armors_.CalculateSize(_repeated_armors_codec);
       size += armorMap_.CalculateSize(_map_armorMap_codec);
+      if (HasWeapon) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Weapon);
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -266,6 +317,9 @@ namespace JsonEnumvalCustomString {
       }
       armors_.Add(other.armors_);
       armorMap_.MergeFrom(other.armorMap_);
+      if (other.HasWeapon) {
+        Weapon = other.Weapon;
+      }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -298,6 +352,10 @@ namespace JsonEnumvalCustomString {
             armorMap_.AddEntriesFrom(input, _map_armorMap_codec);
             break;
           }
+          case 32: {
+            Weapon = (global::JsonEnumvalCustomString.Weapon) input.ReadEnum();
+            break;
+          }
         }
       }
     #endif
@@ -328,6 +386,10 @@ namespace JsonEnumvalCustomString {
           }
           case 26: {
             armorMap_.AddEntriesFrom(ref input, _map_armorMap_codec);
+            break;
+          }
+          case 32: {
+            Weapon = (global::JsonEnumvalCustomString.Weapon) input.ReadEnum();
             break;
           }
         }
