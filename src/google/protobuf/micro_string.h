@@ -8,9 +8,11 @@
 #ifndef GOOGLE_PROTOBUF_MICRO_STRING_H__
 #define GOOGLE_PROTOBUF_MICRO_STRING_H__
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -87,7 +89,7 @@ class PROTOBUF_EXPORT MicroString {
 
     void SetExternalBuffer(absl::string_view buffer) {
       payload = const_cast<char*>(buffer.data());
-      size = static_cast<uint32_t>(buffer.size());
+      size = internal::CheckedNarrow<uint32_t>(buffer.size());
     }
 
     void SetInitialSize(size_t size) {
@@ -132,6 +134,12 @@ class PROTOBUF_EXPORT MicroString {
   static constexpr bool kAllowExtraCapacity = IsLittleEndian();
   static constexpr size_t kInlineCapacity = sizeof(uintptr_t) - 1;
   static constexpr size_t kMaxMicroRepCapacity = 256 - sizeof(MicroRep);
+  // Largest payload capacity whose 8-byte-aligned OwnedRep allocation fits in
+  // ptrdiff_t and whose capacity fits in uint32_t LargeRep::capacity.
+  static constexpr size_t kMaxOwnedRepCapacity = std::min(
+      ArenaAlignDefault{}.Floor(std::numeric_limits<uint32_t>::max()),
+      ArenaAlignDefault{}.Floor(std::numeric_limits<ptrdiff_t>::max()) -
+          sizeof(LargeRep));
 
   // Empty string.
   constexpr MicroString() : rep_() {}
