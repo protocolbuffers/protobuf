@@ -170,7 +170,9 @@ std::string InitializationErrorMessage(absl::string_view action,
 }
 
 inline absl::string_view as_string_view(const void* data, int size) {
-  return absl::string_view(static_cast<const char*>(data), size);
+  ABSL_DCHECK_GE(size, 0);
+  return absl::string_view(static_cast<const char*>(data),
+                           static_cast<size_t>(size));
 }
 
 // Returns true if all required fields are present / have values.
@@ -428,10 +430,12 @@ bool MessageLite::ParsePartialFromString(absl::string_view data) {
 }
 
 bool MessageLite::ParseFromArray(const void* data, int size) {
+  if (ABSL_PREDICT_FALSE(size < 0)) return false;
   return ParseFrom<kParse>(as_string_view(data, size));
 }
 
 bool MessageLite::ParsePartialFromArray(const void* data, int size) {
+  if (ABSL_PREDICT_FALSE(size < 0)) return false;
   return ParseFrom<kParsePartial>(as_string_view(data, size));
 }
 

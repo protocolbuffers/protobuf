@@ -1542,6 +1542,47 @@ TEST(LiteTest, DownCastMessageLiteToFullFails) {
 }
 #endif  // GTEST_HAS_DEATH_TEST
 
+TEST(LiteTest, ParseFromArrayNegativeSizeFails) {
+  unittest::TestAllTypesLite message;
+  const uint8_t buf[1] = {0};
+  const void* data = buf;
+  const void* null_data = nullptr;
+  constexpr int kIntMin = std::numeric_limits<int>::min();
+  constexpr int kIntMinPlus15 = std::numeric_limits<int>::min() + 15;
+
+  EXPECT_FALSE(message.ParseFromArray(data, -1));
+  EXPECT_FALSE(message.ParseFromArray(data, kIntMin));
+  EXPECT_FALSE(message.ParseFromArray(data, kIntMinPlus15));
+  EXPECT_FALSE(message.ParseFromArray(null_data, -1));
+  EXPECT_FALSE(message.ParseFromArray(null_data, kIntMin));
+
+  EXPECT_FALSE(message.ParsePartialFromArray(data, -1));
+  EXPECT_FALSE(message.ParsePartialFromArray(data, kIntMin));
+  EXPECT_FALSE(message.ParsePartialFromArray(data, kIntMinPlus15));
+  EXPECT_FALSE(message.ParsePartialFromArray(null_data, -1));
+
+}
+
+TEST(LiteTest, ParseFromArrayZeroSizeSucceeds) {
+  const uint8_t buf[1] = {0};
+  const void* data = buf;
+  const void* null_data = nullptr;
+
+  unittest::TestAllTypesLite message;
+  message.set_optional_int32(123);
+  EXPECT_TRUE(message.ParseFromArray(data, 0));
+  EXPECT_FALSE(message.has_optional_int32());
+
+  message.set_optional_int32(123);
+  EXPECT_TRUE(message.ParseFromArray(null_data, 0));
+  EXPECT_FALSE(message.has_optional_int32());
+
+  message.set_optional_int32(123);
+  EXPECT_TRUE(message.ParsePartialFromArray(null_data, 0));
+  EXPECT_FALSE(message.has_optional_int32());
+
+}
+
 TEST(LiteTest, FileWithOnlyAnEnumGeneratesProperValidationHooks) {
   EXPECT_TRUE(proto2_unittest::OnlyOneEnum_IsValid(0));
   EXPECT_TRUE(proto2_unittest::OnlyOneEnum_IsValid(10));
