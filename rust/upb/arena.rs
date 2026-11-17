@@ -97,11 +97,14 @@ impl Arena {
     ///
     /// # Safety
     ///
-    /// - `align` must be less than `UPB_MALLOC_ALIGN`.
+    /// - `align` must be less than or equal to `UPB_MALLOC_ALIGN`.
     #[allow(clippy::mut_from_ref)]
     #[inline]
     pub unsafe fn alloc(&self, size: usize, align: usize) -> Option<&mut [MaybeUninit<u8>]> {
         debug_assert!(align <= sys_arena::UPB_MALLOC_ALIGN);
+        if size > isize::MAX as usize {
+            return None;
+        }
         // SAFETY: `self.raw` is a valid UPB arena
         let ptr = unsafe { sys_arena::upb_Arena_Malloc(self.raw, size) };
 
@@ -114,6 +117,7 @@ impl Arena {
             //   the arena is destroyed.
             // - `[MaybeUninit<u8>]` has no alignment requirement, and `ptr` is aligned to a
             //   `UPB_MALLOC_ALIGN` boundary.
+            // - `size <= isize::MAX as usize` is checked above.
             Some(unsafe { slice::from_raw_parts_mut(ptr.cast(), size) })
         }
     }
@@ -229,5 +233,21 @@ mod tests {
         assert_eq!(initial_space, final_space);
         assert_eq!(slice.len(), 4096);
         assert_eq!(slice[4095], 42);
+    }
+
+    #[gtest]
+    fn test_alloc_exceeding_isize_max_returns_none() {
+        let arena = Arena::new();
+        let initial_space =
+            unsafe { sys_arena::upb_Arena_SpaceAllocated(arena.raw(), ptr::null_mut()) };
+
+        assert!(arena.checked_alloc((isize::MAX as usize) + 1, 1).is_none());
+        assert!(arena.checked_alloc(usize::MAX, 1).is_none());
+        // SAFETY: `align` is <= `UPB_MALLOC_ALIGN`.
+        assert!(unsafe { arena.alloc((isize::MAX as usize) + 1, 1) }.is_none());
+
+        let final_space =
+            unsafe { sys_arena::upb_Arena_SpaceAllocated(arena.raw(), ptr::null_mut()) };
+        assert_eq!(initial_space, final_space);
     }
 }

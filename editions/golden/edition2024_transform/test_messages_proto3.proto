@@ -26,7 +26,6 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
 import option "google/protobuf/java_features.proto";
-import option "google/protobuf/java_mutable_features.proto";
 import option "google/protobuf/cpp_features.proto";
 
 option java_outer_classname = "TestMessagesProto3";
@@ -34,7 +33,6 @@ option features.enforce_naming_style = STYLE_LEGACY;
 option features.default_symbol_visibility = EXPORT_ALL;
 option features.(pb.cpp).string_type = STRING;
 option features.(pb.cpp).enum_name_uses_string_view = false;
-option features.(pb.java_mutable).nest_in_file_class = YES;
 option features.field_presence = IMPLICIT;
 option java_package = "com.google.protobuf_test_messages.proto3";
 option objc_class_prefix = "Proto3";

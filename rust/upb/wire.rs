@@ -56,9 +56,16 @@ pub fn encode_with_options<T: AssociatedMiniTable>(
 
     if status == EncodeStatus::Ok {
         assert!(!buf.is_null()); // EncodeStatus Ok should never return NULL data, even for len=0.
+        if len > isize::MAX as usize {
+            return Err(EncodeStatus::MaxSizeExceeded);
+        }
 
-        // SAFETY: upb guarantees that `buf` is valid to read for `len`.
-        Ok(unsafe { &*core::ptr::slice_from_raw_parts(buf, len) }.to_vec())
+        // SAFETY:
+        // - `upb_Encode` guarantees that `buf` is valid to read for `len` initialized bytes when
+        //   `status == EncodeStatus::Ok`.
+        // - `buf` is non-null (`assert!` above) and `u8` has alignment 1.
+        // - `len <= isize::MAX as usize` is checked above.
+        Ok(unsafe { core::slice::from_raw_parts(buf, len) }.to_vec())
     } else {
         Err(status)
     }
