@@ -53,6 +53,8 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
+#include "third_party/gloop/util/gtl/c_memcpy.h"
+#include "third_party/gloop/util/gtl/c_memset.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -1204,7 +1206,7 @@ absl::Cord MakeFragmentedCord(const Container& c) {
     absl::string_view sv(s);
     auto buffer = absl::CordBuffer::CreateWithDefaultLimit(sv.size());
     absl::Span<char> out = buffer.available_up_to(sv.size());
-    memcpy(out.data(), sv.data(), out.size());
+    gtl::c_memcpy(out, sv, out.size());
     buffer.SetLength(out.size());
     result.Append(std::move(buffer));
   }
@@ -1362,7 +1364,7 @@ TEST(CordOutputStreamTest, DonateEmptyCordBuffer) {
 TEST(CordOutputStreamTest, DonatePartialCordBuffer) {
   absl::CordBuffer buffer = absl::CordBuffer::CreateWithDefaultLimit(500);
   absl::Span<char> available = buffer.available();
-  memset(available.data(), 'a', 100);
+  gtl::c_memset_n(available, 'a', 100);
   buffer.IncreaseLengthBy(100);
   void* available_data = available.data();
   CordOutputStream output(std::move(buffer));
@@ -1377,7 +1379,7 @@ TEST(CordOutputStreamTest, DonatePartialCordBuffer) {
 TEST(CordOutputStreamTest, DonatePartialCordBufferAndUseExtraCapacity) {
   absl::CordBuffer buffer = absl::CordBuffer::CreateWithDefaultLimit(500);
   absl::Span<char> available = buffer.available();
-  memset(available.data(), 'a', 100);
+  gtl::c_memset_n(available, 'a', 100);
   buffer.IncreaseLengthBy(100);
   void* available_data = available.data();
   void* next_available_data = available.data() + 100;
@@ -1401,7 +1403,7 @@ TEST(CordOutputStreamTest, DonateCordAndPartialCordBufferAndUseExtraCapacity) {
   absl::Cord cord(std::string(400, 'a'));
   absl::CordBuffer buffer = absl::CordBuffer::CreateWithDefaultLimit(500);
   absl::Span<char> available = buffer.available();
-  memset(available.data(), 'b', 100);
+  gtl::c_memset_n(available, 'b', 100);
   buffer.IncreaseLengthBy(100);
   void* next_available_data = available.data() + 100;
   CordOutputStream output(std::move(cord), std::move(buffer));
@@ -1421,7 +1423,7 @@ TEST(CordOutputStreamTest, DonateCordAndPartialCordBufferAndUseExtraCapacity) {
 TEST(CordOutputStreamTest, DonateFullCordBuffer) {
   absl::CordBuffer buffer = absl::CordBuffer::CreateWithDefaultLimit(500);
   absl::Span<char> available = buffer.available();
-  memset(available.data(), 'a', available.size());
+  gtl::c_memset(available, 'a');
   buffer.IncreaseLengthBy(available.size());
   CordOutputStream output(std::move(buffer));
   void* data;
@@ -1439,7 +1441,7 @@ TEST(CordOutputStreamTest, DonateFullCordBufferAndCord) {
   absl::Cord cord(std::string(400, 'a'));
   absl::CordBuffer buffer = absl::CordBuffer::CreateWithDefaultLimit(500);
   absl::Span<char> available = buffer.available();
-  memset(available.data(), 'b', available.size());
+  gtl::c_memset(available, 'b');
   buffer.IncreaseLengthBy(available.size());
   CordOutputStream output(std::move(cord), std::move(buffer));
   void* data;
@@ -1457,7 +1459,7 @@ TEST(CordOutputStreamTest, DonateFullCordBufferAndCord) {
 TEST(CordOutputStreamTest, DonateFullCordBufferAndBackup) {
   absl::CordBuffer buffer = absl::CordBuffer::CreateWithDefaultLimit(500);
   absl::Span<char> available = buffer.available();
-  memset(available.data(), 'a', available.size());
+  gtl::c_memset(available, 'a');
   buffer.IncreaseLengthBy(available.size());
 
   // We back up by 100 before calling Next()
@@ -1485,7 +1487,7 @@ TEST(CordOutputStreamTest, DonateCordAndFullCordBufferAndBackup) {
   absl::Cord cord(std::string(400, 'a'));
   absl::CordBuffer buffer = absl::CordBuffer::CreateWithDefaultLimit(500);
   absl::Span<char> available = buffer.available();
-  memset(available.data(), 'b', available.size());
+  gtl::c_memset(available, 'b');
   buffer.IncreaseLengthBy(available.size());
 
   // We back up by 100 before calling Next()

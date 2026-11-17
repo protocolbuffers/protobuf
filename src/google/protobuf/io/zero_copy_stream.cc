@@ -21,6 +21,7 @@
 #include "absl/types/span.h"
 
 // Must be included last.
+#include "third_party/gloop/util/gtl/c_memcpy.h"
 #include "google/protobuf/port_def.inc"
 
 namespace google {
@@ -58,7 +59,7 @@ bool ZeroCopyInputStream::ReadCord(absl::Cord* cord, int count) {
 
   auto CopyBytes = [&](absl::Span<char>& dst, absl::Span<const char>& src,
                        size_t bytes) {
-    memcpy(dst.data(), src.data(), bytes);
+    gtl::c_memcpy(dst, src, bytes);
     dst.remove_prefix(bytes);
     src.remove_prefix(bytes);
     count -= bytes;
