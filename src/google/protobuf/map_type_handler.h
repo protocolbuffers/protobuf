@@ -8,6 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_MAP_TYPE_HANDLER_H__
 #define GOOGLE_PROTOBUF_MAP_TYPE_HANDLER_H__
 
+#include <cstddef>
 #include <cstdint>
 #include <type_traits>
 
@@ -83,7 +84,7 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
 
   // Functions used in parsing and serialization. ===================
   static inline size_t ByteSize(const MapEntryAccessorType& value);
-  static inline int GetCachedSize(const MapEntryAccessorType& value);
+  static inline size_t GetCachedSize(const MapEntryAccessorType& value);
 
   static inline uint8_t* Write(int field, const MapEntryAccessorType& value,
                                uint8_t* ptr, io::EpsCopyOutputStream* stream);
@@ -106,7 +107,7 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
         MapWireFieldTypeTraits<WireFormatLite::TYPE_##FieldType,               \
                                Type>::kWireType;                               \
     static inline size_t ByteSize(const MapEntryAccessorType& value);          \
-    static inline int GetCachedSize(const MapEntryAccessorType& value);        \
+    static inline size_t GetCachedSize(const MapEntryAccessorType& value);     \
     static inline uint8_t* Write(int field, const MapEntryAccessorType& value, \
                                  uint8_t* ptr,                                 \
                                  io::EpsCopyOutputStream* stream);             \
@@ -177,18 +178,18 @@ FIXED_BYTE_SIZE(BOOL, Bool)
 #undef FIXED_BYTE_SIZE
 
 template <typename Type>
-inline int MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::GetCachedSize(
+inline size_t MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::GetCachedSize(
     const MapEntryAccessorType& value) {
-  return static_cast<int>(WireFormatLite::LengthDelimitedSize(
-      static_cast<size_t>(value.GetCachedSize())));
+  return WireFormatLite::LengthDelimitedSize(
+      static_cast<size_t>(value.GetCachedSize()));
 }
 
 #define GET_CACHED_SIZE(FieldType, DeclaredType)                         \
   template <typename Type>                                               \
-  inline int                                                             \
+  inline size_t                                                          \
   MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::GetCachedSize( \
       const MapEntryAccessorType& value) {                               \
-    return static_cast<int>(WireFormatLite::DeclaredType##Size(value));  \
+    return WireFormatLite::DeclaredType##Size(value);                    \
   }
 
 GET_CACHED_SIZE(STRING, String)
@@ -205,7 +206,7 @@ GET_CACHED_SIZE(ENUM, Enum)
 
 #define GET_FIXED_CACHED_SIZE(FieldType, DeclaredType)                   \
   template <typename Type>                                               \
-  inline int                                                             \
+  inline size_t                                                          \
   MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::GetCachedSize( \
       const MapEntryAccessorType& /* value */) {                         \
     return WireFormatLite::k##DeclaredType##Size;                        \
@@ -347,8 +348,8 @@ struct MapEntryFuncs {
     ptr = stream->EnsureSpace(ptr);
     ptr = WireFormatLite::WriteTagToArray(
         field_number, WireFormatLite::WIRETYPE_LENGTH_DELIMITED, ptr);
-    ptr = io::CodedOutputStream::WriteVarint32ToArray(GetCachedSize(key, value),
-                                                      ptr);
+    ptr = io::CodedOutputStream::WriteVarint32ToArray(
+        static_cast<uint32_t>(GetCachedSize(key, value)), ptr);
 
     ptr = KeyTypeHandler::Write(kKeyFieldNumber, key, ptr, stream);
     return ValueTypeHandler::Write(kValueFieldNumber, value, ptr, stream);
@@ -362,9 +363,9 @@ struct MapEntryFuncs {
                               static_cast<uint32_t>(inner_length));
   }
 
-  static int GetCachedSize(const Key& key, const Value& value) {
+  static size_t GetCachedSize(const Key& key, const Value& value) {
     // Tags for key and value will both be one byte (field numbers 1 and 2).
-    return 2 + KeyTypeHandler::GetCachedSize(key) +
+    return size_t{2} + KeyTypeHandler::GetCachedSize(key) +
            ValueTypeHandler::GetCachedSize(value);
   }
 };

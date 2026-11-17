@@ -2792,6 +2792,27 @@ TEST(GeneratedMapFieldTest, SerializeLargeString) {
   EXPECT_FALSE(msg.SerializeToString(&str)) << "Actual size=" << str.size();
 }
 
+TEST(GeneratedMapFieldTest, GetCachedSizeOver2G) {
+  struct FakeMessage {
+    int cached_size;
+    int GetCachedSize() const { return cached_size; }
+  };
+  using EntryFuncs =
+      internal::MapEntryFuncs<int32_t, FakeMessage,
+                              internal::WireFormatLite::TYPE_INT32,
+                              internal::WireFormatLite::TYPE_MESSAGE>;
+  static_assert(
+      std::is_same_v<decltype(EntryFuncs::GetCachedSize(1, FakeMessage{0})),
+                     size_t>);
+
+  for (int sz : {std::numeric_limits<int>::max() - 6,
+                 std::numeric_limits<int>::max() - 1}) {
+    EXPECT_EQ(EntryFuncs::GetCachedSize(-1, FakeMessage{sz}),
+              size_t{2} + internal::WireFormatLite::Int32Size(-1) +
+                  internal::WireFormatLite::LengthDelimitedSize(sz));
+  }
+}
+
 // Test the generated SerializeWithCachedSizes()
 TEST(GeneratedMapFieldTest, SerializationToStream) {
   UNITTEST::TestMap message1, message2;
