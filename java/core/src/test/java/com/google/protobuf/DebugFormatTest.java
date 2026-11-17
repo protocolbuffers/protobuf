@@ -214,4 +214,26 @@ public class DebugFormatTest {
                 + String.format("15: UNKNOWN_FIXED32 %s\n", REDACTED_REGEX)
                 + String.format("15: UNKNOWN_FIXED64 %s\n", REDACTED_REGEX));
   }
+
+  @Test
+  public void unknownFieldsDebugFormat_beyondRecursionLimit_printsRedactedString() {
+    UnknownFieldSet current =
+        UnknownFieldSet.newBuilder()
+            .addField(1, UnknownFieldSet.Field.newBuilder().addVarint(42L).build())
+            .build();
+    for (int i = 0; i < 11; i++) {
+      current =
+          UnknownFieldSet.newBuilder()
+              .addField(
+                  1,
+                  UnknownFieldSet.Field.newBuilder()
+                      .addLengthDelimited(current.toByteString())
+                      .build())
+              .build();
+    }
+
+    String printed = DebugFormat.singleLine().toString(current);
+    assertThat(printed).contains("UNKNOWN_STRING");
+    assertThat(printed).doesNotContain("UNKNOWN_VARINT");
+  }
 }

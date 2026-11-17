@@ -2290,4 +2290,120 @@ public class TextFormatTest {
       assertThat(e).hasMessageThat().contains("too deep");
     }
   }
+
+  private static UnknownFieldSet makeNestedUnknownLengthDelimited(int depth) {
+    UnknownFieldSet current =
+        UnknownFieldSet.newBuilder()
+            .addField(1, UnknownFieldSet.Field.newBuilder().addVarint(42L).build())
+            .build();
+    for (int i = 0; i < depth; i++) {
+      current =
+          UnknownFieldSet.newBuilder()
+              .addField(
+                  1,
+                  UnknownFieldSet.Field.newBuilder()
+                      .addLengthDelimited(current.toByteString())
+                      .build())
+              .build();
+    }
+    return current;
+  }
+
+  @Test
+  public void testPrintUnknownFieldsRecursionLimit() throws Exception {
+    // 10 nested length-delimited unknown fields are unpacked as embedded messages.
+    UnknownFieldSet depth10 = makeNestedUnknownLengthDelimited(10);
+    String printedDepth10 = TextFormat.printer().printToString(depth10);
+    assertThat(printedDepth10).contains("1: 42");
+    assertThat(printedDepth10).doesNotContain("\"");
+
+    // The 11th nested length-delimited unknown field is printed as an escaped byte string.
+    UnknownFieldSet depth11 = makeNestedUnknownLengthDelimited(11);
+    String printedDepth11 = TextFormat.printer().printToString(depth11);
+    assertThat(printedDepth11).doesNotContain("1: 42");
+    assertThat(printedDepth11).contains("\"\\b*\"");
+
+    // Also verify when printing a Message containing deep unknown fields.
+    TestEmptyMessage messageWithDeepUnknowns =
+        TestEmptyMessage.newBuilder()
+            .setUnknownFields(makeNestedUnknownLengthDelimited(11))
+            .build();
+    String printedMsg = TextFormat.printer().printToString(messageWithDeepUnknowns);
+    assertThat(printedMsg).doesNotContain("1: 42");
+    assertThat(printedMsg).contains("\"\\b*\"");
+  }
+
+  @Test
+  public void testPrintUnknownFieldValueRecursionLimit() throws Exception {
+    int tag = WireFormat.makeTag(1, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+
+    StringBuilder depth10 = new StringBuilder();
+    TextFormat.printUnknownFieldValue(
+        tag, makeNestedUnknownLengthDelimited(9).toByteString(), depth10);
+    assertThat(depth10.toString()).contains("1: 42");
+    assertThat(depth10.toString()).doesNotContain("\"");
+
+    StringBuilder depth11 = new StringBuilder();
+    TextFormat.printUnknownFieldValue(
+        tag, makeNestedUnknownLengthDelimited(10).toByteString(), depth11);
+    assertThat(depth11.toString()).doesNotContain("1: 42");
+    assertThat(depth11.toString()).contains("\"\\b*\"");
+  }
+
+  @Test
+  public void testPrintUnknownLengthDelimitedWithStrayEndGroupPrintsAsString() throws Exception {
+    // Field 1 varint 1, followed by an END_GROUP tag for field 1 with no matching START_GROUP.
+    // This is not a valid embedded message, so it must be printed as a string rather than as a
+    // truncated embedded message.
+    ByteString bytes = ByteString.copyFrom(new byte[] {0x08, 0x01, 0x0c});
+    UnknownFieldSet fields =
+        UnknownFieldSet.newBuilder()
+            .addField(1, UnknownFieldSet.Field.newBuilder().addLengthDelimited(bytes).build())
+            .build();
+
+    assertThat(TextFormat.printer().printToString(fields)).isEqualTo("1: \"\\b\\001\\f\"\n");
+  }
+
+  @Test
+  public void testPrintUnknownGroupsConsumeRecursionBudget() throws Exception {
+    // Groups and length-delimited fields share the same recursion budget.
+    String printedDepth10 = TextFormat.printer().printToString(makeNestedUnknownGroups(9));
+    assertThat(printedDepth10).contains("1: 42");
+    assertThat(printedDepth10).doesNotContain("\"");
+
+    String printedDepth11 = TextFormat.printer().printToString(makeNestedUnknownGroups(10));
+    assertThat(printedDepth11).doesNotContain("1: 42");
+    assertThat(printedDepth11).contains("\"\\b*\"");
+
+    // Groups beyond the budget are still printed structurally (they're already parsed).
+    String printedDeepGroups = TextFormat.printer().printToString(makeNestedUnknownGroups(20));
+    assertThat(printedDeepGroups).contains("\"\\b*\"");
+  }
+
+  @Test
+  public void testPrintUnknownLengthDelimitedNestedGroupsRecursionLimit() throws Exception {
+    int tag = WireFormat.makeTag(1, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+    StringBuilder groups9 = new StringBuilder();
+    TextFormat.printUnknownFieldValue(tag, makeNestedUnknownGroups(9).toByteString(), groups9);
+    assertThat(groups9.toString()).startsWith("{");
+
+    StringBuilder groups10 = new StringBuilder();
+    TextFormat.printUnknownFieldValue(tag, makeNestedUnknownGroups(10).toByteString(), groups10);
+    assertThat(groups10.toString()).doesNotContain("{");
+  }
+
+  /**
+   * Returns {@code depth} nested unknown groups wrapping a length-delimited field which contains an
+   * embedded message {@code 1: 42}.
+   */
+  private static UnknownFieldSet makeNestedUnknownGroups(int depth) {
+    UnknownFieldSet current = makeNestedUnknownLengthDelimited(1);
+    for (int i = 0; i < depth; i++) {
+      current =
+          UnknownFieldSet.newBuilder()
+              .addField(1, UnknownFieldSet.Field.newBuilder().addGroup(current).build())
+              .build();
+    }
+    return current;
+  }
 }
