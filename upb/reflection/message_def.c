@@ -375,6 +375,19 @@ void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m) {
     _upb_FieldDef_Resolve(ctx, m->full_name, f);
   }
 
+  if (upb_MessageDef_IsMapEntry(m)) {
+    if (m->field_count != 2 ||
+        upb_FieldDef_Number(upb_MessageDef_Field(m, 0)) !=
+            kUpb_MapEntry_KeyFieldNumber ||
+        upb_FieldDef_Number(upb_MessageDef_Field(m, 1)) !=
+            kUpb_MapEntry_ValueFieldNumber) {
+      _upb_DefBuilder_Errf(
+          ctx,
+          "map_entry message %s must have exactly fields 1 (key) and 2 (value)",
+          m->full_name);
+    }
+  }
+
   m->in_message_set = false;
   for (int i = 0; i < upb_MessageDef_NestedExtensionCount(m); i++) {
     upb_FieldDef* ext = (upb_FieldDef*)upb_MessageDef_NestedExtension(m, i);

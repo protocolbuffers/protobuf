@@ -86,6 +86,7 @@ make:
         upb_MessageDef_FindFieldByNumber(entry, kUpb_MapEntry_KeyFieldNumber);
     const upb_FieldDef* value =
         upb_MessageDef_FindFieldByNumber(entry, kUpb_MapEntry_ValueFieldNumber);
+    if (!key || !value) return (upb_MutableMessageValue){.array = NULL};
     ret.map =
         upb_Map_New(a, upb_FieldDef_CType(key), upb_FieldDef_CType(value));
   } else if (upb_FieldDef_IsRepeated(f)) {
