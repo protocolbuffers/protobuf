@@ -1711,28 +1711,34 @@ static void AppendTextFormatForMessageField(GPBMessage *message, GPBFieldDescrip
 
     // The value.
     switch (fieldDataType) {
-#define FIELD_CASE(GPBDATATYPE, CTYPE, REAL_TYPE, ...)                        \
-  case GPBDataType##GPBDATATYPE: {                                            \
+#define FIELD_BODY(CTYPE, REAL_TYPE, ...)                                     \
+  {                                                                           \
     CTYPE v = (isRepeated ? [(GPB##REAL_TYPE##Array *)array valueAtIndex:j]   \
                           : GPBGetMessage##REAL_TYPE##Field(message, field)); \
     [toStr appendFormat:__VA_ARGS__, v];                                      \
     break;                                                                    \
   }
 
-      FIELD_CASE(Int32, int32_t, Int32, @"%d")
-      FIELD_CASE(SInt32, int32_t, Int32, @"%d")
-      FIELD_CASE(SFixed32, int32_t, Int32, @"%d")
-      FIELD_CASE(UInt32, uint32_t, UInt32, @"%u")
-      FIELD_CASE(Fixed32, uint32_t, UInt32, @"%u")
-      FIELD_CASE(Int64, int64_t, Int64, @"%lld")
-      FIELD_CASE(SInt64, int64_t, Int64, @"%lld")
-      FIELD_CASE(SFixed64, int64_t, Int64, @"%lld")
-      FIELD_CASE(UInt64, uint64_t, UInt64, @"%llu")
-      FIELD_CASE(Fixed64, uint64_t, UInt64, @"%llu")
-      FIELD_CASE(Float, float, Float, @"%.*g", FLT_DIG)
-      FIELD_CASE(Double, double, Double, @"%.*lg", DBL_DIG)
+      case GPBDataTypeInt32:
+      case GPBDataTypeSInt32:
+      case GPBDataTypeSFixed32:
+        FIELD_BODY(int32_t, Int32, @"%d")
+      case GPBDataTypeUInt32:
+      case GPBDataTypeFixed32:
+        FIELD_BODY(uint32_t, UInt32, @"%u")
+      case GPBDataTypeInt64:
+      case GPBDataTypeSInt64:
+      case GPBDataTypeSFixed64:
+        FIELD_BODY(int64_t, Int64, @"%lld")
+      case GPBDataTypeUInt64:
+      case GPBDataTypeFixed64:
+        FIELD_BODY(uint64_t, UInt64, @"%llu")
+      case GPBDataTypeFloat:
+        FIELD_BODY(float, Float, @"%.*g", FLT_DIG)
+      case GPBDataTypeDouble:
+        FIELD_BODY(double, Double, @"%.*lg", DBL_DIG)
 
-#undef FIELD_CASE
+#undef FIELD_BODY
 
       case GPBDataTypeEnum: {
         int32_t v = (isRepeated ? [(GPBEnumArray *)array rawValueAtIndex:j]
@@ -1833,33 +1839,39 @@ static void AppendTextFormatForMessageExtensionRange(GPBMessage *message, NSArra
 
       // The value.
       switch (extDataType) {
-#define FIELD_CASE(GPBDATATYPE, CTYPE, NUMSELECTOR, ...) \
-  case GPBDataType##GPBDATATYPE: {                       \
-    CTYPE v = [(NSNumber *)curValue NUMSELECTOR];        \
-    [toStr appendFormat:__VA_ARGS__, v];                 \
-    break;                                               \
+#define FIELD_BODY(CTYPE, NUMSELECTOR, ...)       \
+  {                                               \
+    CTYPE v = [(NSNumber *)curValue NUMSELECTOR]; \
+    [toStr appendFormat:__VA_ARGS__, v];          \
+    break;                                        \
   }
 
-        FIELD_CASE(Int32, int32_t, intValue, @"%d")
-        FIELD_CASE(SInt32, int32_t, intValue, @"%d")
-        FIELD_CASE(SFixed32, int32_t, intValue, @"%d")
-        FIELD_CASE(UInt32, uint32_t, unsignedIntValue, @"%u")
-        FIELD_CASE(Fixed32, uint32_t, unsignedIntValue, @"%u")
-        FIELD_CASE(Int64, int64_t, longLongValue, @"%lld")
-        FIELD_CASE(SInt64, int64_t, longLongValue, @"%lld")
-        FIELD_CASE(SFixed64, int64_t, longLongValue, @"%lld")
-        FIELD_CASE(UInt64, uint64_t, unsignedLongLongValue, @"%llu")
-        FIELD_CASE(Fixed64, uint64_t, unsignedLongLongValue, @"%llu")
-        FIELD_CASE(Float, float, floatValue, @"%.*g", FLT_DIG)
-        FIELD_CASE(Double, double, doubleValue, @"%.*lg", DBL_DIG)
+        case GPBDataTypeInt32:
+        case GPBDataTypeSInt32:
+        case GPBDataTypeSFixed32:
         // TODO: Add a comment with the enum name from enum descriptors
         // (might not be real value, so leave it as a comment, ObjC compiler
         // name mangles differently).  Doesn't look like we actually generate
         // an enum descriptor reference like we do for normal fields, so this
         // will take a compiler change.
-        FIELD_CASE(Enum, int32_t, intValue, @"%d")
+        case GPBDataTypeEnum:
+          FIELD_BODY(int32_t, intValue, @"%d")
+        case GPBDataTypeUInt32:
+        case GPBDataTypeFixed32:
+          FIELD_BODY(uint32_t, unsignedIntValue, @"%u")
+        case GPBDataTypeInt64:
+        case GPBDataTypeSInt64:
+        case GPBDataTypeSFixed64:
+          FIELD_BODY(int64_t, longLongValue, @"%lld")
+        case GPBDataTypeUInt64:
+        case GPBDataTypeFixed64:
+          FIELD_BODY(uint64_t, unsignedLongLongValue, @"%llu")
+        case GPBDataTypeFloat:
+          FIELD_BODY(float, floatValue, @"%.*g", FLT_DIG)
+        case GPBDataTypeDouble:
+          FIELD_BODY(double, doubleValue, @"%.*lg", DBL_DIG)
 
-#undef FIELD_CASE
+#undef FIELD_BODY
 
         case GPBDataTypeBool:
           [toStr appendString:([(NSNumber *)curValue boolValue] ? @"true" : @"false")];

@@ -3392,40 +3392,54 @@ static void ResolveIvarGet(__unsafe_unretained GPBFieldDescriptor *field,
                            ResolveIvarAccessorMethodResult *result) {
   GPBDataType fieldDataType = GPBGetFieldDataType(field);
   switch (fieldDataType) {
-#define CASE_GET(NAME, TYPE, TRUE_NAME)                        \
-  case GPBDataType##NAME: {                                    \
-    result->impToAdd = imp_implementationWithBlock(^(id obj) { \
-      return GPBGetMessage##TRUE_NAME##Field(obj, field);      \
-    });                                                        \
-    result->encodingSelector = @selector(get##NAME);           \
-    break;                                                     \
-  }
-#define CASE_GET_OBJECT(NAME, TYPE, TRUE_NAME)                 \
-  case GPBDataType##NAME: {                                    \
-    result->impToAdd = imp_implementationWithBlock(^(id obj) { \
-      return GPBGetObjectIvarWithField(obj, field);            \
-    });                                                        \
-    result->encodingSelector = @selector(get##NAME);           \
-    break;                                                     \
-  }
-    CASE_GET(Bool, BOOL, Bool)
-    CASE_GET(Fixed32, uint32_t, UInt32)
-    CASE_GET(SFixed32, int32_t, Int32)
-    CASE_GET(Float, float, Float)
-    CASE_GET(Fixed64, uint64_t, UInt64)
-    CASE_GET(SFixed64, int64_t, Int64)
-    CASE_GET(Double, double, Double)
-    CASE_GET(Int32, int32_t, Int32)
-    CASE_GET(Int64, int64_t, Int64)
-    CASE_GET(SInt32, int32_t, Int32)
-    CASE_GET(SInt64, int64_t, Int64)
-    CASE_GET(UInt32, uint32_t, UInt32)
-    CASE_GET(UInt64, uint64_t, UInt64)
-    CASE_GET_OBJECT(Bytes, id, Object)
-    CASE_GET_OBJECT(String, id, Object)
-    CASE_GET_OBJECT(Message, id, Object)
-    CASE_GET_OBJECT(Group, id, Object)
-    CASE_GET(Enum, int32_t, Enum)
+#define CASE_GET(NAME, TRUE_NAME)                            \
+  result->impToAdd = imp_implementationWithBlock(^(id obj) { \
+    return GPBGetMessage##TRUE_NAME##Field(obj, field);      \
+  });                                                        \
+  result->encodingSelector = @selector(get##NAME);           \
+  break;
+    case GPBDataTypeBool: {
+      CASE_GET(Bool, Bool)
+    }
+    case GPBDataTypeFixed32:
+    case GPBDataTypeUInt32: {
+      CASE_GET(UInt32, UInt32)
+    }
+    case GPBDataTypeInt32:
+    case GPBDataTypeSFixed32:
+    case GPBDataTypeSInt32: {
+      CASE_GET(Int32, Int32)
+    }
+    case GPBDataTypeFloat: {
+      CASE_GET(Float, Float)
+    }
+    case GPBDataTypeFixed64:
+    case GPBDataTypeUInt64: {
+      CASE_GET(UInt64, UInt64)
+    }
+    case GPBDataTypeInt64:
+    case GPBDataTypeSFixed64:
+    case GPBDataTypeSInt64: {
+      CASE_GET(Int64, Int64)
+    }
+    case GPBDataTypeDouble: {
+      CASE_GET(Double, Double)
+    }
+    case GPBDataTypeBytes:
+    case GPBDataTypeString:
+    case GPBDataTypeMessage:
+    case GPBDataTypeGroup: {
+      result->impToAdd = imp_implementationWithBlock(^(id obj) {
+        return GPBGetObjectIvarWithField(obj, field);
+      });
+      // All object getters share identical '@' return type encoding in
+      // GPBMessageSignatureProtocol.
+      result->encodingSelector = @selector(getBytes);
+      break;
+    }
+    case GPBDataTypeEnum: {
+      CASE_GET(Enum, Enum)
+    }
 #undef CASE_GET
   }
 }
@@ -3435,40 +3449,56 @@ static void ResolveIvarSet(__unsafe_unretained GPBFieldDescriptor *field,
                            ResolveIvarAccessorMethodResult *result) {
   GPBDataType fieldDataType = GPBGetFieldDataType(field);
   switch (fieldDataType) {
-#define CASE_SET(NAME, TYPE, TRUE_NAME)                                    \
-  case GPBDataType##NAME: {                                                \
-    result->impToAdd = imp_implementationWithBlock(^(id obj, TYPE value) { \
-      return GPBSet##TRUE_NAME##IvarWithFieldPrivate(obj, field, value);   \
-    });                                                                    \
-    result->encodingSelector = @selector(set##NAME:);                      \
-    break;                                                                 \
-  }
-#define CASE_SET_COPY(NAME)                                                      \
-  case GPBDataType##NAME: {                                                      \
-    result->impToAdd = imp_implementationWithBlock(^(id obj, id value) {         \
-      return GPBSetRetainedObjectIvarWithFieldPrivate(obj, field, [value copy]); \
-    });                                                                          \
-    result->encodingSelector = @selector(set##NAME:);                            \
-    break;                                                                       \
-  }
-    CASE_SET(Bool, BOOL, Bool)
-    CASE_SET(Fixed32, uint32_t, UInt32)
-    CASE_SET(SFixed32, int32_t, Int32)
-    CASE_SET(Float, float, Float)
-    CASE_SET(Fixed64, uint64_t, UInt64)
-    CASE_SET(SFixed64, int64_t, Int64)
-    CASE_SET(Double, double, Double)
-    CASE_SET(Int32, int32_t, Int32)
-    CASE_SET(Int64, int64_t, Int64)
-    CASE_SET(SInt32, int32_t, Int32)
-    CASE_SET(SInt64, int64_t, Int64)
-    CASE_SET(UInt32, uint32_t, UInt32)
-    CASE_SET(UInt64, uint64_t, UInt64)
-    CASE_SET_COPY(Bytes)
-    CASE_SET_COPY(String)
-    CASE_SET(Message, id, Object)
-    CASE_SET(Group, id, Object)
-    CASE_SET(Enum, int32_t, Enum)
+#define CASE_SET(NAME, TYPE, TRUE_NAME)                                  \
+  result->impToAdd = imp_implementationWithBlock(^(id obj, TYPE value) { \
+    return GPBSet##TRUE_NAME##IvarWithFieldPrivate(obj, field, value);   \
+  });                                                                    \
+  result->encodingSelector = @selector(set##NAME:);                      \
+  break;
+    case GPBDataTypeBool: {
+      CASE_SET(Bool, BOOL, Bool)
+    }
+    case GPBDataTypeFixed32:
+    case GPBDataTypeUInt32: {
+      CASE_SET(UInt32, uint32_t, UInt32)
+    }
+    case GPBDataTypeInt32:
+    case GPBDataTypeSFixed32:
+    case GPBDataTypeSInt32: {
+      CASE_SET(Int32, int32_t, Int32)
+    }
+    case GPBDataTypeFloat: {
+      CASE_SET(Float, float, Float)
+    }
+    case GPBDataTypeFixed64:
+    case GPBDataTypeUInt64: {
+      CASE_SET(UInt64, uint64_t, UInt64)
+    }
+    case GPBDataTypeInt64:
+    case GPBDataTypeSFixed64:
+    case GPBDataTypeSInt64: {
+      CASE_SET(Int64, int64_t, Int64)
+    }
+    case GPBDataTypeDouble: {
+      CASE_SET(Double, double, Double)
+    }
+    case GPBDataTypeBytes:
+    case GPBDataTypeString: {
+      result->impToAdd = imp_implementationWithBlock(^(id obj, id value) {
+        return GPBSetRetainedObjectIvarWithFieldPrivate(obj, field, [value copy]);
+      });
+      // All object setters share identical '@' parameter type encoding in
+      // GPBMessageSignatureProtocol.
+      result->encodingSelector = @selector(setBytes:);
+      break;
+    }
+    case GPBDataTypeMessage:
+    case GPBDataTypeGroup: {
+      CASE_SET(Message, id, Object)
+    }
+    case GPBDataTypeEnum: {
+      CASE_SET(Enum, int32_t, Enum)
+    }
 #undef CASE_SET
   }
 }

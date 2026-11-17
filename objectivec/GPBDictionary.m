@@ -351,27 +351,26 @@ static void ReadValue(GPBCodedInputStream *stream, GPBGenericValue *valueToFill,
       valueToFill->valueBool = GPBCodedInputStreamReadBool(&stream->state_);
       break;
     case GPBDataTypeFixed32:
-      valueToFill->valueUInt32 = GPBCodedInputStreamReadFixed32(&stream->state_);
-      break;
     case GPBDataTypeSFixed32:
-      valueToFill->valueInt32 = GPBCodedInputStreamReadSFixed32(&stream->state_);
+      valueToFill->valueUInt32 = GPBCodedInputStreamReadFixed32(&stream->state_);
       break;
     case GPBDataTypeFloat:
       valueToFill->valueFloat = GPBCodedInputStreamReadFloat(&stream->state_);
       break;
     case GPBDataTypeFixed64:
-      valueToFill->valueUInt64 = GPBCodedInputStreamReadFixed64(&stream->state_);
-      break;
     case GPBDataTypeSFixed64:
-      valueToFill->valueInt64 = GPBCodedInputStreamReadSFixed64(&stream->state_);
+      valueToFill->valueUInt64 = GPBCodedInputStreamReadFixed64(&stream->state_);
       break;
     case GPBDataTypeDouble:
       valueToFill->valueDouble = GPBCodedInputStreamReadDouble(&stream->state_);
       break;
     case GPBDataTypeInt32:
+    case GPBDataTypeUInt32:
+    case GPBDataTypeEnum:
       valueToFill->valueInt32 = GPBCodedInputStreamReadInt32(&stream->state_);
       break;
     case GPBDataTypeInt64:
+    case GPBDataTypeUInt64:
       valueToFill->valueInt64 = GPBCodedInputStreamReadInt64(&stream->state_);
       break;
     case GPBDataTypeSInt32:
@@ -379,12 +378,6 @@ static void ReadValue(GPBCodedInputStream *stream, GPBGenericValue *valueToFill,
       break;
     case GPBDataTypeSInt64:
       valueToFill->valueInt64 = GPBCodedInputStreamReadSInt64(&stream->state_);
-      break;
-    case GPBDataTypeUInt32:
-      valueToFill->valueUInt32 = GPBCodedInputStreamReadUInt32(&stream->state_);
-      break;
-    case GPBDataTypeUInt64:
-      valueToFill->valueUInt64 = GPBCodedInputStreamReadUInt64(&stream->state_);
       break;
     case GPBDataTypeBytes:
       [valueToFill->valueData release];
@@ -403,9 +396,6 @@ static void ReadValue(GPBCodedInputStream *stream, GPBGenericValue *valueToFill,
     }
     case GPBDataTypeGroup:
       NSCAssert(NO, @"Can't happen");
-      break;
-    case GPBDataTypeEnum:
-      valueToFill->valueEnum = GPBCodedInputStreamReadEnum(&stream->state_);
       break;
   }
 }
