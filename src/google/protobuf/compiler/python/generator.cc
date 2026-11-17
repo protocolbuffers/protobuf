@@ -233,43 +233,6 @@ bool Generator::Generate(const FileDescriptor* file,
   proto_ = StripSourceRetentionOptions(*file_);
   ABSL_CHECK(proto_.SerializeToString(&file_descriptor_serialized_));
 
-  if (!opensource_runtime_ && GeneratingDescriptorProto()) {
-    std::string bootstrap_filename =
-        "net/proto2/python/internal/descriptor_pb2.py";
-    if (options.bootstrap) {
-      filename = bootstrap_filename;
-    } else {
-      std::unique_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
-      io::Printer printer(output.get(), '$');
-      printer.Print(
-          "from google3.net.google.protobuf.python.internal import "
-          "descriptor_pb2\n"
-          "\n");
-
-      // For static checkers, we need to explicitly assign to the symbols we
-      // publicly export.
-      for (int i = 0; i < file_->message_type_count(); i++) {
-        const Descriptor* message = file_->message_type(i);
-        printer.Print("$name$ = descriptor_pb2.$name$\n", "name",
-                      message->name());
-      }
-
-      // Sadly some clients access our internal variables (starting with "_").
-      // To support them, we iterate over *all* symbols to expose even the
-      // private ones.  Statically type-checked code should (especially) never
-      // use these, so we don't worry about making them available to pytype
-      // checks.
-      printer.Print(
-          "\n"
-          "globals().update(descriptor_pb2.__dict__)\n"
-          "\n");
-
-      printer.Print(
-          "# @@protoc_insertion_point(module_scope)\n"
-          "\n");
-      return true;
-    }
-  }
 
   std::unique_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
   ABSL_CHECK(output.get());

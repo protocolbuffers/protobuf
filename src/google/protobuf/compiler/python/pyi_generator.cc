@@ -447,7 +447,7 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
   const absl::string_view class_name = message_descriptor.name();
   std::string extra_base;
   // A well-known type needs to inherit from its corresponding base class in
-  // net/proto2/python/internal/well_known_types.
+  // google.protobuf.internal.well_known_types.
   if (IsWellKnownType(message_descriptor.full_name())) {
     extra_base =
         absl::StrCat(", _well_known_types.", message_descriptor.name());

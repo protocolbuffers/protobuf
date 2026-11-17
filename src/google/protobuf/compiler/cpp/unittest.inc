@@ -606,7 +606,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, DynamicMessageCopyFrom) {
 
 TEST(GENERATED_MESSAGE_TEST_NAME, NonEmptyMergeFrom) {
   // Test merging with a non-empty message. Code is a modified form
-  // of that found in net/proto2/internal/reflection_ops_unittest.cc.
+  // of that found in google/protobuf/reflection_ops_unittest.cc.
   UNITTEST::TestAllTypes message1, message2;
 
   TestUtil::SetAllFields(&message1);

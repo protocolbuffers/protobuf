@@ -33,7 +33,7 @@ edition = "2023";
 
 package experimental.users.kfm.editions;
 
-import "net/proto2/proto/features_cpp.proto";
+import "google/protobuf/cpp_features.proto";
 
 option features.repeated_field_encoding = EXPANDED;
 option features.enum = OPEN;

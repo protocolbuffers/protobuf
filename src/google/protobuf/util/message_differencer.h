@@ -81,9 +81,6 @@ class FieldContext;  // declared below MessageDifferencer
 // - Comparing serialized string
 // Downside: false negatives (there are messages that are the same but their
 // serialized strings are different).
-// - Equals code generator by compiler plugin (net/proto2/contrib/equals_plugin)
-// Downside: more generated code; maintenance overhead for the additional rule
-// (must be in sync with the original proto_library).
 //
 // Note on handling of google.protobuf.Any: MessageDifferencer automatically
 // unpacks Any::value into a Message and compares its individual fields.

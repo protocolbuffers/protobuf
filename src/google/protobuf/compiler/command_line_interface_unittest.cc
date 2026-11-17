@@ -7076,11 +7076,11 @@ TEST_P(EncodeDecodeTest, UnknownType) {
 
 TEST_P(EncodeDecodeTest, ProtoParseError) {
   EXPECT_FALSE(
-      Run("net/proto2/internal/no_such_file.proto "
+      Run("no_such_file.proto "
           "--encode=NoSuchType"));
   ExpectStdoutMatchesText("");
   ExpectErrorSubstring(
-      "net/proto2/internal/no_such_file.proto: "
+      "no_such_file.proto: "
       "No such file or directory");
 }
 
