@@ -2225,8 +2225,7 @@ class RustRepeatedMessageHelper {
 
   static void CopyFrom(const RepeatedPtrFieldBase& src,
                        RepeatedPtrFieldBase& dst) {
-    dst.Clear<GenericTypeHandler<google::protobuf::MessageLite>>();
-    dst.MergeFrom<google::protobuf::MessageLite>(src, dst.GetArena());
+    dst.CopyFrom<GenericTypeHandler<MessageLite>>(src, dst.GetArena());
   }
 
   static void Reserve(RepeatedPtrFieldBase& field, size_t additional) {

@@ -248,6 +248,36 @@ fn test_repeated_message() {
 }
 
 #[gtest]
+fn test_repeated_message_copy_from_empty() {
+    let empty_src = TestAllTypes::new();
+    let mut dst = TestAllTypes::new();
+    dst.repeated_nested_message_mut().push_default().set_bb(42);
+    dst.repeated_nested_message_mut().copy_from(empty_src.repeated_nested_message());
+    expect_that!(dst.repeated_nested_message().len(), eq(0));
+
+    dst.repeated_nested_message_mut().push_default().set_bb(42);
+    dst.set_repeated_nested_message(empty_src.repeated_nested_message());
+    expect_that!(dst.repeated_nested_message().len(), eq(0));
+
+    struct EmptyWithSizeHint(usize);
+    impl Iterator for EmptyWithSizeHint {
+        type Item = NestedMessage;
+        fn next(&mut self) -> Option<Self::Item> {
+            None
+        }
+        fn size_hint(&self) -> (usize, Option<usize>) {
+            (self.0, None)
+        }
+    }
+    let mut reserved_src = TestAllTypes::new();
+    reserved_src.repeated_nested_message_mut().extend(EmptyWithSizeHint(2));
+    reserved_src.repeated_nested_message_mut().extend(EmptyWithSizeHint(16));
+    dst.repeated_nested_message_mut().push_default().set_bb(123);
+    dst.repeated_nested_message_mut().copy_from(reserved_src.repeated_nested_message());
+    expect_that!(dst.repeated_nested_message().len(), eq(0));
+}
+
+#[gtest]
 fn test_repeated_message_get_mut() {
     let mut msg = TestAllTypes::new();
     let mut nested0 = NestedMessage::new();

@@ -106,6 +106,11 @@ class RepeatedPtrFieldTest : public testing::Test {
     RepeatedPtrFieldBase* base = &field;
     base->TryShrinkToFit(arena);
   }
+
+  template <typename T>
+  static RepeatedPtrFieldBase& AsBase(RepeatedPtrField<T>& field) {
+    return field;
+  }
 };
 
 TEST(RepeatedPtrOverPtrsIteratorTest, Traits) {
@@ -975,6 +980,26 @@ TEST_F(RepeatedPtrFieldTest, CopyFromSelf) {
   me.CopyFrom(me);
   ASSERT_EQ(1, me.size());
   EXPECT_EQ("1", me.Get(0));
+}
+
+TEST_F(RepeatedPtrFieldTest, RustRepeatedMessageHelperCopyFrom) {
+  using Field = RepeatedPtrField<TestAllTypes::NestedMessage>;
+  Field empty_src, reserved_src, dst;
+
+  dst.Add()->set_bb(42);
+  RustRepeatedMessageHelper::CopyFrom(AsBase(empty_src), AsBase(dst));
+  EXPECT_EQ(dst.size(), 0);
+
+  RustRepeatedMessageHelper::Reserve(AsBase(reserved_src), 2);
+  RustRepeatedMessageHelper::Reserve(AsBase(reserved_src), 16);
+  dst.Add()->set_bb(11);
+  RustRepeatedMessageHelper::CopyFrom(AsBase(reserved_src), AsBase(dst));
+  EXPECT_EQ(dst.size(), 0);
+
+  dst.Add()->set_bb(123);
+  RustRepeatedMessageHelper::CopyFrom(AsBase(dst), AsBase(dst));
+  ASSERT_EQ(dst.size(), 1);
+  EXPECT_EQ(dst.Get(0).bb(), 123);
 }
 
 TEST_F(RepeatedPtrFieldTest, Erase) {
