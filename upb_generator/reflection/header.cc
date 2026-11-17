@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
@@ -31,7 +32,7 @@ void GenerateMessageDefAccessor(upb::MessageDefPtr d, Context& ctx) {
        {"full_name", d.full_name()},
        {"get_message_symbol", ReflectionGetMessageSymbol(d.full_name())}},
       R"cc(
-        UPB_INLINE const upb_MessageDef *$get_message_symbol$(upb_DefPool *s) {
+        UPB_INLINE const upb_MessageDef* $get_message_symbol$(upb_DefPool* s) {
           _upb_DefPool_LoadDefInit(s, &$def_init_symbol$);
           return upb_DefPool_FindMessageByName(s, "$full_name$");
         }
@@ -91,7 +92,8 @@ std::string DefHeaderFilename(upb::FileDefPtr file) {
 
 void GenerateReflectionHeader(upb::FileDefPtr file, const Options& options,
                               google::protobuf::compiler::GeneratorContext* context) {
-  Context h_context(options, context->Open(DefHeaderFilename(file)));
+  Context h_context(options,
+                    absl::WrapUnique(context->Open(DefHeaderFilename(file))));
   WriteDefHeader(file, h_context);
 }
 

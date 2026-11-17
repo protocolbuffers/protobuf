@@ -8,7 +8,9 @@
 #ifndef GOOGLE_UPB_UPB_GENERATOR_REFLECTION_CONTEXT_H__
 #define GOOGLE_UPB_UPB_GENERATOR_REFLECTION_CONTEXT_H__
 
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
@@ -25,9 +27,12 @@ struct Options {
 
 class Context {
  public:
+  // Takes ownership of `stream`.
   explicit Context(const Options& options,
-                   google::protobuf::io::ZeroCopyOutputStream* stream)
-      : options_(options), printer_(stream) {}
+                   std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> stream)
+      : options_(options),
+        stream_(std::move(stream)),
+        printer_(stream_.get()) {}
 
   // A few convenience wrappers so that users can write `ctx.Emit()` instead of
   // `ctx.printer().Emit()`.
@@ -48,6 +53,8 @@ class Context {
 
  private:
   const Options& options_;
+  // Must be declared before `printer_` so that it outlives it.
+  std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> stream_;
   google::protobuf::io::Printer printer_;
 };
 

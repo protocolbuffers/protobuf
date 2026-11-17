@@ -9,6 +9,7 @@
 #include <string>
 
 #include "google/protobuf/descriptor.upb.h"
+#include "absl/memory/memory.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
@@ -170,7 +171,8 @@ void WriteDefSource(upb::FileDefPtr file, Context& ctx) {
 
 void GenerateReflectionSource(upb::FileDefPtr file, const Options& options,
                               google::protobuf::compiler::GeneratorContext* context) {
-  Context c_context(options, context->Open(DefSourceFilename(file)));
+  Context c_context(options,
+                    absl::WrapUnique(context->Open(DefSourceFilename(file))));
   WriteDefSource(file, c_context);
 }
 
