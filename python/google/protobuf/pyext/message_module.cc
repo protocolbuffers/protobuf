@@ -346,12 +346,6 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
     return CreatePythonConstMessagePointer(*msg, *msg, py_msg);
   }
 
-  const google::protobuf::Message* GetMessagePointer(PyObject* msg) const override {
-    return google::protobuf::python::PyMessage_GetMessagePointer(msg);
-  }
-  google::protobuf::Message* GetMutableMessagePointer(PyObject* msg) const override {
-    return google::protobuf::python::PyMessage_GetMutableMessagePointer(msg);
-  }
   const google::protobuf::Descriptor* MessageDescriptor_AsDescriptor(
       PyObject* desc) const override {
     return google::protobuf::python::PyMessageDescriptor_AsDescriptor(desc);
@@ -377,10 +371,6 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
       google::protobuf::Message* msg, PyObject* py_message_factory) const override {
     return google::protobuf::python::PyMessage_NewMessageOwnedExternally(
         msg, py_message_factory);
-  }
-  PyObject* DescriptorPool_FromPool(
-      const google::protobuf::DescriptorPool* pool) const override {
-    return google::protobuf::python::PyDescriptorPool_FromPool(pool);
   }
   PyObject* DescriptorPool_FromSharedPool(
       std::shared_ptr<const google::protobuf::DescriptorPool> pool,

@@ -7,6 +7,7 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <utility>
@@ -14,6 +15,7 @@
 
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
+#include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
@@ -110,6 +112,63 @@ TEST(PythonPluginTest, ImportTest) {
   EXPECT_TRUE(found_expected_import);
 }
 
+// `_ClassVar` is only a valid annotation inside a class body: at module level a
+// type checker rejects the whole stub. Nothing in the generator's structure
+// enforces that, so assert it over the generated file rather than pinning the
+// annotation each declaration happens to carry today.
+TEST(PythonPyiTest, ClassVarIsOnlyUsedInsideAClassBody) {
+  ABSL_CHECK_OK(
+      File::SetContents(absl::StrCat(::testing::TempDir(), "/extensions.proto"),
+                        "syntax = \"proto2\";\n"
+                        "package foo;\n"
+                        "message Extendable {\n"
+                        "  extensions 1000 to max;\n"
+                        "}\n"
+                        "extend Extendable {\n"
+                        "  optional int32 top_level_ext = 1000;\n"
+                        "}\n"
+                        "message Holder {\n"
+                        "  extend Extendable {\n"
+                        "    optional int32 nested_ext = 1001;\n"
+                        "  }\n"
+                        "}\n",
+                        true));
+
+  compiler::CommandLineInterface cli;
+  cli.SetInputsAreProtoPathRelative(true);
+  python::PyiGenerator pyi_generator;
+  cli.RegisterGenerator("--pyi_out", &pyi_generator, "");
+  std::string proto_path = absl::StrCat("-I", ::testing::TempDir());
+  std::string pyi_out = absl::StrCat("--pyi_out=", ::testing::TempDir());
+  const char* argv[] = {"protoc", proto_path.c_str(), "-I.", pyi_out.c_str(),
+                        "extensions.proto"};
+  ASSERT_EQ(0, cli.Run(5, argv));
+
+  std::string output;
+  ABSL_CHECK_OK(File::GetContents(
+      absl::StrCat(::testing::TempDir(), "/extensions_pb2.pyi"), &output,
+      true));
+
+  bool annotates_a_top_level_extension = false;
+  bool annotates_a_nested_extension = false;
+  for (absl::string_view line : absl::StrSplit(output, '\n')) {
+    if (absl::StartsWith(line, "TOP_LEVEL_EXT_FIELD_NUMBER")) {
+      annotates_a_top_level_extension = true;
+    }
+    if (absl::StrContains(line, "NESTED_EXT_FIELD_NUMBER")) {
+      annotates_a_nested_extension = true;
+    }
+    if (absl::StrContains(line, "_ClassVar[")) {
+      EXPECT_TRUE(absl::StartsWith(line, " "))
+          << "module-level _ClassVar annotation: " << line;
+    }
+  }
+  // Both extensions reach the stub, so neither branch of the assertion above is
+  // vacuous.
+  EXPECT_TRUE(annotates_a_top_level_extension);
+  EXPECT_TRUE(annotates_a_nested_extension);
+}
+
 class PythonGeneratorTest : public CommandLineInterfaceTester,
                             public testing::WithParamInterface<bool> {
  protected:
@@ -194,6 +253,55 @@ TEST_P(PythonGeneratorTest, PyiMessageFieldsUseFullyTypedMappingInitType) {
       "def __init__(self, x: _Optional[_Union[X, _Mapping[_Any, _Any]]] = ..., "
       "xs: _Optional[_Iterable[_Union[X, _Mapping[_Any, _Any]]]] = ...)"
       " -> None: ...");
+}
+
+TEST_P(PythonGeneratorTest, PublicImportDiamondCopiesAliasesOnce) {
+  CreateTempFile("base.proto", R"schema(
+    syntax = "proto3";
+    package pkg;
+    message Base {}
+  )schema");
+  CreateTempFile("left.proto", R"schema(
+    syntax = "proto3";
+    package pkg;
+    import public "base.proto";
+  )schema");
+  CreateTempFile("right.proto", R"schema(
+    syntax = "proto3";
+    package pkg;
+    import public "base.proto";
+  )schema");
+  CreateTempFile("shim.proto", R"schema(
+    syntax = "proto3";
+    package pkg;
+    import public "left.proto";
+    import public "right.proto";
+  )schema");
+  CreateTempFile("consumer.proto", R"schema(
+    syntax = "proto3";
+    package pkg;
+    import "shim.proto";
+    message Consumer {
+      Base b = 1;
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --python_out=$tmpdir "
+      "base.proto left.proto right.proto shim.proto consumer.proto");
+
+  ExpectNoErrors();
+  std::string consumer_py = FileContents("consumer_pb2.py");
+  size_t base_pos = consumer_py.find("base__pb2\n");
+  size_t left_pos = consumer_py.find("left__pb2\n");
+  size_t right_pos = consumer_py.find("right__pb2\n");
+  ASSERT_NE(base_pos, std::string::npos) << consumer_py;
+  ASSERT_NE(left_pos, std::string::npos) << consumer_py;
+  ASSERT_NE(right_pos, std::string::npos) << consumer_py;
+  EXPECT_LT(base_pos, left_pos) << consumer_py;
+  EXPECT_LT(base_pos, right_pos) << consumer_py;
+  EXPECT_EQ(consumer_py.find("base__pb2\n", base_pos + 1), std::string::npos)
+      << consumer_py;
 }
 
 INSTANTIATE_TEST_SUITE_P(PythonGeneratorTest, PythonGeneratorTest,

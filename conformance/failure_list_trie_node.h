@@ -18,6 +18,7 @@
 
 namespace google {
 namespace protobuf {
+namespace conformance {
 
 // Each node represents a section of a test name (divided by '.'). One can
 // imagine them as prefixes to search for a match. Once we hit a prefix that
@@ -51,9 +52,9 @@ class FailureListTrieNode {
   // wildcards; otherwise, insertion is successful.
   absl::Status Insert(absl::string_view test_name);
 
-  // Returns what it matched to if it matched anything, otherwise returns
-  // absl::nullopt
-  absl::optional<std::string> WalkDownMatch(absl::string_view test_name);
+  // Returns the entry `test_name` matches.  Returns absl::nullopt if it
+  // matches nothing.
+  absl::optional<std::string> WalkDownMatch(absl::string_view test_name) const;
 
  private:
   std::string data_;
@@ -61,6 +62,7 @@ class FailureListTrieNode {
   bool is_test_name_;
   void InsertImpl(absl::string_view test_name);
 };
+}  // namespace conformance
 }  // namespace protobuf
 }  // namespace google
 

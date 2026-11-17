@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 """
 Protobuf Python runtime
 
@@ -13,7 +20,9 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:defs.bzl", "py_library")
 load("@rules_python//python/cc:py_extension.bzl", "py_extension")
-load("//:protobuf.bzl", "internal_py_proto_library")
+load("//:protobuf.bzl", "internal_gen_well_known_protos_py")
+load("//bazel:proto_library.bzl", "proto_library")
+load("//bazel:py_proto_library.bzl", "py_proto_library")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
@@ -51,15 +60,30 @@ def build_targets(name):
         },
     )
 
-    internal_py_proto_library(
-        name = "well_known_types_py_pb2",
+    proto_library(
+        name = "well_known_types_proto",
         srcs = [":copied_wkt_proto_files"],
-        include = ".",
-        default_runtime = "",
+        strip_import_prefix = "/python",
+    )
+
+    internal_gen_well_known_protos_py(
+        name = "gen_well_known_protos_py",
+        dep = ":well_known_types_proto",
+    )
+
+    internal_copy_files(
+        name = "copied_wkt_py_pb2",
+        srcs = [":gen_well_known_protos_py"],
+        strip_prefix = "python/_virtual_imports/well_known_types_proto",
+    )
+
+    py_library(
+        name = "well_known_types_py_pb2",
+        srcs = [":copied_wkt_py_pb2"],
+        imports = ["."],
         srcs_version = "PY2AND3",
         visibility = [
             "//:__pkg__",
-            "//editions:__pkg__",
             "//upb:__subpackages__",
         ],
     )
@@ -120,6 +144,7 @@ def build_targets(name):
         srcs = native.glob([
             "google/protobuf/pyext/*.cc",
             "google/protobuf/pyext/*.h",
+            "google/protobuf/pyext/free_threading/*.h",
         ]),
         copts = COPTS + [
             "-DGOOGLE_PROTOBUF_HAS_ONEOF=1",
@@ -172,7 +197,9 @@ def build_targets(name):
         srcs = ["google/protobuf/pyext/testing/map_test_helper.cc"],
         deps = [
             ":proto_api",
+            "@abseil-cpp//absl/status:statusor",
             "//src/google/protobuf",
+            "//src/google/protobuf:port",
             "@rules_python//python/cc:current_py_cc_headers",
         ],
         linkshared = 1,
@@ -304,59 +331,48 @@ def build_targets(name):
         strip_prefix = "src",
     )
 
-    internal_py_proto_library(
-        name = "test_dependency_proto_py_pb2",
+    _copied_py_proto_library(
+        name = "python_common_test_protos",
+        testonly = 1,
         srcs = [
             ":copied_cpp_features_test_dependency_proto_files",
             ":copied_java_features_test_dependency_proto_files",
+            ":copied_test_proto_files",
             ":copied_unittest_custom_options_unlinked_proto_files",
         ],
-        include = ".",
-        default_runtime = "",
-        srcs_version = "PY2AND3",
-        visibility = [
-            "//:__pkg__",
-            "//upb:__subpackages__",
-        ],
+        proto_deps = [":well_known_types_proto"],
+        visibility = ["//:__pkg__"],
         deps = [":well_known_types_py_pb2"],
     )
 
-    internal_py_proto_library(
-        name = "python_common_test_protos",
-        testonly = 1,
-        srcs = [":copied_test_proto_files"],
-        include = ".",
-        default_runtime = "",
-        srcs_version = "PY2AND3",
-        visibility = ["//:__pkg__"],
-        deps = [":well_known_types_py_pb2", ":test_dependency_proto_py_pb2"],
-    )
-
-    internal_py_proto_library(
+    _copied_py_proto_library(
         name = "python_specific_test_protos",
         testonly = 1,
         srcs = native.glob([
             "google/protobuf/internal/*.proto",
             "google/protobuf/internal/import_test_package/*.proto",
         ]),
-        include = ".",
-        default_runtime = ":protobuf_python",
-        srcs_version = "PY2AND3",
+        proto_deps = [
+            ":python_common_test_protos_proto",
+            ":well_known_types_proto",
+        ],
         visibility = ["//:__pkg__"],
-        deps = [":python_common_test_protos"],
+        deps = [
+            ":protobuf_python",
+            ":python_common_test_protos",
+        ],
     )
 
-    internal_py_proto_library(
+    _copied_py_proto_library(
         name = "conformance_test_py_proto",
         testonly = 1,
         srcs = [":copied_conformance_test_files"],
-        include = ".",
-        default_runtime = "//:protobuf_python",
+        proto_deps = [":well_known_types_proto"],
         visibility = [
             "//conformance:__pkg__",
             "//python:__subpackages__",
         ],
-        deps = [":well_known_types_py_pb2"],
+        deps = [":protobuf_python"],
     )
 
     py_library(
@@ -516,7 +532,6 @@ def build_targets(name):
         env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "python"},
         failure_list = "//conformance:failure_list_python.txt",
         target_compatible_with = select({
-            "@system_python//:none": ["@platforms//:incompatible"],
             ":use_fast_cpp_protos": ["@platforms//:incompatible"],
             "//conditions:default": [],
         }),
@@ -531,7 +546,6 @@ def build_targets(name):
         env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "cpp"},
         failure_list = "//conformance:failure_list_python_cpp.txt",
         target_compatible_with = select({
-            "@system_python//:none": ["@platforms//:incompatible"],
             ":use_fast_cpp_protos": [],
             "//conditions:default": ["@platforms//:incompatible"],
         }),
@@ -545,7 +559,6 @@ def build_targets(name):
         env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "upb"},
         failure_list = "//conformance:failure_list_python_upb.txt",
         target_compatible_with = select({
-            "@system_python//:none": ["@platforms//:incompatible"],
             ":use_fast_cpp_protos": ["@platforms//:incompatible"],
             "//conditions:default": [],
         }),
@@ -578,6 +591,7 @@ def build_targets(name):
             "google/protobuf/internal/*.cc",
             "google/protobuf/pyext/*.cc",
             "google/protobuf/pyext/*.h",
+            "google/protobuf/pyext/free_threading/*.h",
         ]) + [
             "BUILD.bazel",
             "MANIFEST.in",
@@ -596,10 +610,40 @@ def build_targets(name):
 
     proto_lang_toolchain(
         name = "python_toolchain",
+        blacklisted_protos = [":well_known_types_proto"],
         command_line = "--python_out=%s",
         progress_message = "Generating Python proto_library %{label}",
         runtime = ":protobuf_python",
         # NOTE: This isn't *actually* public. It's an implicit dependency of py_proto_library,
         # so must be public so user usages of the rule can reference it.
         visibility = ["//visibility:public"],
+    )
+
+def _copied_py_proto_library(name, srcs, proto_deps, deps, visibility, testonly = 0):
+    proto_library(
+        name = name + "_proto",
+        testonly = testonly,
+        srcs = srcs,
+        strip_import_prefix = "/python",
+        deps = proto_deps,
+    )
+    py_proto_library(
+        name = name + "_py_pb2",
+        testonly = testonly,
+        deps = [":" + name + "_proto"],
+    )
+    internal_copy_files(
+        name = "copied_" + name,
+        testonly = testonly,
+        srcs = [":" + name + "_py_pb2"],
+        strip_prefix = "python/_virtual_imports/" + name + "_proto",
+    )
+    py_library(
+        name = name,
+        testonly = testonly,
+        srcs = [":copied_" + name],
+        imports = ["."],
+        srcs_version = "PY2AND3",
+        visibility = visibility,
+        deps = deps,
     )

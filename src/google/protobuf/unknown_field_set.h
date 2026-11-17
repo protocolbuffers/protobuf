@@ -27,6 +27,7 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -159,11 +160,13 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   // Similar to above, but this function will destroy the contents of other.
   void MergeFromAndDestroy(UnknownFieldSet* other);
 
+#if !defined(PROTOBUF_FUTURE_DELETE_UFS_MERGE_TO_MESSAGE)
   // Merge the contents an UnknownFieldSet with the UnknownFieldSet in
   // *metadata, if there is one.  If *metadata doesn't have an UnknownFieldSet
   // then add one to it and make it be a copy of the first arg.
-  static void MergeToInternalMetadata(const UnknownFieldSet& other,
-                                      internal::InternalMetadata* metadata);
+  [[deprecated]] static void MergeToInternalMetadata(
+      MessageLite& message, const UnknownFieldSet& other);
+#endif
 
   // Swaps the contents of some other UnknownFieldSet with this one.
   void Swap(UnknownFieldSet* x);
@@ -430,12 +433,20 @@ namespace internal {
 
 // Add specialization of InternalMetadata::Container to provide arena support.
 template <>
-struct InternalMetadata::Container<UnknownFieldSet>
+struct alignas(InternalMetadata::kContainerAlignment)
+    InternalMetadata::Container<UnknownFieldSet>
     : public InternalMetadata::ContainerBase {
   UnknownFieldSet unknown_fields;
 
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  Container(Arena* input_arena, const ClassData* input_class_data)
+      : ContainerBase(input_class_data),
+        unknown_fields(InternalVisibility{}, input_arena) {}
+#else
   explicit Container(Arena* input_arena)
-      : unknown_fields(InternalVisibility{}, input_arena) {}
+      : ContainerBase(input_arena),
+        unknown_fields(InternalVisibility{}, input_arena) {}
+#endif
 
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;

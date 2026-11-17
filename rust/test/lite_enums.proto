@@ -1,0 +1,19 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Enums from an `optimize_for = LITE_RUNTIME` file, which omit their value
+// names.
+syntax = "proto3";
+
+package lite_enums;
+
+option optimize_for = LITE_RUNTIME;
+
+enum LiteTestEnum {
+  LITE_TEST_ENUM_UNSPECIFIED = 0;
+  LITE_TEST_ENUM_FOO = 1;
+}

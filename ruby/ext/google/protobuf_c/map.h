@@ -31,7 +31,8 @@ void Map_Inspect(StringBuilder* b, const upb_Map* map, upb_CType key_type,
                  TypeInfo val_type);
 
 // Returns a new Hash object containing the contents of this Map.
-VALUE Map_CreateHash(const upb_Map* map, upb_CType key_type, TypeInfo val_info);
+VALUE Map_CreateHash(const upb_Map* map, upb_CType key_type, TypeInfo val_info,
+                     bool emit_defaults);
 
 // Returns a deep copy of this Map object.
 VALUE Map_deep_copy(VALUE obj);

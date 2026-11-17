@@ -10,18 +10,19 @@
 
 #include "google/protobuf/pyext/repeated_composite_container.h"
 
-#include <memory>
+#include <utility>
 
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/reflection.h"
-#include "google/protobuf/breaking_changes.h"
-#include "google/protobuf/pyext/descriptor.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/message_factory.h"
+#include "google/protobuf/pyext/message_tree.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
+
+// Must include last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -45,28 +46,25 @@ static Py_ssize_t Length(PyObject* pself) {
 // ---------------------------------------------------------------------
 // add()
 
-PyObject* Add(RepeatedCompositeContainer* self, PyObject* args,
-              PyObject* kwargs) {
-  Message* message = cmessage::AssureWritable(self->parent);
-  if (message == nullptr) return nullptr;
-
-  const Reflection* reflection = message->GetReflection();
-  Message* sub_message = reflection->AddMessage(
-      message, self->parent_field_descriptor,
-      self->child_message_class->py_message_factory->message_factory);
-  CMessage* cmsg = self->parent->BuildSubMessageFromPointer(
-      self->parent_field_descriptor, sub_message, self->child_message_class,
-      MESSAGE_MUTABLE);
-  if (cmsg == nullptr) return nullptr;
-
-  if (cmessage::InitAttributes(cmsg, args, kwargs) < 0) {
-    message->GetReflection()->RemoveLast(message,
-                                         self->parent_field_descriptor);
-    Py_DECREF(cmsg);
+static PyObject* AttachQuiescentMessage(RepeatedCompositeContainer* self,
+                                        ScopedPyObjectPtr child) {
+  CMessage* cmsg = reinterpret_cast<CMessage*>(child.get());
+  if (!self->parent->AttachQuiescentChild(self->parent_field_descriptor,
+                                          cmsg)) {
     return nullptr;
   }
+  return child.release();
+}
 
-  return cmsg->AsPyObject();
+PyObject* Add(RepeatedCompositeContainer* self, PyObject* args,
+              PyObject* kwargs) {
+  CMessage* cmsg = cmessage::NewCMessage(self->child_message_class);
+  if (cmsg == nullptr) return nullptr;
+  ScopedPyObjectPtr child(cmsg->AsPyObject());
+  if (cmessage::InitAttributes(cmsg, args, kwargs) < 0) {
+    return nullptr;
+  }
+  return AttachQuiescentMessage(self, std::move(child));
 }
 
 static PyObject* AddMethod(PyObject* self, PyObject* args, PyObject* kwargs) {
@@ -77,19 +75,13 @@ static PyObject* AddMethod(PyObject* self, PyObject* args, PyObject* kwargs) {
 // append()
 
 static PyObject* AddMessage(RepeatedCompositeContainer* self, PyObject* value) {
-  Message* message = cmessage::AssureWritable(self->parent);
-  if (message == nullptr) return nullptr;
-  PyObject* py_cmsg;
-  const Reflection* reflection = message->GetReflection();
-  py_cmsg = Add(self, nullptr, nullptr);
-  if (py_cmsg == nullptr) return nullptr;
-  CMessage* cmsg = reinterpret_cast<CMessage*>(py_cmsg);
+  CMessage* cmsg = cmessage::NewCMessage(self->child_message_class);
+  if (cmsg == nullptr) return nullptr;
+  ScopedPyObjectPtr child(cmsg->AsPyObject());
   if (ScopedPyObjectPtr(cmessage::MergeFrom(cmsg, value)) == nullptr) {
-    reflection->RemoveLast(message, self->parent_field_descriptor);
-    Py_DECREF(cmsg);
     return nullptr;
   }
-  return py_cmsg;
+  return AttachQuiescentMessage(self, std::move(child));
 }
 
 static PyObject* AppendMethod(PyObject* pself, PyObject* value) {
@@ -140,7 +132,23 @@ static PyObject* Insert(PyObject* pself, PyObject* args) {
 // extend()
 
 PyObject* Extend(RepeatedCompositeContainer* self, PyObject* value) {
-  if (cmessage::AssureWritable(self->parent) == nullptr) return nullptr;
+  Message* message = cmessage::AssureWritable(self->parent);
+  if (message == nullptr) return nullptr;
+  if (value == reinterpret_cast<PyObject*>(self)) {
+    // Append copies of the elements that were there to begin with, so that the
+    // new elements are not visited.
+    const Reflection* reflection = message->GetReflection();
+    const FieldDescriptor* field = self->parent_field_descriptor;
+    MessageFactory* factory =
+        cmessage::GetFactoryForMessage(self->parent)->message_factory;
+    const int size = reflection->FieldSize(*message, field);
+    for (int i = 0; i < size; ++i) {
+      const Message& element =
+          reflection->GetRepeatedMessage(*message, field, i);
+      reflection->AddMessage(message, field, factory)->CopyFrom(element);
+    }
+    Py_RETURN_NONE;
+  }
   ScopedPyObjectPtr iter(PyObject_GetIter(value));
   if (iter == nullptr) {
     PyErr_SetString(PyExc_TypeError, "Value must be iterable");
@@ -152,13 +160,8 @@ PyObject* Extend(RepeatedCompositeContainer* self, PyObject* value) {
       PyErr_SetString(PyExc_TypeError, "Not a cmessage");
       return nullptr;
     }
-    ScopedPyObjectPtr new_message(Add(self, nullptr, nullptr));
+    ScopedPyObjectPtr new_message(AddMessage(self, next.get()));
     if (new_message == nullptr) {
-      return nullptr;
-    }
-    CMessage* new_cmessage = reinterpret_cast<CMessage*>(new_message.get());
-    if (ScopedPyObjectPtr(cmessage::MergeFrom(new_cmessage, next.get())) ==
-        nullptr) {
       return nullptr;
     }
   }
@@ -173,6 +176,13 @@ static PyObject* ExtendMethod(PyObject* self, PyObject* value) {
 }
 
 PyObject* MergeFrom(RepeatedCompositeContainer* self, PyObject* other) {
+  if (cmessage::AssureWritable(self->parent) == nullptr) return nullptr;
+  if (other == reinterpret_cast<PyObject*>(self)) {
+    // Self-merge is not supported, as for messages and maps.
+    PyErr_SetString(PyExc_AssertionError,
+                    "Cannot merge a repeated field into itself.");
+    return nullptr;
+  }
   return Extend(self, other);
 }
 
@@ -201,12 +211,10 @@ static PyObject* GetItem(RepeatedCompositeContainer* self, Py_ssize_t index,
   // 2. Any subsequent write on the child triggers AssureWritable, which
   //    promotes the entire parent hierarchy (e.g., marking LazyField ancestors
   //    dirty).
-  MessageMutabilityState state = self->parent->state == MESSAGE_FROZEN
-                                     ? MESSAGE_FROZEN
-                                     : MESSAGE_UNPROMOTED;
   return self->parent
       ->BuildSubMessageFromPointer(self->parent_field_descriptor, sub_message,
-                                   self->child_message_class, state)
+                                   self->child_message_class,
+                                   MESSAGE_UNPROMOTED)
       ->AsPyObject();
 }
 
@@ -435,21 +443,6 @@ static PyObject* Sort(PyObject* pself, PyObject* args, PyObject* kwds) {
 // ---------------------------------------------------------------------
 // reverse()
 
-// Returns 0 if successful; returns -1 and sets an exception if
-// unsuccessful.
-static int ReversePythonMessages(RepeatedCompositeContainer* self) {
-  ScopedPyObjectPtr child_list(
-      PySequence_List(reinterpret_cast<PyObject*>(self)));
-  if (child_list == nullptr) {
-    return -1;
-  }
-  if (ScopedPyObjectPtr(
-          PyObject_CallMethod(child_list.get(), "reverse", nullptr)) == nullptr)
-    return -1;
-  ReorderAttached(self, child_list.get());
-  return 0;
-}
-
 static PyObject* Reverse(PyObject* pself) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
@@ -463,8 +456,13 @@ static PyObject* Reverse(PyObject* pself) {
     Py_RETURN_NONE;
   }
 
-  if (ReversePythonMessages(self) < 0) {
-    return nullptr;
+  Message* message = cmessage::AssureWritable(self->parent);
+  if (message == nullptr) return nullptr;
+  const Reflection* reflection = message->GetReflection();
+  const FieldDescriptor* descriptor = self->parent_field_descriptor;
+  Py_ssize_t length = reflection->FieldSize(*message, descriptor);
+  for (Py_ssize_t i = 0; i < length / 2; ++i) {
+    reflection->SwapElements(message, descriptor, i, length - 1 - i);
   }
   Py_RETURN_NONE;
 }
@@ -538,6 +536,7 @@ RepeatedCompositeContainer* NewContainer(
     return nullptr;
   }
 
+  self->SetTree(parent->GetTree());
   Py_INCREF(parent);
   self->parent = parent;
   self->parent_field_descriptor = parent_field_descriptor;
@@ -651,11 +650,15 @@ Message* PromoteConstRepeatedMessage(Message* parent_message,
   // objects in the parent's container. We mark the repeated field dirty, but
   // we don't need mark the individual message dirty.
   // -----------------------------------------------------------------------
-  (void)parent_message->GetReflection()->MutableRepeatedPtrField<Message>(
+  PROTOBUF_IGNORE_DEPRECATION_START
+  parent_message->GetReflection()->MutableRepeatedPtrField<Message>(
       parent_message, field);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   return const_cast<Message*>(message);
 }
 
 }  // namespace python
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

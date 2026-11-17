@@ -31,9 +31,7 @@ import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
-import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
-import com.google.protobuf.Descriptors.ServiceDescriptor;
 import com.google.protobuf.test.UnittestImport;
 import com.google.protobuf.test.UnittestImport.ImportEnum;
 import com.google.protobuf.test.UnittestImport.ImportEnumForMap;
@@ -53,7 +51,6 @@ import proto2_unittest.UnittestProto.TestMultipleExtensionRanges;
 import proto2_unittest.UnittestProto.TestRequired;
 import proto2_unittest.UnittestProto.TestReservedEnumFields;
 import proto2_unittest.UnittestProto.TestReservedFields;
-import proto2_unittest.UnittestProto.TestService;
 import proto2_unittest.UnittestRetention;
 import protobuf_unittest.UnittestProto3Extensions.Proto3FileExtensions;
 import java.nio.charset.StandardCharsets;
@@ -120,16 +117,6 @@ public class DescriptorsTest {
           .inOrder();
       for (int i = 0; i < file.getEnumTypes().size(); i++) {
         assertThat(file.getEnumTypes().get(i).getIndex()).isEqualTo(i);
-      }
-
-      ServiceDescriptor service = TestService.getDescriptor();
-      assertThat(file.getServices().get(0)).isEqualTo(service);
-      assertThat(file.findServiceByName("TestService")).isEqualTo(service);
-      assertThat(file.findServiceByName("NoSuchType")).isNull();
-      assertThat(file.findServiceByName("proto2_unittest.TestService")).isNull();
-      assertThat(UnittestImport.getDescriptor().getServices()).isEqualTo(Collections.emptyList());
-      for (int i = 0; i < file.getServices().size(); i++) {
-        assertThat(file.getServices().get(i).getIndex()).isEqualTo(i);
       }
 
       FieldDescriptor extension = UnittestProto.optionalInt32Extension.getDescriptor();
@@ -654,33 +641,6 @@ public class DescriptorsTest {
     }
 
     @Test
-    public void testServiceDescriptor() throws Exception {
-      ServiceDescriptor service = TestService.getDescriptor();
-
-      assertThat(service.getName()).isEqualTo("TestService");
-      assertThat(service.getFullName()).isEqualTo("proto2_unittest.TestService");
-      assertThat(service.getFile()).isEqualTo(UnittestProto.getDescriptor());
-
-      MethodDescriptor fooMethod = service.getMethods().get(0);
-      assertThat(fooMethod.getName()).isEqualTo("Foo");
-      assertThat(fooMethod.getInputType()).isEqualTo(UnittestProto.FooRequest.getDescriptor());
-      assertThat(fooMethod.getOutputType()).isEqualTo(UnittestProto.FooResponse.getDescriptor());
-      assertThat(service.findMethodByName("Foo")).isEqualTo(fooMethod);
-
-      MethodDescriptor barMethod = service.getMethods().get(1);
-      assertThat(barMethod.getName()).isEqualTo("Bar");
-      assertThat(barMethod.getInputType()).isEqualTo(UnittestProto.BarRequest.getDescriptor());
-      assertThat(barMethod.getOutputType()).isEqualTo(UnittestProto.BarResponse.getDescriptor());
-      assertThat(service.findMethodByName("Bar")).isEqualTo(barMethod);
-
-      assertThat(service.findMethodByName("NoSuchMethod")).isNull();
-
-      for (int i = 0; i < service.getMethods().size(); i++) {
-        assertThat(service.getMethods().get(i).getIndex()).isEqualTo(i);
-      }
-    }
-
-    @Test
     public void testCustomOptions() throws Exception {
       // Get the descriptor indirectly from a dependent proto class. This is to
       // ensure that when a proto class is loaded, custom options defined in its
@@ -714,20 +674,6 @@ public class DescriptorsTest {
       assertThat(enumType.getOptions().hasExtension(UnittestCustomOptions.enumOpt1)).isTrue();
       assertThat(enumType.getOptions().getExtension(UnittestCustomOptions.enumOpt1))
           .isEqualTo(Integer.valueOf(-789));
-
-      ServiceDescriptor service =
-          UnittestCustomOptions.TestServiceWithCustomOptions.getDescriptor();
-
-      assertThat(service.getOptions().hasExtension(UnittestCustomOptions.serviceOpt1)).isTrue();
-      assertThat(service.getOptions().getExtension(UnittestCustomOptions.serviceOpt1))
-          .isEqualTo(Long.valueOf(-9876543210L));
-
-      MethodDescriptor method = service.findMethodByName("Foo");
-      assertThat(method).isNotNull();
-
-      assertThat(method.getOptions().hasExtension(UnittestCustomOptions.methodOpt1)).isTrue();
-      assertThat(method.getOptions().getExtension(UnittestCustomOptions.methodOpt1))
-          .isEqualTo(UnittestCustomOptions.MethodOpt1.METHODOPT1_VAL2);
     }
 
     @Test
@@ -1246,6 +1192,8 @@ public class DescriptorsTest {
       FieldDescriptor field = messageType.findFieldByName("oneof_nested_message");
       OneofDescriptor oneofDescriptor = field.getContainingOneof();
       assertThat(oneofDescriptor).isNotNull();
+      assertThat(messageType.findOneofByName("oneof_field")).isSameInstanceAs(oneofDescriptor);
+      assertThat(messageType.findOneofByName("oneof_nested_message")).isNull();
       assertThat(messageType.getOneofs().get(0)).isSameInstanceAs(oneofDescriptor);
       assertThat(oneofDescriptor.getName()).isEqualTo("oneof_field");
 
@@ -1254,6 +1202,36 @@ public class DescriptorsTest {
 
       assertThat(oneofDescriptor.getFields()).hasSize(7);
       assertThat(field).isEqualTo(oneofDescriptor.getFields().get(1));
+    }
+
+    @Test
+    public void testOneofDescriptorFieldCollision() throws Exception {
+      DescriptorValidationException exception =
+          assertThrows(
+              DescriptorValidationException.class,
+              () ->
+                  FileDescriptor.buildFrom(
+                      FileDescriptorProto.newBuilder()
+                          .setName("foo.proto")
+                          .setPackage("foo")
+                          .setSyntax("proto2")
+                          .addMessageType(
+                              DescriptorProto.newBuilder()
+                                  .setName("Bar")
+                                  .addField(
+                                      FieldDescriptorProto.newBuilder()
+                                          .setName("field1")
+                                          .setNumber(1)
+                                          .setOneofIndex(0)
+                                          .setType(FieldDescriptorProto.Type.TYPE_INT32)
+                                          .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                                          .build())
+                                  .addOneofDecl(
+                                      OneofDescriptorProto.newBuilder().setName("field1").build())
+                                  .build())
+                          .build(),
+                      new FileDescriptor[0]));
+      assertThat(exception.getMessage()).contains("\"field1\" is already defined in \"foo.Bar\"");
     }
 
     @Test

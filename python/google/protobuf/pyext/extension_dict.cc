@@ -11,6 +11,7 @@
 #include "google/protobuf/pyext/extension_dict.h"
 
 #include <cstdint>
+#include <limits>
 #include <memory>
 #include <vector>
 
@@ -19,6 +20,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/pyext/container_base.h"
 #include "google/protobuf/pyext/descriptor.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
 #include "google/protobuf/pyext/message.h"
@@ -134,8 +136,7 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
   if (!descriptor->is_repeated() &&
       descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     // TODO: consider building the class on the fly!
-    ContainerBase* sub_message =
-        cmessage::InternalGetSubMessage(self->parent, descriptor);
+    ContainerBase* sub_message = self->parent->GetSubMessage(descriptor);
     if (sub_message == nullptr) {
       return nullptr;
     }
@@ -258,15 +259,23 @@ PyObject* _FindExtensionByName(ExtensionDict* self, PyObject* arg) {
 }
 
 PyObject* _FindExtensionByNumber(ExtensionDict* self, PyObject* arg) {
-  int64_t number = PyLong_AsLong(arg);
+  // Not PyLong_AsLong(): long is only 32 bits on some platforms (e.g. Windows),
+  // and out-of-range numbers should return None rather than raise.
+  int overflow;
+  int64_t number = PyLong_AsLongLongAndOverflow(arg, &overflow);
   if (number == -1 && PyErr_Occurred()) {
     return nullptr;
+  }
+  // No extension can have a number outside the range of int.
+  if (overflow != 0 || number < std::numeric_limits<int>::min() ||
+      number > std::numeric_limits<int>::max()) {
+    Py_RETURN_NONE;
   }
 
   PyDescriptorPool* pool = cmessage::GetFactoryForMessage(self->parent)->pool;
   const FieldDescriptor* message_extension =
       pool->pool->get()->FindExtensionByNumber(
-          self->parent->message->GetDescriptor(), number);
+          self->parent->message->GetDescriptor(), static_cast<int>(number));
   if (message_extension == nullptr) {
     Py_RETURN_NONE;
   }

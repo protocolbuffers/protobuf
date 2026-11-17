@@ -42,6 +42,10 @@ typedef struct {
   PyUpb_WeakMap* obj_cache;
 } PyUpb_DescriptorPool;
 
+static PyObject* PyUpb_DescriptorPool_AsPyObj(PyUpb_DescriptorPool* pool) {
+  return pool ? &pool->ob_base : NULL;
+}
+
 PyObject* PyUpb_DescriptorPool_GetDefaultPool(void) {
   PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
   return s->default_pool;
@@ -79,7 +83,7 @@ static PyObject* PyUpb_DescriptorPool_DoCreateWithCache(
   }
   return self_obj;
 err:
-  Py_XDECREF(pool);
+  Py_XDECREF(PyUpb_DescriptorPool_AsPyObj(pool));
   return NULL;
 }
 
@@ -108,7 +112,7 @@ PyObject* PyUpb_DescriptorPool_Get(const upb_DefPool* symtab) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
   PyObject* pool = PyUpb_WeakMap_Get(state->obj_cache, symtab);
   assert(pool
-#if PY_VERSION_HEX >= 0x030D0000  // >= 3.13
+#if PYUPB_MIN_PY_VERSION_HEX >= 0x030D0000  // >= 3.13
          || Py_IsFinalizing()
 #endif
   );
@@ -116,7 +120,7 @@ PyObject* PyUpb_DescriptorPool_Get(const upb_DefPool* symtab) {
 }
 
 static void PyUpb_DescriptorPool_Dealloc(PyUpb_DescriptorPool* self) {
-#if PY_VERSION_HEX >= 0x030C0000
+#if PYUPB_MIN_PY_VERSION_HEX >= 0x030C0000
   PyObject_ClearWeakRefs((PyObject*)self);
 #endif
   PyObject_GC_UnTrack(self);
@@ -303,6 +307,14 @@ static PyObject* PyUpb_DescriptorPool_DoAddSerializedFile(
   }
 
   upb_StringView name = google_protobuf_FileDescriptorProto_name(proto);
+  if (!upb_StringView_IsEqual(
+          name, upb_StringView_FromString("google/protobuf/descriptor.proto"))
+  ) {
+    // Ensure descriptor_pb2 is imported at AddSerializedFile time (matching
+    // pure Python) so subsequent GetOptions()/GetFeatures() calls do not
+    // trigger lazy imports at runtime.
+    if (!PyUpb_ImportDescriptorModule()) goto done;
+  }
   const upb_FileDef* file =
       upb_DefPool_FindFileByNameWithSize(self->symtab, name.data, name.size);
 
@@ -810,7 +822,7 @@ static PyType_Spec PyUpb_DescriptorPool_Spec = {
     PYUPB_MODULE_NAME ".DescriptorPool",
     sizeof(PyUpb_DescriptorPool),
     0,  // tp_itemsize
-#if PY_VERSION_HEX >= 0x030C0000
+#if PYUPB_MIN_PY_VERSION_HEX >= 0x030C0000
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC | Py_TPFLAGS_MANAGED_WEAKREF,
 #else
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,

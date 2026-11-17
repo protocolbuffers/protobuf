@@ -15,11 +15,14 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <initializer_list>
 #include <type_traits>
 
+#include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
 #include "absl/types/span.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
@@ -299,6 +302,9 @@ struct alignas(uint64_t) TcParseTableBase {
   uint16_t num_aux_entries;
   uint32_t aux_offset;
 
+  // The size of the whole parse table.
+  uint32_t sizeof_self;
+
   const ClassData* class_data;
   using PostLoopHandler = const char* (*)(MessageLite* msg, const char* ptr,
                                           ParseContext* ctx);
@@ -321,7 +327,7 @@ struct alignas(uint64_t) TcParseTableBase {
                              uint32_t field_entries_offset,
                              uint16_t num_field_entries,
                              uint16_t num_aux_entries, uint32_t aux_offset,
-                             const ClassData* class_data,
+                             size_t sizeof_self, const ClassData* class_data,
                              PostLoopHandler post_loop_handler,
                              TailCallParseFunc fallback)
       : has_bits_offset(has_bits_offset),
@@ -335,9 +341,13 @@ struct alignas(uint64_t) TcParseTableBase {
         num_field_entries(num_field_entries),
         num_aux_entries(num_aux_entries),
         aux_offset(aux_offset),
+        sizeof_self(static_cast<uint32_t>(sizeof_self)),
         class_data(class_data),
         post_loop_handler(post_loop_handler),
-        fallback(fallback) {}
+        fallback(fallback) {
+    // Check that the size of the table fits in a uint32_t.
+    ABSL_DCHECK_EQ(static_cast<size_t>(this->sizeof_self), sizeof_self);
+  }
 
   // Table entry for fast-path tailcall dispatch handling.
   struct FastFieldEntry {
@@ -511,6 +521,34 @@ static_assert(sizeof(TcParseTableBase::FastFieldEntry) <= 16,
 static_assert(sizeof(TcParseTableBase::FieldEntry) <= 16,
               "Field entry is too big.");
 
+// A placeholder for empty array members of `TcParseTable`. We template
+// parametrize it on the element type of the array so multiple empty members
+// of `TcParseTable` will have unique types. Without this, two adjacent empty
+// members could not each occupy the same address, even with
+// [[no_unique_address]].
+template <typename T>
+struct EmptyTcParseTableArray {
+  constexpr EmptyTcParseTableArray() = default;
+  constexpr EmptyTcParseTableArray(std::initializer_list<char>) {}
+};
+
+template <typename T, size_t size>
+using TcParseTableArray =
+    std::conditional_t<size == 0, EmptyTcParseTableArray<T>,
+                       std::array<T, size>>;
+
+// Concrete type for all parse tables.
+//
+// To make offset calculations portable, we need empty members to behave
+// consistently. `EmptyTcParseTableArray` only occupies zero bytes when
+// `[[no_unique_address]]` is available (C++20), so care must be taken when
+// finding members of this struct relative to other members.
+//
+// For example, when we don't have aux entries, we set `aux_offset` to
+// `offsetof(Table, field_names)`, as `field_names` don't have their own offset
+// and are calculated relative to `aux_offset`. That way, additional padding
+// between `aux_entries` and `field_names` does not break field_names locating
+// when there are no aux entries.
 template <size_t kFastTableSizeLog2, size_t kNumFieldEntries = 0,
           size_t kNumFieldAux = 0, size_t kNameTableSize = 0,
           size_t kFieldLookupSize = 2>
@@ -529,45 +567,29 @@ struct TcParseTable {
   // Just big enough to find all the field entries.
   std::array<uint16_t, kFieldLookupSize> field_lookup_table;
   // Entries for all fields:
-  std::array<TcParseTableBase::FieldEntry, kNumFieldEntries> field_entries;
-  std::array<TcParseTableBase::FieldAux, kNumFieldAux> aux_entries;
-  std::array<char, kNameTableSize == 0 ? 1 : kNameTableSize> field_names;
+  ABSL_ATTRIBUTE_NO_UNIQUE_ADDRESS
+  TcParseTableArray<TcParseTableBase::FieldEntry, kNumFieldEntries>
+      field_entries;
+  ABSL_ATTRIBUTE_NO_UNIQUE_ADDRESS
+  TcParseTableArray<TcParseTableBase::FieldAux, kNumFieldAux> aux_entries;
+  ABSL_ATTRIBUTE_NO_UNIQUE_ADDRESS TcParseTableArray<char, kNameTableSize>
+      field_names;
 };
 
-// Partial specialization: if there are no aux entries, there will be no array.
-// In C++, arrays cannot have length 0, but (C++11) std::array<T, 0> is valid.
-// However, different implementations have different sizeof(std::array<T, 0>).
-// Skipping the member makes offset computations portable.
-template <size_t kFastTableSizeLog2, size_t kNumFieldEntries,
-          size_t kNameTableSize, size_t kFieldLookupSize>
-struct TcParseTable<kFastTableSizeLog2, kNumFieldEntries, 0, kNameTableSize,
-                    kFieldLookupSize> {
-  TcParseTableBase header;
-  std::array<TcParseTableBase::FastFieldEntry, (1 << kFastTableSizeLog2)>
-      fast_entries;
-  std::array<uint16_t, kFieldLookupSize> field_lookup_table;
-  std::array<TcParseTableBase::FieldEntry, kNumFieldEntries> field_entries;
-  std::array<char, kNameTableSize == 0 ? 1 : kNameTableSize> field_names;
-};
-
-// Partial specialization: if there are no fields at all, then we can save space
-// by skipping the field numbers and entries.
-template <size_t kNameTableSize, size_t kFieldLookupSize>
-struct TcParseTable<0, 0, 0, kNameTableSize, kFieldLookupSize> {
-  TcParseTableBase header;
-  // N.B.: the fast entries are sized by log2, so 2**0 fields = 1 entry.
-  // The fast parsing loop will always use this entry, so it must be present.
-  std::array<TcParseTableBase::FastFieldEntry, 1> fast_entries;
-  std::array<uint16_t, kFieldLookupSize> field_lookup_table;
-  std::array<char, kNameTableSize == 0 ? 1 : kNameTableSize> field_names;
-};
-
-static_assert(std::is_standard_layout<TcParseTable<1>>::value,
+static_assert(std::is_standard_layout_v<TcParseTable<1>>,
               "TcParseTable must be standard layout.");
 
 static_assert(offsetof(TcParseTable<1>, fast_entries) ==
                   sizeof(TcParseTableBase),
               "Table entries must be laid out after TcParseTableBase.");
+
+#if ABSL_HAVE_CPP_ATTRIBUTE(no_unique_address)
+// Verify that empty arrays don't take up any space.
+static_assert(sizeof(TcParseTable<0, 0, 0, 0, 4>) ==
+              sizeof(TcParseTableBase) +
+                  sizeof(TcParseTableBase::FastFieldEntry) +
+                  4 * sizeof(uint16_t));
+#endif
 
 template <typename T,
           PROTOBUF_CC const char* (*func)(T*, const char*, ParseContext*)>
@@ -582,22 +604,32 @@ constexpr TcParseTable<0> CreateStubTcParseTable(
     TcParseTableBase::PostLoopHandler post_loop_handler = nullptr) {
   return {
       {
-          0,                  // has_bits_offset
-          0,                  // extension_offset
-          0,                  // max_field_number
-          0,                  // fast_idx_mask
-          0,                  // lookup_table_offset
-          0,                  // skipmap32
-          0,                  // field_entries_offset
-          0,                  // num_field_entries
-          0,                  // num_aux_entries
-          0,                  // aux_offset
-          class_data,         //
-          post_loop_handler,  //
-          nullptr,            // fallback
+          0,                        // has_bits_offset
+          0,                        // extension_offset
+          0,                        // max_field_number
+          0,                        // fast_idx_mask
+          0,                        // lookup_table_offset
+          0,                        // skipmap32
+          0,                        // field_entries_offset
+          0,                        // num_field_entries
+          0,                        // num_aux_entries
+          0,                        // aux_offset
+          sizeof(TcParseTable<0>),  // sizeof_self
+          class_data,               //
+          post_loop_handler,        //
+          nullptr,                  // fallback
       },
       {{{StubParseImpl<T, func>, {}}}},
   };
+}
+
+inline size_t MessageGlobalsBase::SizeOfSelf() const {
+  static_assert(alignof(TcParseTable<0>) <= kMaxMessageAlignment);
+
+  const TcParseTableBase* parse_table = ToParseTableBase(this);
+  size_t sizeof_parse_table = parse_table->sizeof_self;
+  ABSL_CHECK(sizeof_parse_table != 0);
+  return OffsetToParseTable() + sizeof_parse_table;
 }
 
 }  // namespace internal

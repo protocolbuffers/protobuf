@@ -830,6 +830,46 @@ TEST_F(TextFormatTest, FieldSpecificCustomPrinter) {
   EXPECT_EQ("optional_int32: value-is(42)\nrepeated_int32: 42\n", text);
 }
 
+class CustomEnumFieldValuePrinter : public TextFormat::FieldValuePrinter {
+ public:
+  std::string PrintEnum(int32_t val, const std::string& name) const override {
+    return absl::StrCat(FieldValuePrinter::PrintEnum(val, name), "(", val, ")");
+  }
+};
+
+class CustomEnumFastFieldValuePrinter
+    : public TextFormat::FastFieldValuePrinter {
+ public:
+  void PrintEnum(int32_t val, const std::string& name,
+                 TextFormat::BaseTextGenerator* generator) const override {
+    FastFieldValuePrinter::PrintEnum(val, name, generator);
+    generator->PrintString(absl::StrCat("(", val, ")"));
+  }
+};
+
+TEST_F(TextFormatTest, CustomEnumFieldValuePrinter) {
+  proto2_unittest::TestAllTypes message;
+  message.set_optional_nested_enum(proto2_unittest::TestAllTypes::BAR);
+  message.set_optional_foreign_enum(proto2_unittest::FOREIGN_BAZ);
+
+  TextFormat::Printer printer;
+  ASSERT_TRUE(printer.RegisterFieldValuePrinter(
+      message.GetDescriptor()->FindFieldByName("optional_nested_enum"),
+      new CustomEnumFieldValuePrinter()));
+  ASSERT_TRUE(printer.RegisterFieldValuePrinter(
+      message.GetDescriptor()->FindFieldByName("optional_foreign_enum"),
+      new CustomEnumFastFieldValuePrinter()));
+  std::string text;
+  ASSERT_TRUE(printer.PrintToString(message, &text));
+  EXPECT_EQ(
+      "optional_nested_enum: BAR(2)\noptional_foreign_enum: FOREIGN_BAZ(6)\n",
+      text);
+
+  const TextFormat::FieldValuePrinter& base_printer =
+      CustomEnumFieldValuePrinter();
+  EXPECT_EQ("BAR(2)", base_printer.PrintEnum(2, absl::string_view("BAR")));
+}
+
 TEST_F(TextFormatTest, FieldSpecificCustomPrinterRegisterSameFieldTwice) {
   proto2_unittest::TestAllTypes message;
   TextFormat::Printer printer;

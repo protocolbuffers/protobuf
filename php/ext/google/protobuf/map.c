@@ -65,7 +65,7 @@ static zend_object* MapField_create(zend_class_entry* class_type) {
   MapField* intern = emalloc(sizeof(MapField));
   zend_object_std_init(&intern->std, class_type);
   intern->std.handlers = &MapField_object_handlers;
-  Arena_Init(&intern->arena);
+  ZVAL_NULL(&intern->arena);
   intern->map = NULL;
   // Skip object_properties_init(), we don't allow derived classes.
   return &intern->std;
@@ -115,17 +115,22 @@ static zend_object* MapField_clone_obj(zend_object* object) {
   upb_Arena* arena = Arena_Get(&intern->arena);
   upb_Map* clone =
       upb_Map_New(arena, intern->type.key_type, intern->type.val_type.type);
+  if (!clone) goto err;
   size_t iter = kUpb_Map_Begin;
 
   while (upb_MapIterator_Next(intern->map, &iter)) {
     upb_MessageValue key = upb_MapIterator_Key(intern->map, iter);
     upb_MessageValue val = upb_MapIterator_Value(intern->map, iter);
-    upb_Map_Set(clone, key, val, arena);
+    if (!upb_Map_Set(clone, key, val, arena)) goto err;
   }
 
   zval ret;
   MapField_GetPhpWrapper(&ret, clone, intern->type, &intern->arena);
   return Z_OBJ_P(&ret);
+
+err:
+  OutOfMemory();
+  return MapField_create(object->ce);
 }
 
 static zval* Map_GetPropertyPtrPtr(zend_object* object, zend_string* member,
@@ -168,6 +173,7 @@ upb_Map* MapField_GetUpbMap(zval* val, MapField_Type type, upb_Arena* arena) {
 
   if (Z_TYPE_P(val) == IS_ARRAY) {
     upb_Map* map = upb_Map_New(arena, type.key_type, type.val_type.type);
+    if (!map) return OutOfMemory();
     HashTable* table = HASH_OF(val);
     HashPosition pos;
 
@@ -186,10 +192,14 @@ upb_Map* MapField_GetUpbMap(zval* val, MapField_Type type, upb_Arena* arena) {
 
       if (!Convert_PhpToUpb(&php_key, &upb_key, KeyType(type), arena) ||
           !Convert_PhpToUpbAutoWrap(php_val, &upb_val, type.val_type, arena)) {
+        zval_dtor(&php_key);
         return NULL;
       }
 
-      upb_Map_Set(map, upb_key, upb_val, arena);
+      if (!upb_Map_Set(map, upb_key, upb_val, arena)) {
+        zval_dtor(&php_key);
+        return OutOfMemory();
+      }
       zend_hash_move_forward_ex(table, &pos);
       zval_dtor(&php_key);
     }
@@ -241,7 +251,6 @@ bool MapEq(const upb_Map* m1, const upb_Map* m2, MapField_Type type) {
  */
 PHP_METHOD(MapField, __construct) {
   MapField* intern = (MapField*)Z_OBJ_P(getThis());
-  upb_Arena* arena = Arena_Get(&intern->arena);
   zend_long key_type, val_type;
   zend_class_entry* klass = NULL;
 
@@ -277,8 +286,19 @@ PHP_METHOD(MapField, __construct) {
     return;
   }
 
+  if (!Arena_Init(&intern->arena)) {
+    return;
+  }
+
+  upb_Arena* arena = Arena_Get(&intern->arena);
   intern->map =
       upb_Map_New(arena, intern->type.key_type, intern->type.val_type.type);
+  if (!intern->map) {
+    zval_ptr_dtor(&intern->arena);
+    ZVAL_NULL(&intern->arena);
+    OutOfMemory();
+    return;
+  }
   ObjCache_Add(intern->map, &intern->std);
 }
 
@@ -363,7 +383,9 @@ PHP_METHOD(MapField, offsetSet) {
     return;
   }
 
-  upb_Map_Set(intern->map, upb_key, upb_val, arena);
+  if (!upb_Map_Set(intern->map, upb_key, upb_val, arena)) {
+    OutOfMemory();
+  }
 }
 
 /**
@@ -476,6 +498,9 @@ typedef struct {
   zend_object std;
   zval map_field;
   size_t position;
+  // Whether the last upb_MapIterator_Next() call returned false. When true,
+  // `position` is unspecified and must not be passed back to upb.
+  bool done;
 } MapFieldIter;
 
 zend_class_entry* MapFieldIter_class_entry;
@@ -493,6 +518,7 @@ zend_object* MapFieldIter_create(zend_class_entry* class_type) {
   intern->std.handlers = &MapFieldIter_object_handlers;
   ZVAL_NULL(&intern->map_field);
   intern->position = 0;
+  intern->done = true;
   // Skip object_properties_init(), we don't allow derived classes.
   return &intern->std;
 }
@@ -550,7 +576,7 @@ PHP_METHOD(MapFieldIter, rewind) {
   MapFieldIter* intern = (MapFieldIter*)Z_OBJ_P(getThis());
   MapField* map_field = (MapField*)Z_OBJ_P(&intern->map_field);
   intern->position = kUpb_Map_Begin;
-  upb_MapIterator_Next(map_field->map, &intern->position);
+  intern->done = !upb_MapIterator_Next(map_field->map, &intern->position);
 }
 
 /**
@@ -561,6 +587,7 @@ PHP_METHOD(MapFieldIter, rewind) {
 PHP_METHOD(MapFieldIter, current) {
   MapFieldIter* intern = (MapFieldIter*)Z_OBJ_P(getThis());
   MapField* field = (MapField*)Z_OBJ_P(&intern->map_field);
+  if (intern->done) RETURN_NULL();
   upb_MessageValue upb_val =
       upb_MapIterator_Value(field->map, intern->position);
   zval ret;
@@ -576,6 +603,7 @@ PHP_METHOD(MapFieldIter, current) {
 PHP_METHOD(MapFieldIter, key) {
   MapFieldIter* intern = (MapFieldIter*)Z_OBJ_P(getThis());
   MapField* field = (MapField*)Z_OBJ_P(&intern->map_field);
+  if (intern->done) RETURN_NULL();
   upb_MessageValue upb_key = upb_MapIterator_Key(field->map, intern->position);
   zval ret;
   Convert_UpbToPhp(upb_key, &ret, KeyType(field->type), NULL);
@@ -590,7 +618,8 @@ PHP_METHOD(MapFieldIter, key) {
 PHP_METHOD(MapFieldIter, next) {
   MapFieldIter* intern = (MapFieldIter*)Z_OBJ_P(getThis());
   MapField* field = (MapField*)Z_OBJ_P(&intern->map_field);
-  upb_MapIterator_Next(field->map, &intern->position);
+  if (intern->done) return;
+  intern->done = !upb_MapIterator_Next(field->map, &intern->position);
 }
 
 /**
@@ -600,9 +629,7 @@ PHP_METHOD(MapFieldIter, next) {
  */
 PHP_METHOD(MapFieldIter, valid) {
   MapFieldIter* intern = (MapFieldIter*)Z_OBJ_P(getThis());
-  MapField* field = (MapField*)Z_OBJ_P(&intern->map_field);
-  bool done = upb_MapIterator_Done(field->map, intern->position);
-  RETURN_BOOL(!done);
+  RETURN_BOOL(!intern->done);
 }
 
 // clang-format off

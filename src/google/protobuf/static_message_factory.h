@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 #ifndef GOOGLE_PROTOBUF_STATIC_MESSAGE_FACTORY_H__
 #define GOOGLE_PROTOBUF_STATIC_MESSAGE_FACTORY_H__
 
@@ -36,7 +43,7 @@ class ByTemplate {
   // instance (only `Get()` needs the default instance). Rather than pass the
   // default instance down just for it to not be used, we allow omitting the
   // default instance.
-  explicit ByTemplate() : ByTemplate(nullptr) {}
+  explicit ByTemplate() : ByTemplate(/*default_instance=*/nullptr) {}
   explicit ByTemplate(const MessageType* default_instance)
       : default_instance_(default_instance) {}
 

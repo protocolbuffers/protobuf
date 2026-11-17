@@ -60,9 +60,6 @@ std::string MapValueImmutableClassdName(const Descriptor* descriptor,
 }
 
 bool HasTransientBitFields(const Descriptor* descriptor) {
-  if (google::protobuf::internal::IsOss()) {
-    return false;
-  }
   // This allowlist is only for protos that test legacy GSON behavior.
   static const auto& kNonTransientBitFieldProtos =
       *new absl::flat_hash_set<absl::string_view>({
@@ -823,31 +820,24 @@ void ImmutableMessageGenerator::GenerateIsInitialized(io::Printer* printer) {
   // Memoizes whether the protocol buffer is fully initialized (has all
   // required fields). -1 means not yet computed. 0 means false and 1 means
   // true.
-  if (internal::IsOss()) {
-    // Leave this as non-transient in OSS to avoid breaking customers that are
-    // holding GSON wrong.
-    // TODO: Remove this in a future PBJ breaking release.
-    printer->Print("private byte memoizedIsInitialized = -1;\n");
-  } else {
-    // If the message transitively has no required fields or extensions,
-    // isInitialized() is always true.
-    if (!HasRequiredFields(descriptor_)) {
-      printer->Print(
-          "/**\n"
-          "  * @deprecated This always returns true for this type as it \n"
-          "  *   does not transitively contain any required fields.\n"
-          "  */\n"
-          "@java.lang.Deprecated\n"
-          "@java.lang.Override\n"
-          "public final boolean isInitialized() {\n"
-          "  return true;\n"
-          "}\n"
-          "\n");
-      return;
-    }
-
-    printer->Print("private transient byte memoizedIsInitialized = -1;\n");
+  // If the message transitively has no required fields or extensions,
+  // isInitialized() is always true.
+  if (!HasRequiredFields(descriptor_)) {
+    printer->Print(
+        "/**\n"
+        "  * @deprecated This always returns true for this type as it \n"
+        "  *   does not transitively contain any required fields.\n"
+        "  */\n"
+        "@java.lang.Deprecated\n"
+        "@java.lang.Override\n"
+        "public final boolean isInitialized() {\n"
+        "  return true;\n"
+        "}\n"
+        "\n");
+    return;
   }
+
+  printer->Print("private transient byte memoizedIsInitialized = -1;\n");
 
   printer->Print(
       "@java.lang.Override\n"
@@ -1137,10 +1127,11 @@ void ImmutableMessageGenerator::GenerateAnyMethods(io::Printer* printer) {
       "      : typeUrlPrefix + \"/\" + descriptor.getFullName();\n"
       "}\n"
       "\n"
-      "private static String getTypeNameFromTypeUrl(\n"
-      "    java.lang.String typeUrl) {\n"
-      "  int pos = typeUrl.lastIndexOf('/');\n"
-      "  return pos == -1 ? \"\" : typeUrl.substring(pos + 1);\n"
+      "private static boolean typeUrlMatchesTypeName(\n"
+      "    java.lang.String typeUrl, java.lang.String typeName) {\n"
+      "  int pos = typeUrl.length() - typeName.length() - 1;\n"
+      "  return pos >= 0 && typeUrl.charAt(pos) == '/'\n"
+      "      && typeUrl.endsWith(typeName);\n"
       "}\n"
       "\n"
       "public static <T extends com.google.protobuf.Message> Any pack(\n"
@@ -1171,12 +1162,11 @@ void ImmutableMessageGenerator::GenerateAnyMethods(io::Printer* printer) {
       "    java.lang.Class<T> clazz) {\n"
       "  T defaultInstance =\n"
       "      com.google.protobuf.Internal.getDefaultInstance(clazz);\n"
-      "  return getTypeNameFromTypeUrl(getTypeUrl()).equals(\n"
-      "      defaultInstance.getDescriptorForType().getFullName());\n"
+      "  return isSameTypeAs(defaultInstance);\n"
       "}\n"
       "\n"
       "public boolean isSameTypeAs(com.google.protobuf.Message message) {\n"
-      "  return getTypeNameFromTypeUrl(getTypeUrl()).equals(\n"
+      "  return typeUrlMatchesTypeName(getTypeUrl(),\n"
       "      message.getDescriptorForType().getFullName());\n"
       "}\n"
       "\n"

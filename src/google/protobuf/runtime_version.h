@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 #ifndef GOOGLE_PROTOBUF_RUNTIME_VERSION_H__
 #define GOOGLE_PROTOBUF_RUNTIME_VERSION_H__
 
@@ -18,7 +25,7 @@
 #endif  // PROTOBUF_OSS_VERSION_SUFFIX
 
 // The OSS versions are not stripped to avoid merging conflicts.
-#define PROTOBUF_OSS_VERSION 7037000
+#define PROTOBUF_OSS_VERSION 7038000
 #define PROTOBUF_OSS_VERSION_SUFFIX "-dev"
 
 #define PROTOBUF_VERSION PROTOBUF_OSS_VERSION

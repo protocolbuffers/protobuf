@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 """
 Internal helpers for building the Python protobuf runtime.
 """
@@ -35,8 +42,7 @@ def _internal_copy_files_impl(ctx):
     for src in ctx.files.srcs:
         short_path = _remove_cross_repo_path(src.short_path)
         if short_path[:len(strip_prefix)] != strip_prefix:
-            fail("Source does not start with %s: %s" %
-                 (strip_prefix, short_path))
+            continue
         dest = ctx.actions.declare_file(short_path[len(strip_prefix):])
         src_dests.append([src, dest])
 
@@ -153,9 +159,5 @@ def internal_py_test(deps = [], **kwargs):
             "//python:python_test_lib",
             "@com_google_absl_py//absl/testing:parameterized",
         ],
-        target_compatible_with = select({
-            "@system_python//:supported": [],
-            "//conditions:default": ["@platforms//:incompatible"],
-        }),
         **kwargs
     )

@@ -448,10 +448,10 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state, int32_t
       return YES;
     }
     case GPBWireFormatStartGroup:
-      [self skipMessage];
-      GPBCodedInputStreamCheckLastTagWas(
-          &state_,
-          GPBWireFormatMakeTag(GPBWireFormatGetTagFieldNumber(tag), GPBWireFormatEndGroup));
+      // Share the group skipping logic (including the recursion limit and end
+      // group tag validation) with GPBCodedInputStreamReadRetainedBytesToEndGroupNoCopy.
+      SkipToEndGroupInternal(&state_, GPBWireFormatMakeTag(GPBWireFormatGetTagFieldNumber(tag),
+                                                           GPBWireFormatEndGroup));
       return YES;
     case GPBWireFormatEndGroup:
       return NO;

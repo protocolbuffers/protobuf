@@ -80,10 +80,9 @@ class DescriptorBuilder {
  public:
   static std::unique_ptr<DescriptorBuilder> New(
       const DescriptorPool* pool, DescriptorPool::Tables* tables,
-      DescriptorPool::DeferredValidation& deferred_validation,
       DescriptorPool::ErrorCollector* error_collector) {
-    return std::unique_ptr<DescriptorBuilder>(new DescriptorBuilder(
-        pool, tables, deferred_validation, error_collector));
+    return std::unique_ptr<DescriptorBuilder>(
+        new DescriptorBuilder(pool, tables, error_collector));
   }
 
   ~DescriptorBuilder();
@@ -94,7 +93,6 @@ class DescriptorBuilder {
   static constexpr size_t kMaxNumErrors = 1000;
 
   DescriptorBuilder(const DescriptorPool* pool, DescriptorPool::Tables* tables,
-                    DescriptorPool::DeferredValidation& deferred_validation,
                     DescriptorPool::ErrorCollector* error_collector);
 
   friend class OptionInterpreter;
@@ -107,7 +105,6 @@ class DescriptorBuilder {
 
   const DescriptorPool* pool_;
   DescriptorPool::Tables* tables_;  // for convenience
-  DescriptorPool::DeferredValidation& deferred_validation_;
   DescriptorPool::ErrorCollector* error_collector_;
 
   absl::optional<FeatureResolver> feature_resolver_ = absl::nullopt;
@@ -449,9 +446,7 @@ class DescriptorBuilder {
     return descriptor != nullptr && descriptor->is_placeholder_;
   }
   static void assert_mutex_held(const DescriptorPool* pool) {
-    if (pool->mutex_ != nullptr) {
-      pool->mutex_->AssertHeld();
-    }
+    pool->AssertHeld();
   }
 
   // Must be run only after options have been interpreted.

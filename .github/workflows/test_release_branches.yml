@@ -13,8 +13,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        branch: [25.x, 33.x, 36.x]
-    runs-on: ubuntu-latest
+        branch: [25.x, 33.x, 36.x, 37.x]
+    runs-on: ubuntu-26.04
     permissions:
       actions: write
     env:

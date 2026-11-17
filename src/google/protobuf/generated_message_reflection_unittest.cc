@@ -50,6 +50,7 @@
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include "google/protobuf/unittest_no_package.pb.h"
 #include "google/protobuf/unittest_proto3.pb.h"
+#include "google/protobuf/unittest_string_type.pb.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -101,12 +102,70 @@ using ::testing::IsEmpty;
 using ::testing::Pointee;
 using ::testing::Property;
 
+constexpr absl::string_view kCordMapKey = "key";
+
+std::string CordMapPayload() { return std::string(4096, 'P'); }
+
+absl::Cord CordFieldPayload() {
+  absl::Cord value("first fragment:");
+  value.Append(absl::Cord(std::string(4096, 'C')));
+  return value;
+}
+
+void PopulateCordMapRoundTrip(proto2_unittest::EntryProto* parsed) {
+  proto2_unittest::EntryProto source;
+  source.set_value(CordFieldPayload());
+  (*source.mutable_values())[kCordMapKey] = CordMapPayload();
+  std::string wire;
+  ASSERT_TRUE(source.SerializeToString(&wire));
+  ASSERT_TRUE(parsed->ParseFromString(wire));
+  ASSERT_EQ(parsed->value(), CordFieldPayload());
+  ASSERT_EQ(parsed->values().at(kCordMapKey), CordMapPayload());
+}
+
+void MaterializeAndReadCordMap(const proto2_unittest::EntryProto& message) {
+  const FieldDescriptor* cord =
+      message.GetDescriptor()->FindFieldByName("value");
+  ASSERT_NE(cord, nullptr);
+  ASSERT_EQ(cord->cpp_string_type(), FieldDescriptor::CppStringType::kCord);
+  EXPECT_EQ(message.GetReflection()->GetCord(message, cord),
+            CordFieldPayload());
+  EXPECT_EQ(message.value(), CordFieldPayload());
+
+  const FieldDescriptor* map =
+      message.GetDescriptor()->FindFieldByName("values");
+  ASSERT_NE(map, nullptr);
+  ASSERT_TRUE(map->is_map());
+  const FieldDescriptor* value = map->message_type()->map_value();
+  ASSERT_NE(value, nullptr);
+  // Generated MapEntry<Key, std::string> storage is not Cord storage.
+  ASSERT_EQ(value->cpp_string_type(), FieldDescriptor::CppStringType::kString);
+  ASSERT_EQ(message.GetReflection()->FieldSize(message, map), 1);
+  const Message& entry =
+      message.GetReflection()->GetRepeatedMessage(message, map, 0);
+  EXPECT_EQ(entry.GetReflection()->GetString(entry, value), CordMapPayload());
+}
+
 // Shorthand to get a FieldDescriptor for a field of unittest::TestAllTypes.
 const FieldDescriptor* F(const std::string& name) {
   const FieldDescriptor* result =
       unittest::TestAllTypes::descriptor()->FindFieldByName(name);
   ABSL_CHECK(result != nullptr);
   return result;
+}
+
+TEST(GeneratedMessageReflectionTest, CordBytesMapHeapMaterializeAndDestroy) {
+  auto message = std::make_unique<proto2_unittest::EntryProto>();
+  PopulateCordMapRoundTrip(message.get());
+  MaterializeAndReadCordMap(*message);
+  message.reset();
+}
+
+TEST(GeneratedMessageReflectionTest, CordBytesMapArenaMaterializeAndDestroy) {
+  Arena arena;
+  auto* message = Arena::Create<proto2_unittest::EntryProto>(&arena);
+  PopulateCordMapRoundTrip(message);
+  MaterializeAndReadCordMap(*message);
 }
 
 TEST(GeneratedMessageReflectionTest, Defaults) {
@@ -1130,10 +1189,12 @@ TEST(GeneratedMessageReflectionTest, Oneof) {
                     message, descriptor->FindFieldByName("foo_string_piece")));
   EXPECT_EQ("", reflection->GetString(
                     message, descriptor->FindFieldByName("foo_bytes")));
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(
       unittest::TestOneof2::FOO,
       reflection->GetEnum(message, descriptor->FindFieldByName("foo_enum"))
           ->number());
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(&unittest::TestOneof2::NestedMessage::default_instance(),
             &reflection->GetMessage(
                 message, descriptor->FindFieldByName("foo_message")));
@@ -1156,10 +1217,12 @@ TEST(GeneratedMessageReflectionTest, Oneof) {
                 message, descriptor->FindFieldByName("bar_string_piece")));
   EXPECT_EQ("BYTES", reflection->GetString(
                          message, descriptor->FindFieldByName("bar_bytes")));
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(
       unittest::TestOneof2::BAR,
       reflection->GetEnum(message, descriptor->FindFieldByName("bar_enum"))
           ->number());
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 
   // Check Set functions.
   reflection->SetInt32(&message, descriptor->FindFieldByName("foo_int"), 123);
@@ -1508,6 +1571,41 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
       "  Message type: proto2_unittest.TestAllTypes\n"
       "  Field       : proto2_unittest.ForeignMessage.c\n"
       "  Problem     : Field does not match message type.");
+}
+
+TEST(GeneratedMessageReflectionTest, SwapFieldsForeignFieldCheck) {
+  unittest::TestAllTypes message1;
+  unittest::TestAllTypes message2;
+  const Reflection* reflection = message1.GetReflection();
+
+  // Passing a field descriptor from a different message type to SwapFields
+  // must fail. Without this check, a foreign field with a higher index than
+  // the target's field count causes an out-of-bounds read on the offsets
+  // array, leading to memory corruption.
+  const FieldDescriptor* foreign_field =
+      unittest::ForeignMessage::descriptor()->FindFieldByName("c");
+  std::vector<const FieldDescriptor*> fields = {foreign_field};
+  EXPECT_DEATH(reflection->SwapFields(&message1, &message2, fields),
+               "Field does not match message type");
+}
+
+TEST(GeneratedMessageReflectionTest, OneofForeignDescriptorCheck) {
+  unittest::TestAllTypes message1;
+  const Reflection* reflection = message1.GetReflection();
+
+  // Passing a oneof descriptor from a different message type must fail as
+  // well: the oneof-case address is computed from the oneof descriptor's
+  // index, so a foreign oneof with a higher index than the target's oneof
+  // count would address memory outside the message's oneof-case array.
+  const OneofDescriptor* foreign_oneof =
+      unittest::TestOneof2::descriptor()->oneof_decl(0);
+  EXPECT_DEATH((void)reflection->HasOneof(message1, foreign_oneof),
+               "Oneof does not match message type");
+  EXPECT_DEATH(reflection->ClearOneof(&message1, foreign_oneof),
+               "Oneof does not match message type");
+  EXPECT_DEATH(
+      (void)reflection->GetOneofFieldDescriptor(message1, foreign_oneof),
+      "Oneof does not match message type");
 }
 
 #endif  // GTEST_HAS_DEATH_TEST

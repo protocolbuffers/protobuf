@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 """Tests that java_binaries which depend on proto_libraries depend on the right set of files for option_deps."""
 
 load("@rules_java//java/common:java_info.bzl", "JavaInfo")

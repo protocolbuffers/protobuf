@@ -1,5 +1,5 @@
-# Copyright (c) 2024, Google LLC
-# All rights reserved.
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google LLC
 #
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
@@ -75,7 +75,9 @@ cc_library(
     visibility = ["//hpb:__subpackages__"],
     deps = [
         ":interop",
+        "//hpb:ptr",
         "//hpb:status",
+        "//hpb/internal",
         "//hpb/internal:message_lock",
         "//hpb/internal:template_help",
         "//upb/base",

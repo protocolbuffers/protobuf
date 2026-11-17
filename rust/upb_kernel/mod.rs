@@ -8,20 +8,28 @@
 //! UPB FFI wrapper code for use by Rust Protobuf.
 
 pub mod conversions;
+#[cfg(not(lite_runtime))]
+pub mod def_pool;
 pub mod extension;
 pub mod interop;
 pub mod map;
 pub mod message;
 pub mod minitable;
+#[cfg(not(lite_runtime))]
+pub mod reflection;
 pub mod repeated;
 pub mod string;
 
 pub use conversions::*;
+#[cfg(not(lite_runtime))]
+pub use def_pool::*;
 pub use extension::*;
 pub use interop::*;
 pub use map::*;
 pub use message::*;
 pub use minitable::*;
+#[cfg(not(lite_runtime))]
+pub use reflection::*;
 pub use repeated::*;
 pub use string::*;
 
@@ -30,8 +38,8 @@ use crate::__internal::{EntityType, MatcherEq, Private, SealedInternal};
 use crate::{
     AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapValue,
     MapView, MergeFrom, Message, MessageMut, MessageView, Mut, ParseError, ProtoBytes, ProtoStr,
-    ProtoString, Proxied, Repeated, RepeatedMut, RepeatedView, Serialize, SerializeError, Singular,
-    TakeFrom, View,
+    ProtoString, Proxied, Repeated, RepeatedMut, RepeatedView, Serialize, SerializeError,
+    SerializeOptions, Singular, TakeFrom, View,
 };
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -44,6 +52,13 @@ use std::sync::OnceLock;
 extern crate upb;
 #[cfg(not(bzl))]
 use crate::upb;
+
+// The upb `reflection` crate is renamed so that it does not clash with this kernel's own
+// `reflection` module.
+#[cfg(all(bzl, not(lite_runtime)))]
+extern crate reflection as upb_reflection;
+#[cfg(all(not(bzl), not(lite_runtime)))]
+use crate::upb::reflection as upb_reflection;
 
 pub use upb::Arena;
 pub use upb::AssociatedMiniTable;
@@ -66,8 +81,9 @@ pub(crate) type RawMap = upb::RawMap;
 pub(crate) type PtrAndLen = upb::StringView;
 
 /// A trait implemented by types which are allowed as keys in maps.
-/// This is all types for fields except for repeated, maps, bytes, messages, enums and floating point types.
-/// This trait is defined separately in cpp.rs and upb.rs to be able to set better subtrait bounds.
+/// This is all types for fields except for repeated, maps, bytes, messages, enums and floating
+/// point types. This trait is defined separately in cpp.rs and upb.rs to be able to set better
+/// subtrait bounds.
 #[doc(hidden)]
 pub trait MapKey: Proxied + EntityType + UpbTypeConversions<Self::Tag> + SealedInternal {}
 

@@ -73,6 +73,9 @@ class Location extends \Google\Protobuf\Internal\Message
      * compatible with pre-existing undocumented behavior where options using
      * dot-notation (e.g. `(my_opt).a = 100`) also produce a path like
      * [ 4, 3, 7, 10101, 1] that spans the entire option.
+     * Dot-notation options have the same path. For example the option
+     * from the example above can be written as `(my_opt).a = 100`, and
+     * paths will be the same.
      *
      * Generated from protobuf field <code>repeated int32 path = 1 [packed = true];</code>
      */
@@ -200,6 +203,9 @@ class Location extends \Google\Protobuf\Internal\Message
      *           compatible with pre-existing undocumented behavior where options using
      *           dot-notation (e.g. `(my_opt).a = 100`) also produce a path like
      *           [ 4, 3, 7, 10101, 1] that spans the entire option.
+     *           Dot-notation options have the same path. For example the option
+     *           from the example above can be written as `(my_opt).a = 100`, and
+     *           paths will be the same.
      *     @type int[] $span
      *           Always has exactly three or four elements: start line, start column,
      *           end line (optional, otherwise assumed same as start line), end column.
@@ -310,6 +316,9 @@ class Location extends \Google\Protobuf\Internal\Message
      * compatible with pre-existing undocumented behavior where options using
      * dot-notation (e.g. `(my_opt).a = 100`) also produce a path like
      * [ 4, 3, 7, 10101, 1] that spans the entire option.
+     * Dot-notation options have the same path. For example the option
+     * from the example above can be written as `(my_opt).a = 100`, and
+     * paths will be the same.
      *
      * Generated from protobuf field <code>repeated int32 path = 1 [packed = true];</code>
      * @return RepeatedField<int>
@@ -376,6 +385,9 @@ class Location extends \Google\Protobuf\Internal\Message
      * compatible with pre-existing undocumented behavior where options using
      * dot-notation (e.g. `(my_opt).a = 100`) also produce a path like
      * [ 4, 3, 7, 10101, 1] that spans the entire option.
+     * Dot-notation options have the same path. For example the option
+     * from the example above can be written as `(my_opt).a = 100`, and
+     * paths will be the same.
      *
      * Generated from protobuf field <code>repeated int32 path = 1 [packed = true];</code>
      * @param int[] $var

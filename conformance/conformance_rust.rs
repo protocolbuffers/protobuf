@@ -1,3 +1,4 @@
+// Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
@@ -11,6 +12,7 @@ use protobuf::{Message, ParseError};
 
 use std::io::{self, ErrorKind, Read, Write};
 use test_messages_edition2023_rust_proto::TestAllTypesEdition2023;
+use test_messages_edition2026_rust_proto::TestAllTypesEdition2026;
 use test_messages_edition_unstable_rust_proto::TestAllTypesEditionUnstable;
 use test_messages_proto2_editions_rust_proto::TestAllTypesProto2 as EditionsTestAllTypesProto2;
 use test_messages_proto2_rust_proto::TestAllTypesProto2;
@@ -82,6 +84,9 @@ fn do_test(req: &ConformanceRequest) -> ConformanceResponse {
         }
         b"protobuf_test_messages.editions.TestAllTypesEdition2023" => {
             roundtrip::<TestAllTypesEdition2023>(bytes)
+        }
+        b"protobuf_test_messages.editions.TestAllTypesEdition2026" => {
+            roundtrip::<TestAllTypesEdition2026>(bytes)
         }
         b"protobuf_test_messages.edition_unstable.TestAllTypesEditionUnstable" => {
             roundtrip::<TestAllTypesEditionUnstable>(bytes)

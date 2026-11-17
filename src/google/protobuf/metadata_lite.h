@@ -8,12 +8,16 @@
 #ifndef GOOGLE_PROTOBUF_METADATA_LITE_H__
 #define GOOGLE_PROTOBUF_METADATA_LITE_H__
 
+#include <cstddef>
+#include <cstdint>
 #include <string>
+#include <type_traits>
+#include <utility>
 
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
-#include "google/protobuf/port.h"
+#include "google/protobuf/class_data.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -44,10 +48,23 @@ namespace internal {
 // allocation and bit 1 == 1 to indicate heap allocation.
 class PROTOBUF_EXPORT InternalMetadata {
  public:
-  constexpr InternalMetadata() : ptr_(0) {}
-  explicit InternalMetadata(Arena* arena) {
-    ptr_ = reinterpret_cast<intptr_t>(arena);
-  }
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  // We use the same alignment as `ClassData` for `Container` since we plan to
+  // use all 6 available tag bits in `ptr_` under
+  // `PROTOBUF_SMALLER_MESSAGE_LITE`. All types `ptr_` can point to must be at
+  // least as aligned as `kClassDataAlignment`.
+  static constexpr size_t kContainerAlignment = kClassDataAlignment;
+#else
+  static constexpr size_t kContainerAlignment = alignof(void*);
+#endif
+
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  constexpr explicit InternalMetadata(const ClassData* class_data)
+      : ptr_(class_data) {}
+#else
+  constexpr InternalMetadata() : ptr_(nullptr) {}
+  explicit InternalMetadata(Arena* arena) : ptr_(arena) {}
+#endif
 
   // Delete will delete the unknown fields only if they weren't allocated on an
   // arena.  Then it updates the flags so that if you call
@@ -64,6 +81,18 @@ class PROTOBUF_EXPORT InternalMetadata {
     }
   }
 
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  const ClassData* class_data() const {
+    if (ABSL_PREDICT_FALSE(have_unknown_fields())) {
+      return PtrValue<ContainerBase>()->class_data;
+    } else {
+      return PtrValue<const ClassData>();
+    }
+  }
+  const ClassDataPrefix* class_data_prefix() const {
+    return PtrValue<const ClassDataPrefix>();
+  }
+#else
   PROTOBUF_NDEBUG_INLINE Arena* arena() const {
     if (ABSL_PREDICT_FALSE(have_unknown_fields())) {
       return PtrValue<ContainerBase>()->arena;
@@ -71,13 +100,10 @@ class PROTOBUF_EXPORT InternalMetadata {
       return PtrValue<Arena>();
     }
   }
+#endif
 
   PROTOBUF_NDEBUG_INLINE bool have_unknown_fields() const {
     return HasUnknownFieldsTag();
-  }
-
-  PROTOBUF_NDEBUG_INLINE void* raw_arena_ptr() const {
-    return reinterpret_cast<void*>(ptr_);
   }
 
   template <typename T>
@@ -114,6 +140,9 @@ class PROTOBUF_EXPORT InternalMetadata {
 
   PROTOBUF_NDEBUG_INLINE void InternalSwap(
       InternalMetadata* PROTOBUF_RESTRICT other) {
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+    ABSL_DCHECK_EQ(class_data(), other->class_data());
+#endif
     std::swap(ptr_, other->ptr_);
   }
 
@@ -132,81 +161,84 @@ class PROTOBUF_EXPORT InternalMetadata {
   }
 
  private:
-  intptr_t ptr_;
+  const void* ptr_;
 
   // Tagged pointer implementation.
-  static constexpr intptr_t kUnknownFieldsTagMask = 1;
-  static constexpr intptr_t kPtrTagMask = kUnknownFieldsTagMask;
-  static constexpr intptr_t kPtrValueMask = ~kPtrTagMask;
+  static constexpr uintptr_t kUnknownFieldsTagMask = 1;
+  static constexpr uintptr_t kPtrTagMask = kUnknownFieldsTagMask;
+  static constexpr uintptr_t kPtrValueMask = ~kPtrTagMask;
+
+  uintptr_t uptr() const { return reinterpret_cast<uintptr_t>(ptr_); }
 
   // Accessors for pointer tag and pointer value.
   PROTOBUF_ALWAYS_INLINE bool HasUnknownFieldsTag() const {
-    return ptr_ & kUnknownFieldsTagMask;
+    return uptr() & kUnknownFieldsTagMask;
   }
 
   template <typename U>
   U* PtrValue() const {
-    if constexpr (std::is_same_v<U, Arena>) {
+    if constexpr (std::is_same_v<U, const ClassDataPrefix>) {
+      // We can unconditionally return ptr_. If we are in the default state,
+      // ptr_ is a `ClassData*`. If we are in the fallback state with a
+      // `Container`, the first member is `ClassDataPrefix`. Either way, `ptr_`
+      // points to a `ClassDataPrefix`.
+      return reinterpret_cast<U*>(uptr() & kPtrValueMask);
+    } else if constexpr (std::is_same_v<U, Arena> ||
+                         std::is_same_v<U, const ClassData>) {
       // No mask to remove.
-      ABSL_DCHECK_EQ(ptr_ & kPtrTagMask, 0);
-      return reinterpret_cast<U*>(ptr_);
+      ABSL_DCHECK_EQ(uptr() & kPtrTagMask, 0u);
+      return reinterpret_cast<U*>(uptr());
     } else {
       static_assert(kPtrTagMask == 1);
-      ABSL_DCHECK_EQ(ptr_ & kPtrTagMask, kPtrTagMask);
+      ABSL_DCHECK_EQ(uptr() & kPtrTagMask, kPtrTagMask);
       // We can remove the mask via -1, which is smaller asm and can be merged
       // with other arithmetic operations.
       // Eg PtrValue<Container>()->unknown_fields can merge the offset into the
       // mask removal.
-      return reinterpret_cast<U*>(ptr_ - kPtrTagMask);
+      return reinterpret_cast<U*>(uptr() - kPtrTagMask);
     }
   }
 
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  Arena* arena() const;
+#endif
+
   // If ptr_'s tag is kTagContainer, it points to an instance of this struct.
   struct ContainerBase {
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+    // We hold a copy of just the `ClassDataPrefix` here so
+    // `InternalMetadata::class_data_prefix()` is branchless.
+    ClassDataPrefix class_data_prefix;
+    const ClassData* class_data;
+
+    explicit ContainerBase(const ClassData* input_class_data)
+        : class_data_prefix(*input_class_data), class_data(input_class_data) {}
+#else
     Arena* arena;
+
+    explicit ContainerBase(Arena* input_arena) : arena(input_arena) {}
+#endif
   };
 
   template <typename T>
-  struct Container : public ContainerBase {
-    T unknown_fields;
-  };
+  struct Container;
 
   template <typename T>
-  PROTOBUF_NOINLINE void DeleteOutOfLineHelper() {
-    delete PtrValue<Container<T>>();
-    // TODO:  This store is load-bearing.  Since we are destructing
-    // the message at this point, see if we can eliminate it.
-    ptr_ = 0;
-  }
+  PROTOBUF_NOINLINE void DeleteOutOfLineHelper();
 
   template <typename T>
-  PROTOBUF_NOINLINE T* mutable_unknown_fields_slow() {
-    Arena* my_arena = arena();
-    Container<T>* container = Arena::Create<Container<T>>(my_arena);
-    // Two-step assignment works around a bug in clang's static analyzer:
-    // https://bugs.llvm.org/show_bug.cgi?id=34198.
-    ptr_ = reinterpret_cast<intptr_t>(container);
-    ptr_ |= kUnknownFieldsTagMask;
-    container->arena = my_arena;
-    return &(container->unknown_fields);
-  }
+  PROTOBUF_NOINLINE T* mutable_unknown_fields_slow();
 
   // Templated functions.
 
   template <typename T>
-  PROTOBUF_NOINLINE void DoClear() {
-    mutable_unknown_fields<T>()->Clear();
-  }
+  PROTOBUF_NOINLINE void DoClear();
 
   template <typename T>
-  PROTOBUF_NOINLINE void DoMergeFrom(const T& other) {
-    mutable_unknown_fields<T>()->MergeFrom(other);
-  }
+  PROTOBUF_NOINLINE void DoMergeFrom(const T& other);
 
   template <typename T>
-  PROTOBUF_NOINLINE void DoSwap(T* other) {
-    mutable_unknown_fields<T>()->Swap(other);
-  }
+  PROTOBUF_NOINLINE void DoSwap(T* other);
 
   // Private helper with debug checks for ~InternalMetadata()
   void CheckedDestruct();
@@ -215,23 +247,44 @@ class PROTOBUF_EXPORT InternalMetadata {
 // String Template specializations.
 
 template <>
+struct alignas(InternalMetadata::kContainerAlignment)
+    InternalMetadata::Container<std::string> : public ContainerBase {
+  std::string unknown_fields;
+
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  Container(Arena*, const ClassData* input_class_data)
+      : ContainerBase(input_class_data) {}
+#else
+  explicit Container(Arena* arena_param) : ContainerBase(arena_param) {}
+#endif
+
+  using InternalArenaConstructable_ = void;
+};
+
+template <>
 PROTOBUF_EXPORT void InternalMetadata::DoClear<std::string>();
 template <>
 PROTOBUF_EXPORT void InternalMetadata::DoMergeFrom<std::string>(
     const std::string& other);
 template <>
 PROTOBUF_EXPORT void InternalMetadata::DoSwap<std::string>(std::string* other);
+template <>
+PROTOBUF_EXPORT void InternalMetadata::DeleteOutOfLineHelper<std::string>();
+extern template PROTOBUF_EXPORT std::string*
+InternalMetadata::mutable_unknown_fields_slow<std::string>();
 
 // Instantiated once in message.cc (where the definition of UnknownFieldSet is
 // known) to prevent much duplication across translation units of a large build.
-extern template PROTOBUF_EXPORT void
-InternalMetadata::DoClear<UnknownFieldSet>();
-extern template PROTOBUF_EXPORT void
-InternalMetadata::DoMergeFrom<UnknownFieldSet>(const UnknownFieldSet& other);
-extern template PROTOBUF_EXPORT void InternalMetadata::DoSwap<UnknownFieldSet>(
+template <>
+PROTOBUF_EXPORT void InternalMetadata::DoClear<UnknownFieldSet>();
+template <>
+PROTOBUF_EXPORT void InternalMetadata::DoMergeFrom<UnknownFieldSet>(
+    const UnknownFieldSet& other);
+template <>
+PROTOBUF_EXPORT void InternalMetadata::DoSwap<UnknownFieldSet>(
     UnknownFieldSet* other);
-extern template PROTOBUF_EXPORT void
-InternalMetadata::DeleteOutOfLineHelper<UnknownFieldSet>();
+template <>
+PROTOBUF_EXPORT void InternalMetadata::DeleteOutOfLineHelper<UnknownFieldSet>();
 extern template PROTOBUF_EXPORT UnknownFieldSet*
 InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>();
 

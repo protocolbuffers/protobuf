@@ -14,6 +14,7 @@ use std::ops::Deref;
 macro_rules! impl_cord_types {
     ($($t:ty, $vt:ty);*) => {
         paste! { $(
+          #[doc(hidden)]
           #[derive(Debug)]
           pub struct [< $t Cord>](Private);
 

@@ -9,6 +9,7 @@
 #import "GPBDescriptor_PackagePrivate.h"
 
 #import <objc/runtime.h>
+#import <stdatomic.h>
 
 #import "GPBBootstrap.h"
 #import "GPBMessage.h"
@@ -1047,6 +1048,10 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 
 @end
 
+@interface GPBExtensionDescriptor ()
+- (instancetype)initWithSupportedExtensionDescription:(GPBExtensionDescription *)desc;
+@end
+
 @implementation GPBExtensionDescriptor {
   GPBGenericValue defaultValue_;
 }
@@ -1057,6 +1062,13 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   // scoped to each specific descriptor - i.e., other descriptors may be initializing at the same
   // time.
   CheckRuntimeSupported(runtimeSupport);
+  return [self initWithSupportedExtensionDescription:desc];
+}
+
+// The initializer after the generated code's runtime support has been checked
+// (or, for extension section entries found by the global registry, is known
+// from link time; see GPBResolveExtensionSectionEntryForGlobalRegistry()).
+- (instancetype)initWithSupportedExtensionDescription:(GPBExtensionDescription *)desc {
 #if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
   // Compute the unknown options by this version of the runtime and then check the passed in
   // descriptor's options (from the generated code). If this does fire either something was
@@ -1226,5 +1238,49 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 }
 
 @end
+
+// Shared by GPBResolveExtensionSectionEntry() and
+// GPBResolveExtensionSectionEntryForGlobalRegistry(). `runtimeSupport` is NULL
+// when the generated code's runtime support is already known from link time.
+static GPBExtensionDescriptor *ResolveExtensionSectionEntry(GPBExtensionSectionEntry *entry,
+                                                            const int32_t *runtimeSupport) {
+  _Atomic(GPBExtensionDescriptor *) *descriptorPtr =
+      (_Atomic(GPBExtensionDescriptor *) *)&entry->descriptor;
+  GPBExtensionDescriptor *descriptor = atomic_load_explicit(descriptorPtr, memory_order_acquire);
+  if (descriptor) {
+    return descriptor;
+  }
+
+  GPBExtensionDescriptor *expected = nil;
+  GPBExtensionDescriptor *created =
+      runtimeSupport != NULL
+          ? [[GPBExtensionDescriptor alloc] initWithExtensionDescription:entry->description
+                                                          runtimeSupport:runtimeSupport]
+          : [[GPBExtensionDescriptor alloc]
+                initWithSupportedExtensionDescription:entry->description];
+  // Release publishes the initialized descriptor; acquire on failure makes the
+  // other thread's descriptor visible.
+  if (atomic_compare_exchange_strong_explicit(descriptorPtr, &expected, created,
+                                              memory_order_acq_rel, memory_order_acquire)) {
+    // Value was set, return it.
+    return created;
+  }
+
+  // Some other thread set it, release the one created and return what got set.
+  [created release];
+  return expected;
+}
+
+// See GPBDescriptor_PackagePrivate.h for full details on section-based
+// extension registration and atomic descriptor resolution.
+GPBExtensionDescriptor *GPBResolveExtensionSectionEntry(GPBExtensionSectionEntry *entry,
+                                                        const int32_t *runtimeSupport) {
+  return ResolveExtensionSectionEntry(entry, runtimeSupport);
+}
+
+GPBExtensionDescriptor *GPBResolveExtensionSectionEntryForGlobalRegistry(
+    GPBExtensionSectionEntry *entry) {
+  return ResolveExtensionSectionEntry(entry, NULL);
+}
 
 #pragma clang diagnostic pop

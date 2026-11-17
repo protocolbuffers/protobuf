@@ -51,10 +51,30 @@ impl Arena {
         }
 
         // SAFETY:
-        // - `upb_Arena_New` is assumed to be implemented correctly and always sound to
-        //   call; if it returned a non-null pointer, it is a valid arena.
+        // - `upb_Arena_New` is assumed to be implemented correctly and always sound to call; if it
+        //   returned a non-null pointer, it is a valid arena.
         unsafe {
             let Some(raw) = sys_arena::upb_Arena_New() else { arena_new_failed() };
+            Self { raw, _not_sync: PhantomData }
+        }
+    }
+
+    /// Allocates a fresh arena with an initial block sized for at least
+    /// `size_hint` bytes, so a first allocation of up to `size_hint` bytes
+    /// will not require allocating a second block.
+    #[inline]
+    pub fn new_sized(size_hint: usize) -> Self {
+        #[inline(never)]
+        #[cold]
+        fn arena_new_failed() -> ! {
+            panic!("Could not create a new UPB arena");
+        }
+
+        // SAFETY:
+        // - `upb_Arena_NewSized` is assumed to be implemented correctly and always sound to call;
+        //   if it returned a non-null pointer, it is a valid arena.
+        unsafe {
+            let Some(raw) = sys_arena::upb_Arena_NewSized(size_hint) else { arena_new_failed() };
             Self { raw, _not_sync: PhantomData }
         }
     }
@@ -77,11 +97,14 @@ impl Arena {
     ///
     /// # Safety
     ///
-    /// - `align` must be less than `UPB_MALLOC_ALIGN`.
+    /// - `align` must be less than or equal to `UPB_MALLOC_ALIGN`.
     #[allow(clippy::mut_from_ref)]
     #[inline]
     pub unsafe fn alloc(&self, size: usize, align: usize) -> Option<&mut [MaybeUninit<u8>]> {
         debug_assert!(align <= sys_arena::UPB_MALLOC_ALIGN);
+        if size > isize::MAX as usize {
+            return None;
+        }
         // SAFETY: `self.raw` is a valid UPB arena
         let ptr = unsafe { sys_arena::upb_Arena_Malloc(self.raw, size) };
 
@@ -90,10 +113,11 @@ impl Arena {
         } else {
             // SAFETY:
             // - `upb_Arena_Malloc` promises that if the return pointer is non-null, it is
-            //   dereferencable for `size` bytes and has an alignment of `UPB_MALLOC_ALIGN`
-            //   until the arena is destroyed.
+            //   dereferencable for `size` bytes and has an alignment of `UPB_MALLOC_ALIGN` until
+            //   the arena is destroyed.
             // - `[MaybeUninit<u8>]` has no alignment requirement, and `ptr` is aligned to a
             //   `UPB_MALLOC_ALIGN` boundary.
+            // - `size <= isize::MAX as usize` is checked above.
             Some(unsafe { slice::from_raw_parts_mut(ptr.cast(), size) })
         }
     }
@@ -115,8 +139,8 @@ impl Arena {
 
         self.checked_alloc(size, align).map(|alloc| {
             // SAFETY:
-            // - alloc is valid for `size` bytes and is the uninit bytes are written to not
-            //   read from until written.
+            // - alloc is valid for `size` bytes and is the uninit bytes are written to not read
+            //   from until written.
             // - T is copy so copying the bytes of the value is sound.
             unsafe {
                 let alloc = alloc.as_mut_ptr().cast::<MaybeUninit<T>>();
@@ -143,8 +167,8 @@ impl Arena {
         self.checked_alloc(size, align).map(|alloc| {
             let alloc: *mut T = alloc.as_mut_ptr().cast();
             // SAFETY:
-            // - uninit_alloc is valid for `layout.len()` bytes and is the uninit bytes are
-            //   written to not read from until written.
+            // - uninit_alloc is valid for `layout.len()` bytes and is the uninit bytes are written
+            //   to not read from until written.
             // - T is copy so copying the bytes of the values is sound.
             unsafe {
                 ptr::copy_nonoverlapping(data.as_ptr(), alloc, data.len());
@@ -196,5 +220,34 @@ mod tests {
     fn test_arena_new_and_free() {
         let arena = Arena::new();
         drop(arena);
+    }
+
+    #[gtest]
+    fn test_arena_new_sized() {
+        let arena = Arena::new_sized(4096);
+        let initial_space =
+            unsafe { sys_arena::upb_Arena_SpaceAllocated(arena.raw(), ptr::null_mut()) };
+        let slice = arena.copy_slice_in(&[42u8; 4096]).unwrap();
+        let final_space =
+            unsafe { sys_arena::upb_Arena_SpaceAllocated(arena.raw(), ptr::null_mut()) };
+        assert_eq!(initial_space, final_space);
+        assert_eq!(slice.len(), 4096);
+        assert_eq!(slice[4095], 42);
+    }
+
+    #[gtest]
+    fn test_alloc_exceeding_isize_max_returns_none() {
+        let arena = Arena::new();
+        let initial_space =
+            unsafe { sys_arena::upb_Arena_SpaceAllocated(arena.raw(), ptr::null_mut()) };
+
+        assert!(arena.checked_alloc((isize::MAX as usize) + 1, 1).is_none());
+        assert!(arena.checked_alloc(usize::MAX, 1).is_none());
+        // SAFETY: `align` is <= `UPB_MALLOC_ALIGN`.
+        assert!(unsafe { arena.alloc((isize::MAX as usize) + 1, 1) }.is_none());
+
+        let final_space =
+            unsafe { sys_arena::upb_Arena_SpaceAllocated(arena.raw(), ptr::null_mut()) };
+        assert_eq!(initial_space, final_space);
     }
 }

@@ -29,8 +29,9 @@ namespace Pb.Enumvalue {
             "cm90byIoChRKc29uRW51bVZhbHVlT3B0aW9ucxIOCgZzdHJpbmcYASABKAlY",
             "ATpcCgRqc29uEiEuZ29vZ2xlLnByb3RvYnVmLkVudW1WYWx1ZU9wdGlvbnMY",
             "5gcgASgLMiIucGIuZW51bXZhbHVlLkpzb25FbnVtVmFsdWVPcHRpb25zQgay",
-            "AQMI6gdCGgoYY29tLmdvb2dsZS5wcm90b2J1Zi51dGlsYghlZGl0aW9uc3Dp",
-            "Bw=="));
+            "AQMI6gdCSgoYY29tLmdvb2dsZS5wcm90b2J1Zi51dGlsWi5nb29nbGUuZ29s",
+            "YW5nLm9yZy9wcm90b2J1Zi90eXBlcy9qc29ub3B0aW9uc3BiYghlZGl0aW9u",
+            "c3DpBw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Reflection.DescriptorReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pb::Extension[] { JsonEnumvalueOptionsExtensions.Json }, new pbr::GeneratedClrTypeInfo[] {
@@ -97,16 +98,18 @@ namespace Pb.Enumvalue {
     private readonly static string StringDefaultValue = "";
 
     private string string_;
-    /// <summary>
-    /// Allows user to specify a custom string to use when serializing an enum
-    /// value to JSON.
-    ///
-    /// Sample usage:
-    /// enum Foo {
-    ///   ...
-    ///   FOO_BAR = 42 [(pb.enumvalue.json).string = "my_custom_name"];
-    /// }
-    /// </summary>
+    /**
+     * <summary>
+     *  Allows user to specify a custom string to use when serializing an enum
+     *  value to JSON.
+     * 
+     *  Sample usage:
+     *  enum Foo {
+     *    ...
+     *    FOO_BAR = 42 [(pb.enumvalue.json).string = "my_custom_name"];
+     *  }
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string String {

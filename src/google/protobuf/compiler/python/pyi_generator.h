@@ -73,7 +73,8 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
   void PrintEnumValues(const EnumDescriptor& enum_descriptor,
                        bool is_classvar = false) const;
   template <typename DescriptorT>
-  void PrintExtensions(const DescriptorT& descriptor) const;
+  void PrintExtensions(const DescriptorT& descriptor,
+                       bool is_classvar = false) const;
   void PrintMessages() const;
   void PrintMessage(const Descriptor& message_descriptor, bool is_nested) const;
   void PrintServices() const;

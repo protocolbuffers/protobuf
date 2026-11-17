@@ -1,8 +1,7 @@
 # Protobuf testing support.
 #   This package contains testonly utilities used in C++ unit tests.
 
-load("@rules_cc//cc:defs.bzl", "cc_library")
-load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 
 package(
@@ -54,6 +53,91 @@ cc_library(
         "@abseil-cpp//absl/log:log_sink",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "get_type_name",
+    testonly = 1,
+    srcs = ["get_type_name.cc"],
+    hdrs = ["get_type_name.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
+        "@abseil-cpp//absl/types:span",
+    ],
+)
+
+cc_test(
+    name = "get_type_name_test",
+    srcs = ["get_type_name_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":get_type_name",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "protobuf_test",
+    testonly = 1,
+    srcs = ["protobuf_test.cc"],
+    hdrs = ["protobuf_test.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":get_type_name",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf:protobuf_lite",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/functional:any_invocable",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/meta:type_traits",
+        "@abseil-cpp//absl/numeric:int128",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:charset",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/synchronization",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "protobuf_test_test",
+    srcs = ["protobuf_test_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":protobuf_test",
+        "//src/google/protobuf:cc_test_protos",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "protobuf_test_output_test",
+    srcs = ["protobuf_test_output_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":protobuf_test",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
     ],
 )

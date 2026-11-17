@@ -1,14 +1,19 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 #include "google/protobuf/compiler/rust/naming.h"
 
 #include <string>
-#include <vector>
 
 #include <gtest/gtest.h>
-#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 using google::protobuf::compiler::rust::CamelToSnakeCase;
+using google::protobuf::compiler::rust::DefInitName;
 using google::protobuf::compiler::rust::RustModuleName;
 using google::protobuf::compiler::rust::ScreamingSnakeToUpperCamelCase;
 
@@ -77,6 +82,23 @@ TEST(RustProtoNaming, ScreamingSnakeToUpperCamelCase) {
   EXPECT_EQ(ScreamingSnakeToUpperCamelCase("CAMEL_CASE_TRIO"), "CamelCaseTrio");
   EXPECT_EQ(ScreamingSnakeToUpperCamelCase("UNDER_IN__MIDDLE"),
             "UnderInMiddle");
+}
+
+TEST(RustProtoNaming, DefInitName) {
+  auto get_def_init_name = [](const std::string& name) {
+    google::protobuf::FileDescriptorProto file_proto;
+    file_proto.set_name(name);
+    google::protobuf::DescriptorPool pool;
+    return DefInitName(*pool.BuildFile(file_proto));
+  };
+
+  EXPECT_EQ(get_def_init_name("foo.proto"), "foo_proto_def_init");
+  EXPECT_EQ(get_def_init_name("strong_bad/lol.proto"),
+            "strong_bad_lol_proto_def_init");
+  EXPECT_EQ(get_def_init_name("my-service.proto"), "my_service_proto_def_init");
+  EXPECT_EQ(get_def_init_name("Foo/BarBaz.proto"), "Foo_BarBaz_proto_def_init");
+  EXPECT_EQ(get_def_init_name("foo.v1.proto"), "foo_v1_proto_def_init");
+  EXPECT_EQ(get_def_init_name("2fa.proto"), "pb_2fa_proto_def_init");
 }
 
 }  // namespace

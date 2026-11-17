@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 #include "google/protobuf/map.h"
 
 #include <cstddef>
@@ -35,7 +42,7 @@ struct FfiMapValue {
     google::protobuf::MessageLite* message;
   };
 };
-// LINT.ThenChange(//depot/google3/third_party/protobuf/rust/cpp_kernel/map.rs:map_ffi)
+// LINT.ThenChange(rust/cpp_kernel/map.rs:map_ffi)
 
 template <typename T>
 struct FromViewType {

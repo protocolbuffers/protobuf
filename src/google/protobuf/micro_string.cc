@@ -10,12 +10,14 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <string>
 #include <utility>
 
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
-#include "google/protobuf/arena_align.h"
+#include "google/protobuf/memory_align.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 
 // must be last:
@@ -97,15 +99,16 @@ void MicroString::ClearSlow() {
   }
 }
 
-void MicroString::SetFromOtherSlow(const MicroString& other, Arena* arena,
+void MicroString::SetFromOtherSlow(const MicroString& other,
+                                   const MessageLite& parent,
                                    size_t inline_capacity) {
   // Unowned property gets propagated, even if we have a rep already.
   if (other.is_large_rep() && other.large_rep_kind() == kUnowned) {
-    if (arena == nullptr) Destroy();
+    if (parent.GetArena() == nullptr) Destroy();
     rep_ = other.rep_;
     return;
   }
-  SetImpl(other.Get(), arena, inline_capacity);
+  SetImpl(other.Get(), parent, inline_capacity);
 }
 
 MicroString::MicroRep* MicroString::AllocateMicroRep(size_t size,
@@ -113,7 +116,7 @@ MicroString::MicroRep* MicroString::AllocateMicroRep(size_t size,
   MicroRep* h;
   size_t capacity = size;
   if (arena == nullptr) {
-    size_t requested_size = ArenaAlignDefault::Ceil(MicroRepSize(capacity));
+    size_t requested_size = ArenaAlignDefault{}.Ceil(MicroRepSize(capacity));
     const internal::SizedPtr alloc = internal::AllocateAtLeast(requested_size);
     // Maybe we rounded up too much.
     capacity = std::min(kMaxMicroRepCapacity, alloc.n - sizeof(MicroRep));
@@ -122,8 +125,8 @@ MicroString::MicroRep* MicroString::AllocateMicroRep(size_t size,
     ABSL_DCHECK_LE(requested_size, MicroRepSize(capacity));
     h = reinterpret_cast<MicroRep*>(alloc.p);
   } else {
-    capacity =
-        ArenaAlignDefault::Ceil(capacity + sizeof(MicroRep)) - sizeof(MicroRep);
+    capacity = ArenaAlignDefault{}.Ceil(capacity + sizeof(MicroRep)) -
+               sizeof(MicroRep);
     capacity = std::min(kMaxMicroRepCapacity, capacity);
     auto* alloc = arena->AllocateAligned(MicroRepSize(capacity));
     h = reinterpret_cast<MicroRep*>(alloc);
@@ -145,11 +148,11 @@ MicroString::LargeRep* MicroString::AllocateOwnedRep(size_t size,
   ABSL_DCHECK_GE(capacity, kOwned);
   if (arena == nullptr) {
     const internal::SizedPtr alloc = internal::AllocateAtLeast(
-        ArenaAlignDefault::Ceil(OwnedRepSize(capacity)));
+        ArenaAlignDefault{}.Ceil(OwnedRepSize(capacity)));
     capacity = alloc.n - sizeof(LargeRep);
     h = reinterpret_cast<LargeRep*>(alloc.p);
   } else {
-    size_t alloc_size = ArenaAlignDefault::Ceil(OwnedRepSize(capacity));
+    size_t alloc_size = ArenaAlignDefault{}.Ceil(OwnedRepSize(capacity));
     capacity = alloc_size - sizeof(LargeRep);
     auto* alloc = arena->AllocateAligned(alloc_size);
     h = reinterpret_cast<LargeRep*>(alloc);
@@ -257,7 +260,13 @@ void MicroString::SetImpl(absl::string_view data, Arena* arena,
   PROTOBUF_DEBUG_COUNTER("MicroString_Set.LargeRep").IncLog(data.size());
 }
 
-void MicroString::SetAlias(absl::string_view data, Arena* arena,
+void MicroString::SetImpl(absl::string_view data, const MessageLite& parent,
+                          size_t inline_capacity) {
+  Arena* arena = parent.GetArena();
+  PROTOBUF_ALWAYS_INLINE_CALL SetImpl(data, arena, inline_capacity);
+}
+
+void MicroString::SetAlias(absl::string_view data, const MessageLite& parent,
                            size_t inline_capacity) {
   // If we already have an alias, reuse the block.
   if (is_large_rep() && large_rep_kind() == kAlias) {
@@ -267,11 +276,12 @@ void MicroString::SetAlias(absl::string_view data, Arena* arena,
   }
   // If we can fit in the inline rep, avoid allocating memory.
   if (data.size() <= inline_capacity) {
-    return Set(data, arena, inline_capacity);
+    return Set(data, parent, inline_capacity);
   }
 
   LargeRep* h;
   if (!is_large_rep() || large_rep_kind() != kAlias) {
+    Arena* arena = parent.GetArena();
     if (arena == nullptr) {
       Destroy();
     }
@@ -287,15 +297,16 @@ void MicroString::SetAlias(absl::string_view data, Arena* arena,
   ABSL_DCHECK_EQ(+large_rep_kind(), +kAlias);
 }
 
-void MicroString::SetString(std::string&& data, Arena* arena,
+void MicroString::SetString(std::string&& data, const MessageLite& parent,
                             size_t inline_capacity) {
   if (data.size() <= std::max(inline_capacity, size_t{32})) {
     // Just copy the data. The overhead of the string is not worth it.
-    return Set(data, arena, inline_capacity);
+    return Set(data, parent, inline_capacity);
   }
 
   StringRep* h;
   if (!is_large_rep() || large_rep_kind() != kString) {
+    Arena* arena = parent.GetArena();
     if (arena == nullptr) Destroy();
     h = AllocateStringRep(arena);
   } else {
@@ -307,7 +318,8 @@ void MicroString::SetString(std::string&& data, Arena* arena,
 }
 
 void MicroString::SetUnowned(const UnownedPayload& unowned_input,
-                             Arena* arena) {
+                             const MessageLite& parent) {
+  Arena* arena = parent.GetArena();
   if (arena == nullptr) Destroy();
   rep_ = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(&unowned_input) |
                                  kIsLargeRepTag);
@@ -315,23 +327,25 @@ void MicroString::SetUnowned(const UnownedPayload& unowned_input,
 }
 
 void MicroString::ClearToDefault(const UnownedPayload& unowned_input,
-                                 Arena* arena) {
+                                 const MessageLite& parent) {
   auto input = unowned_input.get();
-  if (arena != nullptr && Capacity() >= input.size()) {
+  if (parent.GetArena() != nullptr && Capacity() >= input.size()) {
     // If we are in an arena and the input fits in the existing capacity, use
     // that instead.
-    Set(input, arena);
+    Set(input, parent);
   } else {
-    SetUnowned(unowned_input, arena);
+    SetUnowned(unowned_input, parent);
   }
 }
 
-void MicroString::ClearToDefault(const MicroString& other, Arena* arena) {
+void MicroString::ClearToDefault(const MicroString& other,
+                                 const MessageLite& parent) {
   auto input = other.Get();
+  Arena* arena = parent.GetArena();
   if (arena != nullptr && Capacity() >= input.size()) {
     // If we are in an arena and the input fits in the existing capacity, use
     // that instead.
-    Set(input, arena);
+    Set(input, parent);
   } else {
     // Otherwise, set to the unowned instance.
     ABSL_DCHECK_EQ(+other.large_rep_kind(), +kUnowned);

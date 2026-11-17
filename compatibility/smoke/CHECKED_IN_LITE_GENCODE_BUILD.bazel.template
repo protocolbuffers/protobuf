@@ -1,0 +1,10 @@
+load("@rules_java//java:java_library.bzl", "java_library")
+
+java_library(
+	name = "checked_in_gencode",
+	srcs = glob(["**/*.java"]),
+	# Old lite gencode uses `value.getClass()` as a null check.
+	javacopts = ["-Xep:ReturnValueIgnored:OFF"],
+	deps = ["//:protobuf_javalite"],
+	visibility = ["//compatibility:__subpackages__"],
+)

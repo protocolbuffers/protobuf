@@ -19,12 +19,12 @@ are:
 import collections.abc
 import copy
 import pickle
-import warnings
 from typing import (
     Any,
     Iterable,
     Iterator,
     List,
+    Mapping,
     MutableMapping,
     MutableSequence,
     NoReturn,
@@ -45,12 +45,24 @@ from google.protobuf import message
 
 def _CheckFrozen(is_frozen: bool, msg: str) -> None:
   if is_frozen:
+    raise message.FrozenInstanceError(msg)
+
+
+def _CheckNotSelfMerge(container: Any, other: Any) -> None:
+  """Raises AssertionError for a map self-merge, like for message self-merge."""
+  if other is container:
     warnings.warn(
-        'Mutating messages or containers returned by GetOptions() is'
-        ' deprecated and will raise an exception in a future release.',
+        'Merging a map into itself will raise AssertionError in a future'
+        ' release.',
         category=FutureWarning,
         stacklevel=3,
     )
+
+
+def _CheckNotRepeatedSelfMerge(container: Any, other: Any) -> None:
+  """Raises AssertionError for a repeated field self-merge."""
+  if other is container:
+    raise AssertionError('Cannot merge a repeated field into itself.')
 
 
 class BaseContainer(Sequence[_T]):
@@ -178,6 +190,7 @@ class RepeatedScalarFieldContainer(BaseContainer[_T], MutableSequence[_T]):
     one. We do not check the types of the individual fields.
     """
     self._AssureWritable()
+    _CheckNotRepeatedSelfMerge(self, other)
     self._values.extend(other)
     self._message_listener.Modified()
 
@@ -206,8 +219,6 @@ class RepeatedScalarFieldContainer(BaseContainer[_T], MutableSequence[_T]):
     """Sets the item on the specified position."""
     self._AssureWritable()
     if isinstance(key, slice):
-      if key.step is not None:
-        raise ValueError('Extended slices not supported')
       self._values[key] = map(self._type_checker.CheckValue, value)
       self._message_listener.Modified()
     else:
@@ -350,6 +361,10 @@ class RepeatedCompositeFieldContainer(BaseContainer[_T], MutableSequence[_T]):
     message_class = self._message_descriptor._concrete_class
     listener = self._message_listener
     values = self._values
+    if elem_seq is self:
+      # Append copies of the elements that were there to begin with, so that the
+      # new elements are not visited.
+      elem_seq = (values[i] for i in range(len(values)))
     for message in elem_seq:
       new_element = message_class()
       new_element._SetListener(listener)
@@ -366,6 +381,7 @@ class RepeatedCompositeFieldContainer(BaseContainer[_T], MutableSequence[_T]):
     one, copying each individual message.
     """
     self._AssureWritable()
+    _CheckNotRepeatedSelfMerge(self, other)
     self.extend(other)
 
   def remove(self, elem: _T) -> None:
@@ -527,6 +543,7 @@ class ScalarMap(MutableMapping[_K, _V]):
 
   def MergeFrom(self, other: 'ScalarMap[_K, _V]') -> None:
     self._AssureWritable()
+    _CheckNotSelfMerge(self, other)
     self._values.update(other._values)
     self._message_listener.Modified()
 
@@ -669,6 +686,7 @@ class MessageMap(MutableMapping[_K, _V]):
 
   def MergeFrom(self, other: 'MessageMap[_K, _V]') -> None:
     self._AssureWritable()
+    _CheckNotSelfMerge(self, other)
     # pylint: disable=protected-access
     for key in other._values:
       # According to documentation: "When parsing from the wire or when merging,

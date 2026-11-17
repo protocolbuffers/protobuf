@@ -58,9 +58,8 @@ def _aspect_impl(target, ctx):
 
     if should_generate_code:
         if len(proto_info.direct_sources) != 0:
-            source_suffixes = ctx.attr._cc_proto_library_source_suffixes[BuildSettingInfo].value
             header_suffixes = ctx.attr._cc_proto_library_header_suffixes[BuildSettingInfo].value
-            sources = _get_output_files(ctx.actions, proto_info, source_suffixes)
+            sources = _get_output_files(ctx.actions, proto_info, [".pb.cc"])
             headers = _get_output_files(ctx.actions, proto_info, header_suffixes)
             header_provider = _ProtoCcHeaderInfo(headers = depset(headers))
         else:
@@ -118,9 +117,6 @@ cc_proto_aspect = aspect(
     attrs = {
                 "_cc_proto_library_header_suffixes": attr.label(
                     default = "//bazel/flags/cc:cc_proto_library_header_suffixes",
-                ),
-                "_cc_proto_library_source_suffixes": attr.label(
-                    default = "//bazel/flags/cc:cc_proto_library_source_suffixes",
                 ),
             } |
             toolchains.if_legacy_toolchain({

@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 #include "google/protobuf/compiler/cpp/field_layout.h"
 
 #include <algorithm>
@@ -40,7 +47,7 @@ FieldLayout FieldLayout::BuildOptimizedLayout(
     const google::protobuf::Descriptor* absl_nonnull descriptor, const Options& options) {
   std::vector<const google::protobuf::FieldDescriptor* absl_nonnull> optimized_order;
   std::vector<int> has_bit_indices;
-  int max_has_bit_index = 0;
+  int has_bit_count = 0;
 
   // Compute optimized field order to be used for layout and initialization
   // purposes.
@@ -65,12 +72,11 @@ FieldLayout FieldLayout::BuildOptimizedLayout(
         has_bit_indices.resize(static_cast<size_t>(descriptor->field_count()),
                                kNoHasbit);
       }
-      has_bit_indices[static_cast<size_t>(field->index())] =
-          max_has_bit_index++;
+      has_bit_indices[static_cast<size_t>(field->index())] = has_bit_count++;
     }
   }
 
-  return FieldLayout(std::move(has_bit_indices), max_has_bit_index,
+  return FieldLayout(std::move(has_bit_indices), has_bit_count,
                      std::move(optimized_order));
 }
 
@@ -78,15 +84,14 @@ FieldLayout FieldLayout::BuildForTesting(
     std::vector<const FieldDescriptor* absl_nonnull> fields,
     std::vector<int> has_bit_indices) {
   const auto max_it = absl::c_max_element(has_bit_indices);
-  int max_has_bit_index =
-      max_it != has_bit_indices.end() ? std::max(*max_it, 0) : 0;
-  return FieldLayout(std::move(has_bit_indices), max_has_bit_index,
+  int has_bit_count = (max_it != has_bit_indices.end() && *max_it != kNoHasbit)
+                          ? *max_it + 1
+                          : 0;
+  return FieldLayout(std::move(has_bit_indices), has_bit_count,
                      std::move(fields));
 }
 
 bool FieldLayout::HasHasbits() const { return !has_bit_indices_.empty(); }
-
-int FieldLayout::HasBitsSize() const { return (max_has_bit_index_ + 31) / 32; }
 
 absl::optional<int> FieldLayout::GetHasBitIndex(
     const FieldDescriptor* absl_nonnull field) const {
@@ -95,15 +100,6 @@ absl::optional<int> FieldLayout::GetHasBitIndex(
     return absl::nullopt;
   }
   return has_bit_indices_[index];
-}
-
-absl::optional<int> FieldLayout::GetHasByteIndex(
-    const FieldDescriptor* absl_nonnull field) const {
-  absl::optional<int> hasbit = GetHasBitIndex(field);
-  if (!hasbit.has_value()) {
-    return absl::nullopt;
-  }
-  return hasbit.value() / 8;
 }
 
 absl::optional<int> FieldLayout::GetHasWordIndex(
@@ -130,10 +126,10 @@ void FieldLayout::PrintHasBitIndicesForSchema(io::Printer* absl_nonnull p,
 }
 
 FieldLayout::FieldLayout(
-    std::vector<int> has_bit_indices, int max_has_bit_index,
+    std::vector<int> has_bit_indices, int has_bit_count,
     std::vector<const FieldDescriptor* absl_nonnull> fields)
     : has_bit_indices_(std::move(has_bit_indices)),
-      max_has_bit_index_(max_has_bit_index),
+      has_bit_count_(has_bit_count),
       fields_(std::move(fields)) {}
 
 }  // namespace cpp

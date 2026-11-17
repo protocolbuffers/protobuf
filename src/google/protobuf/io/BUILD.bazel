@@ -1,7 +1,6 @@
 # Protobuf IO library.
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
-load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 package(
@@ -191,6 +190,7 @@ cc_test(
         "coded_stream_unittest.cc",
         "printer_death_test.cc",
         "printer_unittest.cc",
+        "strtod_unittest.cc",
         "tokenizer_unittest.cc",
         "zero_copy_stream_unittest.cc",
     ],

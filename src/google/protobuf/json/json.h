@@ -62,6 +62,11 @@ struct PrintOptions {
   // If set, int64 values that can be represented exactly as a double are
   // printed without quotes.
   bool unquote_int64_if_possible = false;
+  // The maximum nesting depth of JSON objects and arrays to print. Printing
+  // fails with an error if the output would be nested more deeply. Nesting is
+  // counted the same way as when parsing, so by default any output can be
+  // parsed back with the default ParseOptions.
+  int recursion_limit = 100;
 };
 
 // Converts from protobuf message to JSON and appends it to |output|. This is a

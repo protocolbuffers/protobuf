@@ -7,11 +7,13 @@
 
 """Unittest for thread safe"""
 
+import sys
 import threading
 import time
 import timeit
 import unittest
 
+from google.protobuf import descriptor_database
 from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
@@ -31,6 +33,32 @@ class ThreadSafeTest(unittest.TestCase):
 
   def setUp(self):
     self.success = 0
+
+  def RunConcurrently(self, targets):
+    """Runs each target on its own thread and re-raises the first exception.
+
+    Uses plain threads joined before returning, rather than
+    concurrent.futures.ThreadPoolExecutor, so that every object created by the
+    workers is released before the refleak checker counts references.
+
+    Args:
+      targets: Callables to run, one per thread.
+    """
+    errors = []
+
+    def Run(target):
+      try:
+        target()
+      except Exception as e:  # pylint: disable=broad-except
+        errors.append(e)
+
+    threads = [threading.Thread(target=Run, args=(t,)) for t in targets]
+    for thread in threads:
+      thread.start()
+    for thread in threads:
+      thread.join()
+    if errors:
+      raise errors[0]
 
   def testConcurrentMessageObjectIdentity(self):
     msg = unittest_pb2.TestAllTypes()
@@ -233,6 +261,129 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
+  def testConcurrentMergeFromAndContainerDealloc(self):
+    msg = test_proto2_pb2.TestProto2()
+    other = test_proto2_pb2.TestProto2(optional_int32=1)
+    lock = threading.Lock()
+
+    def MergeLoop():
+      for _ in range(1000):
+        with lock:
+          msg.MergeFrom(other)
+
+    def AccessAndDropLoop():
+      for _ in range(1000):
+        with lock:
+          containers = (
+              msg.repeated_int32,
+              msg.repeated_nested_message,
+          )
+        del containers
+
+    threads = [threading.Thread(target=MergeLoop)]
+    for _ in range(4):
+      threads.append(threading.Thread(target=AccessAndDropLoop))
+    for thread in threads:
+      thread.start()
+    for thread in threads:
+      thread.join()
+
+  def testConcurrentExtensionWrapperIdentityAndRetirement(self):
+    msg = unittest_pb2.TestAllExtensions()
+    msg.Extensions[unittest_pb2.optional_int32_extension] = 42
+    barrier = threading.Barrier(8)
+    # Only upb caches the Extensions wrapper; cpp and pure Python return a new
+    # one on every access.
+    expect_same = api_implementation.Type() == 'upb'
+
+    def Worker():
+      barrier.wait()
+      for _ in range(500):
+        ext1 = msg.Extensions
+        ext2 = msg.Extensions
+        same = ext1 is ext2
+        val = ext1[unittest_pb2.optional_int32_extension]
+        del ext1, ext2
+        if expect_same:
+          self.assertTrue(same)
+        self.assertEqual(val, 42)
+
+    self.RunConcurrently([Worker] * 8)
+
+  def testExtensionWrapperOwnsMessage(self):
+    msg = unittest_pb2.TestAllExtensions()
+    msg.Extensions[unittest_pb2.optional_int32_extension] = 99
+    ext = msg.Extensions
+    del msg
+    self.assertEqual(ext[unittest_pb2.optional_int32_extension], 99)
+
+  def testStubMetadataDuringReification(self):
+    source = unittest_pb2.TestAllTypes()
+    source.optional_nested_message.bb = 7
+
+    def RunOnce():
+      parent = unittest_pb2.TestAllTypes()
+      stub = parent.optional_nested_message
+      barrier = threading.Barrier(4)
+
+      def Mutator():
+        barrier.wait()
+        parent.MergeFrom(source)
+
+      def Inspector():
+        barrier.wait()
+        for _ in range(200):
+          self.assertFalse(hasattr(stub, 'Extensions'))
+          self.assertFalse(hasattr(stub, 'nonexistent_field'))
+          self.assertIs(
+              stub.DESCRIPTOR,
+              unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR,
+          )
+          self.assertIs(
+              stub.DESCRIPTOR.containing_type,
+              unittest_pb2.TestAllTypes.DESCRIPTOR,
+          )
+
+      self.RunConcurrently([Mutator] + [Inspector] * 3)
+      self.assertEqual(stub.bb, 7)
+
+    for _ in range(50):
+      RunOnce()
+
+  def testConcurrentContainingTypeAccess(self):
+    pool = descriptor_pool.DescriptorPool()
+    base_proto = descriptor_pb2.FileDescriptorProto(
+        name='containing_type_base.proto', package='pkg'
+    )
+    outer = base_proto.message_type.add(name='OuterMessage')
+    outer.nested_type.add(name='NestedMessage')
+    pool.Add(base_proto)
+    top_desc = pool.FindMessageTypeByName('pkg.OuterMessage')
+    nested_desc = pool.FindMessageTypeByName('pkg.OuterMessage.NestedMessage')
+
+    dynamic_files = []
+    for i in range(200):
+      f_proto = descriptor_pb2.FileDescriptorProto(
+          name=f'containing_type_dyn_{i}.proto', package='pkg'
+      )
+      f_proto.message_type.add(name=f'DynMessage_{i}')
+      dynamic_files.append(f_proto)
+
+    barrier = threading.Barrier(5)
+
+    def Adder():
+      barrier.wait()
+      for f_proto in dynamic_files:
+        pool.Add(f_proto)
+
+    def Worker():
+      barrier.wait()
+      for _ in range(500):
+        self.assertIs(nested_desc.containing_type, top_desc)
+        self.assertIsNone(top_desc.containing_type)
+
+    self.RunConcurrently([Adder] + [Worker] * 4)
+
 
 class FreeThreadingTest(unittest.TestCase):
 
@@ -392,6 +543,71 @@ class FreeThreadingTest(unittest.TestCase):
     for t in threads:
       t.join()
 
+  @unittest.skipIf(
+      api_implementation.Type() != 'cpp',
+      'BuildFileErrorCollector only exists in the cpp implementation.',
+  )
+  @unittest.skipIf(
+      getattr(sys, '_is_gil_enabled', lambda: True)(),
+      'Requires free-threaded Python (GIL-enabled runs deadlock in'
+      ' PyDescriptorDatabase).',
+  )
+  def testConcurrentBuildFileErrorCollectorRaisesKeyError(self):
+    db = descriptor_database.DescriptorDatabase()
+    num_threads = 10
+    for i in range(num_threads):
+      f_proto = descriptor_pb2.FileDescriptorProto(
+          name=f'bad_{i}.proto', package=f'pkg_{i}'
+      )
+      msg = f_proto.message_type.add(name='BadMessage')
+      msg.field.add(
+          name='bad_field',
+          number=1,
+          label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+          type=descriptor_pb2.FieldDescriptorProto.TYPE_MESSAGE,
+          type_name='UndefinedSubMessage',
+      )
+      db.Add(f_proto)
+
+    pool = descriptor_pool.DescriptorPool(db)
+    barrier = threading.Barrier(num_threads)
+    errors = []
+
+    def Worker(thread_id):
+      barrier.wait()
+      try:
+        for i in range(20):
+          idx = (thread_id + i) % num_threads
+          bad_file = f'bad_{idx}.proto'
+          with self.assertRaises(KeyError) as exc:
+            pool.FindFileByName(bad_file)
+          self.assertIn('Invalid proto descriptor', str(exc.exception))
+          self.assertIn(bad_file, str(exc.exception))
+
+          with self.assertRaises(KeyError) as exc:
+            pool.FindMessageTypeByName(f'pkg_{idx}.BadMessage')
+          self.assertIn('Invalid proto descriptor', str(exc.exception))
+          self.assertIn(bad_file, str(exc.exception))
+
+          with self.assertRaises(KeyError) as exc:
+            pool.FindFileByName(f'missing_{idx}.proto')
+          self.assertNotIn('Invalid proto descriptor', str(exc.exception))
+
+          with self.assertRaises(KeyError) as exc:
+            pool.FindMessageTypeByName(f'pkg_{idx}.MissingMessage')
+          self.assertNotIn('Invalid proto descriptor', str(exc.exception))
+      except Exception as e:  # pylint: disable=broad-exception-caught
+        errors.append(e)
+
+    threads = [
+        threading.Thread(target=Worker, args=(i,)) for i in range(num_threads)
+    ]
+    for t in threads:
+      t.start()
+    for t in threads:
+      t.join()
+    self.assertEqual([], errors)
+
   def testConcurrentDescriptorDeallocRace(self):
     """Tests descriptor cache interning under concurrent deallocation."""
     pool = descriptor_pool.DescriptorPool()
@@ -516,6 +732,52 @@ class FreeThreadingTest(unittest.TestCase):
       thread2.start()
       thread1.join()
       thread2.join()
+
+  def testConcurrentMergeFromAndSubObjectAccessRace(self):
+    """Tests snapshot iteration of unset_subobj_map during MergeFrom reification."""
+    pool = descriptor_pool.DescriptorPool()
+    file_proto = descriptor_pb2.FileDescriptorProto(name='weakmap_race.proto')
+    file_proto.message_type.add(name='RaceMessage')
+    pool.Add(file_proto)
+
+    source = unittest_proto3_pb2.TestAllTypes(
+        optional_nested_message=unittest_proto3_pb2.TestAllTypes.NestedMessage(
+            bb=42
+        ),
+        repeated_int32=[1, 2, 3],
+    )
+
+    def MergeMsg(msg, barrier):
+      barrier.wait()
+      msg.MergeFrom(source)
+      if hasattr(pool, '_obj_cache_count'):
+        _ = pool._obj_cache_count
+
+    def DropAndReaccessSub(stubs, barrier):
+      barrier.wait()
+      stubs.clear()
+      d = pool.FindMessageTypeByName('RaceMessage')
+      del d
+
+    for _ in range(500):
+      msg = unittest_proto3_pb2.TestAllTypes()
+      stubs = [
+          msg.optional_nested_message,
+          msg.optional_foreign_message,
+          msg.repeated_int32,
+      ]
+      barrier = threading.Barrier(2)
+
+      thread1 = threading.Thread(target=MergeMsg, args=(msg, barrier))
+      thread2 = threading.Thread(
+          target=DropAndReaccessSub, args=(stubs, barrier)
+      )
+      thread1.start()
+      thread2.start()
+      thread1.join()
+      thread2.join()
+      self.assertEqual(msg.optional_nested_message.bb, 42)
+      self.assertEqual(list(msg.repeated_int32), [1, 2, 3])
 
   @unittest.skipIf(not ALSO_RUN_BENCHMARKS, 'Benchmarks are disabled.')
   def testConcurrentGetOptionsBenchmark(self):

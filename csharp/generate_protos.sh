@@ -71,6 +71,7 @@ $PROTOC -Isrc -I. -Ijava/core/src/main/resources/ \
     --include_source_info \
     --include_imports \
     conformance/test_protos/test_messages_edition2023.proto \
+    conformance/test_protos/test_messages_edition2026.proto \
     conformance/test_protos/test_messages_edition_unstable.proto \
     csharp/protos/map_unittest_proto3.proto \
     csharp/protos/nrt.proto \

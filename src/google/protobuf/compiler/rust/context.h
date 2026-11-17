@@ -194,6 +194,10 @@ bool IsInCurrentlyGeneratingCrate(Context& ctx, const FileDescriptor& file);
 bool IsInCurrentlyGeneratingCrate(Context& ctx, const Descriptor& message);
 bool IsInCurrentlyGeneratingCrate(Context& ctx, const EnumDescriptor& enum_);
 
+bool HasReflectionSupport(Context& ctx, const FileDescriptor& file);
+bool HasReflectionSupport(Context& ctx, const Descriptor& message);
+bool HasReflectionSupport(Context& ctx, const FieldDescriptor& extension);
+
 }  // namespace rust
 }  // namespace compiler
 }  // namespace protobuf

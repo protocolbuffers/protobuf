@@ -34,7 +34,6 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
-
 namespace {
 using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 

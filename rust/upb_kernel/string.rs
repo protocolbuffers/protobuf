@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 use super::*;
 
 impl From<&ProtoStr> for PtrAndLen {
@@ -25,11 +32,11 @@ impl InnerProtoString {
 
 impl From<&[u8]> for InnerProtoString {
     fn from(val: &[u8]) -> InnerProtoString {
-        let arena = Arena::new();
+        let arena = Arena::new_sized(val.len());
         let in_arena_copy = arena.copy_slice_in(val).unwrap();
         // SAFETY:
-        // - `in_arena_copy` is valid slice that will live for `arena`'s lifetime and
-        //   this is the only reference in the program to it.
+        // - `in_arena_copy` is valid slice that will live for `arena`'s lifetime and this is the
+        //   only reference in the program to it.
         // - `in_arena_copy` is a pointer into an allocation on `arena`
         InnerProtoString(unsafe { OwnedArenaBox::new(Into::into(in_arena_copy), arena) })
     }

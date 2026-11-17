@@ -11,10 +11,12 @@ __author__ = 'jieluo@google.com (Jie Luo)'
 
 import collections.abc as collections_abc
 import datetime
+import fractions
 import unittest
 
 from google.protobuf import json_format
 from google.protobuf import text_format
+from google.protobuf.internal import api_implementation
 from google.protobuf.internal import more_messages_pb2
 from google.protobuf.internal import testing_refleaks
 from google.protobuf.internal import well_known_types
@@ -31,12 +33,14 @@ try:
   # New module in Python 3.9:
   import zoneinfo  # pylint:disable=g-import-not-at-top
 
-  _TZ_JAPAN = zoneinfo.ZoneInfo('Japan')
-  _TZ_PACIFIC = zoneinfo.ZoneInfo('US/Pacific')
+  _TZ_JAPAN = zoneinfo.ZoneInfo('Asia/Tokyo')
+  _TZ_PACIFIC = zoneinfo.ZoneInfo('America/Los_Angeles')
   has_zoneinfo = True
 except ImportError:
-  _TZ_JAPAN = datetime.timezone(datetime.timedelta(hours=9), 'Japan')
-  _TZ_PACIFIC = datetime.timezone(datetime.timedelta(hours=-8), 'US/Pacific')
+  _TZ_JAPAN = datetime.timezone(datetime.timedelta(hours=9), 'Asia/Tokyo')
+  _TZ_PACIFIC = datetime.timezone(
+      datetime.timedelta(hours=-8), 'America/Los_Angeles'
+  )
   has_zoneinfo = False
 
 
@@ -619,6 +623,93 @@ class TimeUtilTest(TimeUtilTestBase):
       123 - msg.optional_duration
 
   @parameterized.named_parameters(
+      ('SecondsWhole', 'FromSeconds', 1.0, 1, 0),
+      ('Seconds', 'FromSeconds', 123.45, 123, 450000000),
+      ('SecondsEpoch', 'FromSeconds', 1700000000.25, 1700000000, 250000000),
+      # 1700000000.1 is stored as 1700000000.09999990463..., and the nanos
+      # are rounded from that exact value.
+      (
+          'SecondsEpochInexact',
+          'FromSeconds',
+          1700000000.1,
+          1700000000,
+          99999905,
+      ),
+      ('SecondsNegative', 'FromSeconds', -1.5, -2, 500000000),
+      ('SecondsCarry', 'FromSeconds', 0.9999999999, 1, 0),
+      # divmod(-1e-20, 1) == (-1.0, 1.0): the remainder equals the divisor.
+      ('SecondsTinyNegativeCarry', 'FromSeconds', -1e-20, 0, 0),
+      ('Milliseconds', 'FromMilliseconds', 1.5, 0, 1500000),
+      ('MicrosecondsNegative', 'FromMicroseconds', -1.5, -1, 999998500),
+      ('NanosecondsRounded', 'FromNanoseconds', 1.4, 0, 1),
+      ('NanosecondsTieToEvenUp', 'FromNanoseconds', 1.5, 0, 2),
+      ('NanosecondsTieToEvenDown', 'FromNanoseconds', 2.5, 0, 2),
+  )
+  def testTimestampFromFloat(self, method, value, seconds, nanos):
+    message = timestamp_pb2.Timestamp()
+    getattr(message, method)(value)
+    self.assertEqual(seconds, message.seconds)
+    self.assertEqual(nanos, message.nanos)
+
+  @parameterized.named_parameters(
+      ('SecondsWhole', 'FromSeconds', 1.0, 1, 0),
+      ('Seconds', 'FromSeconds', 123.45, 123, 450000000),
+      ('SecondsNegative', 'FromSeconds', -1.5, -1, -500000000),
+      ('SecondsNegativeNoCarry', 'FromSeconds', -0.9999999999, -1, 0),
+      ('SecondsCarry', 'FromSeconds', 1.9999999999, 2, 0),
+      ('SecondsNegativeCarry', 'FromSeconds', -1e-10, 0, 0),
+      ('MillisecondsNegative', 'FromMilliseconds', -1.5, 0, -1500000),
+      ('Microseconds', 'FromMicroseconds', 1.5, 0, 1500),
+      ('NanosecondsNegativeRounded', 'FromNanoseconds', -1.6, 0, -2),
+  )
+  def testDurationFromFloat(self, method, value, seconds, nanos):
+    message = duration_pb2.Duration()
+    getattr(message, method)(value)
+    self.assertEqual(seconds, message.seconds)
+    self.assertEqual(nanos, message.nanos)
+
+  @parameterized.product(
+      message_class=[timestamp_pb2.Timestamp, duration_pb2.Duration],
+      method=[
+          'FromSeconds',
+          'FromMilliseconds',
+          'FromMicroseconds',
+          'FromNanoseconds',
+      ],
+      value=[float('nan'), float('inf'), float('-inf')],
+  )
+  def testFromNonFiniteFloat(self, message_class, method, value):
+    message = message_class()
+    with self.assertRaisesRegex(ValueError, 'must be finite'):
+      getattr(message, method)(value)
+
+  @parameterized.parameters(timestamp_pb2.Timestamp, duration_pb2.Duration)
+  def testFromSecondsNonFloatRealNumber(self, message_class):
+    message = message_class()
+    with self.assertRaises(TypeError):
+      message.FromSeconds(fractions.Fraction(3, 2))
+
+  @parameterized.parameters(timestamp_pb2.Timestamp, duration_pb2.Duration)
+  def testFromSecondsIndexOnlyInteger(self, message_class):
+
+    # Converts to int and compares, but has no arithmetic.
+    class IndexOnly:
+
+      def __index__(self):
+        return 5
+
+      def __lt__(self, other):
+        return 5 < other
+
+      def __gt__(self, other):
+        return 5 > other
+
+    message = message_class()
+    message.FromSeconds(IndexOnly())
+    self.assertEqual(5, message.seconds)
+    self.assertEqual(0, message.nanos)
+
+  @parameterized.named_parameters(
       ('test1', -1999999, -1, -999999000), ('test2', 1999999, 1, 999999000)
   )
   def testDurationAssignment(self, microseconds, expected_sec, expected_nano):
@@ -1114,6 +1205,37 @@ class AnyTest(unittest.TestCase):
         b'\x0e\x1a\x05\n\x018\x10\x10\x1a\x05\n\x019\x10\x12'
     )
     self.assertEqual(golden, serialized)
+
+  def testAnyEqualsDoesNotUnpack(self):
+    # Any messages are compared by their raw type_url and value fields, so two
+    # different encodings of the same logical payload are not equal.
+    any1 = any_pb2.Any(
+        type_url='type.googleapis.com/google.protobuf.internal.TestAny',
+        value=b'\x10\x01',
+    )
+    any2 = any_pb2.Any(
+        type_url='type.googleapis.com/google.protobuf.internal.TestAny',
+        value=b'\x10\x00\x10\x01',
+    )
+    # TODO: b/578046804 - The cpp backend still unpacks Any in __eq__.
+    if api_implementation.Type() != 'cpp':
+      self.assertNotEqual(any1, any2)
+
+  def testDeeplyNestedAnyEquals(self):
+    # Comparing deeply nested Any-in-Any chains must not recursively unpack.
+    nested1 = any_pb2.Any()
+    nested2 = any_pb2.Any()
+    leaf = well_known_types_test_pb2.TestAny(int_value=42)
+    nested1.Pack(leaf)
+    nested2.Pack(leaf)
+    for _ in range(1000):
+      parent1 = any_pb2.Any()
+      parent1.Pack(nested1)
+      nested1 = parent1
+      parent2 = any_pb2.Any()
+      parent2.Pack(nested2)
+      nested2 = parent2
+    self.assertEqual(nested1, nested2)
 
   def testJsonStruct(self):
     value = struct_pb2.Value(struct_value=struct_pb2.Struct())

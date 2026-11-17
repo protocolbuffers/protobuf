@@ -17,7 +17,6 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-// LINT.IfChange(struct_definition)
 struct upb_MiniTableField {
   uint32_t UPB_ONLYBITS(number);
   uint16_t UPB_ONLYBITS(offset);
@@ -111,6 +110,17 @@ UPB_API_INLINE bool upb_MiniTableField_IsExtension(
   return (f->UPB_ONLYBITS(mode) & kUpb_LabelFlags_IsExtension) != 0;
 }
 
+// Returns true if `f` describes a field stored in a message's auxiliary data
+// (currently, an extension or a non-canonical field) rather than at a fixed
+// offset in the message.
+//
+// In the current implementation, base fields never have offset 0, since the
+// message data starts after the upb_Message header.
+UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsAuxField)(
+    const struct upb_MiniTableField* f) {
+  return f->UPB_ONLYBITS(offset) == 0;
+}
+
 UPB_API_INLINE bool upb_MiniTableField_IsPacked(
     const struct upb_MiniTableField* f) {
   return (f->UPB_ONLYBITS(mode) & kUpb_LabelFlags_IsPacked) != 0;
@@ -167,6 +177,14 @@ UPB_API_INLINE bool upb_MiniTableField_IsSubMessage(
          f->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Group;
 }
 
+// Returns true if the field's type requires sub storage (ie. it is a
+// sub-message or closed enum), in which case `submsg_ofs` locates the sub.
+UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_HasSub)(
+    const struct upb_MiniTableField* f) {
+  return upb_MiniTableField_IsSubMessage(f) ||
+         upb_MiniTableField_IsClosedEnum(f);
+}
+
 UPB_API_INLINE bool upb_MiniTableField_HasPresence(
     const struct upb_MiniTableField* f) {
   if (upb_MiniTableField_IsExtension(f)) {
@@ -213,8 +231,6 @@ UPB_INLINE size_t UPB_PRIVATE(_upb_MiniTableField_ElemSizeLg2)(
   const upb_FieldType field_type = upb_MiniTableField_Type(f);
   return UPB_PRIVATE(_upb_FieldType_SizeLg2)(field_type);
 }
-
-// LINT.ThenChange(//depot/google3/third_party/upb/bits/typescript/mini_table_field.ts)
 
 #ifdef __cplusplus
 } /* extern "C" */

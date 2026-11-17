@@ -1,6 +1,5 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
@@ -19,7 +18,6 @@
 #define UPB_STRINGVIEW_FORMAT "%.*s"
 #define UPB_STRINGVIEW_ARGS(view) (int)(view).size, (view).data
 
-// LINT.IfChange(struct_definition)
 typedef struct {
   const char* data;
   size_t size;
@@ -58,12 +56,6 @@ UPB_INLINE int upb_StringView_Compare(upb_StringView a, upb_StringView b) {
     return 0;
   }
 }
-
-// LINT.ThenChange(
-//  GoogleInternalName1,
-//  //depot/google3/third_party/upb/bits/golang/accessor.go:map_go_string,
-//  //depot/google3/third_party/upb/bits/typescript/string_view.ts
-// )
 
 #ifdef __cplusplus
 } /* extern "C" */

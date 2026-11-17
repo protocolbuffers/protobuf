@@ -1,7 +1,16 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 #include "conformance/naming.h"
 
 #include <gtest/gtest.h>
+#include "conformance/conformance.pb.h"
 #include "conformance/test_protos/test_messages_edition2023.pb.h"
+#include "conformance/test_protos/test_messages_edition2026.pb.h"
 #include "conformance/test_protos/test_messages_edition_unstable.pb.h"
 #include "editions/golden/test_messages_proto2_editions.pb.h"
 #include "editions/golden/test_messages_proto3_editions.pb.h"
@@ -15,6 +24,7 @@ namespace {
 
 using protobuf_test_messages::edition_unstable::TestAllTypesEditionUnstable;
 using protobuf_test_messages::editions::TestAllTypesEdition2023;
+using protobuf_test_messages::editions::TestAllTypesEdition2026;
 using protobuf_test_messages::proto2::TestAllTypesProto2;
 using protobuf_test_messages::proto3::TestAllTypesProto3;
 using TestAllTypesProto2Editions =
@@ -29,6 +39,8 @@ TEST(NamingTest, GetEditionIdentifier) {
             "Editions");
   EXPECT_EQ(GetEditionIdentifier(*TestAllTypesEditionUnstable::descriptor()),
             "EditionUnstable");
+  EXPECT_EQ(GetEditionIdentifier(*TestAllTypesEdition2026::descriptor()),
+            "Edition2026");
   EXPECT_EQ(GetEditionIdentifier(*TestAllTypesProto2Editions::descriptor()),
             "Editions_Proto2");
   EXPECT_EQ(GetEditionIdentifier(*TestAllTypesProto3Editions::descriptor()),

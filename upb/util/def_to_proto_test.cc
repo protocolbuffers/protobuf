@@ -16,15 +16,22 @@
 #include "google/protobuf/descriptor.upbdefs.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/strings/string_view.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/util/message_differencer.h"
 #include "upb/base/string_view.h"
+#include "upb/base/upcast.h"
 #include "upb/mem/arena.hpp"
+#include "upb/message/message.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
+#include "upb/reflection/internal/def_pool.h"
 #include "upb/test/parse_text_proto.h"
 #include "upb/util/def_to_proto_editions_test.upbdefs.h"
 #include "upb/util/def_to_proto_test.h"
 #include "upb/util/def_to_proto_test.upbdefs.h"
+#include "upb/wire/encode.h"
 
 namespace upb_test {
 
@@ -341,6 +348,44 @@ TEST(FuzzTest, OptionDependency) {
              edition: EDITION_2024
              option_dependency: "\t"
              option_dependency: ""
+           }
+      )pb"));
+}
+
+TEST(FuzzTest, OptionDependencyEmbeddedNull) {
+  RoundTripDescriptor(ParseTextProtoOrDie(
+      R"pb(file { name: "c" edition: EDITION_2024 option_dependency: "\000" }
+      )pb"));
+}
+
+TEST(FuzzTest, FloatDefaultRoundTrip) {
+  RoundTripDescriptor(ParseTextProtoOrDie(
+      R"pb(file {
+             name: "test.proto"
+             message_type {
+               name: "M"
+               field {
+                 name: "f1"
+                 number: 1
+                 label: LABEL_OPTIONAL
+                 type: TYPE_FLOAT
+                 default_value: "777777777777777777777777777777777772"
+               }
+               field {
+                 name: "f2"
+                 number: 2
+                 label: LABEL_OPTIONAL
+                 type: TYPE_FLOAT
+                 default_value: "36.666668"
+               }
+               field {
+                 name: "d1"
+                 number: 3
+                 label: LABEL_OPTIONAL
+                 type: TYPE_DOUBLE
+                 default_value: "0.1"
+               }
+             }
            }
       )pb"));
 }

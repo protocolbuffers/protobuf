@@ -16,10 +16,10 @@
 #define UPB_OPAQUE(x) x##_opaque
 
 typedef enum {
-  kUpb_TaggedAuxType_Unknown = 0,                // tag 000
-  kUpb_TaggedAuxType_NonCanonicalExtension = 1,  // tag 001
-  kUpb_TaggedAuxType_CanonicalExtension = 3,     // tag 011
-  kUpb_TaggedAuxType_AliasedUnknown = 4          // tag 100
+  kUpb_TaggedAuxType_Unknown = 0,             // tag 000
+  kUpb_TaggedAuxType_UnknownAuxField = 1,     // tag 001
+  kUpb_TaggedAuxType_CanonicalExtension = 3,  // tag 011
+  kUpb_TaggedAuxType_AliasedUnknown = 4       // tag 100
 } upb_TaggedAuxType;
 
 struct upb_Message {

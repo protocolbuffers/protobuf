@@ -52,7 +52,8 @@ module Google
         :pack, :permutation, :product, :pretty_print, :pretty_print_cycle,
         :rassoc, :repeated_combination, :repeated_permutation, :reverse,
         :rindex, :rotate, :sample, :shuffle, :shelljoin,
-        :to_s, :transpose, :union, :uniq, :|
+        :to_s, :transpose, :union, :uniq, :|,
+        :values_at
 
 
       def first(n=nil)
@@ -95,7 +96,6 @@ module Google
 
       # array aliases into enumerable
       alias_method :slice, :[]
-      alias_method :values_at, :select
       alias_method :map, :collect
 
 

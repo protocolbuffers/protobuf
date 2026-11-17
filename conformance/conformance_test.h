@@ -40,6 +40,7 @@ class TestAllTypesProto3;
 
 namespace google {
 namespace protobuf {
+namespace conformance {
 
 class ConformanceTestSuite;
 
@@ -133,7 +134,7 @@ class ConformanceTestSuite {
 
   bool RunSuite(ConformanceTestRunner* runner, std::string* output,
                 const std::string& filename,
-                conformance::FailureSet* failure_list);
+                ::conformance::FailureSet* failure_list);
 
  protected:
   // Test cases are classified into a few categories:
@@ -156,9 +157,9 @@ class ConformanceTestSuite {
   class ConformanceRequestSetting {
    public:
     ConformanceRequestSetting(ConformanceLevel level,
-                              conformance::WireFormat input_format,
-                              conformance::WireFormat output_format,
-                              conformance::TestCategory test_category,
+                              ::conformance::WireFormat input_format,
+                              ::conformance::WireFormat output_format,
+                              ::conformance::TestCategory test_category,
                               const Message& prototype_message,
                               const std::string& test_name,
                               const std::string& input);
@@ -170,7 +171,7 @@ class ConformanceTestSuite {
 
     std::string GetTestName() const;
 
-    const conformance::ConformanceRequest& GetRequest() const {
+    const ::conformance::ConformanceRequest& GetRequest() const {
       return request_;
     }
 
@@ -187,10 +188,11 @@ class ConformanceTestSuite {
     }
 
    protected:
-    virtual std::string InputFormatString(conformance::WireFormat format) const;
+    virtual std::string InputFormatString(
+        ::conformance::WireFormat format) const;
     virtual std::string OutputFormatString(
-        conformance::WireFormat format) const;
-    conformance::ConformanceRequest request_;
+        ::conformance::WireFormat format) const;
+    ::conformance::ConformanceRequest request_;
 
    private:
     ConformanceLevel level_;
@@ -201,32 +203,32 @@ class ConformanceTestSuite {
     std::string test_name_;
   };
 
-  std::string WireFormatToString(conformance::WireFormat wire_format);
+  std::string WireFormatToString(::conformance::WireFormat wire_format);
 
   // Parse payload in the response to the given message. Returns true on
   // success.
-  virtual bool ParseResponse(const conformance::ConformanceResponse& response,
+  virtual bool ParseResponse(const ::conformance::ConformanceResponse& response,
                              const ConformanceRequestSetting& setting,
                              Message* test_message) = 0;
 
   void VerifyResponse(const ConformanceRequestSetting& setting,
                       const std::string& equivalent_wire_format,
-                      const conformance::ConformanceResponse& response,
+                      const ::conformance::ConformanceResponse& response,
                       bool need_report_success, bool require_same_wire_format);
 
   void TruncateDebugPayload(std::string* payload);
-  conformance::ConformanceRequest TruncateRequest(
-      const conformance::ConformanceRequest& request);
-  conformance::ConformanceResponse TruncateResponse(
-      const conformance::ConformanceResponse& response);
+  ::conformance::ConformanceRequest TruncateRequest(
+      const ::conformance::ConformanceRequest& request);
+  ::conformance::ConformanceResponse TruncateResponse(
+      const ::conformance::ConformanceResponse& response);
 
-  void ReportSuccess(const conformance::TestStatus& test);
-  void ReportFailure(conformance::TestStatus& test, ConformanceLevel level,
-                     const conformance::ConformanceRequest& request,
-                     const conformance::ConformanceResponse& response);
-  void ReportSkip(const conformance::TestStatus& test,
-                  const conformance::ConformanceRequest& request,
-                  const conformance::ConformanceResponse& response);
+  void ReportSuccess(const ::conformance::TestStatus& test);
+  void ReportFailure(::conformance::TestStatus& test, ConformanceLevel level,
+                     const ::conformance::ConformanceRequest& request,
+                     const ::conformance::ConformanceResponse& response);
+  void ReportSkip(const ::conformance::TestStatus& test,
+                  const ::conformance::ConformanceRequest& request,
+                  const ::conformance::ConformanceResponse& response);
 
   void RunValidInputTest(const ConformanceRequestSetting& setting,
                          const std::string& equivalent_text_format);
@@ -236,13 +238,13 @@ class ConformanceTestSuite {
 
   // Returns true if our runner_ ran the test and false if it did not.
   bool RunTest(const std::string& test_name,
-               const conformance::ConformanceRequest& request,
-               conformance::ConformanceResponse* response);
+               const ::conformance::ConformanceRequest& request,
+               ::conformance::ConformanceResponse* response);
 
   // Will return false if an entry from the failure list was either a
   // duplicate of an already added one to the trie or it contained invalid
   // wildcards; otherwise, returns true.
-  bool AddExpectedFailedTest(const conformance::TestStatus& failure);
+  bool AddExpectedFailedTest(const ::conformance::TestStatus& failure);
 
   virtual void RunSuiteImpl() = 0;
 
@@ -267,12 +269,12 @@ class ConformanceTestSuite {
 
   // The set of test names (expanded from wildcard(s) and non-expanded) that are
   // expected to fail in this run, but haven't failed yet.
-  absl::btree_map<std::string, conformance::TestStatus> expected_to_fail_;
+  absl::btree_map<std::string, ::conformance::TestStatus> expected_to_fail_;
 
   // The set of tests that failed because their failure message did not match
   // the actual failure message. These are failure messages that may need to be
   // removed from our failure lists.
-  absl::btree_map<std::string, conformance::TestStatus>
+  absl::btree_map<std::string, ::conformance::TestStatus>
       expected_failure_messages_;
 
   // The set of test names that have been run.  Used to ensure that there are no
@@ -281,38 +283,39 @@ class ConformanceTestSuite {
 
   // The set of tests that failed, but weren't expected to: They weren't
   // present in our failure lists.
-  absl::btree_map<std::string, conformance::TestStatus>
+  absl::btree_map<std::string, ::conformance::TestStatus>
       unexpected_failing_tests_;
 
   // The set of tests that succeeded, but weren't expected to: They were present
   // in our failure lists, but managed to succeed.
-  absl::btree_map<std::string, conformance::TestStatus>
+  absl::btree_map<std::string, ::conformance::TestStatus>
       unexpected_succeeding_tests_;
 
   // The set of tests that failed because their failure message did not match
   // the actual failure message. These are failure messages that may need to be
   // added to our failure lists.
-  absl::btree_map<std::string, conformance::TestStatus>
+  absl::btree_map<std::string, ::conformance::TestStatus>
       unexpected_failure_messages_;
 
   // The set of test names (wildcarded or not) from the failure list that did
   // not match any actual test name.
-  absl::btree_map<std::string, conformance::TestStatus> unmatched_;
+  absl::btree_map<std::string, ::conformance::TestStatus> unmatched_;
 
   // The set of tests that the testee opted out of;
-  absl::btree_map<std::string, conformance::TestStatus> skipped_;
+  absl::btree_map<std::string, ::conformance::TestStatus> skipped_;
 
   // Allows us to remove from unmatched_.
   absl::btree_map<std::string, std::string> saved_failure_messages_;
 
   // If a failure list entry served as a match for more than 'max_matches_',
   // those will be added here for removal.
-  absl::btree_map<std::string, conformance::TestStatus> exceeded_max_matches_;
+  absl::btree_map<std::string, ::conformance::TestStatus> exceeded_max_matches_;
 
   // Keeps track of how many tests matched to each failure list entry.
   absl::btree_map<std::string, int> number_of_matches_;
 };
 
+}  // namespace conformance
 }  // namespace protobuf
 }  // namespace google
 

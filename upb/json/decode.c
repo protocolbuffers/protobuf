@@ -16,7 +16,6 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -1177,7 +1176,7 @@ static void jsondec_timestamp(jsondec* d, upb_Message* msg,
     }
   }
 
-  if (seconds.int64_val < -62135596800) {
+  if (seconds.int64_val < -62135596800 || seconds.int64_val > 253402300799) {
     jsondec_err(d, "Timestamp out of range");
   }
 
@@ -1595,20 +1594,10 @@ int upb_JsonDecodeDetectingNonconformance(const char* buf, size_t size,
 
   if (size == 0) return true;
 
-  UPB_ASSERT(!((options & upb_JsonDecode_ValidateUtf8_Disable) &&
-               (options & upb_JsonDecode_ValidateUtf8_Enforce)));
-
   if (!(options & upb_JsonDecode_ValidateUtf8_Disable)) {
     if (!utf8_range_IsValid(buf, size)) {
-      if (options & upb_JsonDecode_ValidateUtf8_Enforce) {
-        upb_Status_SetErrorMessage(status, "Invalid UTF-8 in JSON input");
-        return kUpb_JsonDecodeResult_Error;
-      } else {
-        fprintf(
-            stderr,
-            "Invalid UTF-8 in JSON input. This will be rejected starting in "
-            "the 2027-Q1 breaking change\n");
-      }
+      upb_Status_SetErrorMessage(status, "Invalid UTF-8 in JSON input");
+      return kUpb_JsonDecodeResult_Error;
     }
   }
 

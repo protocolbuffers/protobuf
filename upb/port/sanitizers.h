@@ -24,6 +24,10 @@
 #include <sanitizer/msan_interface.h>
 #endif
 
+#if UPB_TYSAN
+#include <sanitizer/tysan_interface.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -33,7 +37,7 @@ typedef struct {
   uint8_t state;
 } upb_Xsan;
 
-UPB_INLINE uint8_t _upb_Xsan_NextTag(upb_Xsan *xsan) {
+UPB_INLINE uint8_t _upb_Xsan_NextTag(upb_Xsan* xsan) {
 #if UPB_HWASAN
   xsan->state++;
   if (xsan->state <= UPB_HWASAN_POISON_TAG) {
@@ -54,7 +58,7 @@ enum {
 #endif
 };
 
-UPB_INLINE uint8_t UPB_PRIVATE(_upb_Xsan_GetTag)(const void *addr) {
+UPB_INLINE uint8_t UPB_PRIVATE(_upb_Xsan_GetTag)(const void* addr) {
 #if UPB_HWASAN
   return __hwasan_get_tag_from_pointer(addr);
 #else
@@ -63,7 +67,7 @@ UPB_INLINE uint8_t UPB_PRIVATE(_upb_Xsan_GetTag)(const void *addr) {
 #endif
 }
 
-UPB_INLINE void UPB_PRIVATE(upb_Xsan_Init)(upb_Xsan *xsan) {
+UPB_INLINE void UPB_PRIVATE(upb_Xsan_Init)(upb_Xsan* xsan) {
 #if UPB_HWASAN || UPB_TSAN
   xsan->state = 0;
 #else
@@ -82,26 +86,41 @@ UPB_INLINE void UPB_PRIVATE(upb_Xsan_MarkInitialized)(void* addr, size_t size) {
 #endif
 }
 
-// Marks the given region as poisoned, meaning that it is not accessible until
-// it is unpoisoned.
-UPB_INLINE void UPB_PRIVATE(upb_Xsan_PoisonRegion)(const void *addr,
+// Marks the given region as poisoned (freed), meaning that it is not
+// accessible until it is unpoisoned. Its contents are dead: MSAN treats them as
+// uninitialized and TYSAN forgets the types stored in them, so that the next
+// owner of the memory can store a different type.
+//
+// `addr` need not be aligned. With ASAN we respect it precisely; with HWASAN
+// we can only poison whole granules, so a partial granule at the start keeps
+// its current tag.
+UPB_INLINE void UPB_PRIVATE(upb_Xsan_PoisonRegion)(const void* addr,
                                                    size_t size) {
 #if UPB_ASAN
-  void __asan_poison_memory_region(void const volatile *addr, size_t size);
+  void __asan_poison_memory_region(void const volatile* addr, size_t size);
   __asan_poison_memory_region(addr, size);
 #elif UPB_HWASAN
-  __hwasan_tag_memory(addr, UPB_HWASAN_POISON_TAG, UPB_ALIGN_MALLOC(size));
-#else
+  uintptr_t start = UPB_ALIGN_MALLOC((uintptr_t)addr);
+  uintptr_t end = UPB_ALIGN_MALLOC((uintptr_t)addr + size);
+  if (end > start) {
+    __hwasan_tag_memory((const void*)start, UPB_HWASAN_POISON_TAG, end - start);
+  }
+#endif
+#if UPB_MSAN
+  if (size) __msan_poison(addr, size);
+#endif
+#if UPB_TYSAN
+  if (size) __tysan_set_type_unknown(addr, size);
+#endif
   UPB_UNUSED(addr);
   UPB_UNUSED(size);
-#endif
 }
 
-UPB_INLINE void *UPB_PRIVATE(_upb_Xsan_UnpoisonRegion)(void *addr, size_t size,
+UPB_INLINE void* UPB_PRIVATE(_upb_Xsan_UnpoisonRegion)(void* addr, size_t size,
                                                        uint8_t tag) {
 #if UPB_ASAN
   UPB_UNUSED(tag);
-  void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
+  void __asan_unpoison_memory_region(void const volatile* addr, size_t size);
   __asan_unpoison_memory_region(addr, size);
   return addr;
 #elif UPB_HWASAN
@@ -131,8 +150,8 @@ UPB_INLINE void *UPB_PRIVATE(_upb_Xsan_UnpoisonRegion)(void *addr, size_t size,
 // round `size` up to the next multiple of the malloc alignment, so the caller
 // must guarantee that rounding up `size` will not cause overlap with other
 // regions.
-UPB_INLINE void *UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(upb_Xsan *xsan,
-                                                           void *addr,
+UPB_INLINE void* UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(upb_Xsan* xsan,
+                                                           void* addr,
                                                            size_t size) {
   return UPB_PRIVATE(_upb_Xsan_UnpoisonRegion)(addr, size,
                                                _upb_Xsan_NextTag(xsan));
@@ -144,17 +163,25 @@ UPB_INLINE void *UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(upb_Xsan *xsan,
 // `tagged_addr` must be a pointer that was previously returned from
 // `upb_Xsan_NewUnpoisonedRegion`.  `old_size` must be the size that was
 // originally passed to `upb_Xsan_NewUnpoisonedRegion`.
-UPB_INLINE void *UPB_PRIVATE(upb_Xsan_ResizeUnpoisonedRegion)(void *tagged_addr,
+UPB_INLINE void* UPB_PRIVATE(upb_Xsan_ResizeUnpoisonedRegion)(void* tagged_addr,
                                                               size_t old_size,
                                                               size_t new_size) {
-  UPB_PRIVATE(upb_Xsan_PoisonRegion)(tagged_addr, old_size);
+  if (new_size <= old_size) {
+    // Shrinking: free the dropped tail. The kept bytes keep their state and
+    // tag.
+    UPB_PRIVATE(upb_Xsan_PoisonRegion)(UPB_PTR_AT(tagged_addr, new_size, char),
+                                       old_size - new_size);
+    return tagged_addr;
+  }
+  // Growing: the new tail comes from free space, which is poisoned. Unpoison it
+  // with the region's existing tag.
   return UPB_PRIVATE(_upb_Xsan_UnpoisonRegion)(
       tagged_addr, new_size, UPB_PRIVATE(_upb_Xsan_GetTag)(tagged_addr));
 }
 
 // Compares two pointers and returns true if they are equal. This returns the
 // correct result even if one or both of the pointers are tagged.
-UPB_INLINE bool UPB_PRIVATE(upb_Xsan_PtrEq)(const void *a, const void *b) {
+UPB_INLINE bool UPB_PRIVATE(upb_Xsan_PtrEq)(const void* a, const void* b) {
 #if UPB_HWASAN
   return __hwasan_tag_pointer(a, 0) == __hwasan_tag_pointer(b, 0);
 #else
@@ -167,7 +194,7 @@ UPB_INLINE bool UPB_PRIVATE(upb_Xsan_PtrEq)(const void *a, const void *b) {
 // "logically" accessed, we can trigger TSAN diagnostics that might have
 // otherwise been masked by subsequent atomic operations.
 
-UPB_INLINE void UPB_PRIVATE(upb_Xsan_AccessReadOnly)(upb_Xsan *xsan) {
+UPB_INLINE void UPB_PRIVATE(upb_Xsan_AccessReadOnly)(upb_Xsan* xsan) {
 #if UPB_TSAN
   // For performance we avoid using a volatile variable.
   __asm__ volatile("" ::"r"(xsan->state));
@@ -176,7 +203,7 @@ UPB_INLINE void UPB_PRIVATE(upb_Xsan_AccessReadOnly)(upb_Xsan *xsan) {
 #endif
 }
 
-UPB_INLINE void UPB_PRIVATE(upb_Xsan_AccessReadWrite)(upb_Xsan *xsan) {
+UPB_INLINE void UPB_PRIVATE(upb_Xsan_AccessReadWrite)(upb_Xsan* xsan) {
 #if UPB_TSAN
   // For performance we avoid using a volatile variable.
   __asm__ volatile("" : "+r"(xsan->state));

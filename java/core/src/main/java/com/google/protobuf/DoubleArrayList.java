@@ -64,6 +64,17 @@ final class DoubleArrayList extends AbstractProtobufList<Double>
         isMutable);
   }
 
+  /**
+   * Returns a new mutable list that takes ownership of {@code array} and contains all of its
+   * elements.
+   *
+   * <p>The array is used directly as the backing store, without copying. The caller must not read
+   * or write {@code array} after passing it in.
+   */
+  static DoubleArrayList unsafeWrap(double[] array) {
+    return new DoubleArrayList(array, array.length, /* isMutable= */ true);
+  }
+
   @Override
   protected void removeRange(int fromIndex, int toIndex) {
     ensureIsMutable();
@@ -249,8 +260,15 @@ final class DoubleArrayList extends AbstractProtobufList<Double>
     }
 
     int newSize = size + list.size;
+    // The first addAll is sized exactly, as it is common that it is used exactly once and perfect
+    // sizing saves memory. Otherwise, grow at least as much as add() would, to avoid quadratic
+    // copying when addAll() is called repeatedly with small lists.
     if (newSize > array.length) {
-      array = Arrays.copyOf(array, newSize);
+      if (size == 0) {
+        array = new double[newSize];
+      } else {
+        array = Arrays.copyOf(array, max(newSize, growSize(array.length)));
+      }
     }
 
     System.arraycopy(list.array, 0, array, size, list.size);

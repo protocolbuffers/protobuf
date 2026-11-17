@@ -68,14 +68,16 @@ class PROTOBUF_EXPORT FieldMaskUtil {
   // Checks whether the given path is valid for type T.
   template <typename T>
   static bool IsValidPath(absl::string_view path) {
-    return GetFieldDescriptors(T::descriptor(), path, nullptr);
+    return GetFieldDescriptors(T::descriptor(), path,
+                               /*field_descriptors=*/nullptr);
   }
 
   // Checks whether the given FieldMask is valid for type T.
   template <typename T>
   static bool IsValidFieldMask(const FieldMask& mask) {
     for (int i = 0; i < mask.paths_size(); ++i) {
-      if (!GetFieldDescriptors(T::descriptor(), mask.paths(i), nullptr)) {
+      if (!GetFieldDescriptors(T::descriptor(), mask.paths(i),
+                               /*field_descriptors=*/nullptr)) {
         return false;
       }
     }

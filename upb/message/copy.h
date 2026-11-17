@@ -22,7 +22,16 @@
 extern "C" {
 #endif
 
-// Deep clones a message using the provided target arena.
+// Deep clones `msg` into `arena`.
+//
+// The result shares no memory with `msg`, and `msg` may be freed or mutated as
+// soon as this returns. The result references only `m` (and minitables
+// reachable from it) and the extension minitables of canonical extensions
+// present in `msg`, which must outlive the result. Non-canonical extensions are
+// serialized into unknown fields, since their minitables may belong to a schema
+// that does not outlive the result.
+//
+// Returns NULL on failure.
 UPB_NODISCARD upb_Message* upb_Message_DeepClone(const upb_Message* msg,
                                                  const upb_MiniTable* m,
                                                  upb_Arena* arena);
@@ -46,7 +55,16 @@ UPB_NODISCARD upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
                                          const upb_MiniTable* map_entry_table,
                                          upb_Arena* arena);
 
-// Deep copies the message from src to dst.
+// Deep copies the message from `src` to `dst`, allocating from `arena`.
+//
+// `dst` is cleared first. The result shares no memory with `src`, and `src` may
+// be freed or mutated as soon as this returns. The result references only `m`
+// (and minitables reachable from it) and the extension minitables of canonical
+// extensions present in `src`, which must outlive `dst`. Non-canonical
+// extensions are serialized into unknown fields, since their minitables may
+// belong to a schema that does not outlive `dst`.
+//
+// Returns false on failure, in which case `dst` is cleared.
 UPB_NODISCARD bool upb_Message_DeepCopy(upb_Message* dst,
                                         const upb_Message* src,
                                         const upb_MiniTable* m,

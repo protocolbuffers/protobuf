@@ -11,8 +11,6 @@
 
 #include "google/protobuf/compiler/java/internal_helpers.h"
 
-#include <algorithm>
-#include <cmath>
 #include <string>
 #include <vector>
 
@@ -140,23 +138,51 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
                    ClassNameResolver* name_resolver) {
   // Max number of constants in a generated Java class.
   constexpr int kMaxEnums = 1000;
-  int interface_count = ceil((double)descriptor->value_count() / kMaxEnums);
 
-  // A map of all aliased values to the canonical value.
+  // A map of all aliased values to the canonical value, and the aliases for
+  // each canonical value.
   absl::flat_hash_map<const EnumValueDescriptor*, const EnumValueDescriptor*>
       aliases;
+  absl::flat_hash_map<const EnumValueDescriptor*,
+                      std::vector<const EnumValueDescriptor*>>
+      canonical_to_aliases;
+  std::vector<const EnumValueDescriptor*> canonical_values;
 
-  int num_canonical_values = 0;
   for (int i = 0; i < descriptor->value_count(); i++) {
     const EnumValueDescriptor* value = descriptor->value(i);
     const EnumValueDescriptor* canonical_value =
         descriptor->FindValueByNumber(value->number());
     if (value == canonical_value) {
-      num_canonical_values++;
+      canonical_values.push_back(value);
     } else {
+      ABSL_CHECK(canonical_value->index() < value->index());
       aliases[value] = canonical_value;
+      canonical_to_aliases[canonical_value].push_back(value);
     }
   }
+  int num_canonical_values = canonical_values.size();
+
+  // Partition values into shards of at most kMaxEnums values, placing each
+  // alias in the same shard immediately after its canonical value so that shard
+  // interfaces never reference constants in other shard interfaces.
+  std::vector<std::vector<const EnumValueDescriptor*>> shards;
+  for (const EnumValueDescriptor* canonical : canonical_values) {
+    const auto aliases_it = canonical_to_aliases.find(canonical);
+    const int group_size =
+        1 + (aliases_it != canonical_to_aliases.end()
+                 ? static_cast<int>(aliases_it->second.size())
+                 : 0);
+    if (shards.empty() ||
+        static_cast<int>(shards.back().size()) + group_size > kMaxEnums) {
+      shards.emplace_back();
+    }
+    shards.back().push_back(canonical);
+    if (aliases_it != canonical_to_aliases.end()) {
+      shards.back().insert(shards.back().end(), aliases_it->second.begin(),
+                           aliases_it->second.end());
+    }
+  }
+  int interface_count = shards.size();
 
   // Detect the most likely conflict scenario: a numbered version of the enum
   // already exists.
@@ -170,6 +196,8 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
   // If the style guide is followed (underscores cannot be followed directly
   // by a number), then using an underscore separator cannot create conflicts.
   absl::string_view count_sep = has_conflict ? "_" : "";
+  const bool has_descriptor_methods =
+      HasDescriptorMethods(descriptor, context->EnforceLite());
 
   printer->Emit(
 
@@ -178,7 +206,50 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
        {"static", IsOwnFile(descriptor, immutable_api) ? " " : " static "},
        {"deprecation",
         descriptor->options().deprecated() ? "@java.lang.Deprecated" : ""},
-       {"unrecognized_index", descriptor->value_count()},
+       {"unrecognized_value", GetUnrecognizedValue(descriptor)},
+       {"unrecognized_constant",
+        [&] {
+          if (has_descriptor_methods) {
+            printer->Emit({{"unrecognized_index", descriptor->value_count()}},
+                          R"(
+              public static final $classname$ UNRECOGNIZED = new $classname$($unrecognized_value$, $unrecognized_index$, "UNRECOGNIZED");
+            )");
+          } else {
+            printer->Emit(R"(
+              public static final $classname$ UNRECOGNIZED = new $classname$($unrecognized_value$, "UNRECOGNIZED");
+            )");
+          }
+        }},
+       {"fields_and_constructor",
+        [&] {
+          if (has_descriptor_methods) {
+            printer->Emit(R"(
+              private final int value;
+              private final String name;
+              private final int index;
+
+              $classname$(int v, int i, String n) {
+                this.value = v;
+                this.index = i;
+                this.name = n;
+              }
+
+              public int index() {
+                return index;
+              }
+            )");
+          } else {
+            printer->Emit(R"(
+              private final int value;
+              private final String name;
+
+              $classname$(int v, String n) {
+                this.value = v;
+                this.name = n;
+              }
+            )");
+          }
+        }},
        {"proto_enum_class", context->EnforceLite()
                                 ? "com.google.protobuf.Internal.EnumLite"
                                 : "com.google.protobuf.ProtocolMessageEnum"},
@@ -230,6 +301,36 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
           printer->Emit(R"(
             return value;
           )");
+        }},
+       {"to_string_func",
+        [&] {
+          if (context->EnforceLite() && !google::protobuf::internal::IsOss()) {
+            printer->Emit(R"(
+              StringBuilder result = new StringBuilder("<");
+              result.append(getClass().getName()).append('@')
+                  .append(java.lang.Integer.toHexString(
+                    java.lang.System.identityHashCode(this)));
+            )");
+            if (!descriptor->is_closed()) {
+              printer->Emit(R"(
+                if (this != UNRECOGNIZED) {
+                  result.append(" number=").append(getNumber());
+                }
+              )");
+            } else {
+              printer->Emit(R"(
+                result.append(" number=").append(getNumber());
+              )");
+            }
+            printer->Emit(R"(
+              return result.append(" name=")
+                  .append(name()).append('>').toString();
+            )");
+          } else {
+            printer->Emit(R"(
+              return name;
+            )");
+          }
         }},
        {"deprecated_value_of_func",
         [&] {
@@ -305,6 +406,28 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
               return values;
           )");
         }},
+       {"read_resolve_func",
+        [&] {
+          if (!context->EnforceLite()) {
+            // Only emit readResolve for full runtime enums. Even though large
+            // lite enums also implement Serializable for consistency with
+            // regular lite enums (which must be Serializable because they
+            // inherit from java.lang.Enum), Java serialization should be
+            // avoided for lite enums. AppReduce will retain the readResolve
+            // method due to common proguard rules. Retaining readResolve will
+            // prevent large lite enums from being optimized by AppReduce (which
+            // is particularly important for large enum).
+            printer->Emit(R"(
+              private java.lang.Object readResolve() throws java.io.ObjectStreamException {
+                if ("UNRECOGNIZED".equals(name)) {
+                  return UNRECOGNIZED;
+                }
+                $classname$ result = forNumber(value);
+                return result != null ? result : UNRECOGNIZED;
+              }
+            )");
+          }
+        }},
        {"enum_verifier_func",
         [&] {
           if (context->EnforceLite()) {
@@ -331,7 +454,7 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
           // -----------------------------------------------------------------
           // Reflection
 
-          if (HasDescriptorMethods(descriptor, context->EnforceLite())) {
+          if (has_descriptor_methods) {
             printer->Print(
                 "public final "
                 "com.google.protobuf.Descriptors.EnumValueDescriptor\n"
@@ -428,7 +551,7 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
             $gen_code_version_validator$
           }
 
-          public static final $classname$ UNRECOGNIZED = new $classname$(-1, $unrecognized_index$, "UNRECOGNIZED");
+          $unrecognized_constant$
 
           $deprecated_value_of_func$
 
@@ -459,19 +582,7 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
             $canonical_values_func$
           }
 
-          private final int value;
-          private final String name;
-          private final int index;
-
-          $classname$(int v, int i, String n) {
-            this.value = v;
-            this.index = i;
-            this.name = n;
-          }
-
-          public int index() {
-            return index;
-          }
+          $fields_and_constructor$
 
           public int value() {
             return value;
@@ -488,20 +599,25 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
 
           @java.lang.Override
           public String toString() {
-            return name;
+            $to_string_func$
           }
+
+          $read_resolve_func$
 
           public static com.google.protobuf.Internal.EnumLiteMap<$classname$> internalGetValueMap() {
-            return internalValueMap;
+            return InternalValueMap.INSTANCE;
           }
 
-          private static final com.google.protobuf.Internal.EnumLiteMap<
-            $classname$> internalValueMap =
-              new com.google.protobuf.Internal.EnumLiteMap<$classname$>() {
-                public $classname$ findValueByNumber(int number) {
-                  return $classname$.forNumber(number);
-                }
-              };
+          private static final class InternalValueMap implements
+              com.google.protobuf.Internal.EnumLiteMap<$classname$> {
+            static final com.google.protobuf.Internal.EnumLiteMap<$classname$>
+                INSTANCE = new InternalValueMap();
+            @java.lang.Override
+            $method_return_null_annotation$
+            public $classname$ findValueByNumber(int number) {
+              return $classname$.forNumber(number);
+            }
+          }
 
           $enum_verifier_func$
 
@@ -511,10 +627,7 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
         )");
 
   for (int count = 0; count < interface_count; count++) {
-    // The current interface will emit the range of values whose index is in
-    // the range [start, end).
-    int start = count * kMaxEnums;
-    int end = std::min(start + kMaxEnums, descriptor->value_count());
+    const std::vector<const EnumValueDescriptor*>& shard_values = shards[count];
     printer->Emit(
         {{"classname", descriptor->name()},
          {"count", count},
@@ -529,8 +642,7 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
           }},
          {"enums",
           [&] {
-            for (int i = start; i < end; i++) {
-              const EnumValueDescriptor* value = descriptor->value(i);
+            for (const EnumValueDescriptor* value : shard_values) {
               WriteEnumValueDocComment(printer, value, context->options());
               absl::string_view deprecation =
                   value->options().deprecated() ? "@java.lang.Deprecated " : "";
@@ -538,32 +650,20 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
               const auto it = aliases.find(value);
               if (it != aliases.end()) {
                 const EnumValueDescriptor* canonical = it->second;
-                // The 'canonical' value needs to always be the one with a lower
-                // index. If it isn't, we could get circular dependencies
-                // between the interfaces if eg the first value is an alias of
-                // the Nth value, and the N+1st value is an alias of the second
-                // value. This would show up as runtime nulls and not
-                // compile-time errors. This check will ensure that if the
-                // semantic changes and FindValueByNumber changes to ever return
-                // not the lowest index, we will notice to try to fix that
-                // condition here.
-                ABSL_CHECK(canonical->index() < value->index());
-                int canonical_interface_index = canonical->index() / kMaxEnums;
-                // The canonical value may be defined in a different interface
-                // than where the alias is defined (they might be arbitrarily
-                // far apart). We name the constant by that interface directly.
+                // Each alias is placed in the same shard interface immediately
+                // after its canonical value, so it can reference the canonical
+                // constant directly without cross-interface static init
+                // dependencies.
                 printer->Emit(
                     {io::Printer::Sub("name", value->name()).AnnotatedAs(value),
-                     {"canonical_name", aliases[value]->name()},
-                     {"canonical_interface_index", canonical_interface_index},
-                     {"count_sep", count_sep},
+                     {"canonical_name", canonical->name()},
                      {"deprecation", deprecation}},
                     R"(
                     $deprecation$
-                    public static final $classname$ $name$ = $classname$$count_sep$$canonical_interface_index$.$canonical_name$;
+                    public static final $classname$ $name$ = $canonical_name$;
 
                   )");
-              } else {
+              } else if (has_descriptor_methods) {
                 printer->Emit(
                     {io::Printer::Sub("name", value->name()).AnnotatedAs(value),
                      {"number", value->number()},
@@ -572,6 +672,16 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
                     R"(
                     $deprecation$
                     public static final $classname$ $name$ = new $classname$($number$, $index$, "$name$");
+
+                )");
+              } else {
+                printer->Emit(
+                    {io::Printer::Sub("name", value->name()).AnnotatedAs(value),
+                     {"number", value->number()},
+                     {"deprecation", deprecation}},
+                    R"(
+                    $deprecation$
+                    public static final $classname$ $name$ = new $classname$($number$, "$name$");
 
                 )");
               }
@@ -591,15 +701,14 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
             printer->Emit(
                 {{"cases",
                   [&] {
-                    for (int i = start; i < end; i++) {
-                      const EnumValueDescriptor* value = descriptor->value(i);
+                    for (const EnumValueDescriptor* value : shard_values) {
                       // Only support lookup by name for non-aliases. This is
                       // odd to do, but behavior to match the non-large enum
                       // behavior.
                       if (aliases.contains(value)) {
                         continue;
                       }
-                      printer->Emit({{"name", descriptor->value(i)->name()}},
+                      printer->Emit({{"name", value->name()}},
                                     R"(
                                     case "$name$": return $name$;
                                     )");
@@ -616,9 +725,8 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
           [&] {
             printer->Emit({{"cases",
                             [&] {
-                              for (int i = start; i < end; i++) {
-                                const EnumValueDescriptor* value =
-                                    descriptor->value(i);
+                              for (const EnumValueDescriptor* value :
+                                   shard_values) {
                                 // Only emit the 'canonical' values, otherwise
                                 // javac will complain about duplicate cases.
                                 if (aliases.contains(value)) {
@@ -643,9 +751,8 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
             printer->Emit({{"values",
                             [&] {
                               std::vector<absl::string_view> values;
-                              for (int i = start; i < end; i++) {
-                                const EnumValueDescriptor* value =
-                                    descriptor->value(i);
+                              for (const EnumValueDescriptor* value :
+                                   shard_values) {
                                 if (aliases.contains(value)) {
                                   continue;
                                 }

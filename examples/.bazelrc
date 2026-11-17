@@ -3,15 +3,17 @@ common --enable_platform_specific_config
 build:linux --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
 build:macos --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
 
-# Disable prebuilt protoc which doesn't work for tests at HEAD which do not
-# have a published protoc prebuilt release
-build --@com_google_protobuf//bazel/toolchains:prefer_prebuilt_protoc=false
-
 common:windows --cxxopt=/std:c++17 --host_cxxopt=/std:c++17 --enable_runfiles
-
-build --experimental_remote_cache_eviction_retries=5
-build --remote_download_outputs=all
 
 # Import Bazel 9 specific flags (such as --repo_contents_cache)
 # TODO: Remove it when --repo_contents_cache issue has been resolved in bazel
 try-import-if-bazel-version >=9.0.0 %workspace%/../bazel9.bazelrc
+
+# CI specific configs
+build:ci --experimental_remote_cache_eviction_retries=5
+build:ci --remote_download_outputs=all
+
+# Use a locally built prebuilt protoc from `bazel run //pkg:update_prebuilts`.
+# Bazel only takes an archive from here if its name and SHA-256 match, so this
+# is a no-op when the directory is missing or stale.
+common --distdir=../.prebuilt_protoc

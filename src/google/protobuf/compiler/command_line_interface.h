@@ -228,6 +228,12 @@ class PROTOC_EXPORT CommandLineInterface {
   bool EnforceProtocEditionsSupport(
       const std::vector<const FileDescriptor*>& parsed_files) const;
 
+  // Remaps each file in allowed_public_dependencies_ so that it is relative
+  // to one of the directories in proto_path_.  Returns false if an error
+  // occurred.
+  bool MakeAllowedPublicDependenciesBeProtoPathRelative(
+      DiskSourceTree* source_tree, DescriptorDatabase* fallback_database);
+
 
   // Return status for ParseArguments() and InterpretArgument().
   enum ParseArgumentStatus {
@@ -319,6 +325,10 @@ class PROTOC_EXPORT CommandLineInterface {
   bool WriteDescriptorSet(
       const std::vector<const FileDescriptor*>& parsed_files);
 
+  // Implements the --source_code_info_out option.
+  bool WriteSourceCodeInfoSet(
+      const std::vector<const FileDescriptor*>& parsed_files);
+
   // Implements the --edition_defaults_out option.
   bool WriteEditionDefaults(const DescriptorPool& pool);
 
@@ -369,6 +379,17 @@ class PROTOC_EXPORT CommandLineInterface {
       RepeatedPtrField<FileDescriptorProto>* output,
       const TransitiveDependencyOptions& options =
           TransitiveDependencyOptions()) const;
+
+  // Computes the set of already seen dependencies for descriptor set generation
+  // when transitive imports are not requested.
+  absl::flat_hash_set<const FileDescriptor*> GetDescriptorSetAlreadySeen(
+      const std::vector<const FileDescriptor*>& parsed_files) const;
+
+  // Gathers the list of FileDescriptorProtos for descriptor set output.
+  void GetDescriptorSetFiles(
+      const std::vector<const FileDescriptor*>& parsed_files,
+      const TransitiveDependencyOptions& options,
+      RepeatedPtrField<FileDescriptorProto>* output) const;
 
 
   // -----------------------------------------------------------------
@@ -486,6 +507,11 @@ class PROTOC_EXPORT CommandLineInterface {
   // FileDescriptorSet should be written.  Otherwise, empty.
   std::string descriptor_set_out_name_;
 
+  // If --source_code_info_out was given, this is the filename to which the
+  // FileDescriptorSet containing only name and SourceCodeInfo should be
+  // written. Otherwise, empty.
+  std::string source_code_info_out_name_;
+
   std::string edition_defaults_out_name_;
   Edition edition_defaults_minimum_;
   Edition edition_defaults_maximum_;
@@ -493,6 +519,12 @@ class PROTOC_EXPORT CommandLineInterface {
   // If --dependency_out was given, this is the path to the file where the
   // dependency file will be written. Otherwise, empty.
   std::string dependency_out_name_;
+
+  // Names of proto files allowed in public imports.
+  absl::flat_hash_set<std::string> allowed_public_imports_;
+
+  // True iff --allowed_public_imports flag was set on the compilation.
+  bool has_allowed_public_imports_ = false;
 
   bool experimental_editions_ = false;
 

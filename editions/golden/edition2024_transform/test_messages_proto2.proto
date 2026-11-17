@@ -18,7 +18,6 @@ edition = "2024";
 package protobuf_test_messages.proto2;
 
 import option "google/protobuf/java_features.proto";
-import option "google/protobuf/java_mutable_features.proto";
 import option "google/protobuf/cpp_features.proto";
 
 option java_outer_classname = "TestMessagesProto2";
@@ -26,7 +25,6 @@ option features.enforce_naming_style = STYLE_LEGACY;
 option features.default_symbol_visibility = EXPORT_ALL;
 option features.(pb.cpp).string_type = STRING;
 option features.(pb.cpp).enum_name_uses_string_view = false;
-option features.(pb.java_mutable).nest_in_file_class = YES;
 option features.enum_type = CLOSED;
 option features.repeated_field_encoding = EXPANDED;
 option features.utf8_validation = NONE;

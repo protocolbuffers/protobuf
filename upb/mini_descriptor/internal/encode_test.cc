@@ -11,6 +11,7 @@
 #include <stdint.h>
 
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -24,9 +25,13 @@
 #include "upb/mini_descriptor/internal/modifiers.h"
 #include "upb/mini_descriptor/link.h"
 #include "upb/mini_table/enum.h"
+#include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/extension.h"
+#include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
+#include "upb/mini_table/sub.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -161,6 +166,63 @@ TEST_P(MiniTableTest, AllScalarTypesOneof) {
   EXPECT_EQ(0, table->UPB_PRIVATE(required_count));
 }
 
+// All fields share oneof storage so the field index boundary is independent
+// of the message size and presence bit limits.
+TEST_P(MiniTableTest, OneofFieldIndexLargestAccepted) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  constexpr uint32_t kFieldCount = UINT16_MAX - 3;
+  for (uint32_t i = 1; i <= kFieldCount; ++i) {
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Bool, i, 0));
+  }
+  ASSERT_TRUE(e.StartOneof());
+  for (uint32_t i = 1; i <= kFieldCount; ++i) {
+    ASSERT_TRUE(e.PutOneofField(i));
+  }
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, table) << status.error_message();
+  EXPECT_TRUE(status.ok());
+  EXPECT_EQ(static_cast<int>(kFieldCount), upb_MiniTable_FieldCount(table));
+  const upb_MiniTableField* first = upb_MiniTable_GetFieldByIndex(table, 0);
+  const upb_MiniTableField* last =
+      upb_MiniTable_GetFieldByIndex(table, kFieldCount - 1);
+  EXPECT_TRUE(upb_MiniTableField_IsInOneof(first));
+  EXPECT_TRUE(upb_MiniTableField_IsInOneof(last));
+  EXPECT_EQ(first->UPB_PRIVATE(offset), last->UPB_PRIVATE(offset));
+  EXPECT_EQ(first->presence, last->presence);
+}
+
+TEST_P(MiniTableTest, OneofFieldIndexOutOfRange) {
+  // A field index plus kOneofBase must remain below the uint16_t sentinel.
+  for (uint32_t field_count = UINT16_MAX - 2; field_count <= UINT16_MAX;
+       ++field_count) {
+    upb::Arena arena;
+    upb::MtDataEncoder e;
+    ASSERT_TRUE(e.StartMessage(0));
+    for (uint32_t i = 1; i <= field_count; ++i) {
+      ASSERT_TRUE(e.PutField(kUpb_FieldType_Bool, i, 0));
+    }
+    ASSERT_TRUE(e.StartOneof());
+    // Put this case's final index first to exercise each rejected value.
+    ASSERT_TRUE(e.PutOneofField(field_count));
+    for (uint32_t i = 1; i < field_count; ++i) {
+      ASSERT_TRUE(e.PutOneofField(i));
+    }
+    upb::Status status;
+    upb_MiniTable* table =
+        _upb_MiniTable_Build(e.data().data(), e.data().size(), GetParam(),
+                             arena.ptr(), status.ptr());
+    EXPECT_EQ(nullptr, table);
+    EXPECT_FALSE(status.ok());
+    EXPECT_NE(std::string_view::npos,
+              std::string_view(status.error_message())
+                  .find("Too many fields for oneof layout"));
+  }
+}
+
 TEST_P(MiniTableTest, FieldCountOverflow) {
   upb::Arena arena;
   upb::MtDataEncoder e;
@@ -172,6 +234,33 @@ TEST_P(MiniTableTest, FieldCountOverflow) {
   upb_MiniTable* table = _upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
   EXPECT_EQ(nullptr, table);
+}
+
+TEST_P(MiniTableTest, RepresentationSlotCountOverflow) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  // Keep the oneof members at low indices and use no-presence fields for
+  // the remaining entries, so this tests representation slot accounting.
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Int32, 1, 0));
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Int32, 2, 0));
+  for (uint32_t i = 3; i <= UINT16_MAX; ++i) {
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Int32, i,
+                          kUpb_FieldModifier_IsProto3Singular));
+  }
+  ASSERT_TRUE(e.StartOneof());
+  ASSERT_TRUE(e.PutOneofField(1));
+  ASSERT_TRUE(e.StartOneof());
+  ASSERT_TRUE(e.PutOneofField(2));
+  // Each oneof needs a data slot and a case slot: 65533 + 2 * 2 = 65537.
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  EXPECT_EQ(nullptr, table);
+  EXPECT_FALSE(status.ok());
+  EXPECT_NE(std::string_view(status.error_message()).find(
+                "Message size exceeded maximum size"),
+            std::string_view::npos);
 }
 
 TEST_P(MiniTableTest, SizeOverflow) {
@@ -405,4 +494,69 @@ TEST(MiniTableTest, Build32BitMiniTableWithSubmessagesNoFastTableAssert) {
   ASSERT_NE(nullptr, table) << status.error_message();
   EXPECT_EQ(3, upb_MiniTable_FieldCount(table));
   EXPECT_EQ(0xff, table->UPB_PRIVATE(table_mask));
+}
+
+TEST(MiniTableTest, ExtensionSubOffsetIsPlatformSpecific) {
+  upb::Arena arena;
+  upb::Status status;
+  upb::MtDataEncoder msg_e;
+  ASSERT_TRUE(msg_e.StartMessage(kUpb_MessageModifier_IsExtendable));
+  upb_MiniTable* extendee = upb_MiniTable_Build(
+      msg_e.data().data(), msg_e.data().size(), arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, extendee) << status.error_message();
+
+  upb::MtDataEncoder ext_e;
+  ASSERT_TRUE(ext_e.EncodeExtension(kUpb_FieldType_Message, 100, 0));
+
+  // The sub follows the upb_MiniTableExtension, which is `field` (padded to
+  // pointer alignment) followed by the pointer-sized `extendee`. The generator
+  // emits this offset into generated code for both platforms, so it must be
+  // computed for the target platform rather than the host.
+  for (auto [platform, ptr_size] : {std::pair<upb_MiniTablePlatform, size_t>{
+                                        kUpb_MiniTablePlatform_32Bit, 4},
+                                    std::pair<upb_MiniTablePlatform, size_t>{
+                                        kUpb_MiniTablePlatform_64Bit, 8}}) {
+    upb_MiniTableExtension* ext = _upb_MiniTableExtension_Build(
+        ext_e.data().data(), ext_e.data().size(), extendee,
+        upb_MiniTableSub_FromMessage(nullptr), platform, arena.ptr(),
+        status.ptr());
+    ASSERT_NE(nullptr, ext) << status.error_message();
+    size_t expected =
+        UPB_ALIGN_UP(sizeof(upb_MiniTableField), ptr_size) + ptr_size;
+    size_t actual =
+        static_cast<size_t>(ext->UPB_PRIVATE(field).UPB_PRIVATE(submsg_ofs) *
+                            kUpb_SubmsgOffsetBytes);
+    EXPECT_EQ(actual, expected) << "ptr_size=" << ptr_size;
+  }
+
+  // For the native platform the offset must match the real layout, and the
+  // sub must be readable through it.
+  upb_MiniTableExtension* ext = upb_MiniTableExtension_BuildMessage(
+      ext_e.data().data(), ext_e.data().size(), extendee, extendee, arena.ptr(),
+      status.ptr());
+  ASSERT_NE(nullptr, ext) << status.error_message();
+  size_t actual = static_cast<size_t>(
+      ext->UPB_PRIVATE(field).UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes);
+  EXPECT_EQ(actual, sizeof(upb_MiniTableExtension));
+  EXPECT_EQ(upb_MiniTableExtension_GetSubMessage(ext), extendee);
+}
+
+// MiniDescriptors for an int32->int32 map entry, without and with the
+// extendable message modifier ('P'). The map encoder never emits a modifier,
+// but the map parser shares the message parser, which accepts one.
+constexpr std::string_view kMapEntry = "%((";
+constexpr std::string_view kExtendableMapEntry = "%P((";
+
+TEST(MiniTableTest, MapEntryCannotBeExtendable) {
+  upb::Arena arena;
+  upb::Status status;
+  EXPECT_NE(nullptr, upb_MiniTable_Build(kMapEntry.data(), kMapEntry.size(),
+                                         arena.ptr(), status.ptr()))
+      << status.error_message();
+
+  status.Clear();
+  EXPECT_EQ(nullptr, upb_MiniTable_Build(kExtendableMapEntry.data(),
+                                         kExtendableMapEntry.size(),
+                                         arena.ptr(), status.ptr()));
+  EXPECT_FALSE(status.ok());
 }

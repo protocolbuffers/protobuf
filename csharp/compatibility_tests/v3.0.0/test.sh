@@ -23,6 +23,7 @@ function run_test() {
   dotnet build -c Release src/Google.Protobuf/Google.Protobuf.csproj
   dotnet build -c Release src/Google.Protobuf.Test/Google.Protobuf.Test.csproj
   dotnet run -c Release -f net8.0 -p src/Google.Protobuf.Test/Google.Protobuf.Test.csproj
+  dotnet run -c Release -f net10.0 -p src/Google.Protobuf.Test/Google.Protobuf.Test.csproj
 }
 
 set -ex

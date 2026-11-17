@@ -288,19 +288,39 @@ TEST_P(ConformanceUpbHarnessTest, UnparseableRequestIsRuntimeError) {
             "conformance_upb: parse of ConformanceRequest failed.");
 }
 
-TEST_P(ConformanceUpbHarnessTest, ProtobufOutputSerializeErrorIsReported) {
+TEST_P(ConformanceUpbHarnessTest, ProtobufOutputAtDepthLimitRoundTrips) {
   upb::Arena arena;
   conformance_ConformanceRequest* request =
       NewRequest(arena, conformance_PROTOBUF);
-  // recursive_message (27) nested 100 deep: upb's decoder accepts exactly its
-  // depth limit (100) of nested messages, but its encoder rejects the 100th,
-  // so this parses and then fails to serialize.
+  // recursive_message (27) nested 100 deep: exactly upb's default depth limit.
+  // The decoder accepts it, so the encoder must be able to serialize it again.
   Wire nested;
   for (int i = 0; i < 100; ++i) {
     nested = LengthPrefixedField(27, nested);
   }
   conformance_ConformanceRequest_set_protobuf_payload(request,
                                                       InArena(arena, nested));
+
+  const conformance_ConformanceResponse* response = Run(request, arena);
+  ASSERT_NE(response, nullptr);
+  ASSERT_TRUE(conformance_ConformanceResponse_has_protobuf_payload(response));
+  EXPECT_EQ(
+      ToString(conformance_ConformanceResponse_protobuf_payload(response)),
+      nested.data());
+}
+
+TEST_P(ConformanceUpbHarnessTest, ProtobufOutputSerializeErrorIsReported) {
+  upb::Arena arena;
+  conformance_ConformanceRequest* request =
+      NewRequest(arena, conformance_PROTOBUF);
+  // optional_value with 60 nested JSON arrays. The JSON parser limits JSON
+  // nesting (64 levels), so this parses. But each nested array is a Value
+  // holding a ListValue, i.e. two levels of message nesting, so the message is
+  // 120 levels deep and exceeds the wire encoder's limit (100).
+  constexpr int kNestedArrays = 60;
+  std::string json = R"({"optionalValue":)" + std::string(kNestedArrays, '[') +
+                     std::string(kNestedArrays, ']') + "}";
+  conformance_ConformanceRequest_set_json_payload(request, FromString(json));
 
   const conformance_ConformanceResponse* response = Run(request, arena);
   ASSERT_NE(response, nullptr);

@@ -190,9 +190,9 @@ void Do(absl::string_view json,
         // Check that any unread bytes are just whitespace.
         int64_t byte_count = in.ByteCount();
         ASSERT_LE(byte_count, json.size());
-        EXPECT_TRUE(
-            absl::c_all_of(json.substr(byte_count, json.size() - byte_count),
-                           [](char c) { return absl::ascii_isspace(c); }));
+        EXPECT_TRUE(absl::c_all_of(json.substr(byte_count), [](char c) {
+          return absl::ascii_isspace(c);
+        }));
       }
     }
   }

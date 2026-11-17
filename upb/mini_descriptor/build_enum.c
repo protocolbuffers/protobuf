@@ -58,7 +58,7 @@ static upb_MiniTableEnum* _upb_MiniTable_AddEnumDataMember(upb_MdEnumDecoder* d,
 static void upb_MiniTableEnum_BuildValue(upb_MdEnumDecoder* d, uint32_t val) {
   upb_MiniTableEnum* table = d->enum_table;
   d->enum_value_count++;
-  if (table->UPB_PRIVATE(value_count) ||
+  if (table->UPB_PRIVATE(value_count) || val > UINT32_MAX - 32 ||
       (val > 512 && d->enum_value_count < val / 32)) {
     if (table->UPB_PRIVATE(value_count) == 0) {
       UPB_ASSERT(d->enum_data_count == table->UPB_PRIVATE(mask_limit) / 32);

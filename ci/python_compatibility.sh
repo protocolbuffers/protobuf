@@ -17,6 +17,10 @@ popd
 # protoc prior to 28.0 doesn't support inf/nan option values.
 sed -i 's/\(inf\|nan\)/0/g' src/google/protobuf/unittest_custom_options.proto
 
+# protoc prior to 20.0 doesn't support extension declarations. Strip the multi-line
+# `[declaration = {...}, declaration = {...}]` block, leaving `extensions N to max;`.
+sed -i -z -E 's/\s*\[(\s*declaration = \{[^}]*\},?)+\s*\];/;/g' python/google/protobuf/internal/message_set_extensions.proto
+
 bazel build //python:copied_test_proto_files //python:copied_wkt_proto_files
 
 COMPAT_COPIED_PROTOS=(

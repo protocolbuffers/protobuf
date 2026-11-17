@@ -71,6 +71,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   }
   Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
   Edition GetMaximumEdition() const override { return Edition::EDITION_2026; }
+  bool StripDefaultJsonName() const override { return true; }
   std::vector<const FieldDescriptor*> GetFeatureExtensions() const override {
     return {};
   }

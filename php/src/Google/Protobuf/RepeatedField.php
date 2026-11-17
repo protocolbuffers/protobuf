@@ -27,7 +27,7 @@ use Traversable;
  *
  * @template T
  * @implements \ArrayAccess<int, T>
- * @implements \IteratorAggregate<T>
+ * @implements \IteratorAggregate<int, T>
  */
 class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
 {
@@ -217,6 +217,7 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
 
     /**
      * @ignore
+     * @return Traversable<int, T>
      */
     public function getIterator(): Traversable
     {

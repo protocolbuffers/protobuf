@@ -1,5 +1,6 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2023 Google LLC.  All rights reserved.
+#
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
@@ -128,6 +129,24 @@ rust_upb_proto_library(
 )
 
 proto_library(
+    name = "lite_enums_proto",
+    testonly = True,
+    srcs = ["lite_enums.proto"],
+)
+
+rust_cc_proto_library(
+    name = "lite_enums_cpp_rust_proto",
+    testonly = True,
+    deps = [":lite_enums_proto"],
+)
+
+rust_upb_proto_library(
+    name = "lite_enums_upb_rust_proto",
+    testonly = True,
+    deps = [":lite_enums_proto"],
+)
+
+proto_library(
     name = "extensions_proto",
     testonly = True,
     srcs = ["extensions.proto"],
@@ -148,7 +167,10 @@ rust_upb_proto_library(
 proto_library(
     name = "extensions_separate_file_proto",
     testonly = True,
-    srcs = ["extensions_separate_file.proto"],
+    srcs = [
+        "extensions_separate_file.proto",
+        "extensions_separate_file2.proto",
+    ],
     deps = [":extensions_proto"],
 )
 

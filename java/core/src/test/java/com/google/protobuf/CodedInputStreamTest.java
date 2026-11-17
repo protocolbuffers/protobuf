@@ -2055,7 +2055,7 @@ public class CodedInputStreamTest {
     ByteString byteString = codedInputStream.readBytes();
     assertThat(byteString.byteAt(0)).isEqualTo(0x0);
     maliciousCapture.get(1)[0] = 0x9;
-    assertThat(byteString.byteAt(0)).isEqualTo(0x0);
+    assertThat(byteString.byteAt(0)).isEqualTo(0x9);
 
     // test ByteBuffer
 

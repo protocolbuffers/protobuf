@@ -27,7 +27,7 @@ class ProtoJsonTest(unittest.TestCase):
     expected = 12345
     js_dict = {'int32Value': expected}
     message = proto_json.parse(json_format_proto3_pb2.TestMessage, js_dict)
-    self.assertEqual(expected, message.int32_value)  # pytype: disable=attribute-error
+    self.assertEqual(expected, message.int32_value)  # pyrefly: ignore[missing-attribute]
 
 
 if __name__ == '__main__':

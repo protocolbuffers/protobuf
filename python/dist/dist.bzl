@@ -1,7 +1,22 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2022 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 """Rules to create python distribution files and properly name them"""
 
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
+
+def _get_toolchain_python_version(ctx):
+    py_toolchain = ctx.toolchains["@rules_python//python:toolchain_type"]
+    if py_toolchain != None and hasattr(py_toolchain, "py3_runtime"):
+        py_runtime = py_toolchain.py3_runtime
+        ivi = py_runtime.interpreter_version_info
+        python_version = "{}{}".format(ivi.major, ivi.minor)
+        return python_version
+    return "310"
 
 def _get_os_name(ctx):
     for name, label in ctx.attr._os_constraints.items():
@@ -31,7 +46,7 @@ def _get_suffix(ctx, limited_api, python_version):
         return ".cp{}-{}.{}".format(python_version, abi, "pyd")
 
     if python_version == "system":
-        python_version = SYSTEM_PYTHON_VERSION
+        python_version = _get_toolchain_python_version(ctx)
         if int(python_version) < 38:
             python_version += "m"
 
@@ -77,7 +92,7 @@ def _declare_module_file(ctx, module_name, python_version, limited_api):
 #
 #   py_dist_module(
 #       name = "message_mod",
-#       extension = "//python:_message_binary",
+#       extension = "//python:google/_upb/_message",
 #       module_name = "google._upb._message",
 #   )
 #
@@ -169,6 +184,12 @@ py_dist_module = rule(
             },
         ),
     },
+    toolchains = [
+        config_common.toolchain_type(
+            "@rules_python//python:toolchain_type",
+            mandatory = False,  # <-- Doesn't fail if toolchain is missing
+        ),
+    ],
 )
 
 # --------------------------------------------------------------------------------------------------
@@ -186,6 +207,13 @@ def _py_dist_transition_impl(settings, attr):
             "//command_line_option:platforms": platform,
             "//python:python_version": version,
             "//python:limited_api": True,
+            # Py_LIMITED_API (derived from `version`) determines which Python
+            # versions the wheel is compatible with, but the headers themselves
+            # can come from a newer Python. Newer headers are strictly better:
+            # for example, the inline Py_INCREF()/Py_DECREF() in pre-3.12
+            # headers are unaware of immortal objects, and will eventually
+            # make None mortal when run on Python 3.14+.
+            "@rules_python//python/config_settings:python_version": attr.limited_api_python_headers_version,
         })
 
     for version in attr.full_api_versions:
@@ -194,6 +222,9 @@ def _py_dist_transition_impl(settings, attr):
                 "//command_line_option:platforms": platform,
                 "//python:python_version": version,
                 "//python:limited_api": False,
+                # Full API builds must use the headers of the exact version
+                # they target, e.g. "311" -> "3.11".
+                "@rules_python//python/config_settings:python_version": version[0] + "." + version[1:],
             })
 
     return transitions
@@ -205,6 +236,7 @@ _py_dist_transition = transition(
         "//command_line_option:platforms",
         "//python:python_version",
         "//python:limited_api",
+        "@rules_python//python/config_settings:python_version",
     ],
 )
 
@@ -226,6 +258,11 @@ py_dist = rule(
         ),
         "pure_python_wheel": attr.label(mandatory = True),
         "limited_api_platforms": attr.string_dict(),
+        "limited_api_python_headers_version": attr.string(
+            mandatory = True,
+            doc = "The rules_python Python version (e.g. \"3.14\") whose headers are used to " +
+                  "build limited API wheels.",
+        ),
         "full_api_versions": attr.string_list(),
         "full_api_platforms": attr.string_list(),
         "_allowlist_function_transition": attr.label(

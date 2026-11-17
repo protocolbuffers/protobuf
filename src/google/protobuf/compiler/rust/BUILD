@@ -1,5 +1,5 @@
-# Copyright (c) 2025, Google LLC
-# All rights reserved.
+# Protocol Buffers - Google's data interchange format
+# Copyright 2025 Google LLC
 #
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
@@ -113,11 +113,8 @@ cc_test(
     size = "small",
     srcs = ["naming_test.cc"],
     deps = [
-        ":context",
         ":naming",
         "//src/google/protobuf",
-        "//src/google/protobuf/io",
-        "@abseil-cpp//absl/container:flat_hash_map",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -142,6 +139,7 @@ cc_test(
     srcs = ["relative_path_test.cc"],
     deps = [
         ":relative_path",
+        "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -217,6 +215,7 @@ bootstrap_cc_library(
         ":extension",
         ":message",
         "//upb/reflection:reflection_cc",
+        "//upb_generator:file_layout",
         "//upb_generator:plugin",
     ],
     copts = COPTS,

@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYEXT_WEAK_VALUE_MAP_H_
-#define THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYEXT_WEAK_VALUE_MAP_H_
+#ifndef GOOGLE_PROTOBUF_PYEXT_WEAK_VALUE_MAP_H__
+#define GOOGLE_PROTOBUF_PYEXT_WEAK_VALUE_MAP_H__
 
 #include <atomic>
 #include <memory>
@@ -95,6 +95,8 @@ class PyWeakValueMap {
 
 #ifdef Py_GIL_DISABLED
 
+#include "absl/container/inlined_vector.h"
+
 template <class Func>
 PyObject* PyWeakValueMap::GetOrInsert(const void* key, const PyTypeObject* type,
                                       Func&& func) {
@@ -114,15 +116,22 @@ PyObject* PyWeakValueMap::GetOrInsert(const void* key, const PyTypeObject* type,
 
 template <typename Func>
 void PyWeakValueMap::ForEach(Func&& func) {
-  absl::MutexLock lock(&mutex_);
-  for (auto it = cache_.begin(); it != cache_.end();) {
-    if (PyUnstable_TryIncRef(it->second)) {
-      func(it->first, it->second);
-      Py_DECREF(it->second);
-      ++it;
-    } else {
-      cache_.erase(it++);
+  absl::InlinedVector<std::pair<const void*, PyObject*>, 8> items;
+  {
+    absl::MutexLock lock(&mutex_);
+    items.reserve(cache_.size());
+    for (auto it = cache_.begin(); it != cache_.end();) {
+      if (PyUnstable_TryIncRef(it->second)) {
+        items.emplace_back(it->first, it->second);
+        ++it;
+      } else {
+        cache_.erase(it++);
+      }
     }
+  }
+  for (const auto& [key, val] : items) {
+    func(key, val);
+    Py_DECREF(val);
   }
 }
 
@@ -149,4 +158,4 @@ void PyWeakValueMap::ForEach(Func&& func) {
 
 #endif
 
-#endif  // THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYEXT_WEAK_VALUE_MAP_H_
+#endif  // GOOGLE_PROTOBUF_PYEXT_WEAK_VALUE_MAP_H__

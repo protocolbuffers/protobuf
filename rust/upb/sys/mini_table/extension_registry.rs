@@ -28,7 +28,7 @@ pub enum ExtensionRegistryStatus {
     DuplicateEntry = 1,
     OutOfMemory = 2,
 }
-// LINT.ThenChange(//depot/google3/third_party/upb/upb/mini_table/extension_registry.h)
+// LINT.ThenChange(upb/mini_table/extension_registry.h)
 
 unsafe extern "C" {
     pub fn upb_ExtensionRegistry_New(arena: RawArena) -> RawExtensionRegistry;

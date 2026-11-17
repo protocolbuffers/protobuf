@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 use super::*;
 
 #[derive(Debug)]
@@ -52,25 +59,17 @@ impl<T: Message> OwnedMessageInner<T> {
 /// Since UPB expects runtimes to manage their own arenas, this needs to have
 /// access to an `Arena`.
 ///
-/// This has two possible designs:
-/// - Store two pointers here, `RawMessage` and `&'msg Arena`. This doesn't
-///   place any restriction on the layout of generated messages and their
-///   mutators. This makes a vtable-based mutator three pointers, which can no
-///   longer be returned in registers on most platforms.
-/// - Store one pointer here, `&'msg OwnedMessageInner`, where `OwnedMessageInner` stores
-///   a `RawMessage` and an `Arena`. This would require all generated messages
-///   to store `OwnedMessageInner`, and since their mutators need to be able to
-///   generate `BytesMut`, would also require `BytesMut` to store a `&'msg
-///   OwnedMessageInner` since they can't store an owned `Arena`.
-///
 /// The following invariants must be upheld:
 ///
-/// - No concurrent mutation for any two fields in a message: this means
-///   mutators cannot be `Send` but are `Sync`.
-/// - If there are multiple accessible `Mut` to a single message at a time, they
-///   must be different fields, and not be in the same oneof. As such, a `Mut`
-///   cannot be `Clone` but *can* reborrow itself with `.as_mut()`, which
-///   converts `&'b mut Mut<'a, T>` to `Mut<'b, T>`.
+/// - No concurrent mutation for any two fields in a message. Like `&mut T`, a `Mut` has exclusive
+///   access to its message for `'msg`, guaranteed by the `&'msg mut` borrow it was created from.
+///   This type holds a raw pointer and a `&'msg Arena` (`Arena` is not `Sync`), so it is neither
+///   `Send` nor `Sync` by itself. The generated `Mut` types opt into both `Send` and `Sync` (as
+///   `MessageMut` requires); that relies on the API never letting two threads hold `Mut`s that
+///   share an arena.
+/// - If there are multiple accessible `Mut` to a single message at a time, they must be different
+///   fields, and not be in the same oneof. As such, a `Mut` cannot be `Clone` but *can* reborrow
+///   itself with `.as_mut()`, which converts `&'b mut Mut<'a, T>` to `Mut<'b, T>`.
 #[derive(Debug)]
 #[doc(hidden)]
 pub struct MessageMutInner<'msg, T> {
@@ -236,6 +235,7 @@ pub unsafe trait UpbGetArena: SealedInternal {
     fn get_arena(&mut self, _private: Private) -> &Arena;
 }
 
+#[doc(hidden)]
 pub trait KernelMessage:
     AssociatedMiniTable + UpbGetArena + UpbGetMessagePtr + UpbGetMessagePtrMut + OwnedMessageInterop
 {
@@ -250,10 +250,7 @@ impl<T> KernelMessage for T where
 {
 }
 
-// TODO: UPB currently lacks an `MessageDescriptorInterop` equivalent.
-// Once UPB generates reflection hooks, add that as a supertrait and create a blanket impl here.
-pub trait KernelWithReflection {}
-
+#[doc(hidden)]
 pub trait KernelMessageView<'msg>:
     UpbGetMessagePtr + MessageViewInterop<'msg> + From<MessageViewInner<'msg, Self::KMessage>>
 {
@@ -267,6 +264,7 @@ where
     type KMessage = T::Msg;
 }
 
+#[doc(hidden)]
 pub trait KernelMessageMut<'msg>:
     UpbGetMessagePtr
     + UpbGetMessagePtrMut
@@ -388,6 +386,9 @@ where
     // - `msg` is a valid mutable message.
     // - `mini_table` is the one associated with `msg`
     // - `msg.arena().raw()` is held for the same lifetime as `msg`.
+    // - `generated_extension_registry()` is never mutated after its `LazyLock` initialization and
+    //   holds only extension mini tables that live for the rest of the process, so they outlive
+    //   `msg`.
     unsafe {
         upb::wire::decode_with_options(
             data,
@@ -398,7 +399,10 @@ where
         )
     }
     .map(|_| ())
-    .map_err(|_| ParseError)
+    .map_err(|_| {
+        Clear::clear(msg);
+        ParseError
+    })
 }
 
 impl<T> ClearAndParse for T
@@ -418,10 +422,15 @@ impl<T> Serialize for T
 where
     Self: UpbGetMessagePtr,
 {
-    fn serialize(&self) -> Result<Vec<u8>, SerializeError> {
+    fn serialize_with_options(&self, options: SerializeOptions) -> Result<Vec<u8>, SerializeError> {
+        let mut encode_options = 0;
+        if options.deterministic {
+            encode_options |= upb::wire::encode_options::DETERMINISTIC;
+        }
         //~ TODO: This discards the info we have about the reason
         //~ of the failure, we should try to keep it instead.
-        upb::wire::encode(self.get_ptr(Private)).map_err(|_| SerializeError)
+        upb::wire::encode_with_options(self.get_ptr(Private), encode_options)
+            .map_err(|_| SerializeError)
     }
 
     fn serialized_len(&self) -> usize {
@@ -442,6 +451,20 @@ where
     }
 }
 
+#[cold]
+#[inline(never)]
+#[track_caller]
+fn deep_copy_failed() -> ! {
+    panic!("upb_Message_DeepCopy failed (alloc should be infallible)");
+}
+
+#[cold]
+#[inline(never)]
+#[track_caller]
+fn merge_from_failed() -> ! {
+    panic!("upb_Message_MergeFrom failed (alloc should be infallible)");
+}
+
 impl<T> CopyFrom for T
 where
     Self: AsView + UpbGetArena + UpbGetMessagePtr,
@@ -452,12 +475,14 @@ where
         // SAFETY: self and src are both valid `T`s associated with
         // `Self::mini_table()`.
         unsafe {
-            assert!(upb_Message_DeepCopy(
+            if !upb_Message_DeepCopy(
                 self.get_ptr(Private).raw(),
                 src.as_view().get_ptr(Private).raw(),
                 <Self::Proxied as AssociatedMiniTable>::mini_table(),
-                self.get_arena(Private).raw()
-            ));
+                self.get_arena(Private).raw(),
+            ) {
+                deep_copy_failed();
+            }
         }
     }
 }
@@ -471,13 +496,15 @@ where
     fn merge_from(&mut self, src: impl AsView<Proxied = Self::Proxied>) {
         // SAFETY: self and src are both valid `T`s.
         unsafe {
-            assert!(upb_Message_MergeFrom(
+            if !upb_Message_MergeFrom(
                 self.get_ptr(Private).raw(),
                 src.as_view().get_ptr(Private).raw(),
                 <Self::Proxied as AssociatedMiniTable>::mini_table(),
                 generated_extension_registry().as_ptr(),
-                self.get_arena(Private).raw()
-            ));
+                self.get_arena(Private).raw(),
+            ) {
+                merge_from_failed();
+            }
         }
     }
 }

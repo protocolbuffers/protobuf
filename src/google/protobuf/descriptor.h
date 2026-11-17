@@ -52,7 +52,6 @@
 #include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/class_data.h"
@@ -255,15 +254,6 @@ namespace internal {
 //  (2)/(3) `lowercase` offset/size. The data bytes could be shared.
 //  (4)/(5) `camelcase` offset/size. The data bytes could be shared.
 //  (6)/(7) `json_name` offset/size. The data bytes could be shared.
-//
-//  NOTE ABOUT NULL TERMINATION:
-//  The name accessors were migrated from `std::string` to `absl::string_view`,
-//  which caused valid code to break. In particular, there are previously
-//  correct callers calling `foo.name().data()` and using it as a NULL
-//  terminated C-string.
-//  To prevent further breakage we are adding null termination on all these
-//  names even though it is outside the contract for `absl::string_view`.
-//  This might change in the future.
 class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorNames {
  public:
   // Uninitialized, to support `= default` of descriptor types.
@@ -283,16 +273,14 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorNames {
 
   // The full name is just before `payload_`, and the name is the suffix of it.
   // We don't need a special offset for them.
-  // NOTE: the sizes don't include the null terminator, so add +1 to the offset.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD absl::string_view name() const {
-    return get(get_size(0) + 1, get_size(0));
+    return get(get_size(0), get_size(0));
   }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD absl::string_view full_name() const {
-    return get(get_size(1) + 1, get_size(1));
+    return get(get_size(1), get_size(1));
   }
 
   // Only available for `FieldDescriptor`. This is not checked at runtime.
-  // NOTE: The offsets here already take into account the null terminator.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD absl::string_view lowercase_name() const {
     return get(get_size(2), get_size(3));
   }
@@ -305,7 +293,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorNames {
 
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static constexpr size_t
   AllocationSizeForSimpleNames(size_t full_name_size) {
-    return full_name_size + /* \0 */ 1 + 2 * sizeof(uint16_t);
+    return full_name_size + 2 * sizeof(uint16_t);
   }
 
  private:
@@ -395,7 +383,7 @@ struct NameLimits {
 // Provide an Abseil formatter for edition names.
 template <typename Sink>
 void AbslStringify(Sink& sink, Edition edition) {
-  absl::Format(&sink, "%v", internal::ShortEditionName(edition));
+  sink.Append(internal::ShortEditionName(edition));
 }
 
 // Describes a type of protocol message, or a particular group within a
@@ -461,7 +449,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   // Allows formatting with absl and gtest.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const Descriptor& d) {
-    absl::Format(&sink, "%s", d.DebugString());
+    sink.Append(d.DebugString());
   }
 
   // Returns true if this is a placeholder for an unknown type. This will
@@ -1178,7 +1166,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // Allows formatting with absl and gtest.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const FieldDescriptor& d) {
-    absl::Format(&sink, "%s", d.DebugString());
+    sink.Append(d.DebugString());
   }
 
   // Helper method to get the CppType for a particular Type.
@@ -1430,7 +1418,7 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
   // Allows formatting with absl and gtest.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const OneofDescriptor& d) {
-    absl::Format(&sink, "%s", d.DebugString());
+    sink.Append(d.DebugString());
   }
 
   // Source Location ---------------------------------------------------
@@ -1557,7 +1545,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   // Allows formatting with absl and gtest.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const EnumDescriptor& d) {
-    absl::Format(&sink, "%s", d.DebugString());
+    sink.Append(d.DebugString());
   }
 
   // Returns true if this is a placeholder for an unknown enum. This will
@@ -1775,7 +1763,7 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
   // Allows formatting with absl and gtest.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const EnumValueDescriptor& d) {
-    absl::Format(&sink, "%s", d.DebugString());
+    sink.Append(d.DebugString());
   }
 
   // Source Location ---------------------------------------------------
@@ -1888,7 +1876,7 @@ class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
   // Allows formatting with absl and gtest.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const ServiceDescriptor& d) {
-    absl::Format(&sink, "%s", d.DebugString());
+    sink.Append(d.DebugString());
   }
 
   // Source Location ---------------------------------------------------
@@ -2000,7 +1988,7 @@ class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
   // Allows formatting with absl and gtest.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const MethodDescriptor& d) {
-    absl::Format(&sink, "%s", d.DebugString());
+    sink.Append(d.DebugString());
   }
 
   // Source Location ---------------------------------------------------
@@ -2096,6 +2084,14 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   // These are returned in the order they were defined in the .proto file.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const FileDescriptor* public_dependency(
       int index) const;
+  // Returns this file together with every file it re-exports via
+  // `import public`, directly or transitively, each appearing once. Plain
+  // (non-public), weak, and option imports are not followed.
+  //
+  // Files are ordered so that each file's public dependencies (visited in
+  // declaration order, recursively) precede the file itself, with `this` last.
+  [[nodiscard]] std::vector<const FileDescriptor*> GetPublicImportClosure()
+      const;
 
   // The number of files that are imported for weak fields.
   // The weak dependency list is a subset of the dependency list.
@@ -2205,7 +2201,7 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   // Allows formatting with absl and gtest.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const FileDescriptor& d) {
-    absl::Format(&sink, "%s", d.DebugString());
+    sink.Append(d.DebugString());
   }
 
   // Returns true if this is a placeholder for an unknown file. This will
@@ -2354,6 +2350,72 @@ class PROTOBUF_EXPORT DescriptorPool {
   // Create a normal, empty DescriptorPool.
   DescriptorPool();
 
+  class ErrorCollector;
+
+  // Options for configuring a DescriptorPool.
+  struct Options {
+    // An optional database used to populate the pool on demand.
+    //
+    // If set, whenever any Find*By*() method fails to find a descriptor in this
+    // pool (or its underlay chain), the pool searches this database for the
+    // missing file and builds it dynamically. Consequently:
+    // - You may NOT call BuildFile*() directly (doing so will assert-fail);
+    //   all descriptors must be loaded on demand via Find*By*().
+    // - Calling any Find*By*() method -- or parsing a message, which looks up
+    //   extensions -- may block if the database blocks.
+    //
+    // Not owned; must outlive this pool and must NOT be mutated during the
+    // pool's lifetime.
+    DescriptorDatabase* fallback_database = nullptr;
+
+    // An optional parent pool queried as a backup whenever a file or
+    // descriptor is not found in this pool, before consulting
+    // fallback_database. If the underlay itself has an underlay, lookups
+    // proceed recursively.
+    //
+    // Files built in this pool -- either via BuildFile*() or loaded on demand
+    // from fallback_database -- may cross-link with descriptors from the
+    // underlay. For example, DescriptorPool::generated_pool() can be used as
+    // an underlay so the pool can work with both compiled-in descriptors and
+    // dynamically loaded ones.
+    //
+    // WARNING: Use of underlays can lead to many subtle gotchas. Instead, try
+    // to formulate what you want to do in terms of DescriptorDatabases when
+    // possible.
+    //
+    // Not owned; must remain valid for the lifetime of this pool.
+    const DescriptorPool* underlay = nullptr;
+
+    // An optional error collector to receive validation and error messages
+    // when files are built on demand from fallback_database. Ignored when
+    // fallback_database is nullptr (BuildFileCollectingErrors() takes its own
+    // ErrorCollector). If nullptr, errors are logged to ABSL_LOG(ERROR).
+    //
+    // Because files are loaded on demand, this ErrorCollector may be called
+    // concurrently from any thread calling Find*By*().
+    //
+    // Not owned; must remain valid for the lifetime of this pool.
+    ErrorCollector* error_collector = nullptr;
+  };
+
+  // Constructs a DescriptorPool configured by options.
+  //
+  // This constructor subsumes the legacy DescriptorPool constructors:
+  // - With default Options{}, constructs a normal, empty, mutable pool that
+  //   you populate via BuildFile*().
+  // - Lookups first check descriptors built in this pool, then recursively
+  //   check options.underlay (if set), and finally load missing files on
+  //   demand from options.fallback_database (if set). Files built in this pool
+  //   (via BuildFile*() or from options.fallback_database) may cross-link
+  //   with descriptors in options.underlay.
+  // - None of the pointers in options are owned by this pool; any non-null
+  //   pointer must remain valid for the lifetime of this pool.
+  //
+  // See the field comments on Options for detailed semantics, restrictions
+  // (such as BuildFile*() prohibition when fallback_database is set and
+  // warnings about underlay), and thread-safety requirements.
+  explicit DescriptorPool(const Options& options);
+
   // Constructs a DescriptorPool that, when it can't find something among the
   // descriptors already in the pool, looks for it in the given
   // DescriptorDatabase.
@@ -2377,7 +2439,6 @@ class PROTOBUF_EXPORT DescriptorPool {
   //   the DescriptorPool. Even if the client takes care to avoid data races,
   //   changes to the content of the DescriptorDatabase may not be reflected
   //   in subsequent lookups in the DescriptorPool.
-  class ErrorCollector;
   explicit DescriptorPool(DescriptorDatabase* fallback_database,
                           ErrorCollector* error_collector = nullptr);
 
@@ -2779,7 +2840,7 @@ class PROTOBUF_EXPORT DescriptorPool {
     }
     auto key = std::pair<const void*, const void*>(descriptor, secondary_key);
     {
-      absl::ReaderMutexLock lock(&pool->field_memo_table_mutex_);
+      absl::ReaderMutexLock lock(pool->field_memo_table_mutex_);
       auto it = pool->field_memo_table_->find(key);
       if (it != pool->field_memo_table_->end()) {
         return internal::DownCast<const MemoData<ResultT>&>(*it->second).value;
@@ -2788,7 +2849,7 @@ class PROTOBUF_EXPORT DescriptorPool {
     auto result = std::make_unique<MemoData<ResultT>>();
     result->value = func(descriptor);
     {
-      absl::MutexLock lock(&pool->field_memo_table_mutex_);
+      absl::MutexLock lock(pool->field_memo_table_mutex_);
       auto insert_result =
           pool->field_memo_table_->insert({key, std::move(result)});
       auto it = insert_result.first;
@@ -2808,13 +2869,21 @@ class PROTOBUF_EXPORT DescriptorPool {
   // checks that can't be done inside the database lock.  This is generally
   // reflective operations that also require the lock to do safely.
   class DeferredValidation;
-  bool TryFindFileInFallbackDatabase(
-      absl::string_view name, DeferredValidation& deferred_validation) const;
-  bool TryFindSymbolInFallbackDatabase(
-      absl::string_view name, DeferredValidation& deferred_validation) const;
-  bool TryFindExtensionInFallbackDatabase(
-      const Descriptor* containing_type, int field_number,
-      DeferredValidation& deferred_validation) const;
+  bool TryFindFileInFallbackDatabase(absl::string_view name) const;
+  bool TryFindSymbolInFallbackDatabase(absl::string_view name) const;
+  bool TryFindExtensionInFallbackDatabase(const Descriptor* containing_type,
+                                          int field_number) const;
+
+  template <typename FindInTable, typename FindInUnderlay,
+            typename TryFindInFallbackDb>
+  auto LookupWithFallback(FindInTable find_in_table,
+                          FindInUnderlay find_in_underlay,
+                          TryFindInFallbackDb try_find_in_fallback_db) const;
+
+  // Runs `fn` inside a build transaction and runs deferred validation after
+  // releasing the lock; returns false if deferred validation fails.
+  [[nodiscard]] bool WithBuildTransaction(ErrorCollector* error_collector,
+                                          absl::FunctionRef<void()> fn) const;
 
   // This internal find extension method only check with its table and underlay
   // descriptor_pool's table. It does not check with fallback DB and no
@@ -2826,8 +2895,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   // fallback_database_.  Declared const because it is called by (semantically)
   // const methods.
   const FileDescriptor* BuildFileFromDatabase(
-      const FileDescriptorProto& proto,
-      DeferredValidation& deferred_validation) const;
+      const FileDescriptorProto& proto) const;
 
   // Helper for when lazily_build_dependencies_ is set, can look up a symbol
   // after the file's descriptor is built, and can build the file where that
@@ -2863,14 +2931,17 @@ class PROTOBUF_EXPORT DescriptorPool {
                                   std::unique_ptr<MemoBase>>>();
 #endif  // SWIG
 
-  // If fallback_database_ is nullptr, this is nullptr.  Otherwise, this is a
-  // mutex which must be locked while accessing tables_.
-  absl::Mutex* mutex_;
+  // Mutex which must be locked while accessing tables_ if a fallback database
+  // is present.
+  absl::Mutex* mutex() const;
+
+  void AssertHeld() const;
+  void AssertReaderHeld() const;
 
   // See constructor.
-  DescriptorDatabase* fallback_database_;
-  ErrorCollector* default_error_collector_;
-  const DescriptorPool* underlay_;
+  DescriptorDatabase* fallback_database_ = nullptr;
+  ErrorCollector* default_error_collector_ = nullptr;
+  const DescriptorPool* underlay_ = nullptr;
 
 #ifndef SWIG
   // Dispatcher for recursive calls during builds.
@@ -2883,14 +2954,15 @@ class PROTOBUF_EXPORT DescriptorPool {
   class Tables;
   std::unique_ptr<Tables> tables_;
 
-  bool enforce_dependencies_;
-  bool lazily_build_dependencies_;
-  bool allow_unknown_;
-  bool enforce_weak_;
-  ExtDeclEnforcementLevel enforce_extension_declarations_;
-  bool disallow_enforce_utf8_;
-  bool deprecated_legacy_json_field_conflicts_;
-  bool enforce_naming_style_;
+  bool enforce_dependencies_ = true;
+  bool lazily_build_dependencies_ = false;
+  bool allow_unknown_ = false;
+  bool enforce_weak_ = false;
+  ExtDeclEnforcementLevel enforce_extension_declarations_ =
+      ExtDeclEnforcementLevel::kNoEnforcement;
+  bool disallow_enforce_utf8_ = false;
+  bool deprecated_legacy_json_field_conflicts_ = false;
+  bool enforce_naming_style_ = false;
   bool enforce_proto_limits_ = false;
   bool enforce_feature_support_validation_ = false;
   bool enforce_symbol_visibility_ = false;

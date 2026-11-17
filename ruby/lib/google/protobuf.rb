@@ -59,3 +59,5 @@ module Google
     end
   end
 end
+
+require 'google/protobuf/version'

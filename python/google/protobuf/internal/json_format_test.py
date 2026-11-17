@@ -2038,15 +2038,27 @@ class JsonFormatTest(JsonFormatBase):
     with self.assertRaises(json_format.ParseError):
       json_format.Parse('{"armor": ["gr8 helm"]}', msg)
 
-  def testParseBooleanInputForEnum(self):
-    # In Python, bool is a subclass of int (int(True) == 1). We document that
-    # JSON boolean literals like 'true' are accepted for enum fields and coerced
-    # to integer enum values.
+  def testParseBooleanInputForEnumFails(self):
+    # In Python, bool is a subclass of int (int(True) == 1), but JSON boolean
+    # literals must not be accepted for enum fields.
     msg = json_enumval_custom_string_pb2.Knight()
-    json_format.Parse('{"armor": true}', msg)
-    self.assertEqual(
-        msg.armor, json_enumval_custom_string_pb2.Armor.ARMOR_GREAT_HELM
-    )
+    with self.assertRaises(json_format.ParseError):
+      json_format.Parse('{"armor": true}', msg)
+    with self.assertRaises(json_format.ParseError):
+      json_format.Parse('{"armor": false}', msg)
+
+  @parameterized.named_parameters(
+      ('Float', 'float_value'),
+      ('Double', 'double_value'),
+  )
+  def testParseBooleanInputForFloatFails(self, field_name):
+    # In Python, bool is a subclass of int (float(True) == 1.0), but JSON
+    # boolean literals must not be accepted for float/double fields.
+    msg = json_format_proto3_pb2.TestMessage()
+    with self.assertRaises(json_format.ParseError):
+      json_format.Parse('{"%s": true}' % field_name, msg)
+    with self.assertRaises(json_format.ParseError):
+      json_format.Parse('{"%s": false}' % field_name, msg)
 
   def testParseCustomStringCaseMismatchFails(self):
     msg = json_enumval_custom_string_pb2.Knight()

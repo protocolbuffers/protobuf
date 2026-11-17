@@ -31,8 +31,8 @@ use crate::__internal::{Enum, MatcherEq, Private, SealedInternal};
 use crate::{
     AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapValue,
     MapView, MergeFrom, Message, Mut, MutProxied, ParseError, ProtoBytes, ProtoStr, ProtoString,
-    Proxied, Repeated, RepeatedMut, RepeatedView, Serialize, SerializeError, Singular, TakeFrom,
-    View,
+    Proxied, Repeated, RepeatedMut, RepeatedView, Serialize, SerializeError, SerializeOptions,
+    Singular, TakeFrom, View,
 };
 use core::fmt::Debug;
 use paste::paste;

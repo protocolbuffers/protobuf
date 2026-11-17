@@ -1401,6 +1401,26 @@ class Proto2ReflectionTest(unittest.TestCase):
     del proto.repeated_int32[100:10000]
     self.assertEqual([2], proto.repeated_int32)
 
+    # Test empty extended slice deletion (out-of-bounds, at index 0, negative
+    # step, and on an empty container).
+    proto.repeated_int32[:] = [1, 2, 3]
+    del proto.repeated_int32[10:20:2]
+    self.assertEqual([1, 2, 3], proto.repeated_int32)
+    del proto.repeated_int32[0:0:2]
+    self.assertEqual([1, 2, 3], proto.repeated_int32)
+    del proto.repeated_int32[3:3:2]
+    self.assertEqual([1, 2, 3], proto.repeated_int32)
+    del proto.repeated_int32[2:2:-2]
+    self.assertEqual([1, 2, 3], proto.repeated_int32)
+    del proto.repeated_int32[0:2:-2]
+    self.assertEqual([1, 2, 3], proto.repeated_int32)
+    del proto.repeated_int32[:]
+    del proto.repeated_int32[::2]
+    self.assertEqual([], proto.repeated_int32)
+    self.assertRaises(
+        ValueError, proto.repeated_int32.__delitem__, slice(None, None, 0)
+    )
+
   def testRepeatedScalarsRemove(self):
     proto = unittest_pb2.TestAllTypes()
 
@@ -1514,6 +1534,12 @@ class Proto2ReflectionTest(unittest.TestCase):
 
     # Test slice deletion.
     del proto.repeated_nested_message[2:]
+    self.assertListsEqual([m0, m1], proto.repeated_nested_message)
+    del proto.repeated_nested_message[10:20:2]
+    self.assertListsEqual([m0, m1], proto.repeated_nested_message)
+    del proto.repeated_nested_message[0:0:2]
+    self.assertListsEqual([m0, m1], proto.repeated_nested_message)
+    del proto.repeated_nested_message[1:1:-2]
     self.assertListsEqual([m0, m1], proto.repeated_nested_message)
 
     # Test extending.

@@ -290,41 +290,55 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>> extends Abstract
    * <p>Immutable maps are guaranteed to be already sorted and deduplicated.
    */
   private void ensureSortedAndDeduplicated() {
-    if (isImmutable) {
-      return;
-    }
-    if (!isSortedAndDeduped) {
+    if (!isImmutable && !isSortedAndDeduped) {
       // Synchronize on the map to support concurrent read-only access. When multiple threads
       // concurrently invoke read operations on a mutable map that has unsorted entries, they must
       // safely coordinate the lazy sorting and deduplication without data corruption.
-      synchronized (this) {
-        if (isSortedAndDeduped) {
-          return;
-        }
-        if (size <= 1) {
-          return;
-        }
-        Arrays.sort(entries, 0, size);
+      sortAndDeduplicate();
+    }
+  }
 
-        // Resolve duplicates in-place (stable, preserving last write)
-        int newSize = 0;
-        for (int i = 0; i < size; i++) {
-          Entry entry = (Entry) entries[i];
-          if (newSize > 0 && ((Entry) entries[newSize - 1]).getKey().equals(entry.getKey())) {
-            entries[newSize - 1] = entry;
-          } else {
-            entries[newSize] = entry;
-            newSize++;
-          }
+  private synchronized void sortAndDeduplicate() {
+    if (isSortedAndDeduped) {
+      return;
+    }
+    if (size <= 1) {
+      // No need to sort or deduplicate if the map has 0 or 1 elements.
+      // However, this is effectively unreached, since isSortedAndDeduped is true only for size > 1.
+      return;
+    }
+
+    Arrays.sort(entries, 0, size);
+    deduplicateInPlace();
+    this.isSortedAndDeduped = true;
+  }
+
+  private void deduplicateInPlace() {
+    // Deduplicate the entries in-place.
+    final Object[] entries = this.entries;
+    final int size = this.size;
+    int newSize = 1;
+    K lastKey = ((Entry) entries[0]).key;
+    for (int i = 1; i < size; i++) {
+      Entry entry = (Entry) entries[i];
+      K key = entry.key;
+      if (lastKey.equals(key)) {
+        entries[newSize - 1] = entry;
+      } else {
+        if (newSize != i) {
+          entries[newSize] = entry;
         }
-        if (newSize < this.size) {
-          this.size = newSize;
-          // Clear out the unused entries to allow garbage collection.
-          Arrays.fill(entries, newSize, entries.length, null);
-        }
-        this.isSortedAndDeduped = true;
+        newSize++;
+        lastKey = key;
       }
     }
+
+    // Clear out the unused entries to allow garbage collection.
+    for (int i = newSize; i < size; i++) {
+      entries[i] = null;
+    }
+
+    this.size = newSize;
   }
 
   /**
@@ -333,11 +347,18 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>> extends Abstract
    *     {@link java.util.Arrays#binarySearch()}.
    */
   private int binarySearch(K key) {
-    int low = 0;
     int high = size - 1;
-    while (low <= high) {
+    if (high < 0) {
+      return -1; // empty map, key not found.
+    }
+    final Object[] currentEntries = entries;
+    int low = 0;
+    do {
       int mid = (low + high) >>> 1;
-      K midKey = ((Entry) entries[mid]).getKey();
+      K midKey = ((Entry) currentEntries[mid]).key;
+      if (midKey == key) {
+        return mid;
+      }
       int cmp = midKey.compareTo(key);
       if (cmp < 0) {
         low = mid + 1;
@@ -346,7 +367,7 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>> extends Abstract
       } else {
         return mid; // key found
       }
-    }
+    } while (low <= high);
     return -(low + 1); // key not found.
   }
 
@@ -360,10 +381,11 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>> extends Abstract
   @Override
   public Set<Map.Entry<K, Object>> entrySet() {
     ensureSortedAndDeduplicated();
-    if (lazyEntrySet == null) {
-      lazyEntrySet = new EntrySet();
+    EntrySet result = lazyEntrySet;
+    if (result == null) {
+      lazyEntrySet = result = new EntrySet();
     }
-    return lazyEntrySet;
+    return result;
   }
 
   /**
@@ -449,7 +471,6 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>> extends Abstract
 
     @Override
     public Iterator<Map.Entry<K, Object>> iterator() {
-      ensureSortedAndDeduplicated();
       return new EntryIterator();
     }
 
@@ -491,10 +512,12 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>> extends Abstract
     @SuppressWarnings("unchecked") // entries is known to contain Entry objects.
     public Map.Entry<K, Object> next() {
       ensureSortedAndDeduplicated();
-      if (!hasNext()) {
+      int nextPos = pos + 1;
+      if (nextPos >= size) {
         throw new NoSuchElementException();
       }
-      return (Entry) entries[++pos];
+      pos = nextPos;
+      return (Entry) entries[nextPos];
     }
   }
 

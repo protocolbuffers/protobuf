@@ -153,7 +153,7 @@ function(protobuf_generate)
       COMMAND ${protobuf_generate_PROTOC_EXE}
       ARGS ${protobuf_generate_PROTOC_OPTIONS} --${protobuf_generate_LANGUAGE}_out ${_plugin_options}:${protobuf_generate_PROTOC_OUT_DIR} ${_plugin} ${_protobuf_include_path} ${_abs_file}
       DEPENDS ${_abs_file} ${protobuf_PROTOC_EXE} ${protobuf_generate_DEPENDENCIES}
-      COMMENT ${_comment}
+      COMMENT "${_comment}"
       VERBATIM )
   endforeach()
 

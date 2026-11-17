@@ -7,6 +7,7 @@
 
 #include "google/protobuf/compiler/rust/generator.h"
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <utility>
@@ -15,6 +16,7 @@
 #include "absl/algorithm/container.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -23,7 +25,6 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
-#include "absl/strings/strip.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/names.h"
@@ -40,6 +41,7 @@
 #include "google/protobuf/io/printer.h"
 #include "upb/mem/arena.hpp"
 #include "upb/reflection/def.hpp"
+#include "upb_generator/file_layout.h"
 #include "upb_generator/plugin.h"
 
 namespace google {
@@ -52,7 +54,6 @@ namespace {
 // messages and enums of a `dep`. This should only be
 // called for 'import public' deps.
 void EmitPublicImportsForDepFile(Context& ctx, const FileDescriptor* dep) {
-  std::string crate_name = GetCrateName(ctx, *dep);
   for (int i = 0; i < dep->message_type_count(); ++i) {
     auto* msg = dep->message_type(i);
     auto path = RsTypePath(ctx, *msg);
@@ -89,25 +90,9 @@ void EmitPublicImportsForDepFile(Context& ctx, const FileDescriptor* dep) {
 // defines multiple files, but not all are publicly imported.
 void EmitPublicImports(const RustGeneratorContext& rust_generator_context,
                        Context& ctx, const FileDescriptor& file) {
-  std::vector<const FileDescriptor*> files_to_visit{&file};
-  absl::flat_hash_set<const FileDescriptor*> visited_files;
-  while (!files_to_visit.empty()) {
-    const FileDescriptor* f = files_to_visit.back();
-    files_to_visit.pop_back();
-
-    if (!rust_generator_context.is_file_in_current_crate(*f)) {
-      // Since import public is transitive in the case of
-      // "import public of a file with an import public", we might
-      // reach the same file again when they form a diamond; ensure
-      // that we only visit each file once in that case.
-      bool first_time = visited_files.insert(f).second;
-      if (first_time) {
-        EmitPublicImportsForDepFile(ctx, f);
-      }
-    }
-
-    for (int i = 0; i < f->public_dependency_count(); ++i) {
-      files_to_visit.push_back(f->public_dependency(i));
+  for (const FileDescriptor* dep : file.GetPublicImportClosure()) {
+    if (!rust_generator_context.is_file_in_current_crate(*dep)) {
+      EmitPublicImportsForDepFile(ctx, dep);
     }
   }
 }
@@ -163,6 +148,99 @@ bool CrateHasSymbolCollision(const std::vector<const FileDescriptor*>& files) {
   }
 
   return false;
+}
+
+// Emits `def_init()` for the given file.
+void EmitDefInit(Context& ctx, const FileDescriptor& file,
+                 const upb::DefPool& pool) {
+  // DescriptorInfo lives in generated.rs, i.e. the crate root.
+  std::string crate_root;
+  for (size_t i = 0; i < ctx.GetModuleDepth(); ++i) {
+    absl::StrAppend(&crate_root, "super::");
+  }
+
+  upb::FileDefPtr upb_file = pool.FindFileByName(file.name());
+  ABSL_CHECK(upb_file);
+  const DescriptorPool& desc_pool = *file.pool();
+
+  ctx.Emit(
+      {{"def_init", DefInitName(file)},
+       {"file_name", absl::CHexEscape(file.name())},
+       {"descriptor_info",
+        absl::StrCat(crate_root, "__unstable::", DescriptorInfoName(file))},
+       {"deps",
+        [&] {
+          for (int i = 0; i < file.dependency_count(); ++i) {
+            const FileDescriptor& dep = *file.dependency(i);
+            ctx.Emit({{"mod", RustModule(ctx, dep)},
+                      {"dep_def_init", DefInitName(dep)}},
+                     "$mod$$dep_def_init$($pbi$::Private),\n");
+          }
+        }},
+       {"msgs",
+        [&] {
+          for (upb::MessageDefPtr m :
+               upb::generator::SortedMessages(upb_file)) {
+            const Descriptor* msg =
+                desc_pool.FindMessageTypeByName(m.full_name());
+            ABSL_CHECK(msg != nullptr) << m.full_name();
+            ctx.Emit({{"type", RsTypePath(ctx, *msg)}},
+                     "<$type$ as $pbr$::AssociatedMiniTable>::mini_table(),\n");
+          }
+        }},
+       {"enums",
+        [&] {
+          for (upb::EnumDefPtr e : upb::generator::SortedEnums(
+                   upb_file, upb::generator::kClosedEnums)) {
+            const EnumDescriptor* enum_ =
+                desc_pool.FindEnumTypeByName(e.full_name());
+            ABSL_CHECK(enum_ != nullptr) << e.full_name();
+            ctx.Emit(
+                {{"type", RsTypePath(ctx, *enum_)}},
+                "<$type$ as $pbr$::AssociatedMiniTableEnum>::mini_table(),\n");
+          }
+        }},
+       {"exts",
+        [&] {
+          for (upb::FieldDefPtr f :
+               upb::generator::SortedExtensions(upb_file)) {
+            const FieldDescriptor* ext =
+                desc_pool.FindExtensionByName(f.full_name());
+            ABSL_CHECK(ext != nullptr) << f.full_name();
+            ctx.Emit({{"mod", RustModuleForExtension(ctx, *ext)},
+                      {"ext", ExtensionRsName(*ext)}},
+                     "$mod$$ext$.__internal_mini_table($pbi$::Private),\n");
+          }
+        }}},
+      R"rs(
+        #[doc(hidden)]
+        pub fn $def_init$(_private: $pbi$::Private) -> $pbr$::DefPoolInit {
+          static INIT: $std$::sync::OnceLock<$pbr$::DefPoolInit> =
+              $std$::sync::OnceLock::new();
+          *INIT.get_or_init(|| {
+            // SAFETY: This is the file's own name and descriptor, the inits of
+            // the files it imports, and its own MiniTables in upb's layout order.
+            unsafe {
+              $pbr$::build_def_init(
+                c"$file_name$",
+                $descriptor_info$.descriptor,
+                &[
+                  $deps$
+                ],
+                &[
+                  $msgs$
+                ],
+                &[
+                  $enums$
+                ],
+                &[
+                  $exts$
+                ],
+              )
+            }
+          })
+        }
+      )rs");
 }
 
 void EmitEntryPointRsFile(GeneratorContext* generator_context,
@@ -371,6 +449,8 @@ bool RustGenerator::Generate(const FileDescriptor* file,
 #include "rust/cpp_kernel/strings.h"
           // Must be included last.
 #include "google/protobuf/port_def.inc"
+
+              PROTOBUF_IGNORE_DEPRECATION_START
         )cc");
   }
 
@@ -430,8 +510,17 @@ bool RustGenerator::Generate(const FileDescriptor* file,
     }
   }
 
+  if (ctx.is_upb() && !ctx.opts().strip_nonfunctional_codegen &&
+      HasReflectionSupport(ctx, *file)) {
+    if (!FileOrImportsHaveExtensions(*file)) {
+      EmitDefInit(ctx, *file, pool);
+    }
+  }
+
   if (ctx.is_cpp()) {
     thunks_printer->Emit(R"cc(
+      PROTOBUF_IGNORE_DEPRECATION_STOP
+
 #include "google/protobuf/port_undef.inc"
     )cc");
   }

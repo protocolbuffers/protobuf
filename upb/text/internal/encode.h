@@ -184,7 +184,7 @@ UPB_INLINE void UPB_PRIVATE(_upb_HardenedPrintString)(txtenc* e,
   // If in the future we have a guaranteed invariant that invalid UTF-8 will
   // never be present, we could avoid the UTF-8 check here.
   UPB_PRIVATE(_upb_TextEncode_PutStr)(e, "\"");
-  const char* end = ptr + len;
+  const char* end = UPB_PTRADD(ptr, len);
   while (ptr < end) {
     size_t n = UPB_PRIVATE(_SkipPassthroughBytes)(ptr, end - ptr);
     if (n != 0) {
@@ -204,7 +204,7 @@ UPB_INLINE void UPB_PRIVATE(_upb_HardenedPrintString)(txtenc* e,
 UPB_INLINE void UPB_PRIVATE(_upb_TextEncode_Bytes)(txtenc* e,
                                                    upb_StringView data) {
   const char* ptr = data.data;
-  const char* end = ptr + data.size;
+  const char* end = UPB_PTRADD(ptr, data.size);
   UPB_PRIVATE(_upb_TextEncode_PutStr)(e, "\"");
   for (; ptr < end; ptr++) {
     unsigned char uc = *ptr;

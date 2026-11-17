@@ -486,6 +486,7 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
   // TODO This is to include parse_context.h, we need a better way
   IncludeFile("third_party/protobuf/extension_set.h", p);
   IncludeFile("third_party/protobuf/generated_message_util.h", p);
+  IncludeFile("third_party/protobuf/private_access.h", p);
   IncludeFile("third_party/protobuf/wire_format_lite.h", p);
 
   if (ShouldVerify(file_, options_)) {
@@ -545,6 +546,15 @@ void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
     namespace _pb = $pb$;
     namespace _pbi = $pbi$;
     namespace _fl = $pbi$::field_layout;
+    //~ When custom VTable is off, we want the static generated method helpers
+    //~ to be inlined into the public virtual non-static stubs, preventing a
+    //~ double call. Since these static helpers will not be referenced anywhere
+    //~ else, we mark them as inline so they aren't linked into the binary.
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+#define PROTOBUF_NO_CUSTOM_VTABLE_INLINE
+#else
+#define PROTOBUF_NO_CUSTOM_VTABLE_INLINE PROTOBUF_ALWAYS_INLINE
+#endif
   )cc");
 }
 
@@ -621,11 +631,13 @@ void FileGenerator::GenerateInternalForwardDeclarations(
               &::_pbi::implicit_weak_message_globals;
         )cc");
       } else {
-        p->Emit({{"type", MsgGlobalsInstanceType(instance, options_)},
-                 {"name", MsgGlobalsInstanceName(instance, options_)}},
-                R"cc(
-                  extern __attribute__((weak)) const $type$ $name$;
-                )cc");
+        p->Emit(
+            {{"type", MsgGlobalsInstanceType(instance, options_)},
+             {"name", MsgGlobalsInstanceName(instance, options_)}},
+            R"cc(
+              extern __attribute__((weak))
+              const $type$ PROTOBUF_ALIGNAS($pbi$::kClassDataAlignment) $name$;
+            )cc");
       }
     }
   }
@@ -751,6 +763,9 @@ void FileGenerator::GenerateGlobalSource(io::Printer* p) {
 void FileGenerator::GenerateSource(io::Printer* p) {
   auto v = p->WithVars(FileVars(file_, options_));
 
+  p->Emit(R"cc(
+    // clang-format off
+  )cc");
   GenerateSourceIncludes(p);
   GenerateSourcePrelude(p);
   CrossFileReferences refs;
@@ -923,6 +938,9 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   GenerateStaticInitializer(p);
 
   IncludeFile("third_party/protobuf/port_undef.inc", p);
+  p->Emit(R"cc(
+    // clang-format on
+  )cc");
 }
 
 static void GatherAllCustomOptionTypes(
@@ -1089,15 +1107,14 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
              }},
         },
         R"cc(
-          const ::uint32_t
-              $tablename$::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-                  protodesc_cold) = {
-                  $offsets$,
+          ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+          const ::uint32_t $tablename$::offsets[] = {
+              $offsets$,
           };
 
-          static const ::_pbi::MigrationSchema
-              schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-                  $schemas$,
+          ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+          static const ::_pbi::MigrationSchema schemas[] = {
+              $schemas$,
           };
         )cc");
     constexpr absl::string_view file_default_instances_code = R"cc(
@@ -1190,8 +1207,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
           }
         }}},
       R"cc(
-        const char $desc_name$[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-            protodesc_cold) = {
+        ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+        const char $desc_name$[] = {
             $encoded_file_proto$,
         };
       )cc");
@@ -1352,7 +1369,8 @@ class FileGenerator::ForwardDeclarations {
           R"cc(
             class $class$;
             struct $globals_type$;
-            $dllexport_decl $extern $const $$globals_type$ $globals_name$;
+            $dllexport_decl $extern $const $$globals_type$
+                PROTOBUF_ALIGNAS($pbi$::kClassDataAlignment) $globals_name$;
           )cc");
     }
 
@@ -1372,20 +1390,28 @@ class FileGenerator::ForwardDeclarations {
 
   void PrintTopLevelDecl(io::Printer* p, const Options& options) const {
     for (const auto& e : enums_) {
-      p->Emit({{"enum", QualifiedClassName(e.second, options)}},
-              R"cc(
-                template <>
-                internal::EnumTraitsT<$enum$_internal_data_>
-                    internal::EnumTraitsImpl::value<$enum$>;
-              )cc");
+      const bool deprecated = e.second->options().deprecated();
+      p->Emit(
+          {
+              {"enum", QualifiedClassName(e.second, options)},
+              {"IGNORE_DEPRECATION_START",
+               deprecated ? "PROTOBUF_IGNORE_DEPRECATION_START" : ""},
+              {"IGNORE_DEPRECATION_STOP",
+               deprecated ? "PROTOBUF_IGNORE_DEPRECATION_STOP" : ""},
+          },
+          R"cc(
+            $IGNORE_DEPRECATION_START$
+            template <>
+            internal::EnumTraitsT<$enum$_internal_data_>
+                internal::EnumTraitsImpl::value<$enum$>;
+            $IGNORE_DEPRECATION_STOP$
+          )cc");
     }
     if (ShouldGenerateExternSpecializations(options)) {
       for (const auto& c : classes_) {
         if (!ShouldGenerateClass(c.second, options)) continue;
         auto vars =
-            p->WithVars({{"class", QualifiedClassName(c.second, options)},
-                         {"default_name",
-                          QualifiedMsgGlobalsInstanceName(c.second, options)}});
+            p->WithVars({{"class", QualifiedClassName(c.second, options)}});
         // To reduce total linker input size in large binaries we make these
         // functions extern and define then in the pb.cc file. This avoids bloat
         // in callers by having duplicate definitions of the template.
@@ -1399,17 +1425,18 @@ class FileGenerator::ForwardDeclarations {
             extern template void* $nonnull$ Arena::CopyConstruct<$class$>(Arena* $nullable$, const void* $nonnull$);
           )");
         }
-        // We can't make a constexpr pointer to the global if we have DLL
-        // linkage so skip this.
-        // The fallback traits are slower, but correct.
-        if (options.dllexport_decl.empty()) {
-          p->Emit(R"cc(
-            template <>
-            internal::GeneratedMessageTraitsT<&$default_name$>
-                internal::MessageTraitsImpl::value<$class$>;
-          )cc");
-        }
       }
+    }
+    for (const auto& c : classes_) {
+      if (!ShouldGenerateClass(c.second, options)) continue;
+      auto vars = p->WithVars({{"class", QualifiedClassName(c.second, options)},
+                               {"default_name", QualifiedMsgGlobalsInstanceName(
+                                                    c.second, options)}});
+      p->Emit(R"cc(
+        template <>
+        internal::GeneratedMessageTraitsT<&$default_name$>
+            internal::MessageTraitsImpl::value<$class$>;
+      )cc");
     }
   }
 
@@ -1418,17 +1445,6 @@ class FileGenerator::ForwardDeclarations {
   absl::btree_map<std::string, const EnumDescriptor*> enums_;
   absl::btree_map<std::string, const Descriptor*> splits_;
 };
-
-static void PublicImportDFS(
-    const FileDescriptor* fd,
-    absl::flat_hash_set<const FileDescriptor*>& fd_set) {
-  for (int i = 0; i < fd->public_dependency_count(); ++i) {
-    const FileDescriptor* dep = fd->public_dependency(i);
-    if (fd_set.insert(dep).second) {
-      PublicImportDFS(dep, fd_set);
-    }
-  }
-}
 
 void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
   std::vector<const Descriptor*> classes;
@@ -1453,9 +1469,14 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
       *file_, [&](const EnumDescriptor& e) { enums.push_back(&e); });
 
   // Calculate the set of files whose definitions we get through include.
-  // No need to forward declare types that are defined in these.
-  absl::flat_hash_set<const FileDescriptor*> public_set;
-  PublicImportDFS(file_, public_set);
+  // No need to forward declare types that are defined in these, though types
+  // defined in `file_` itself still need forward declarations.
+  std::vector<const FileDescriptor*> public_deps =
+      file_->GetPublicImportClosure();
+  ABSL_DCHECK_EQ(public_deps.back(), file_);
+  public_deps.pop_back();
+  absl::flat_hash_set<const FileDescriptor*> public_set(public_deps.begin(),
+                                                        public_deps.end());
 
   absl::btree_map<std::string, ForwardDeclarations> decls;
   for (const auto* d : classes) {

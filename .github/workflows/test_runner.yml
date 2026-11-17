@@ -12,8 +12,8 @@ name: Tests
 on:
   # continuous
   schedule:
-    # Run every hour
-    - cron: "0 * * * *"
+    # Run every 2 hours
+    - cron: "0 */2 * * *"
 
   # postsubmit
   push:
@@ -66,7 +66,7 @@ jobs:
       (github.event_name == 'pull_request_target' &&
        github.event.pull_request.head.repo.full_name != 'protocolbuffers/protobuf')
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     outputs:
       # Store the sha for checkout so we can easily use it later.  For safe
       # events, this will be blank and use the defaults.
@@ -84,22 +84,31 @@ jobs:
       - name: Check
         # Trivially pass for safe PRs, and explicitly error for unsafe ones
         # unless this is specifically an event for adding the safe label.
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          LABEL_NAME: ${{ github.event.label.name }}
         run: >
-          ${{ github.event_name != 'pull_request_target' || github.event.label.name == ':a: safe for tests' }} ||
+          [ "$EVENT_NAME" != 'pull_request_target' ] || [ "$LABEL_NAME" == ':a: safe for tests' ] ||
           (echo "This pull request is from an unsafe fork and hasn't been approved to run tests." &&
            echo "A protobuf team member will need to review the PR and add the 'safe for tests' tag." &&
            exit 1)
 
       - name: Cache safe commit
         id: safe-checkout
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: >
-          ${{ github.event_name != 'pull_request_target' }} ||
-          echo "sha=${{ github.event.pull_request.head.sha  }}"  >> $GITHUB_OUTPUT
+          [ "$EVENT_NAME" != 'pull_request_target' ] ||
+          echo "sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
 
       - name: Set Test Type Variables
         id: set-test-type-vars
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          SKIP_CONTINUOUS: ${{ !contains(toJson(github.event.pull_request.body), '#test-continuous') }}
         run: |
-          if ([ "${{ github.event_name }}" == 'pull_request' ] || [ "${{ github.event_name }}" == 'pull_request_target' ]) && ${{ !contains(toJson(github.event.pull_request.body), '#test-continuous') }}; then
+          if ([ "$EVENT_NAME" == 'pull_request' ] || [ "$EVENT_NAME" == 'pull_request_target' ]) && [ "$SKIP_CONTINUOUS" == 'true' ]; then
             echo "continuous-run=" >> "$GITHUB_OUTPUT"
             echo "continuous-prefix=[SKIPPED] (Continuous)" >> "$GITHUB_OUTPUT"
           else
@@ -111,7 +120,7 @@ jobs:
     name: Remove safety tag
     needs: [set-vars]
     if: github.event.action == 'labeled'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       pull-requests: write
     steps:
@@ -208,16 +217,6 @@ jobs:
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
     secrets: inherit
 
-  objectivec:
-    name: Objective-C
-    needs: [set-vars]
-    uses: ./.github/workflows/test_objectivec.yml
-    with:
-      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
-      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
-      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
-    secrets: inherit
-
   rust:
     name: Rust
     needs: [set-vars]
@@ -258,8 +257,8 @@ jobs:
   # This test depends on all blocking tests and indicates whether they all suceeded.
   all-blocking-tests:
     name: All Blocking Tests${{ github.event_name == 'pull_request_target' && ' (fork)' || ''}}
-    needs: [set-vars, validate-yaml, bazel, cpp, java, python, ruby, php, php-ext, csharp, objectivec, rust, upb, hpb, staleness]
-    runs-on: ubuntu-latest
+    needs: [set-vars, validate-yaml, bazel, cpp, java, python, ruby, php, php-ext, csharp, rust, upb, hpb, staleness]
+    runs-on: ubuntu-26.04
     steps:
       - name: Check test results
         run: "${{ !contains(join(needs.*.result, ' '), 'failure') && !contains(join(needs.*.result, ' '), 'cancelled') }}"

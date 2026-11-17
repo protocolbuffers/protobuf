@@ -55,6 +55,12 @@ UPB_INLINE void UPB_PRIVATE(_upb_encstate_destroy)(upb_encstate* e) {
   _upb_mapsorter_destroy(&e->sorter);
 }
 
+// Encodes a single field into the back_alloc buffer without finishing it.
+// Returns the updated buffer pointer (pointing to the start of encoded data).
+char* UPB_PRIVATE(_upb_Encode_FieldToBuffer)(char* ptr, upb_encstate* e,
+                                             const upb_Message* msg,
+                                             const upb_MiniTableField* field);
+
 // Internal version of upb_Encode that encodes a single field.
 //
 // The caller must clean up the `upb_encstate` by calling
@@ -65,14 +71,16 @@ upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Field)(upb_encstate* e,
                                                 char** buf, size_t* size,
                                                 int options);
 
-// Internal version of upb_Encode that encodes a single extension.
+// Internal version of upb_Encode that encodes a single extension entry
+// described by `f` with value `ext_val`, as a MessageSet item if
+// `is_message_set`. For an entry stored in a message, `is_message_set` should
+// be _upb_Extension_IsMessageSetItem().
 //
 // The caller must clean up the `upb_encstate` by calling
 // `_upb_encstate_destroy(e)` when done.
 upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Extension)(
-    upb_encstate* e, const upb_MiniTableExtension* ext,
-    upb_MessageValue ext_val, bool is_message_set, char** buf, size_t* size,
-    int options);
+    upb_encstate* e, const upb_MiniTableField* f, upb_MessageValue ext_val,
+    bool is_message_set, char** buf, size_t* size, int options);
 
 char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
                      const upb_MiniTable* m, size_t* size);

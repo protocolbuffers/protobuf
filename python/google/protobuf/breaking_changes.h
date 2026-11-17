@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef THIRD_PARTY_PY_GOOGLE_PROTOBUF_BREAKING_CHANGES_H_
-#define THIRD_PARTY_PY_GOOGLE_PROTOBUF_BREAKING_CHANGES_H_
+#ifndef GOOGLE_PROTOBUF_BREAKING_CHANGES_H__
+#define GOOGLE_PROTOBUF_BREAKING_CHANGES_H__
 
 // Future versions of Protobuf Python will include breaking changes.
 // This file tracks Python-specific breaking changes that need to wait,
@@ -14,27 +14,18 @@
 
 #ifdef PROTOBUF_PY_FUTURE_BREAKING_CHANGES
 
-// Removes non-standard clamping behavior in RepeatedContainer.pop()
-// Owner: runze@
-#define PROTOBUF_PY_FUTURE_REMOVE_POP_CLAMP 1
-
-// Fix PyProto C++ and upb implementations to return NotImplemented in
-// descriptor container equality checks for unrecognized types.
-// Owner: runze@
-#define PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 1
-
-// Make GetOptions() return immutable options.
-// Owner: runze@
-#define PROTOBUF_PY_FUTURE_FREEZE_OPTIONS 1
+// Raise AssertionError on message, map and repeated scalar field self-merge
+// (msg.MergeFrom(msg), msg.map_field.MergeFrom(msg.map_field) and
+// msg.repeated_field.MergeFrom(msg.repeated_field)) in upb, like the C++
+// implementation, instead of merging from a copy (messages and repeated
+// fields) or doing nothing (maps).
+// Owner: haberman@
+#define PROTOBUF_PY_FUTURE_SELF_MERGE_RAISES 1
 
 #else
 
-#define PROTOBUF_PY_FUTURE_REMOVE_POP_CLAMP 0
-
-#define PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 0
-
-#define PROTOBUF_PY_FUTURE_FREEZE_OPTIONS 0
+#define PROTOBUF_PY_FUTURE_SELF_MERGE_RAISES 0
 
 #endif
 
-#endif  // THIRD_PARTY_PY_GOOGLE_PROTOBUF_BREAKING_CHANGES_H_
+#endif  // GOOGLE_PROTOBUF_BREAKING_CHANGES_H__

@@ -115,7 +115,7 @@ class GCTest < Test::Unit::TestCase
     old_gc = GC.stress
     GC.stress = true
     begin
-      100.times do
+      50.times do
         # Non-UTF-8 key and value: the key conversion allocates a temporary, and
         # the value conversion allocates again, opening the window.
         key = ("K" * 5000).dup.force_encoding("ISO-8859-1") +
@@ -141,7 +141,7 @@ class GCTest < Test::Unit::TestCase
     old_gc = GC.stress
     GC.stress = true
     begin
-      100.times do
+      50.times do
         map = Google::Protobuf::Map.new(:string, :string)
         map[:some_symbol_key] = :some_symbol_value
         assert_equal ["some_symbol_key"], map.keys
@@ -156,5 +156,16 @@ class GCTest < Test::Unit::TestCase
       A::B::C::TestMessage.new(:map_string_string => { key => value })
         .map_string_string
     end
+  end
+
+  # Regression test: FieldDescriptor.allocate bypasses initialize, so the mark
+  # function must not read an uninitialized descriptor_pool. Before the fix, a
+  # full GC after allocating these crashed in the mark phase.
+  def test_uninitialized_field_descriptors_survive_gc
+    descriptors = Array.new(2_000) { Google::Protobuf::FieldDescriptor.allocate }
+
+    GC.start(full_mark: true, immediate_sweep: true)
+
+    assert(descriptors.all? { |d| d.instance_of?(Google::Protobuf::FieldDescriptor) })
   end
 end

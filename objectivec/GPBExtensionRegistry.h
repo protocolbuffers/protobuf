@@ -65,6 +65,28 @@ __attribute__((objc_subclassing_restricted))
  **/
 - (void)addExtensions:(GPBExtensionRegistry *)registry;
 
+/**
+ * Returns the process-wide registry of the extensions that are linked into the
+ * process and were generated with the experimental
+ * `experimental_global_extension_registry` generator option (C function
+ * extensions only).
+ *
+ * The returned registry is shared by the whole process and is immutable: it can
+ * be used from any thread, and calling `-addExtension:` or `-addExtensions:` on
+ * it asserts in debug builds and does nothing otherwise. To combine it with
+ * other extensions, `-copy` it, or add it to another registry with
+ * `-addExtensions:`; either is O(1), and the resulting registry also finds every
+ * extension the global registry finds.
+ *
+ * Extensions in an image that is loaded with dlopen() after data was parsed
+ * are not applied to that already parsed data (the fields stay unknown fields).
+ * If the same extension is linked into more than one image (a misconfigured
+ * build graph, which also duplicates the generated message classes), lookups
+ * return the descriptor of the image that was loaded first. The descriptors of
+ * the different images are distinct instances that are not interchangeable.
+ **/
++ (GPBExtensionRegistry *)globalExtensionRegistry;
+
 @end
 
 NS_ASSUME_NONNULL_END

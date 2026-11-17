@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 package(default_applicable_licenses = ["//:license"])
@@ -48,6 +55,7 @@ bzl_library(
     ],
     visibility = ["//bazel:__subpackages__"],
     deps = [
+        ":proto_compile_bzl",
         ":toolchain_helpers_bzl",
         "//bazel/common:proto_common_bzl",
         "//bazel/common:proto_info_bzl",
@@ -71,6 +79,17 @@ bzl_library(
         "//bazel/common:proto_common_bzl",
         "//bazel/common:proto_info_bzl",
         "@rules_java//java/common",
+    ],
+)
+
+bzl_library(
+    name = "proto_compile_bzl",
+    srcs = [
+        "proto_compile.bzl",
+    ],
+    visibility = ["//bazel:__subpackages__"],
+    deps = [
+        ":toolchain_helpers_bzl",
     ],
 )
 
@@ -159,7 +178,10 @@ bzl_library(
     srcs = [
         "toolchain_helpers.bzl",
     ],
-    visibility = ["//bazel:__subpackages__"],
+    visibility = [
+        "//bazel:__subpackages__",
+        "//editions:__subpackages__",
+    ],
     deps = [
         ":native_bzl",
         "//bazel/common:proto_lang_toolchain_info_bzl",

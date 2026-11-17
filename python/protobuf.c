@@ -12,7 +12,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "google/protobuf/breaking_changes.h"
 #include "python/descriptor.h"
 #include "python/descriptor_containers.h"
 #include "python/descriptor_pool.h"
@@ -20,6 +19,7 @@
 #include "python/free_threading/weak_map.h"
 #include "python/map.h"
 #include "python/message.h"
+#include "python/python_api.h"
 #include "python/repeated.h"
 #include "python/unknown_fields.h"
 #include "upb/mem/alloc.h"
@@ -106,7 +106,7 @@ static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
 // -----------------------------------------------------------------------------
 
 PyUpb_ModuleState* PyUpb_ModuleState_MaybeGet(void) {
-#if PY_VERSION_HEX >= 0x030D0000  // >= 3.13
+#if PYUPB_MIN_PY_VERSION_HEX >= 0x030D0000  // >= 3.13
   /* Calling `PyState_FindModule` during interpreter shutdown causes a crash. */
   if (Py_IsFinalizing()) {
     return NULL;
@@ -159,7 +159,6 @@ typedef struct {
   // clang-format on
   PyObject* pool;
   PyUpb_WeakMap* obj_cache;
-  bool frozen;
 } PyUpb_Arena;
 
 #ifdef __GLIBC__
@@ -227,7 +226,6 @@ PyObject* PyUpb_Arena_New(PyObject* pool) {
   }
   arena->pool = pool;
   Py_INCREF(pool);
-  arena->frozen = false;
   return &arena->ob_base;
 }
 
@@ -252,14 +250,6 @@ static void PyUpb_Arena_Dealloc(PyObject* self) {
 
 upb_Arena* PyUpb_Arena_Get(PyObject* arena) {
   return ((PyUpb_Arena*)arena)->arena;
-}
-
-bool PyUpb_Arena_IsFrozen(PyObject* arena) {
-  return ((PyUpb_Arena*)arena)->frozen;
-}
-
-void PyUpb_Arena_SetFrozen(PyObject* arena, bool frozen) {
-  ((PyUpb_Arena*)arena)->frozen = frozen;
 }
 
 bool PyUpb_Arena_CacheAdd(PyObject* _arena, const void* key,
@@ -433,22 +423,10 @@ PyObject* PyUpb_SetFrozenError(void) {
   return PyUpb_SetFrozenErrorWithMsg("Message is immutable.");
 }
 
-int PyUpb_WarnFrozen(void) {
-  return PyErr_WarnEx(
-      PyExc_FutureWarning,
-      "Mutating messages or containers returned by GetOptions() is deprecated"
-      " and will raise an exception in a future release.",
-      3);
-}
-
 bool PyUpb_CheckFrozen(bool is_frozen, const char* error_msg) {
   if (is_frozen) {
-#if PROTOBUF_PY_FUTURE_FREEZE_OPTIONS
     PyUpb_SetFrozenErrorWithMsg(error_msg);
     return false;
-#else
-    return PyUpb_WarnFrozen() >= 0;
-#endif
   }
   return true;
 }

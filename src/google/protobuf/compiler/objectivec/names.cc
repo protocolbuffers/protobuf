@@ -637,9 +637,8 @@ std::string ProtoPackageToCamelCase(absl::string_view package) {
 }
 
 void MaybeUnQuote(absl::string_view* input) {
-  if ((input->length() >= 2) &&
-      ((*input->data() == '\'' || *input->data() == '"')) &&
-      ((*input)[input->length() - 1] == *input->data())) {
+  if ((input->length() >= 2) && (((*input)[0] == '\'' || (*input)[0] == '"')) &&
+      ((*input)[input->length() - 1] == (*input)[0])) {
     input->remove_prefix(1);
     input->remove_suffix(1);
   }

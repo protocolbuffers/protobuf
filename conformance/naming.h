@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 #ifndef GOOGLE_PROTOBUF_CONFORMANCE_NAMING_H__
 #define GOOGLE_PROTOBUF_CONFORMANCE_NAMING_H__
 
@@ -28,6 +35,8 @@ inline std::string GetEditionIdentifier(const Descriptor& message) {
       return "Proto2";
     case Edition::EDITION_UNSTABLE:
       return "EditionUnstable";
+    case Edition::EDITION_2026:
+      return "Edition2026";
     default: {
       std::string id = "Editions";
       if (message.name() == "TestAllTypesProto2") {

@@ -26,8 +26,8 @@ RELEASE_PREP=$(rlocation _main/.github/workflows/release_prep.sh)
 TEST_DIR=$(mktemp -d)
 trap 'rm -rf "$TEST_DIR"' EXIT
 
-TAG="v99.0"
-PREFIX="protobuf-99.0"
+TAG="v0.0"
+PREFIX="protobuf-0.0"
 
 ##############################
 # Fixture: a git repo with a tag and the placeholder integrity file
@@ -89,11 +89,20 @@ done
 
 if [[ -n "$outfile" ]]; then
   cat <<'BZL' > "$outfile"
-RELEASE_VERSION="v99.0"
+RELEASE_VERSION="v0.0"
 RELEASED_BINARY_INTEGRITY = {
-    "protoc-99.0-linux-x86_64.zip": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "protoc-99.0-osx-aarch_64.zip": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-    "protoc-99.0-win64.zip": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "protoc-0.0-linux-x86_64.zip": {
+        "url": "https://github.com/protocolbuffers/protobuf/releases/download/v0.0/protoc-0.0-linux-x86_64.zip",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    },
+    "protoc-0.0-osx-aarch_64.zip": {
+        "url": "https://github.com/protocolbuffers/protobuf/releases/download/v0.0/protoc-0.0-osx-aarch_64.zip",
+        "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    },
+    "protoc-0.0-win64.zip": {
+        "url": "https://github.com/protocolbuffers/protobuf/releases/download/v0.0/protoc-0.0-win64.zip",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    },
 }
 BZL
 else
@@ -101,20 +110,20 @@ else
 {
   "assets": [
     {
-      "name": "protoc-99.0-linux-x86_64.zip",
+      "name": "protoc-0.0-linux-x86_64.zip",
       "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
     },
     {
-      "name": "protoc-99.0-osx-aarch_64.zip",
+      "name": "protoc-0.0-osx-aarch_64.zip",
       "digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
     },
     {
-      "name": "protoc-99.0-win64.zip",
+      "name": "protoc-0.0-win64.zip",
       "digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
     },
     {
       "name": "tool_integrity.bzl",
-      "browser_download_url": "https://github.com/protocolbuffers/protobuf/releases/download/v99.0/tool_integrity.bzl"
+      "browser_download_url": "https://github.com/protocolbuffers/protobuf/releases/download/v0.0/tool_integrity.bzl"
     }
   ]
 }
@@ -185,14 +194,17 @@ assert_contains "RELEASE_VERSION matches tag" "RELEASE_VERSION=\"$TAG\"" "$CONTE
 
 # 6. RELEASED_BINARY_INTEGRITY is populated from mock curl
 assert_contains "integrity map present" "RELEASED_BINARY_INTEGRITY =" "$CONTENT"
+assert_contains "linux url" \
+  '"url": "https://github.com/protocolbuffers/protobuf/releases/download/v0.0/protoc-0.0-linux-x86_64.zip"' \
+  "$CONTENT"
 assert_contains "linux hash" \
-  '"protoc-99.0-linux-x86_64.zip": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"' \
+  '"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"' \
   "$CONTENT"
 assert_contains "osx hash" \
-  '"protoc-99.0-osx-aarch_64.zip": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"' \
+  '"sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"' \
   "$CONTENT"
 assert_contains "win hash" \
-  '"protoc-99.0-win64.zip": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"' \
+  '"sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"' \
   "$CONTENT"
 
 # 7. Original placeholder content is NOT in the patched file

@@ -116,9 +116,17 @@ class MockCodeGenerator : public CodeGenerator {
     maximum_edition_ = maximum_edition;
   }
 
+  bool StripDefaultJsonName() const override {
+    return strip_default_json_name_;
+  }
+  void set_strip_default_json_name(bool strip_default_json_name) {
+    strip_default_json_name_ = strip_default_json_name;
+  }
+
  private:
   std::string name_;
   uint64_t suppressed_features_ = 0;
+  bool strip_default_json_name_ = false;
   mutable Edition minimum_edition_ = ProtocMinimumEdition();
   mutable Edition maximum_edition_ = ProtocMaximumEdition();
   std::vector<const FieldDescriptor*> feature_extensions_ = {

@@ -15,6 +15,30 @@
 #include "upb/port/def.inc"
 
 extern const UPB_PRIVATE(upb_GeneratedExtensionListEntry)* UPB_PRIVATE(upb_generated_extension_list);
+/* pb.enumvalue.JsonEnumValueOptions: in-memory layout.
+ *
+ * 64-bit: 32 bytes (7 bytes padding)
+ * +--------+------+-------------------+--------+----------------+---------------------------+
+ * | Offset | Size | Field             | Type   | Storage        | Presence                  |
+ * +--------+------+-------------------+--------+----------------+---------------------------+
+ * |      0 |    8 | (message header)  |        | upb_Message    |                           |
+ * |      8 |    1 | (hasbits: 1 used) |        | uint8_t[]      |                           |
+ * |      9 |    7 | (padding)         |        |                |                           |
+ * |     16 |   16 | string = 1        | string | upb_StringView | hasbit 64 (byte 8, bit 0) |
+ * +--------+------+-------------------+--------+----------------+---------------------------+
+ *
+ * 32-bit: 24 bytes (7 bytes padding)
+ * +--------+------+-------------------+--------+----------------+---------------------------+
+ * | Offset | Size | Field             | Type   | Storage        | Presence                  |
+ * +--------+------+-------------------+--------+----------------+---------------------------+
+ * |      0 |    8 | (message header)  |        | upb_Message    |                           |
+ * |      8 |    1 | (hasbits: 1 used) |        | uint8_t[]      |                           |
+ * |      9 |    3 | (padding)         |        |                |                           |
+ * |     12 |    8 | string = 1        | string | upb_StringView | hasbit 64 (byte 8, bit 0) |
+ * |     20 |    4 | (padding)         |        |                |                           |
+ * +--------+------+-------------------+--------+----------------+---------------------------+
+ */
+
 typedef struct {
   upb_MiniTableField fields[1];
 } pb__enumvalue__JsonEnumValueOptions_msg_init_Fields;
@@ -35,21 +59,24 @@ const upb_MiniTable pb__enumvalue__JsonEnumValueOptions_msg_init = {
   })
 };
 
-static const upb_MiniTableExtension pb_enumvalue_json_ext_obj = {
-  {998, 0, 0, UPB_SIZE(3, 4), 11, (int)kUpb_FieldMode_Scalar | (int)kUpb_LabelFlags_IsExtension | ((int)UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
-  {.UPB_PRIVATE(submsg) = &pb__enumvalue__JsonEnumValueOptions_msg_init},
+UPB_STATIC_ASSERT(offsetof(upb_MiniTableExtensionWithSub, UPB_PRIVATE(sub)) == UPB_SIZE(16, 24),
+                  "extension sub offset mismatch");
+static const upb_MiniTableExtensionWithSub pb_enumvalue_json_ext_obj = {
+  {
+  {998, 0, 0, UPB_SIZE(4, 6), 11, (int)kUpb_FieldMode_Scalar | (int)kUpb_LabelFlags_IsExtension | ((int)UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
   &google__protobuf__EnumValueOptions_msg_init,
-
+  },
+  {.UPB_PRIVATE(submsg) = &pb__enumvalue__JsonEnumValueOptions_msg_init},
 };
 UPB_LINKARR_APPEND(upb_AllExts)
-const upb_MiniTableExtension* pb_enumvalue_json_ext = &pb_enumvalue_json_ext_obj;
+const upb_MiniTableExtension* pb_enumvalue_json_ext = (const upb_MiniTableExtension*)&pb_enumvalue_json_ext_obj;
   static const upb_MiniTable *messages_layout_google_protobuf_json_enumvalue_options_proto_upb_file_layout[1] = {
   &pb__enumvalue__JsonEnumValueOptions_msg_init,
 };
 
 
 static const upb_MiniTableExtension *extensions_layout_google_protobuf_json_enumvalue_options_proto_upb_file_layout[1] = {
-  &pb_enumvalue_json_ext_obj,
+  (const upb_MiniTableExtension*)&pb_enumvalue_json_ext_obj,
 };
 
 UPB_LINKARR_DECLARE(upb_AllExts, const upb_MiniTableExtension*);

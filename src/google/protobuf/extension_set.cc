@@ -24,7 +24,9 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
+#include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/functional/function_ref.h"
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -40,6 +42,7 @@
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
 
 
@@ -49,6 +52,24 @@
 namespace google {
 namespace protobuf {
 namespace internal {
+
+struct ExtensionSet::LargeRep : public ExtensionSet::LargeRepBase {
+  using LargeMap = absl::btree_map<int, Extension>;
+  LargeMap large;
+};
+
+ExtensionSet::LargeRep* ExtensionSet::large_rep() {
+  ABSL_DCHECK(is_large());
+  return static_cast<LargeRep*>(map_.large);
+}
+
+const ExtensionSet::LargeRep* ExtensionSet::large_rep() const {
+  ABSL_DCHECK(is_large());
+  return static_cast<const LargeRep*>(map_.large);
+}
+
+size_t ExtensionSet::LargeRepSize() { return sizeof(LargeRep); }
+
 namespace {
 
 inline WireFormatLite::FieldType real_type(FieldType type) {
@@ -186,7 +207,7 @@ ExtensionSet::~ExtensionSet() {
 
   ForEach([](int /* number */, Extension& ext) { ext.Free(); }, PrefetchNta{});
   if (ABSL_PREDICT_FALSE(is_large())) {
-    delete map_.large;
+    delete large_rep();
   } else {
     DeleteFlatMap(map_.flat, flat_capacity());
   }
@@ -224,8 +245,16 @@ void ExtensionSet::DeleteFlatMap(const ExtensionSet::FlatItem* flat,
 
 bool ExtensionSet::IsEmpty() const {
   if (IsCompletelyEmpty()) return true;
-  return !AnyOfNoPrefetch(
-      [](const int number, const Extension& ext) { return ext.IsSet(); });
+  if (ABSL_PREDICT_FALSE(is_large())) {
+    for (const auto& kv : large_rep()->large) {
+      if (kv.second.IsSet()) return false;
+    }
+    return true;
+  }
+  for (const FlatItem *it = flat_begin(), *end = flat_end(); it != end; ++it) {
+    if (it->second.IsSet()) return false;
+  }
+  return true;
 }
 
 bool ExtensionSet::Has(int number) const {
@@ -300,10 +329,12 @@ const void* ExtensionSet::GetRawRepeatedField(int number,
   return extension->raw_ptr();
 }
 
-void* ExtensionSet::MutableRawRepeatedField(Arena* arena, int number,
-                                            FieldType field_type, bool packed,
+void* ExtensionSet::MutableRawRepeatedField(const MessageLite& parent,
+                                            int number, FieldType field_type,
+                                            bool packed,
                                             const FieldDescriptor* desc) {
   Extension* extension;
+  Arena* arena = parent.GetArena();
 
   // We instantiate an empty Repeated{,Ptr}Field if one doesn't exist for this
   // extension.
@@ -398,10 +429,11 @@ uint8_t* ExtensionSet::InternalSerializeMessage(
 // -------------------------------------------------------------------
 // Strings
 
-std::string* ExtensionSet::MutableString(Arena* arena, int number,
+std::string* ExtensionSet::MutableString(const MessageLite& parent, int number,
                                          FieldType type,
                                          const FieldDescriptor* descriptor) {
   Extension* extension;
+  Arena* arena = parent.GetArena();
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
     ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_STRING);
@@ -422,9 +454,11 @@ std::string* ExtensionSet::MutableRepeatedString(int number, int index) {
   return extension->ptr.repeated_string_value->Mutable(index);
 }
 
-std::string* ExtensionSet::AddString(Arena* arena, int number, FieldType type,
+std::string* ExtensionSet::AddString(const MessageLite& parent, int number,
+                                     FieldType type,
                                      const FieldDescriptor* descriptor) {
   Extension* extension;
+  Arena* arena = parent.GetArena();
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
     ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_STRING);
@@ -444,7 +478,7 @@ std::string* ExtensionSet::AddString(Arena* arena, int number, FieldType type,
 // Messages
 
 const MessageLite& ExtensionSet::GetMessageByClassData(
-    Arena* arena, int number, const ClassData* class_data) const {
+    const MessageLite& parent, int number, const ClassData* class_data) const {
   const Extension* extension = FindOrNull(number);
   if (extension == nullptr) {
     // Not present.  Return the default value.
@@ -462,9 +496,10 @@ const MessageLite& ExtensionSet::GetMessageByClassData(
 //                                             MessageFactory* factory) const
 
 MessageLite* ExtensionSet::MutableMessageByClassData(
-    Arena* arena, int number, FieldType type, const ClassData* class_data,
-    const FieldDescriptor* descriptor) {
+    const MessageLite& parent, int number, FieldType type,
+    const ClassData* class_data, const FieldDescriptor* descriptor) {
   Extension* extension;
+  Arena* arena = parent.GetArena();
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
     ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_MESSAGE);
@@ -488,13 +523,15 @@ MessageLite* ExtensionSet::MutableMessageByClassData(
 //                                           const Descriptor* message_type,
 //                                           MessageFactory* factory)
 
-void ExtensionSet::SetAllocatedMessage(Arena* arena, int number, FieldType type,
+void ExtensionSet::SetAllocatedMessage(const MessageLite& parent, int number,
+                                       FieldType type,
                                        const FieldDescriptor* descriptor,
                                        MessageLite* message) {
   if (message == nullptr) {
     ClearExtension(number);
     return;
   }
+  Arena* const arena = parent.GetArena();
   Arena* const message_arena = message->GetArena();
   ABSL_DCHECK(message_arena == nullptr || message_arena == arena);
 
@@ -537,13 +574,14 @@ void ExtensionSet::SetAllocatedMessage(Arena* arena, int number, FieldType type,
 }
 
 void ExtensionSet::UnsafeArenaSetAllocatedMessage(
-    Arena* arena, int number, FieldType type, const FieldDescriptor* descriptor,
-    MessageLite* message) {
+    const MessageLite& parent, int number, FieldType type,
+    const FieldDescriptor* descriptor, MessageLite* message) {
   if (message == nullptr) {
     ClearExtension(number);
     return;
   }
   Extension* extension;
+  Arena* const arena = parent.GetArena();
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
     ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_MESSAGE);
@@ -565,34 +603,35 @@ void ExtensionSet::UnsafeArenaSetAllocatedMessage(
   extension->is_cleared = false;
 }
 
-MessageLite* ExtensionSet::ReleaseMessage(Arena* arena, int number,
+MessageLite* ExtensionSet::ReleaseMessage(const MessageLite& parent, int number,
                                           const ClassData* class_data) {
   Extension* extension = FindOrNull(number);
   if (extension == nullptr) {
     // Not present.  Return nullptr.
     return nullptr;
-  } else {
-    ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
-    MessageLite* ret = nullptr;
-    if (extension->is_lazy) {
-      Unreachable();
-    } else {
-      if (arena == nullptr) {
-        ret = extension->ptr.message_value;
-      } else {
-        // ReleaseMessage() always returns a heap-allocated message, and we are
-        // on an arena, so we need to make a copy of this message to return.
-        ret = extension->ptr.message_value->New();
-        ret->CheckTypeAndMergeFrom(*extension->ptr.message_value);
-      }
-    }
-    Erase(number);
-    return ret;
   }
+
+  ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
+  MessageLite* ret = nullptr;
+  Arena* arena = parent.GetArena();
+  if (extension->is_lazy) {
+    Unreachable();
+  } else {
+    if (arena == nullptr) {
+      ret = extension->ptr.message_value;
+    } else {
+      // ReleaseMessage() always returns a heap-allocated message, and we are
+      // on an arena, so we need to make a copy of this message to return.
+      ret = extension->ptr.message_value->New();
+      ret->CheckTypeAndMergeFrom(*extension->ptr.message_value);
+    }
+  }
+  Erase(number);
+  return ret;
 }
 
 MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
-    Arena* arena, int number, const ClassData* class_data) {
+    const MessageLite& parent, int number, const ClassData* class_data) {
   Extension* extension = FindOrNull(number);
   if (extension == nullptr) {
     // Not present.  Return nullptr.
@@ -611,7 +650,7 @@ MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
 }
 
 // Defined in extension_set_heavy.cc.
-// MessageLite* ExtensionSet::ReleaseMessage(Arena* arena,
+// MessageLite* ExtensionSet::ReleaseMessage(const MessageLite& parent,
 //                                           const FieldDescriptor* descriptor,
 //                                           MessageFactory* factory);
 
@@ -630,10 +669,12 @@ MessageLite* ExtensionSet::MutableRepeatedMessage(int number, int index) {
   return extension->ptr.repeated_message_value->Mutable(index);
 }
 
-MessageLite* ExtensionSet::AddMessage(Arena* arena, int number, FieldType type,
+MessageLite* ExtensionSet::AddMessage(const MessageLite& parent, int number,
+                                      FieldType type,
                                       const ClassData* class_data,
                                       const FieldDescriptor* descriptor) {
   Extension* extension;
+  Arena* arena = parent.GetArena();
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
     ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_MESSAGE);
@@ -647,7 +688,8 @@ MessageLite* ExtensionSet::AddMessage(Arena* arena, int number, FieldType type,
 
   return reinterpret_cast<internal::RepeatedPtrFieldBase*>(
              extension->ptr.repeated_message_value)
-      ->AddFromClassData<GenericTypeHandler<MessageLite>>(arena, class_data);
+      ->AddFromClassData<GenericTypeHandler<MessageLite>>(GetSerialArena(arena),
+                                                          class_data);
 }
 
 // Defined in extension_set_heavy.cc.
@@ -857,13 +899,12 @@ void ExtensionSet::InternalMergeFromSlow(Arena* arena,
                                       other.flat_begin(), other.flat_end()));
     } else {
       GrowCapacity(arena, SizeOfUnion(flat_begin(), flat_end(),
-                                      other.map_.large->large.begin(),
-                                      other.map_.large->large.end()));
+                                      other.large_rep()->large.begin(),
+                                      other.large_rep()->large.end()));
     }
   }
   other.ForEach(
-      [extendee, this, arena, &other, other_arena](int number,
-                                                   const Extension& ext) {
+      [extendee, this, arena, other_arena](int number, const Extension& ext) {
         this->InternalExtensionMergeFrom(arena, extendee, number, ext,
                                          other_arena);
       },
@@ -1101,29 +1142,29 @@ void ExtensionSet::UnsafeShallowSwapExtension(Arena* arena, ExtensionSet* other,
   }
 }
 
-bool ExtensionSet::IsInitialized(Arena* arena,
+bool ExtensionSet::IsInitialized(const MessageLite& parent,
                                  const MessageLite* extendee) const {
   // Extensions are never required.  However, we need to check that all
   // embedded messages are initialized.
   if (ABSL_PREDICT_FALSE(is_large())) {
-    for (const auto& kv : map_.large->large) {
-      if (!kv.second.IsInitialized(this, extendee, kv.first, arena)) {
+    for (const auto& kv : large_rep()->large) {
+      if (!kv.second.IsInitialized(this, extendee, kv.first, parent)) {
         return false;
       }
     }
     return true;
   }
   for (const FlatItem* it = flat_begin(); it != flat_end(); ++it) {
-    if (!it->second.IsInitialized(this, extendee, it->first, arena)) {
+    if (!it->second.IsInitialized(this, extendee, it->first, parent)) {
       return false;
     }
   }
   return true;
 }
 
-const char* ExtensionSet::ParseField(uint64_t tag, const char* ptr,
+const char* ExtensionSet::ParseField(MessageLite& parent, uint64_t tag,
+                                     const char* ptr,
                                      const MessageLite* extendee,
-                                     internal::InternalMetadata* metadata,
                                      internal::ParseContext* ctx) {
   GeneratedExtensionFinder finder(extendee);
   int number = tag >> 3;
@@ -1132,17 +1173,19 @@ const char* ExtensionSet::ParseField(uint64_t tag, const char* ptr,
   if (!FindExtensionInfoFromFieldNumber(tag & 7, number, &finder, &extension,
                                         &was_packed_on_wire)) {
     return UnknownFieldParse(
-        tag, metadata->mutable_unknown_fields<std::string>(), ptr, ctx);
+        tag, parent._internal_metadata_.mutable_unknown_fields<std::string>(),
+        ptr, ctx);
   }
   return ParseFieldWithExtensionInfo<std::string>(
-      number, was_packed_on_wire, extension, metadata, ptr, ctx);
+      parent, number, was_packed_on_wire, extension, ptr, ctx);
 }
 
-const char* ExtensionSet::ParseMessageSetItem(
-    const char* ptr, const MessageLite* extendee,
-    internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
-  return ParseMessageSetItemTmpl<MessageLite, std::string>(ptr, extendee,
-                                                           metadata, ctx);
+const char* ExtensionSet::ParseMessageSetItem(MessageLite& parent,
+                                              const char* ptr,
+                                              const MessageLite* extendee,
+                                              internal::ParseContext* ctx) {
+  return ParseMessageSetItemTmpl<MessageLite, std::string>(parent, ptr,
+                                                           extendee, ctx);
 }
 
 bool ExtensionSet::FieldTypeIsPointer(FieldType type) {
@@ -1185,8 +1228,8 @@ uint8_t* ExtensionSet::_InternalSerializeImplLarge(
     const MessageLite* extendee, int start_field_number, int end_field_number,
     uint8_t* target, io::EpsCopyOutputStream* stream) const {
   assert(is_large());
-  const auto& end = map_.large->large.end();
-  for (auto it = map_.large->large.lower_bound(start_field_number);
+  const auto& end = large_rep()->large.end();
+  for (auto it = large_rep()->large.lower_bound(start_field_number);
        it != end && it->first < end_field_number; ++it) {
     target = it->second.InternalSerializeFieldWithCachedSizesToArray(
         extendee, this, it->first, target, stream);
@@ -1231,10 +1274,11 @@ bool ExtensionSet::MaybeNewExtension(Arena* arena, int number,
 }
 
 ExtensionSet::Extension& ExtensionSet::FindOrCreate(
-    Arena* arena, int number, FieldType type, bool repeated, bool packed,
-    const FieldDescriptor* descriptor,
+    const MessageLite& parent, int number, FieldType type, bool repeated,
+    bool packed, const FieldDescriptor* descriptor,
     Extension& (*pointer_creator)(Extension& ext, Arena* arena)) {
   Extension* extension;
+  Arena* arena = parent.GetArena();
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
     extension->is_repeated = repeated;
@@ -1500,7 +1544,8 @@ void ExtensionSet::Extension::Free() {
 
 bool ExtensionSet::Extension::IsInitialized(const ExtensionSet* ext_set,
                                             const MessageLite* extendee,
-                                            int number, Arena* arena) const {
+                                            int number,
+                                            const MessageLite& parent) const {
   if (cpp_type(type) != WireFormatLite::CPPTYPE_MESSAGE) return true;
 
   if (is_repeated) {
@@ -1519,7 +1564,6 @@ bool ExtensionSet::Extension::IsInitialized(const ExtensionSet* ext_set,
   return ptr.message_value->IsInitialized();
 }
 
-
 const ExtensionSet::Extension* ExtensionSet::FindOrNull(int key) const {
   if (IsCompletelyEmpty()) {
     return nullptr;
@@ -1537,8 +1581,8 @@ const ExtensionSet::Extension* ExtensionSet::FindOrNull(int key) const {
 const ExtensionSet::Extension* ExtensionSet::FindOrNullInLargeMap(
     int key) const {
   assert(is_large());
-  LargeMap::const_iterator it = map_.large->large.find(key);
-  if (it != map_.large->large.end()) {
+  LargeRep::LargeMap::const_iterator it = large_rep()->large.find(key);
+  if (it != large_rep()->large.end()) {
     return &it->second;
   }
   return nullptr;
@@ -1558,9 +1602,33 @@ ExtensionSet::Extension* ExtensionSet::FindOrNullInLargeMap(int key) {
 ABSL_ATTRIBUTE_NOINLINE
 std::pair<ExtensionSet::Extension*, bool>
 ExtensionSet::InternalInsertIntoLargeMap(int key) {
-  ABSL_DCHECK(is_large());
-  auto maybe = map_.large->large.insert({key, Extension()});
-  return {&maybe.first->second, maybe.second};
+  auto [it, inserted] = large_rep()->large.insert({key, Extension()});
+  large_rep()->size += inserted;
+  return {&it->second, inserted};
+}
+
+void ExtensionSet::ForEachLargeMap(
+    absl::FunctionRef<void(int, Extension&)> func,
+    absl::FunctionRef<void(const void*)> prefetch_func) {
+  ForEachPrefetchImpl(large_rep()->large.begin(), large_rep()->large.end(),
+                      func, prefetch_func);
+}
+
+void ExtensionSet::ForEachLargeMapConst(
+    absl::FunctionRef<void(int, const Extension&)> func,
+    absl::FunctionRef<void(const void*)> prefetch_func) const {
+  ForEachPrefetchImpl(large_rep()->large.begin(), large_rep()->large.end(),
+                      func, prefetch_func);
+}
+
+void ExtensionSet::ForEachNoPrefetchLargeMap(
+    absl::FunctionRef<void(int, Extension&)> func) {
+  ForEachNoPrefetch(large_rep()->large.begin(), large_rep()->large.end(), func);
+}
+
+void ExtensionSet::ForEachNoPrefetchLargeMapConst(
+    absl::FunctionRef<void(int, const Extension&)> func) const {
+  ForEachNoPrefetch(large_rep()->large.begin(), large_rep()->large.end(), func);
 }
 
 std::pair<ExtensionSet::Extension*, bool> ExtensionSet::Insert(Arena* arena,
@@ -1627,10 +1695,11 @@ void ExtensionSet::GrowCapacity(Arena* arena, size_t minimum_new_capacity) {
   AllocatedData new_map;
   if (new_flat_capacity > kMaximumFlatCapacity) {
     LargeRep* large_rep = Arena::Create<LargeRep>(arena);
-    LargeMap::iterator hint = large_rep->large.begin();
+    LargeRep::LargeMap::iterator hint = large_rep->large.begin();
     for (const FlatItem* it = begin; it != end; ++it) {
       hint = large_rep->large.insert(hint, {it->first, it->second});
     }
+    large_rep->size = current_size;
     new_map.large = large_rep;
   } else {
     new_map.flat = AllocateFlatMap(arena, new_flat_capacity);
@@ -1660,7 +1729,7 @@ void ExtensionSet::InternalReserveSmallCapacityFromEmpty(
 
 void ExtensionSet::Erase(int key) {
   if (ABSL_PREDICT_FALSE(is_large())) {
-    map_.large->large.erase(key);
+    large_rep()->size -= large_rep()->large.erase(key);
     return;
   }
   uint16_t current_cap = flat_capacity();
@@ -1922,6 +1991,20 @@ LazyEagerVerifyFnType FindExtensionLazyEagerVerifyFn(
   return nullptr;
 }
 
+
+ExtensionSet* PrivateAccess::GetExtensionSet(MessageLite& msg) {
+  auto* tc_table = msg.GetTcParseTable();
+  if (tc_table->extension_offset == 0) return nullptr;
+  return reinterpret_cast<ExtensionSet*>(reinterpret_cast<char*>(&msg) +
+                                         tc_table->extension_offset);
+}
+
+const ExtensionSet* PrivateAccess::GetExtensionSet(const MessageLite& msg) {
+  auto* tc_table = msg.GetTcParseTable();
+  if (tc_table->extension_offset == 0) return nullptr;
+  return reinterpret_cast<const ExtensionSet*>(
+      reinterpret_cast<const char*>(&msg) + tc_table->extension_offset);
+}
 
 }  // namespace internal
 }  // namespace protobuf

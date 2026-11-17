@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 #include "upb/wire/encode.h"
 
 #include <setjmp.h>
@@ -6,6 +13,7 @@
 #include <cstdint>
 
 #include <gtest/gtest.h>
+#include "upb/base/upcast.h"
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
 #include "upb/message/internal/accessors.h"
@@ -21,6 +29,8 @@
 #include "upb/wire/decode.h"
 #include "upb/wire/encode_test.upb.h"
 #include "upb/wire/encode_test.upb_minitable.h"
+#include "upb/wire/internal/back_alloc.h"
+#include "upb/wire/internal/constants.h"
 #include "upb/wire/internal/encoder.h"
 
 // Must be last.
@@ -37,6 +47,7 @@ static void DoEncodeFieldMaxDepthExceeded(jmp_buf err, upb_encstate& e,
     UPB_PRIVATE(_upb_Encode_Field)(&e, msg, field, &buf, &size, e.options);
     FAIL() << "Should have jumped";
   } else {
+    upb_BackAlloc_Abort(&e.alloc);
     EXPECT_EQ(e.status, kUpb_EncodeStatus_MaxDepthExceeded);
   }
 }
@@ -46,10 +57,11 @@ static void DoEncodeExtensionMaxDepthExceeded(jmp_buf err, upb_encstate& e,
                                               upb_MessageValue ext_val,
                                               char*& buf, size_t& size) {
   if (UPB_SETJMP(err) == 0) {
-    UPB_PRIVATE(_upb_Encode_Extension)(&e, ext, ext_val, false, &buf, &size,
-                                       e.options);
+    UPB_PRIVATE(_upb_Encode_Extension)(&e, upb_MiniTableExtension_ToField(ext),
+                                       ext_val, false, &buf, &size, e.options);
     FAIL() << "Should have jumped";
   } else {
+    upb_BackAlloc_Abort(&e.alloc);
     EXPECT_EQ(e.status, kUpb_EncodeStatus_MaxDepthExceeded);
   }
 }
@@ -117,8 +129,11 @@ TEST(EncodeTest, EncodeFieldMaxDepthExceeded) {
   jmp_buf err;
   UPB_PRIVATE(_upb_encstate_init)(&e, &err, arena);
 
+  // Two levels of nesting below `msg` exceed a depth limit of 1.
   upb_wire_test_TestRecursive* sub_msg = upb_wire_test_TestRecursive_new(arena);
   upb_wire_test_TestRecursive_set_recursive(msg, sub_msg);
+  upb_wire_test_TestRecursive_set_recursive(
+      sub_msg, upb_wire_test_TestRecursive_new(arena));
 
   const upb_MiniTable* mt = &upb_0wire_0test__TestRecursive_msg_init;
   const upb_MiniTableField* field = upb_MiniTable_FindFieldByNumber(mt, 1);
@@ -129,6 +144,67 @@ TEST(EncodeTest, EncodeFieldMaxDepthExceeded) {
 
   _upb_mapsorter_destroy(&e.sorter);
   upb_Arena_Free(arena);
+}
+
+// Returns a TestRecursive with `depth` levels of `recursive` nested below it.
+upb_wire_test_TestRecursive* MakeRecursiveChain(upb_Arena* arena, int depth) {
+  upb_wire_test_TestRecursive* top = upb_wire_test_TestRecursive_new(arena);
+  upb_wire_test_TestRecursive* msg = top;
+  for (int i = 0; i < depth; ++i) {
+    upb_wire_test_TestRecursive* child = upb_wire_test_TestRecursive_new(arena);
+    upb_wire_test_TestRecursive_set_recursive(msg, child);
+    msg = child;
+  }
+  return top;
+}
+
+// The encoder and decoder must agree on the depth limit, so that any message
+// the decoder accepts can be re-encoded with the same limit.
+TEST(EncodeTest, DepthLimitMatchesDecoder) {
+  const upb_MiniTable* mt = &upb_0wire_0test__TestRecursive_msg_init;
+  // 0 selects the default limit.
+  for (int limit : {0, 1, 2, 10}) {
+    int effective_limit =
+        limit == 0 ? kUpb_WireFormat_DefaultDepthLimit : limit;
+    for (int depth :
+         {effective_limit - 1, effective_limit, effective_limit + 1}) {
+      SCOPED_TRACE(testing::Message()
+                   << "limit=" << limit << " depth=" << depth);
+      upb_Arena* arena = upb_Arena_New();
+      upb_wire_test_TestRecursive* msg = MakeRecursiveChain(arena, depth);
+      bool within_limit = depth <= effective_limit;
+
+      char* buf;
+      size_t size;
+      EXPECT_EQ(
+          upb_Encode(UPB_UPCAST(msg), mt, upb_EncodeOptions_MaxDepth(limit),
+                     arena, &buf, &size),
+          within_limit ? kUpb_EncodeStatus_Ok
+                       : kUpb_EncodeStatus_MaxDepthExceeded);
+
+      // Serialize with a generous limit, then decode with `limit`.
+      ASSERT_EQ(upb_Encode(UPB_UPCAST(msg), mt,
+                           upb_EncodeOptions_MaxDepth(effective_limit + 10),
+                           arena, &buf, &size),
+                kUpb_EncodeStatus_Ok);
+      upb_Message* decoded = upb_Message_New(mt, arena);
+      ASSERT_NE(decoded, nullptr);
+      EXPECT_EQ(upb_Decode(buf, size, decoded, mt, nullptr,
+                           upb_DecodeOptions_MaxDepth(limit), arena),
+                within_limit ? kUpb_DecodeStatus_Ok
+                             : kUpb_DecodeStatus_MaxDepthExceeded);
+
+      // A message that decodes with `limit` re-encodes with the same limit.
+      if (within_limit) {
+        char* reencoded;
+        size_t reencoded_size;
+        EXPECT_EQ(upb_Encode(decoded, mt, upb_EncodeOptions_MaxDepth(limit),
+                             arena, &reencoded, &reencoded_size),
+                  kUpb_EncodeStatus_Ok);
+      }
+      upb_Arena_Free(arena);
+    }
+  }
 }
 
 TEST(EncodeTest, EncodeExtensionSuccess) {
@@ -146,7 +222,8 @@ TEST(EncodeTest, EncodeExtensionSuccess) {
   char* buf = e.alloc.limit;
   size_t size;
   upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Extension)(
-      &e, ext, ext_val, false, &buf, &size, e.options);
+      &e, upb_MiniTableExtension_ToField(ext), ext_val, false, &buf, &size,
+      e.options);
   EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
   EXPECT_GT(size, 0u);
 
@@ -183,7 +260,8 @@ TEST(EncodeTest, EncodeExtensionSuccessEmptyMessage) {
   char* buf = e.alloc.limit;
   size_t size;
   upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Extension)(
-      &e, ext, ext_val, false, &buf, &size, e.options);
+      &e, upb_MiniTableExtension_ToField(ext), ext_val, false, &buf, &size,
+      e.options);
   EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
   EXPECT_GT(size, 0u);
 
@@ -199,8 +277,12 @@ TEST(EncodeTest, EncodeExtensionMaxDepthExceeded) {
   UPB_PRIVATE(_upb_encstate_init)(&e, &err, arena);
 
   const upb_MiniTableExtension* ext = upb_wire_test_ext_recursive_ext;
+  // The extension value plus one level of nesting exceed a depth limit of 1.
+  upb_wire_test_TestRecursive* value = upb_wire_test_TestRecursive_new(arena);
+  upb_wire_test_TestRecursive_set_recursive(
+      value, upb_wire_test_TestRecursive_new(arena));
   upb_MessageValue ext_val;
-  ext_val.msg_val = (upb_Message*)upb_wire_test_TestRecursive_new(arena);
+  ext_val.msg_val = (upb_Message*)value;
 
   char* buf = e.alloc.limit;
   size_t size;
@@ -251,9 +333,9 @@ TEST(EncodeTest, SkipUnknownNonCanonicalExtensionSuccess) {
   upb_wire_test_TestExtensions* msg = upb_wire_test_TestExtensions_new(arena);
 
   // 1. Add a canonical extension (ext_i32, tag 100) to msg
-  upb_Extension* canonical_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+  upb_AuxField* canonical_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
       (upb_Message*)msg, upb_wire_test_ext_i32_ext, arena);
-  canonical_ext->data.int32_val = 1000;
+  upb_Extension_SetInt32(canonical_ext, 1000);
 
   // 2. Attach a non-canonical extension (ext_recursive, tag 101) to msg
   upb_wire_test_TestRecursive* sub_msg = upb_wire_test_TestRecursive_new(arena);
@@ -379,9 +461,9 @@ TEST(EncodeTest, SkipUnknownNonCanonicalExtensionDeterministicSuccess) {
   upb_wire_test_TestExtensions* msg = upb_wire_test_TestExtensions_new(arena);
 
   // 1. Add a canonical extension (ext_i32, tag 100) to msg
-  upb_Extension* canonical_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+  upb_AuxField* canonical_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
       (upb_Message*)msg, upb_wire_test_ext_i32_ext, arena);
-  canonical_ext->data.int32_val = 1000;
+  upb_Extension_SetInt32(canonical_ext, 1000);
 
   // 2. Attach a non-canonical extension (ext_recursive, tag 101) to msg
   upb_wire_test_TestRecursive* sub_msg = upb_wire_test_TestRecursive_new(arena);
@@ -458,9 +540,9 @@ TEST(EncodeTest, MixedExtensionAndUnknownOrderSuccess) {
 
   // 4. Add Canonical Extension 1 (Tag 101, ext_recursive)
   upb_wire_test_TestRecursive* sub_msg = upb_wire_test_TestRecursive_new(arena);
-  upb_Extension* canonical_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+  upb_AuxField* canonical_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
       (upb_Message*)msg, upb_wire_test_ext_recursive_ext, arena);
-  canonical_ext->data.msg_val = (upb_Message*)sub_msg;
+  upb_Extension_SetMessage(canonical_ext, (upb_Message*)sub_msg);
 
   // Encode the message
   char* buf;

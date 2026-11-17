@@ -20,7 +20,6 @@ module Google
 
       # MapIterator
       attach_function :map_next,    :upb_MapIterator_Next,  [:Map, :pointer], :bool
-      attach_function :map_done,    :upb_MapIterator_Done,  [:Map, :size_t], :bool
       attach_function :map_key,     :upb_MapIterator_Key,   [:Map, :size_t], MessageValue.by_value
       attach_function :map_value,   :upb_MapIterator_Value, [:Map, :size_t], MessageValue.by_value
     end

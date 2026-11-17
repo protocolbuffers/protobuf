@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 """ProtoLangToolchainInfo"""
 
 ProtoLangToolchainInfo = provider(
@@ -19,5 +26,6 @@ ProtoLangToolchainInfo = provider(
         allowlist_different_package = """(Target) Allowlist to create lang_proto_library in a
           different package than proto_library""",
         toolchain_type = """(Label) Toolchain type that was used to obtain this info""",
+        host_path_separator = "(char/str) host_path_separator from ctx.configuration used in descriptor lists.",
     ),
 )

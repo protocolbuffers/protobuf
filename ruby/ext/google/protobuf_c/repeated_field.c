@@ -183,8 +183,9 @@ static int index_position(VALUE _index, RepeatedField* repeated_field) {
   return index;
 }
 
-static VALUE RepeatedField_subarray(RepeatedField* self, long beg, long len) {
-  long size = (long)upb_Array_Size(self->array);
+static VALUE RepeatedField_subarray(RepeatedField* self, rb_len_t beg,
+                                    rb_len_t len) {
+  size_t size = upb_Array_Size(self->array);
 
   // Match Ruby Array#[beg, len] semantics and avoid an out-of-bounds read
   // through upb_Array_Get (which only has a debug-only UPB_ASSERT for
@@ -195,7 +196,7 @@ static VALUE RepeatedField_subarray(RepeatedField* self, long beg, long len) {
   if (len > size - beg) len = size - beg;
 
   VALUE ary = rb_ary_new2(len);
-  for (long i = beg; i < beg + len; i++) {
+  for (size_t i = beg; i < beg + len; i++) {
     upb_MessageValue msgval = upb_Array_Get(self->array, i);
     VALUE elem = Convert_UpbToRuby(msgval, self->type_info, self->arena);
     rb_ary_push(ary, elem);
@@ -220,10 +221,10 @@ static VALUE RepeatedField_subarray(RepeatedField* self, long beg, long len) {
  */
 static VALUE RepeatedField_each(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-  int size = upb_Array_Size(self->array);
-  int i;
 
-  for (i = 0; i < size; i++) {
+  // The size is re-read every iteration: the block can clear or shrink the
+  // field, and a cached size would then index past the end of the upb array.
+  for (size_t i = 0; i < upb_Array_Size(self->array); i++) {
     upb_MessageValue msgval = upb_Array_Get(self->array, i);
     VALUE val = Convert_UpbToRuby(msgval, self->type_info, self->arena);
     rb_yield(val);
@@ -241,10 +242,10 @@ static VALUE RepeatedField_each(VALUE _self) {
  */
 static VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-  long size = upb_Array_Size(self->array);
+  size_t size = upb_Array_Size(self->array);
 
   VALUE arg = argv[0];
-  long beg, len;
+  rb_len_t beg, len;
 
   if (argc == 1) {
     if (FIXNUM_P(arg)) {
@@ -270,8 +271,8 @@ static VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self) {
   }
 
   /* assume 2 arguments */
-  beg = NUM2LONG(argv[0]);
-  len = NUM2LONG(argv[1]);
+  beg = NUM2LEN(argv[0]);
+  len = NUM2LEN(argv[1]);
   if (beg < 0) {
     beg += size;
   }
@@ -293,8 +294,6 @@ static VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self) {
  */
 static VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-  int size = upb_Array_Size(self->array);
-  upb_Array* array = RepeatedField_GetMutable(_self);
   upb_Arena* arena = Arena_get(self->arena);
   upb_MessageValue msgval = Convert_RubyToUpb(val, "", self->type_info, arena);
 
@@ -303,13 +302,19 @@ static VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val) {
     return Qnil;
   }
 
+  // The array and its size are read only after the conversions above, which
+  // can run Ruby code (index_position calls the index's to_int) that clears,
+  // shrinks or freezes the field.
+  upb_Array* array = RepeatedField_GetMutable(_self);
+  size_t size = upb_Array_Size(array);
+
   if (index >= size) {
     if (!upb_Array_Resize(array, index + 1, arena)) {
       Arena_raise_oom();
     }
     upb_MessageValue fill;
     memset(&fill, 0, sizeof(fill));
-    for (int i = size; i < index; i++) {
+    for (size_t i = size; i < index; i++) {
       // Fill default values.
       // TODO: should this happen at the upb level?
       upb_Array_Set(array, i, fill);
@@ -331,12 +336,17 @@ static VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val) {
 static VALUE RepeatedField_push_vararg(int argc, VALUE* argv, VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
   upb_Arena* arena = Arena_get(self->arena);
-  upb_Array* array = RepeatedField_GetMutable(_self);
   int i;
+
+  // Frozen check before any conversion, matching the previous behavior.
+  RepeatedField_GetMutable(_self);
 
   for (i = 0; i < argc; i++) {
     upb_MessageValue msgval =
         Convert_RubyToUpb(argv[i], "", self->type_info, arena);
+    // The conversion can run Ruby code that freezes the field; re-fetch (and
+    // re-check frozen) so the append never lands on a frozen array.
+    upb_Array* array = RepeatedField_GetMutable(_self);
     if (!upb_Array_Append(array, msgval, arena)) {
       Arena_raise_oom();
     }
@@ -356,9 +366,14 @@ static VALUE RepeatedField_push_vararg(int argc, VALUE* argv, VALUE _self) {
 static VALUE RepeatedField_push(VALUE _self, VALUE val) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
   upb_Arena* arena = Arena_get(self->arena);
-  upb_Array* array = RepeatedField_GetMutable(_self);
+
+  // Frozen check before the conversion, matching the previous behavior.
+  RepeatedField_GetMutable(_self);
 
   upb_MessageValue msgval = Convert_RubyToUpb(val, "", self->type_info, arena);
+  // The conversion can run Ruby code that freezes the field; re-fetch (and
+  // re-check frozen) so the append never lands on a frozen array.
+  upb_Array* array = RepeatedField_GetMutable(_self);
   if (!upb_Array_Append(array, msgval, arena)) {
     Arena_raise_oom();
   }
@@ -400,7 +415,7 @@ static VALUE RepeatedField_pop_one(VALUE _self) {
 static VALUE RepeatedField_replace(VALUE _self, VALUE list) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
   upb_Array* array = RepeatedField_GetMutable(_self);
-  int i;
+  rb_len_t i;
 
   Check_Type(list, T_ARRAY);
   if (!upb_Array_Resize(array, 0, Arena_get(self->arena))) {
@@ -456,8 +471,8 @@ static VALUE RepeatedField_dup(VALUE _self) {
   RepeatedField* new_rptfield_self = ruby_to_RepeatedField(new_rptfield);
   upb_Array* new_array = RepeatedField_GetMutable(new_rptfield);
   upb_Arena* arena = Arena_get(new_rptfield_self->arena);
-  int size = upb_Array_Size(self->array);
-  int i;
+  size_t size = upb_Array_Size(self->array);
+  size_t i;
 
   Arena_fuse(self->arena, arena);
 
@@ -481,9 +496,9 @@ static VALUE RepeatedField_dup(VALUE _self) {
  */
 VALUE RepeatedField_to_ary(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-  int size = upb_Array_Size(self->array);
+  size_t size = upb_Array_Size(self->array);
   VALUE ary = rb_ary_new2(size);
-  int i;
+  size_t i;
 
   for (i = 0; i < size; i++) {
     upb_MessageValue msgval = upb_Array_Get(self->array, i);
@@ -625,7 +640,7 @@ VALUE RepeatedField_plus(VALUE _self, VALUE list) {
   VALUE dupped_ = RepeatedField_dup(_self);
 
   if (TYPE(list) == T_ARRAY) {
-    int i;
+    rb_len_t i;
     for (i = 0; i < RARRAY_LEN(list); i++) {
       VALUE elem = rb_ary_entry(list, i);
       RepeatedField_push(dupped_, elem);
@@ -638,8 +653,8 @@ VALUE RepeatedField_plus(VALUE _self, VALUE list) {
     upb_Array* dupped_array = RepeatedField_GetMutable(dupped_);
     upb_Arena* arena = Arena_get(dupped->arena);
     Arena_fuse(list_rptfield->arena, arena);
-    int size = upb_Array_Size(list_rptfield->array);
-    int i;
+    size_t size = upb_Array_Size(list_rptfield->array);
+    size_t i;
 
     if (self->type_info.type != list_rptfield->type_info.type ||
         self->type_class != list_rptfield->type_class) {
@@ -669,7 +684,7 @@ VALUE RepeatedField_plus(VALUE _self, VALUE list) {
  * @return [Array]
  */
 VALUE RepeatedField_concat(VALUE _self, VALUE list) {
-  int i;
+  rb_len_t i;
 
   Check_Type(list, T_ARRAY);
   for (i = 0; i < RARRAY_LEN(list); i++) {
@@ -717,7 +732,7 @@ VALUE RepeatedField_init(int argc, VALUE* argv, VALUE _self) {
     if (!RB_TYPE_P(ary, T_ARRAY)) {
       rb_raise(rb_eArgError, "Expected array as initialize argument");
     }
-    for (int i = 0; i < RARRAY_LEN(ary); i++) {
+    for (size_t i = 0; i < RARRAY_LEN(ary); i++) {
       RepeatedField_push(_self, rb_ary_entry(ary, i));
     }
   }

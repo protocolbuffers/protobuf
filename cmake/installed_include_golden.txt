@@ -9,6 +9,7 @@ google/protobuf/arena_allocation_policy.h
 google/protobuf/arena_cleanup.h
 google/protobuf/arenastring.h
 google/protobuf/arenaz_sampler.h
+google/protobuf/btree_split.h
 google/protobuf/c_sharp_features.proto
 google/protobuf/class_data.h
 google/protobuf/compiler/code_generator.h
@@ -105,6 +106,7 @@ google/protobuf/map_entry.h
 google/protobuf/map_field.h
 google/protobuf/map_field_lite.h
 google/protobuf/map_type_handler.h
+google/protobuf/memory_align.h
 google/protobuf/message.h
 google/protobuf/message_lite.h
 google/protobuf/message_traits.h
@@ -120,6 +122,7 @@ google/protobuf/parse_context.h
 google/protobuf/port.h
 google/protobuf/port_def.inc
 google/protobuf/port_undef.inc
+google/protobuf/private_access.h
 google/protobuf/raw_ptr.h
 google/protobuf/reflection.h
 google/protobuf/reflection_mode.h

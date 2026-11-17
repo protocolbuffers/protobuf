@@ -16,7 +16,6 @@
 #include <string.h>
 
 #include "google/protobuf/descriptor.upb_minitable.h"
-#include "google/protobuf/breaking_changes.h"
 #include "python/convert.h"
 #include "python/descriptor_containers.h"
 #include "python/descriptor_pool.h"
@@ -29,6 +28,7 @@
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/message.h"
+#include "upb/port/atomic.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/message.h"
 #include "upb/util/def_to_proto.h"
@@ -54,6 +54,10 @@ typedef struct {
   PYUPB_LAZYPTR(PyObject) features;  // NULL if not present or not cached.
   PyObject* message_meta;            // We own a ref.
 } PyUpb_DescriptorBase;
+
+static PyObject* PyUpb_DescriptorBase_AsPyObj(PyUpb_DescriptorBase* base) {
+  return &base->ob_base;
+}
 
 PyObject* PyUpb_AnyDescriptor_GetPool(PyObject* desc) {
   PyUpb_DescriptorBase* base = (void*)desc;
@@ -131,12 +135,14 @@ static PyObject* PyUpb_DescriptorBase_CreateCachedOptions(void* _args) {
   PyUpb_GetCachedArgs* args = _args;
   PyObject* py_arena = NULL;
 
-  // Load descriptors protos if they are not loaded already. We have to do
-  // this lazily, otherwise, it would lead to circular imports.
-  PyObject* mod =
-      PyImport_ImportModuleLevel(PYUPB_DESCRIPTOR_MODULE, NULL, NULL, NULL, 0);
-  if (mod == NULL) return NULL;
-  Py_DECREF(mod);
+  // Load descriptor protos if they are not loaded already. This is kept here as
+  // a fallback. We cannot import descriptor_pb2 when _message is initialized,
+  // as that would lead to circular imports.
+  //
+  // Normally this just costs a sys.modules lookup, since DescriptorPool has
+  // already eagerly imported descriptor_pb2 for every file except
+  // descriptor.proto.
+  if (!PyUpb_ImportDescriptorModule()) return NULL;
 
   // Find the correct options message.
   PyObject* default_pool = PyUpb_DescriptorPool_GetDefaultPool();
@@ -191,11 +197,7 @@ static PyObject* PyUpb_DescriptorBase_CreateCachedOptions(void* _args) {
     upb_Message_ClearFieldByDef(opts2, field);
   }
 
-#if PROTOBUF_PY_FUTURE_FREEZE_OPTIONS
   upb_Message_Freeze(opts2, opts2_layout);
-#else
-  PyUpb_Arena_SetFrozen(py_arena, true);
-#endif
   PyObject* val = PyUpb_Message_Get(default_pool, opts2, m, py_arena);
   Py_DECREF(py_arena);
   return val;
@@ -284,7 +286,8 @@ static void PyUpb_DescriptorBase_Dealloc(PyUpb_DescriptorBase* base) {
   // methods) at any time. This also means we *must* stop GC from tracking
   // instances of them before we start destructing the object. In Python
   // 3.11, failing to do so would raise a runtime warning.
-  if (PyType_HasFeature(Py_TYPE(base), Py_TPFLAGS_HAVE_GC)) {
+  if (PyType_HasFeature(Py_TYPE(PyUpb_DescriptorBase_AsPyObj(base)),
+                        Py_TPFLAGS_HAVE_GC)) {
     PyObject_GC_UnTrack(base);
   }
   PyUpb_DescriptorPool_CacheEraseIfEqual(base->pool, base->def,
@@ -345,16 +348,15 @@ PyObject* PyUpb_Descriptor_GetClass(PyObject* pool, const upb_MessageDef* m) {
   // in the future, we could make PyUpb_Descriptor_Get() append the descriptor
   // to an internal list in DescriptorPool, let the pool keep descriptors alive.
   PyObject* py_descriptor = PyUpb_Descriptor_Get(pool, m);
-  if (py_descriptor == NULL) return NULL;
-  const char* name = upb_MessageDef_Name(m);
+  PyObject* name = PyUnicode_FromString(upb_MessageDef_Name(m));
   PyObject* dict = PyDict_New();
-  if (dict == NULL) goto err;
-  int status = PyDict_SetItemString(dict, "DESCRIPTOR", py_descriptor);
-  if (status < 0) goto err;
+  if (!py_descriptor || !name || !dict) goto err;
+  if (PyDict_SetItemString(dict, "DESCRIPTOR", py_descriptor) < 0) goto err;
   ret = PyUpb_MessageMeta_DoCreateClass(py_descriptor, name, dict);
 
 err:
   Py_XDECREF(py_descriptor);
+  Py_XDECREF(name);
   Py_XDECREF(dict);
   return ret;
 }
@@ -547,6 +549,14 @@ static PyObject* PyUpb_Descriptor_GetFieldsByCamelCaseName(PyObject* _self,
   return PyUpb_ByNameMap_New(&funcs, self->def, self->pool);
 }
 
+static const void* PyUpb_Descriptor_FindFieldByNumber(const void* m, int num) {
+  return upb_MessageDef_FindFieldByNumber(m, num);
+}
+
+static int PyUpb_Descriptor_FieldNumber(const void* f) {
+  return upb_FieldDef_Number(f);
+}
+
 static PyObject* PyUpb_Descriptor_GetFieldsByNumber(PyObject* _self,
                                                     void* closure) {
   static PyUpb_ByNumberMap_Funcs funcs = {
@@ -555,8 +565,8 @@ static PyObject* PyUpb_Descriptor_GetFieldsByNumber(PyObject* _self,
           (void*)&upb_MessageDef_Field,
           (void*)&PyUpb_FieldDescriptor_Get,
       },
-      (void*)&upb_MessageDef_FindFieldByNumber,
-      (void*)&upb_FieldDef_Number,
+      &PyUpb_Descriptor_FindFieldByNumber,
+      &PyUpb_Descriptor_FieldNumber,
   };
   PyUpb_DescriptorBase* self = (void*)_self;
   return PyUpb_ByNumberMap_New(&funcs, self->def, self->pool);
@@ -590,17 +600,8 @@ static PyObject* PyUpb_Descriptor_GetNestedTypesByName(PyObject* _self,
 
 static PyObject* PyUpb_Descriptor_GetContainingType(PyObject* _self,
                                                     void* closure) {
-  // upb does not natively store the lexical parent of a message type, but we
-  // can derive it with some string manipulation and a lookup.
   PyUpb_DescriptorBase* self = (void*)_self;
-  const upb_MessageDef* m = self->def;
-  const upb_FileDef* file = upb_MessageDef_File(m);
-  const upb_DefPool* symtab = upb_FileDef_Pool(file);
-  const char* full_name = upb_MessageDef_FullName(m);
-  const char* last_dot = strrchr(full_name, '.');
-  if (!last_dot) Py_RETURN_NONE;
-  const upb_MessageDef* parent = upb_DefPool_FindMessageByNameWithSize(
-      symtab, full_name, last_dot - full_name);
+  const upb_MessageDef* parent = upb_MessageDef_ContainingType(self->def);
   if (!parent) Py_RETURN_NONE;
   return PyUpb_Descriptor_Get(self->pool, parent);
 }

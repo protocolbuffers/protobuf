@@ -12,6 +12,7 @@
 
 #include "absl/strings/string_view.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/private_access.h"
 #include "google/protobuf/message_lite.h"
 
 // Must be included last.
@@ -36,12 +37,9 @@ PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 std::string GetTypeUrl(absl::string_view message_name,
                        absl::string_view type_url_prefix);
 
-struct PrivateAccess;
-
-// Template on PrivateAccess to avoid circular dependency.
-template <typename T, typename P = PrivateAccess>
+template <typename T>
 PROTOBUF_FUTURE_ADD_EARLY_NODISCARD absl::string_view GetAnyMessageName() {
-  return P::template FullMessageName<T>();
+  return PrivateAccess::FullMessageName<T>();
 }
 
 // Helper class used to implement google::protobuf::Any.

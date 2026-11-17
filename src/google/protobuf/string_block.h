@@ -17,7 +17,7 @@
 
 #include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
-#include "google/protobuf/arena_align.h"
+#include "google/protobuf/memory_align.h"
 #include "google/protobuf/port.h"
 
 // Must be included last.
@@ -85,7 +85,7 @@ class alignas(std::string) StringBlock {
   using size_type = uint16_t;
 
   static_assert(alignof(std::string) <= sizeof(void*), "");
-  static_assert(alignof(std::string) <= ArenaAlignDefault::align, "");
+  static_assert(alignof(std::string) <= ArenaAlignDefault{}.align(), "");
 
   ~StringBlock() = default;
 
@@ -125,7 +125,8 @@ inline StringBlock* StringBlock::Emplace(void* p, size_t n, StringBlock* next) {
   ABSL_DCHECK_EQ(count, NextSize(next));
   size_type doubled = count * 2;
   size_type next_size = next ? std::min(doubled, max_size()) : min_size();
-  return new (p) StringBlock(next, false, RoundedSize(count), next_size);
+  return new (p) StringBlock(next, /*heap_allocated=*/false, RoundedSize(count),
+                             next_size);
 }
 
 inline StringBlock* StringBlock::New(StringBlock* next) {
@@ -140,7 +141,7 @@ inline StringBlock* StringBlock::New(StringBlock* next) {
   }
   size = RoundedSize(size);
   void* p = Allocate(size);
-  return new (p) StringBlock(next, true, size, next_size);
+  return new (p) StringBlock(next, /*heap_allocated=*/true, size, next_size);
 }
 
 inline size_t StringBlock::Delete(StringBlock* block) {

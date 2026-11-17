@@ -11,6 +11,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "upb/base/descriptor_constants.h"
 #include "upb/base/internal/log2.h"
 #include "upb/mini_descriptor/internal/base92.h"
 #include "upb/mini_descriptor/internal/modifiers.h"
@@ -19,40 +20,16 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-typedef struct {
-  uint64_t present_values_mask;
-  uint32_t last_written_value;
-} upb_MtDataEncoderInternal_EnumState;
-
-typedef struct {
-  uint64_t msg_modifiers;
-  uint32_t last_field_num;
-  enum {
-    kUpb_OneofState_NotStarted,
-    kUpb_OneofState_StartedOneof,
-    kUpb_OneofState_EmittedOneofField,
-  } oneof_state;
-} upb_MtDataEncoderInternal_MsgState;
-
-typedef struct {
-  char* buf_start;  // Only for checking kUpb_MtDataEncoder_MinSize.
-  union {
-    upb_MtDataEncoderInternal_EnumState enum_state;
-    upb_MtDataEncoderInternal_MsgState msg_state;
-  } state;
-} upb_MtDataEncoderInternal;
-
 static upb_MtDataEncoderInternal* upb_MtDataEncoder_GetInternal(
     upb_MtDataEncoder* e, char* buf_start) {
-  UPB_ASSERT(sizeof(upb_MtDataEncoderInternal) <= sizeof(e->internal));
-  upb_MtDataEncoderInternal* ret = (upb_MtDataEncoderInternal*)e->internal;
+  upb_MtDataEncoderInternal* ret = &e->internal;
   ret->buf_start = buf_start;
   return ret;
 }
 
 static char* upb_MtDataEncoder_PutRaw(upb_MtDataEncoder* e, char* ptr,
                                       char ch) {
-  upb_MtDataEncoderInternal* in = (upb_MtDataEncoderInternal*)e->internal;
+  upb_MtDataEncoderInternal* in = &e->internal;
   UPB_ASSERT(ptr - in->buf_start < kUpb_MtDataEncoder_MinSize);
   if (ptr == e->end) return NULL;
   *ptr++ = ch;
@@ -140,7 +117,7 @@ char* upb_MtDataEncoder_StartMessage(upb_MtDataEncoder* e, char* ptr,
 static char* _upb_MtDataEncoder_MaybePutFieldSkip(upb_MtDataEncoder* e,
                                                   char* ptr,
                                                   uint32_t field_num) {
-  upb_MtDataEncoderInternal* in = (upb_MtDataEncoderInternal*)e->internal;
+  upb_MtDataEncoderInternal* in = &e->internal;
   if (field_num <= in->state.msg_state.last_field_num) return NULL;
   if (in->state.msg_state.last_field_num + 1 != field_num) {
     // Put skip.
@@ -197,7 +174,7 @@ static char* _upb_MtDataEncoder_PutFieldType(upb_MtDataEncoder* e, char* ptr,
 static char* _upb_MtDataEncoder_MaybePutModifiers(upb_MtDataEncoder* e,
                                                   char* ptr, upb_FieldType type,
                                                   uint64_t field_mod) {
-  upb_MtDataEncoderInternal* in = (upb_MtDataEncoderInternal*)e->internal;
+  upb_MtDataEncoderInternal* in = &e->internal;
   uint32_t encoded_modifiers = 0;
   if ((field_mod & kUpb_FieldModifier_IsRepeated) &&
       upb_FieldType_IsPackable(type)) {
@@ -283,7 +260,7 @@ char* upb_MtDataEncoder_StartEnum(upb_MtDataEncoder* e, char* ptr) {
 
 static char* upb_MtDataEncoder_FlushDenseEnumMask(upb_MtDataEncoder* e,
                                                   char* ptr) {
-  upb_MtDataEncoderInternal* in = (upb_MtDataEncoderInternal*)e->internal;
+  upb_MtDataEncoderInternal* in = &e->internal;
   ptr = upb_MtDataEncoder_Put(e, ptr, in->state.enum_state.present_values_mask);
   in->state.enum_state.present_values_mask = 0;
   in->state.enum_state.last_written_value += 5;

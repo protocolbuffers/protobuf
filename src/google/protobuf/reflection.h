@@ -206,11 +206,12 @@ class RepeatedFieldRef<T, std::enable_if_t<std::is_base_of_v<Message, T>>> {
   typedef ptrdiff_t difference_type;
 
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD iterator begin() const {
-    return iterator(data_, accessor_, true, NewMessage());
+    return iterator(data_, accessor_, /*begin=*/true, NewMessage());
   }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD iterator end() const {
     // The end iterator must not be dereferenced, no need for scratch space.
-    return iterator(data_, accessor_, false, nullptr);
+    return iterator(data_, accessor_, /*begin=*/false,
+                    /*scratch_space=*/nullptr);
   }
 
  private:

@@ -11,6 +11,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode_fast/combinations.h"
@@ -48,10 +49,19 @@ bool upb_DecodeFast_TryFillMapEntry(const upb_MiniTableField* field,
 // actually used, and should be written to the MiniTable (this number may be
 // less than 32).
 //
+// `m` does not need to be linked. Map fields are identified by `map_entries`
+// rather than by reading `m`'s links, so that the table can be built for a
+// MiniTable laid out for a platform other than the host's (as the code
+// generator does). If `map_entries` is non-NULL, it has one element for each
+// field of `m`, in field index order: the map entry MiniTable for map fields,
+// and NULL for all other fields. If `map_entries` is NULL, no field is treated
+// as a map.
+//
 // This function will assume that the lower a field number, the hotter the field
 // is.  If at some point we get access to more information about field usage,
 // we should consider using that instead.
 int upb_DecodeFast_BuildTable(const upb_MiniTable* m,
+                              const upb_MiniTable* const* map_entries,
                               upb_DecodeFast_TableEntry table[32]);
 
 // Returns the mask that should be placed into the table_mask field of the

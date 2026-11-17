@@ -19,13 +19,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "upb/base/internal/log2.h"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/types.h"
 #include "upb/message/value.h"
 #include "upb/mini_table/extension.h"
+#include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 
@@ -43,13 +43,13 @@ extern const double kUpb_NaN;
 // Internal members of a upb_Message that track unknown fields and/or
 // extensions. We can change this without breaking binary compatibility.
 
-// LINT.IfChange(tagged_aux_type)
 typedef struct upb_TaggedAuxPtr {
   // Three lowest bits form a tag:
   // 000 - non-aliased unknown data (upb_StringView*)
   // 100 - aliased unknown data (upb_StringView*)
-  // 001 - non-canonical extension (upb_Extension*)
-  // 011 - canonical extension (upb_Extension*)
+  // 001 - unknown aux field, i.e. a non-canonical extension or field
+  //       (upb_AuxField*)
+  // 011 - canonical extension (upb_AuxField*)
   //
   // Bit 0 (lowest bit): Represents the data format in memory (1 for parsed
   //   form, 0 for serialized form).
@@ -81,6 +81,14 @@ typedef struct upb_TaggedAuxPtr {
   // For a non-canonical extension, its schema is known but not
   // the one expected by the message, so it should be treated like an unknown
   // field, but is stored as an extension to lazily defer serialization.
+  //
+  // Invariants that hold for all extensions, canonical or non-canonical:
+  //
+  //   - The extension is described by a upb_MiniTableField. A canonical
+  //     extension's field is always part of a upb_MiniTableExtension; a
+  //     non-canonical extension's field is part of a upb_MiniTableExtension
+  //     iff upb_MiniTableField_IsExtension() is true.
+  //   - The field is never a map, since protobuf does not allow map extensions.
   uintptr_t ptr;
 } upb_TaggedAuxPtr;
 
@@ -102,12 +110,12 @@ UPB_INLINE bool upb_TaggedAuxPtr_IsCanonicalExtension(upb_TaggedAuxPtr ptr) {
   return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 3) == 3);
 }
 
-UPB_INLINE bool upb_TaggedAuxPtr_IsNonCanonicalExtension(upb_TaggedAuxPtr ptr) {
+UPB_INLINE bool upb_TaggedAuxPtr_IsUnknownAuxField(upb_TaggedAuxPtr ptr) {
   return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 3) == 1);
 }
 
-// Returns true if the entry is a canonical or non-canonical extension.
-UPB_INLINE bool upb_TaggedAuxPtr_IsExtension(upb_TaggedAuxPtr ptr) {
+// Returns true if the entry is a canonical extension or an unknown aux field.
+UPB_INLINE bool upb_TaggedAuxPtr_IsAuxField(upb_TaggedAuxPtr ptr) {
   return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 1) != 0);
 }
 
@@ -120,30 +128,29 @@ UPB_INLINE bool upb_TaggedAuxPtr_IsUnknownAliased(upb_TaggedAuxPtr ptr) {
   return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 5) == 4);
 }
 
-UPB_INLINE upb_Extension* upb_TaggedAuxPtr_CanonicalExtension(
+UPB_INLINE upb_AuxField* upb_TaggedAuxPtr_CanonicalExtension(
     upb_TaggedAuxPtr ptr) {
   UPB_ASSERT(upb_TaggedAuxPtr_IsCanonicalExtension(ptr));
-  return (upb_Extension*)(ptr.ptr & ~7ULL);
+  return (upb_AuxField*)(ptr.ptr & ~7ULL);
 }
 
-UPB_INLINE upb_Extension* upb_TaggedAuxPtr_NonCanonicalExtension(
+UPB_INLINE upb_AuxField* upb_TaggedAuxPtr_UnknownAuxField(
     upb_TaggedAuxPtr ptr) {
-  UPB_ASSERT(upb_TaggedAuxPtr_IsNonCanonicalExtension(ptr));
-  return (upb_Extension*)(ptr.ptr & ~7ULL);
+  UPB_ASSERT(upb_TaggedAuxPtr_IsUnknownAuxField(ptr));
+  return (upb_AuxField*)(ptr.ptr & ~7ULL);
 }
 
-UPB_INLINE upb_Extension* upb_TaggedAuxPtr_Extension(upb_TaggedAuxPtr ptr) {
-  UPB_ASSERT(upb_TaggedAuxPtr_IsExtension(ptr));
-  return (upb_Extension*)(ptr.ptr & ~7ULL);
+UPB_INLINE upb_AuxField* upb_TaggedAuxPtr_AuxField(upb_TaggedAuxPtr ptr) {
+  UPB_ASSERT(upb_TaggedAuxPtr_IsAuxField(ptr));
+  return (upb_AuxField*)(ptr.ptr & ~7ULL);
 }
 
-// Returns the extension pointer if the tagged pointer is a canonical or
-// non-canonical extension, otherwise returns NULL.
-UPB_INLINE upb_Extension* upb_TaggedAuxPtr_TryGetExtension(
-    upb_TaggedAuxPtr ptr) {
+// Returns the aux field pointer if the tagged pointer is a canonical extension
+// or an unknown aux field, otherwise returns NULL.
+UPB_INLINE upb_AuxField* upb_TaggedAuxPtr_TryGetAuxField(upb_TaggedAuxPtr ptr) {
   if (upb_TaggedAuxPtr_IsCanonicalExtension(ptr) ||
-      upb_TaggedAuxPtr_IsNonCanonicalExtension(ptr)) {
-    return (upb_Extension*)(ptr.ptr & ~7ULL);
+      upb_TaggedAuxPtr_IsUnknownAuxField(ptr)) {
+    return (upb_AuxField*)(ptr.ptr & ~7ULL);
   }
   return NULL;
 }
@@ -155,22 +162,6 @@ UPB_INLINE upb_StringView* upb_TaggedPtrAux_StringViewRepr(
   return (upb_StringView*)(ptr.ptr & ~7ULL);
 }
 
-// LINT.ThenChange(//depot/google3/third_party/upb/bits/golang/message.go:tagged_aux_type)
-
-typedef union {
-  upb_Extension* extension;
-  const upb_StringView* unknown_data;
-} upb_TaggedAux;
-
-UPB_INLINE upb_TaggedAuxType upb_TaggedAux_Get(upb_TaggedAuxPtr ptr,
-                                               upb_TaggedAux* data) {
-  UPB_ASSERT(!upb_TaggedAuxPtr_IsNull(ptr));
-  uintptr_t untagged = ptr.ptr & ~7ULL;
-  UPB_ASSERT((untagged & 7) == 0);
-  memcpy(data, &untagged, sizeof(*data));
-  return upb_TaggedAuxPtr_Type(ptr);
-}
-
 UPB_INLINE upb_TaggedAuxPtr upb_TaggedAuxPtr_Null(void) {
   upb_TaggedAuxPtr ptr;
   ptr.ptr = 0;
@@ -178,28 +169,12 @@ UPB_INLINE upb_TaggedAuxPtr upb_TaggedAuxPtr_Null(void) {
 }
 
 UPB_INLINE upb_TaggedAuxPtr
-upb_TaggedAuxPtr_MakeExtension(const upb_Extension* e, upb_TaggedAuxType type) {
+upb_TaggedAuxPtr_MakeAuxField(const upb_AuxField* e, upb_TaggedAuxType type) {
   UPB_ASSERT(((uintptr_t)e & 7) == 0);
   UPB_ASSERT(type == kUpb_TaggedAuxType_CanonicalExtension ||
-             type == kUpb_TaggedAuxType_NonCanonicalExtension);
+             type == kUpb_TaggedAuxType_UnknownAuxField);
   upb_TaggedAuxPtr ptr;
   ptr.ptr = (uintptr_t)e | type;
-  return ptr;
-}
-
-UPB_INLINE upb_TaggedAuxPtr
-upb_TaggedAuxPtr_MakeCanonicalExtension(const upb_Extension* e) {
-  UPB_ASSERT(((uintptr_t)e & 7) == 0);
-  upb_TaggedAuxPtr ptr;
-  ptr.ptr = (uintptr_t)e | 3;
-  return ptr;
-}
-
-UPB_INLINE upb_TaggedAuxPtr
-upb_TaggedAuxPtr_MakeNonCanonicalExtension(const upb_Extension* e) {
-  UPB_ASSERT(((uintptr_t)e & 7) == 0);
-  upb_TaggedAuxPtr ptr;
-  ptr.ptr = (uintptr_t)e | 1;
   return ptr;
 }
 
@@ -228,7 +203,7 @@ typedef struct upb_Message_Internal {
   // Total number of entries set in aux_data
   uint32_t size;
   uint32_t capacity;
-  // Tagged pointers to upb_StringView or upb_Extension
+  // Tagged pointers to upb_StringView or upb_AuxField
   upb_TaggedAuxPtr aux_data[];
 } upb_Message_Internal;
 
@@ -313,6 +288,20 @@ UPB_NODISCARD UPB_INLINE struct upb_Message* _upb_Message_New(
   if (UPB_UNLIKELY(!msg)) return NULL;
   _upb_Message_AlignedMemsetZero(msg, size);
   return msg;
+}
+
+// Allocates a new zero-initialized extension entry described by `f`, which may
+// be an extension field or a freestanding field, for internal use.
+//
+// TODO: b/569995025 - Rename to _upb_AuxField_New.
+UPB_NODISCARD UPB_INLINE upb_AuxField* UPB_PRIVATE(_upb_Extension_New)(
+    const upb_MiniTableField* f, upb_Arena* a) {
+  const size_t size = UPB_PRIVATE(_upb_Extension_Size)(f);
+  upb_AuxField* ext = (upb_AuxField*)upb_Arena_Malloc(a, size);
+  if (UPB_UNLIKELY(!ext)) return NULL;
+  _upb_Message_AlignedMemsetZero(ext, size);
+  ext->UPB_ONLYBITS(field) = f;
+  return ext;
 }
 
 // Discards the unknown fields (including non-canonical extensions) for this
@@ -424,59 +413,98 @@ UPB_INLINE bool upb_Message_NextUnknown(const struct upb_Message* msg,
   return false;
 }
 
-UPB_INLINE bool upb_Message_NextExtension(const struct upb_Message* msg,
-                                          const upb_MiniTableExtension** out_e,
-                                          upb_MessageValue* out_v,
-                                          uintptr_t* iter) {
+// Iterates the canonical extension entries of `msg` in wire order. Empty
+// repeated extensions are skipped, since they semantically don't exist.
+UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionEntry)(
+    const struct upb_Message* msg, const upb_AuxField** out_ext,
+    uintptr_t* iter) {
   const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   uintptr_t i = *iter;
   if (in) {
     while (i < in->size) {
       upb_TaggedAuxPtr tagged_ptr = in->aux_data[i++];
-      if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
-        const upb_Extension* ext =
-            upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
-
-        // Empty repeated fields or maps semantically don't exist.
-        if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;
-
-        *out_e = ext->ext;
-        *out_v = ext->data;
-        *iter = i;
-        return true;
-      }
+      if (!upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) continue;
+      const upb_AuxField* ext = upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
+      if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;
+      *out_ext = ext;
+      *iter = i;
+      return true;
     }
   }
   *iter = i;
-
   return false;
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
-    const struct upb_Message* msg, const upb_MiniTableExtension** out_e,
-    upb_MessageValue* out_v, uintptr_t* iter) {
-  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+// Same as _upb_Message_NextExtensionEntry(), but in reverse wire order.
+UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionEntryReverse)(
+    const struct upb_Message* msg, const upb_AuxField** out_ext,
+    uintptr_t* iter) {
+  const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return false;
   uintptr_t i = *iter;
   uint32_t size = in->size;
   while (i < size) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[size - 1 - i];
     i++;
-    if (!upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
-      continue;
-    }
-    const upb_Extension* ext = upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
-
-    // Empty repeated fields or maps semantically don't exist.
+    if (!upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) continue;
+    const upb_AuxField* ext = upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
     if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;
-
-    *out_e = ext->ext;
-    *out_v = ext->data;
+    *out_ext = ext;
     *iter = i;
     return true;
   }
   *iter = i;
   return false;
+}
+
+UPB_INLINE bool upb_Message_NextExtension(const struct upb_Message* msg,
+                                          const upb_MiniTableExtension** out_e,
+                                          upb_MessageValue* out_v,
+                                          uintptr_t* iter) {
+  const upb_AuxField* ext;
+  if (!UPB_PRIVATE(_upb_Message_NextExtensionEntry)(msg, &ext, iter)) {
+    return false;
+  }
+  *out_e = UPB_PRIVATE(_upb_Extension_MiniTableExtension)(ext);
+  *out_v = upb_Extension_GetValue(ext);
+  return true;
+}
+
+UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
+    const struct upb_Message* msg, const upb_MiniTableExtension** out_e,
+    upb_MessageValue* out_v, uintptr_t* iter) {
+  const upb_AuxField* ext;
+  if (!UPB_PRIVATE(_upb_Message_NextExtensionEntryReverse)(msg, &ext, iter)) {
+    return false;
+  }
+  *out_e = UPB_PRIVATE(_upb_Extension_MiniTableExtension)(ext);
+  *out_v = upb_Extension_GetValue(ext);
+  return true;
+}
+
+UPB_INLINE bool upb_Message_NextExtensionField(const struct upb_Message* msg,
+                                               const upb_MiniTableField** out_f,
+                                               upb_MessageValue* out_v,
+                                               uintptr_t* iter) {
+  const upb_AuxField* ext;
+  if (!UPB_PRIVATE(_upb_Message_NextExtensionEntry)(msg, &ext, iter)) {
+    return false;
+  }
+  *out_f = upb_Extension_MiniTableField(ext);
+  *out_v = upb_Extension_GetValue(ext);
+  return true;
+}
+
+UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionFieldReverse)(
+    const struct upb_Message* msg, const upb_MiniTableField** out_f,
+    upb_MessageValue* out_v, uintptr_t* iter) {
+  const upb_AuxField* ext;
+  if (!UPB_PRIVATE(_upb_Message_NextExtensionEntryReverse)(msg, &ext, iter)) {
+    return false;
+  }
+  *out_f = upb_Extension_MiniTableField(ext);
+  *out_v = upb_Extension_GetValue(ext);
+  return true;
 }
 
 #ifdef __cplusplus

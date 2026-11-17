@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("//bazel:proto_library.bzl", "proto_library")
@@ -21,6 +28,7 @@ cc_library(
     deps = [
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//upb/base",
+        "//upb/lex",
         "//upb/mem",
         "//upb/message",
         "//upb/port",
@@ -83,10 +91,13 @@ cc_test(
         "//src/google/protobuf/util:differencer",
         "//upb/base",
         "//upb/mem",
+        "//upb/message",
         "//upb/reflection",
+        "//upb/reflection:internal",
         "//upb/reflection:internal_cc",
         "//upb/reflection:reflection_cc",
         "//upb/test:parse_text_proto",
+        "//upb/wire",
         "@abseil-cpp//absl/strings",
         "@googletest//:gtest",
         "@googletest//:gtest_main",

@@ -11,6 +11,9 @@ package proto2_unittest;
 
 import option "google/protobuf/cpp_features.proto";
 
+option features.(pb.cpp).string_type = CORD;
+
 message EntryProto {
   bytes value = 3 [features.(pb.cpp).string_type = CORD];
+  map<string, bytes> values = 4;
 }

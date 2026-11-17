@@ -47,6 +47,16 @@ inline bool CheckLargeEnum(const EnumDescriptor* descriptor) {
       .large_enum();
 }
 
+inline int GetUnrecognizedValue(const EnumDescriptor* descriptor) {
+  // Pick the largest negative integer not used by any enum entry so that
+  // UNRECOGNIZED has a unique `value` field even when an enum defines -1.
+  int unrecognized_value = -1;
+  while (descriptor->FindValueByNumber(unrecognized_value) != nullptr) {
+    unrecognized_value--;
+  }
+  return unrecognized_value;
+}
+
 void GenerateLarge(
     io::Printer* printer, const EnumDescriptor* descriptor,
     bool immutable_api, Context* context, ClassNameResolver* name_resolver);

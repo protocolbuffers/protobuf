@@ -48,6 +48,10 @@ typedef struct {
 
 static PyObject* PyUpb_MapIterator_New(PyUpb_MapContainer* map);
 
+static PyObject* PyUpb_MapContainer_AsPyObj(PyUpb_MapContainer* self) {
+  return &self->ob_base;
+}
+
 static bool PyUpb_MapContainer_IsStub(PyUpb_MapContainer* self) {
   return self->field & 1;
 }
@@ -119,11 +123,11 @@ PyObject* PyUpb_MapContainer_NewStub(PyObject* parent, const upb_FieldDef* f,
  * If `map` is NULL, a new map is allocated, otherwise the wrapper will be
  * attached to the provided `arr`.
  *
- * If `subobj_map` and `iter` are non-NULL, the wrapper is assumed to be in the
- * unset state, and the entry for `iter` is removed from `subobj_map`.
+ * If `iter` is non-NULL, the wrapper is assumed to be in the unset state, and
+ * the entry for `iter` is removed from the map.
  */
 upb_Map* PyUpb_MapContainer_Reify(PyObject* _self, upb_Map* map,
-                                  PyUpb_WeakMap* subobj_map, intptr_t* iter) {
+                                  PyUpb_WeakMapIter* iter) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
   assert(PyUpb_MapContainer_IsStub(self));
   if (!map) {
@@ -139,8 +143,8 @@ upb_Map* PyUpb_MapContainer_Reify(PyObject* _self, upb_Map* map,
       return NULL;
     }
   }
-  if (subobj_map) {
-    PyUpb_WeakMap_DeleteIter(subobj_map, iter);
+  if (iter) {
+    PyUpb_WeakMapIter_Delete(iter);
   } else {
     const upb_FieldDef* f = PyUpb_MapContainer_GetField(self);
     upb_MessageValue msgval = {.map_val = map};
@@ -167,7 +171,7 @@ bool PyUpb_MapContainer_IsFrozen(PyUpb_MapContainer* self) {
   if (PyUpb_MapContainer_IsStub(self)) {
     return PyUpb_Message_IsFrozen(self->ptr.parent);
   } else {
-    return upb_Map_IsFrozen(self->ptr.map) || PyUpb_Arena_IsFrozen(self->arena);
+    return upb_Map_IsFrozen(self->ptr.map);
   }
 }
 
@@ -183,7 +187,7 @@ upb_Map* PyUpb_MapContainer_AssureWritable(PyObject* _self) {
   upb_Map* map = PyUpb_MapContainer_GetIfReified(self);
   if (map) return map;  // Already writable.
 
-  return PyUpb_MapContainer_Reify((PyObject*)self, NULL, NULL, 0);
+  return PyUpb_MapContainer_Reify((PyObject*)self, NULL, NULL);
 }
 
 static bool PyUpb_MapContainer_Set(PyUpb_MapContainer* self, upb_Map* map,
@@ -383,6 +387,21 @@ static PyObject* PyUpb_MapContainer_MergeFrom(PyObject* _self, PyObject* _arg) {
     return PyErr_Format(PyExc_AttributeError, "Merging of dict is not allowed");
   }
 
+  if (_arg == _self) {
+    // Self-merge is not supported, as for messages.
+#if PROTOBUF_PY_FUTURE_SELF_MERGE_RAISES
+    PyErr_SetString(PyExc_AssertionError, "Cannot merge a map into itself.");
+    return NULL;
+#else
+    if (PyErr_WarnEx(PyExc_FutureWarning,
+                     "Merging a map into itself will raise AssertionError in "
+                     "a future release.",
+                     1) < 0) {
+      return NULL;
+    }
+#endif  // PROTOBUF_PY_FUTURE_SELF_MERGE_RAISES
+  }
+
   if (PyUpb_Message_InitMapAttributes(_self, _arg, f) < 0) {
     return NULL;
   }
@@ -549,10 +568,11 @@ static PyObject* PyUpb_MapIterator_New(PyUpb_MapContainer* map) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
   PyUpb_MapIterator* iter =
       (void*)PyType_GenericAlloc(state->map_iterator_type, 0);
+  if (!iter) return NULL;
   iter->map = map;
   iter->iter = kUpb_Map_Begin;
   iter->version = map->version;
-  Py_INCREF(map);
+  Py_INCREF(PyUpb_MapContainer_AsPyObj(map));
   return &iter->ob_base;
 }
 

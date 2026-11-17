@@ -30,6 +30,7 @@
 #include "google/protobuf/compiler/profile_bootstrap.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/log/absl_log.h"
+#include "absl/log/absl_vlog_is_on.h"
 #include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -452,7 +453,6 @@ static absl::StatusOr<Stats> AnalyzeProfileProto(
   if (options.print_unused_threshold) {
     stream << "Unlikely Used Threshold = " << analyzer.UnlikelyUsedThreshold()
            << "\n"
-           << "See http://go/pdlazy for more information\n"
            << "-----------------------------------------\n";
   }
 

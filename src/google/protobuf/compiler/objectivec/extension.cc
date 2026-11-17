@@ -165,6 +165,31 @@ void ExtensionGenerator::GenerateDescriptorFunction(
         absl::StrCat("GPBDataType", GetCapitalizedType(descriptor_))},
        {"method_name", method_name_},
        {"function_name", function_name_},
+       {"create_and_return_descriptor",
+        [&] {
+          if (generation_options_.experimental_global_extension_registry) {
+            // See GPBDescriptor_PackagePrivate.h for details on section-based
+            // extension registration and GPBResolveExtensionSectionEntry().
+            printer->Emit(R"objc(
+              GPB_EXTENSION_REGISTRY_SECTION_ATTR static GPBExtensionSectionEntry entry = {
+                .description = &description,
+                .descriptor = nil,
+              };
+              return GPBResolveExtensionSectionEntry(&entry, &$google_protobuf_runtime_support$);
+            )objc");
+          } else {
+            printer->Emit(R"objc(
+              static GPBExtensionDescriptor *extension;
+              static dispatch_once_t onceToken;
+              dispatch_once(&onceToken, ^{
+                extension =
+                  [[GPBExtensionDescriptor alloc] initWithExtensionDescription:&description
+                                                                runtimeSupport:&$google_protobuf_runtime_support$];
+              });
+              return extension;
+            )objc");
+          }
+        }},
        {"number", descriptor_->number()},
        {"options", BuildFlagsString(FLAGTYPE_EXTENSION, options)},
        {"root_or_message_class_name", root_or_message_class_name_},
@@ -183,14 +208,7 @@ void ExtensionGenerator::GenerateDescriptorFunction(
             .dataType = $extension_type$,
             .options = $options$,
           };
-          static GPBExtensionDescriptor *extension;
-          static dispatch_once_t onceToken;
-          dispatch_once(&onceToken, ^{
-            extension =
-              [[GPBExtensionDescriptor alloc] initWithExtensionDescription:&description
-                                                            runtimeSupport:&$google_protobuf_runtime_support$];
-          });
-          return extension;
+          $create_and_return_descriptor$;
         }
       )objc");
 }

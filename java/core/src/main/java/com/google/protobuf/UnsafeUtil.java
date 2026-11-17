@@ -16,7 +16,15 @@ import java.security.PrivilegedExceptionAction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** Utility class for working with unsafe operations. */
+/**
+ * Utility class for working with unsafe operations.
+ *
+ * <p>We no longer use this on standard JVMs, where {@code sun.misc.Unsafe} memory access has been
+ * removed. It is intended to be used strictly from Lite, which targets Android: Android has no
+ * roadmap to removing {@code sun.misc.Unsafe}, and the runtime performance hit there would be too
+ * large without it. Do not add new uses of this class on code paths that run on standard (server)
+ * JVMs.
+ */
 @SuppressWarnings("removal")
 final class UnsafeUtil {
   private static final sun.misc.Unsafe UNSAFE = getUnsafe();

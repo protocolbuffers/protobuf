@@ -25,8 +25,9 @@ namespace Pb {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "CiJnb29nbGUvcHJvdG9idWYvanNvbl9vcHRpb25zLnByb3RvEgJwYhosZ29v",
-            "Z2xlL3Byb3RvYnVmL2pzb25fZW51bXZhbHVlX29wdGlvbnMucHJvdG9CGgoY",
-            "Y29tLmdvb2dsZS5wcm90b2J1Zi51dGlsUABiCGVkaXRpb25zcOkH"));
+            "Z2xlL3Byb3RvYnVmL2pzb25fZW51bXZhbHVlX29wdGlvbnMucHJvdG9CSgoY",
+            "Y29tLmdvb2dsZS5wcm90b2J1Zi51dGlsWi5nb29nbGUuZ29sYW5nLm9yZy9w",
+            "cm90b2J1Zi90eXBlcy9qc29ub3B0aW9uc3BiUABiCGVkaXRpb25zcOkH"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Pb.Enumvalue.JsonEnumvalueOptionsReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, null));

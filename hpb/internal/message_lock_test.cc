@@ -22,7 +22,6 @@
 #include "hpb/arena.h"
 #include "hpb/extension.h"
 #include "hpb/hpb.h"
-#include "hpb/options.h"
 
 #ifndef ASSERT_OK
 #define ASSERT_OK(x) ASSERT_TRUE(x.ok())

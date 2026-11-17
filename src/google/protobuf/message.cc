@@ -40,6 +40,7 @@
 #include "absl/strings/strip.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
@@ -74,7 +75,7 @@ void RegisterFileLevelMetadata(const DescriptorTable* descriptor_table);
 
 namespace {
 
-Metadata GetMetadataImpl(const internal::ClassData& data) {
+Metadata GetMetadataImpl(const ClassDataPrefix& data) {
   auto* table = data.descriptor_table();
   // Only codegen types provide a table. DynamicMessage does not provide a table
   // and instead eagerly initializes the descriptor/reflection members.
@@ -90,7 +91,7 @@ Metadata GetMetadataImpl(const internal::ClassData& data) {
 }
 
 // Helper function to get type name - logic from Message::GetTypeNameImpl
-absl::string_view GetTypeNameImpl(const ClassData* data) {
+absl::string_view GetTypeNameImpl(const ClassDataPrefix* data) {
   return GetMetadataImpl(*data).descriptor->full_name();
 }
 
@@ -103,7 +104,7 @@ std::string InitializationErrorStringImpl(const MessageLite& msg) {
 }  // namespace
 
 struct DescriptorMethodsFriend {
-  static const TcParseTableBase* GetTcParseTable(const ClassData* data) {
+  static const TcParseTableBase* GetTcParseTable(const ClassDataPrefix* data) {
     return GetMetadataImpl(*data).reflection->GetTcParseTable();
   }
 };
@@ -111,7 +112,8 @@ struct DescriptorMethodsFriend {
 namespace {
 
 // Helper function to get TcParseTable - logic from Message::GetTcParseTableImpl
-const internal::TcParseTableBase* GetTcParseTableImpl(const ClassData* data) {
+const internal::TcParseTableBase* GetTcParseTableImpl(
+    const ClassDataPrefix* data) {
   return DescriptorMethodsFriend::GetTcParseTable(data);
 }
 
@@ -431,10 +433,10 @@ void Message::DiscardUnknownFields() {
 }
 
 Metadata Message::GetMetadata() const {
-  return GetMetadataImpl(*GetClassData());
+  return GetMetadataImpl(*GetClassDataPrefix());
 }
 
-Metadata Message::GetMetadataImpl(const internal::ClassData& data) {
+Metadata Message::GetMetadataImpl(const internal::ClassDataPrefix& data) {
   return internal::GetMetadataImpl(data);
 }
 
@@ -470,7 +472,7 @@ size_t Message::MaybeComputeUnknownFieldsSize(
 }
 
 size_t Message::SpaceUsedLong() const {
-  return GetClassData()->descriptor_methods()->space_used_long(*this);
+  return GetClassDataPrefix()->descriptor_methods()->space_used_long(*this);
 }
 
 namespace internal {
@@ -613,7 +615,7 @@ const Message* GeneratedMessageFactory::GetPrototype(const Descriptor* type) {
     result = dropped_defaults_factory_.GetPrototype(type);
 
     {
-      absl::WriterMutexLock lock(&mutex_);
+      absl::WriterMutexLock lock(mutex_);
       // And update the main map to make the next lookup faster.
       // We don't need to recheck here. Even if someone raced us here the result
       // is the same, so we can just write it.
@@ -628,7 +630,7 @@ const Message* GeneratedMessageFactory::TryGetPrototype(
     const Descriptor* type) {
   absl::optional<const Message*> result;
   {
-    absl::ReaderMutexLock lock(&mutex_);
+    absl::ReaderMutexLock lock(mutex_);
     result = FindInTypeMap(type);
     if (result.has_value() && *result != nullptr) {
       return *result;
@@ -650,7 +652,7 @@ const Message* GeneratedMessageFactory::TryGetPrototype(
   }
 
   {
-    absl::WriterMutexLock lock(&mutex_);
+    absl::WriterMutexLock lock(mutex_);
 
     // Check if another thread preempted us.
     result = FindInTypeMap(type);
@@ -731,14 +733,6 @@ const internal::RepeatedFieldAccessor* Reflection::RepeatedFieldAccessor(
   ABSL_LOG(FATAL) << "Should not reach here.";
   return nullptr;
 }
-
-namespace internal {
-template void InternalMetadata::DoClear<UnknownFieldSet>();
-template void InternalMetadata::DoMergeFrom<UnknownFieldSet>(
-    const UnknownFieldSet& other);
-template void InternalMetadata::DoSwap<UnknownFieldSet>(UnknownFieldSet* other);
-template void InternalMetadata::DeleteOutOfLineHelper<UnknownFieldSet>();
-}  // namespace internal
 
 
 }  // namespace protobuf

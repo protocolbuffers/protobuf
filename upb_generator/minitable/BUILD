@@ -1,5 +1,5 @@
-# Copyright (c) 2009-2024, Google LLC
-# All rights reserved.
+# Protocol Buffers - Google's data interchange format
+# Copyright 2009 Google LLC
 #
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
@@ -20,7 +20,11 @@ licenses(["notice"])
 
 bootstrap_cc_library(
     name = "generator",
-    srcs = ["generator.cc"],
+    srcs = [
+        "generator.cc",
+        "layout_comment.cc",
+        "layout_comment.h",
+    ],
     hdrs = ["generator.h"],
     bootstrap_deps = [
         "//upb_generator:common",
@@ -33,6 +37,7 @@ bootstrap_cc_library(
     deps = [
         ":names",
         ":names_internal",
+        "//src/google/protobuf",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler:code_generator_lite",
         "//upb/base",

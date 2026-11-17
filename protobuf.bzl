@@ -1,6 +1,14 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 load("@bazel_skylib//lib:versions.bzl", "versions")
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_cc//cc:defs.bzl", "objc_library")
-load("@rules_python//python:defs.bzl", "py_library")
+load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
@@ -57,12 +65,6 @@ def _ObjcOuts(srcs, out_type):
         return _ObjcSrcs(srcs)
     return _ObjcHdrs(srcs) + _ObjcSrcs(srcs)
 
-def _PyOuts(srcs, use_grpc_plugin = False):
-    ret = [s[:-len(".proto")] + "_pb2.py" for s in srcs]
-    if use_grpc_plugin:
-        ret += [s[:-len(".proto")] + "_pb2_grpc.py" for s in srcs]
-    return ret
-
 def _RubyOuts(srcs):
     return [s[:-len(".proto")] + "_pb.rb" for s in srcs]
 
@@ -75,15 +77,37 @@ def _CsharpOuts(srcs):
         for src in srcs
     ]
 
-_PROTOC_ATTRS = {}
+_PROTOC_ATTRS = toolchains.if_legacy_toolchain({
+    "_proto_compiler": attr.label(
+        cfg = "exec",
+        executable = True,
+        allow_files = True,
+        default = "//bazel/flags:proto_compiler",
+    ),
+    "_protocopt": attr.label(
+        default = "//bazel/flags:protocopt",
+    ),
+})
 _PROTOC_FRAGMENTS = ["proto"]
-_PROTOC_TOOLCHAINS = [config_common.toolchain_type(toolchains.PROTO_TOOLCHAIN, mandatory = False)]
+_PROTOC_TOOLCHAINS = toolchains.use_toolchain(toolchains.PROTO_TOOLCHAIN)
 
 def _protoc_files_to_run(ctx):
-    toolchain = ctx.toolchains[toolchains.PROTO_TOOLCHAIN]
-    if not toolchain:
-        fail("Protocol compiler toolchain could not be resolved.")
-    return toolchain.proto.proto_compiler
+    if toolchains.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION:
+        toolchain = ctx.toolchains[toolchains.PROTO_TOOLCHAIN]
+        if not toolchain:
+            fail("Protocol compiler toolchain could not be resolved.")
+        return toolchain.proto.proto_compiler
+    else:
+        return ctx.attr._proto_compiler.files_to_run
+
+def _protoc_opts(ctx):
+    if toolchains.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION:
+        toolchain = ctx.toolchains[toolchains.PROTO_TOOLCHAIN]
+        if not toolchain:
+            fail("Protocol compiler toolchain could not be resolved.")
+        return toolchain.proto.protoc_opts
+    else:
+        return ctx.attr._protocopt[BuildSettingInfo].value
 
 ProtoGenInfo = provider(
     fields = ["srcs", "import_flags", "deps"],
@@ -159,7 +183,6 @@ def _proto_gen_impl(ctx):
                 path = f.replace("-I", "")
                 import_flags_real.append("-I$(realpath -s %s)" % path)
 
-        use_grpc_plugin = (ctx.attr.plugin_language == "grpc" and ctx.attr.plugin)
         path_tpl = "$(realpath %s)" if in_gen_dir else "%s"
 
         outs = []
@@ -168,8 +191,6 @@ def _proto_gen_impl(ctx):
                 outs.extend(_CsharpOuts([src.basename]))
             elif lang == "objc":
                 outs.extend(_ObjcOuts([src.basename], out_type = out_type))
-            elif lang == "python":
-                outs.extend(_PyOuts([src.basename], use_grpc_plugin = use_grpc_plugin))
             elif lang == "ruby":
                 outs.extend(_RubyOuts([src.basename]))
             elif lang == "rbs":
@@ -351,6 +372,51 @@ internal_gen_well_known_protos_java = rule(
         ),
         "javalite": attr.bool(
             default = False,
+        ),
+    } | _PROTOC_ATTRS,
+    fragments = _PROTOC_FRAGMENTS,
+    toolchains = _PROTOC_TOOLCHAINS,
+)
+
+def _internal_gen_well_known_protos_py_impl(ctx):
+    proto_info = ctx.attr.dep[ProtoInfo]
+    generated_sources = proto_common.declare_generated_files(
+        actions = ctx.actions,
+        proto_info = proto_info,
+        extension = "_pb2.py",
+        name_mapper = lambda name: name.replace("-", "_").replace(".", "/"),
+    )
+    proto_root = proto_info.proto_source_root
+    if proto_root.startswith(ctx.bin_dir.path):
+        proto_root = proto_root[len(ctx.bin_dir.path) + 1:]
+    plugin_output = ctx.bin_dir.path + "/" + proto_root
+
+    proto_lang_toolchain_info = proto_common.ProtoLangToolchainInfo(
+        out_replacement_format_flag = "--python_out=%s",
+        output_files = "legacy",
+        mnemonic = "GenProto",
+        progress_message = "Generating Python proto_library %{label}",
+        proto_compiler = _protoc_files_to_run(ctx),
+        protoc_opts = _protoc_opts(ctx),
+        plugin = None,
+        toolchain_type = toolchains.PROTO_TOOLCHAIN if toolchains.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION else None,
+        host_path_separator = ctx.configuration.host_path_separator,
+    )
+    proto_common.compile(
+        actions = ctx.actions,
+        proto_info = proto_info,
+        proto_lang_toolchain_info = proto_lang_toolchain_info,
+        generated_files = generated_sources,
+        plugin_output = plugin_output,
+    )
+    return [DefaultInfo(files = depset(generated_sources))]
+
+internal_gen_well_known_protos_py = rule(
+    implementation = _internal_gen_well_known_protos_py_impl,
+    attrs = {
+        "dep": attr.label(
+            mandatory = True,
+            providers = [ProtoInfo],
         ),
     } | _PROTOC_ATTRS,
     fragments = _PROTOC_FRAGMENTS,
@@ -612,96 +678,6 @@ def internal_rbs_proto_library(
         visibility = visibility,
         includes = includes,
         **kwargs
-    )
-
-# When canonical labels are in use, use additional "@" prefix
-_canonical_label_prefix = "@" if str(Label("//:protoc")).startswith("@@") else ""
-
-def _to_label(label_str):
-    """Converts a string to a label using the repository of the calling thread"""
-    if type(label_str) == type(Label("//:foo")):
-        return label_str
-    return Label(_canonical_label_prefix + native.repository_name() + "//" + native.package_name() + ":foo").relative(label_str)
-
-def internal_py_proto_library(
-        name,
-        srcs = [],
-        deps = [],
-        py_libs = [],
-        py_extra_srcs = [],
-        include = None,
-        default_runtime = Label("//:protobuf_python"),
-        protoc = None,
-        use_grpc_plugin = False,
-        testonly = None,
-        **kargs):
-    """Bazel rule to create a Python protobuf library from proto source files
-
-    NOTE: the rule is is only an internal workaround to generate protos.  It is deprecated and will
-    be removed in the next minor release.  Users should migrate to the py_proto_library rule from
-    bazel/py_proto_library.bzl instead.
-
-    Args:
-      name: the name of the py_proto_library.
-      srcs: the .proto files of the py_proto_library.
-      deps: a list of dependency labels; must be py_proto_library.
-      py_libs: a list of other py_library targets depended by the generated
-          py_library.
-      py_extra_srcs: extra source files that will be added to the output
-          py_library. This attribute is used for internal bootstrapping.
-      include: a string indicating the include path of the .proto files.
-      default_runtime: the implicitly default runtime which will be depended on by
-          the generated py_library target.
-      protoc: the label of the protocol compiler to generate the sources.
-      use_grpc_plugin: a flag to indicate whether to call the Python C++ plugin
-          when processing the proto files.
-      testonly: common rule attribute (see:
-          https://bazel.build/reference/be/common-definitions#common-attributes)
-      **kargs: other keyword arguments that are passed to py_library.
-
-    """
-    includes = []
-    if include != None:
-        includes = [include]
-
-    grpc_python_plugin = None
-    if use_grpc_plugin:
-        grpc_python_plugin = "//external:grpc_python_plugin"
-        # Note: Generated grpc code depends on Python grpc module. This dependency
-        # is not explicitly listed in py_libs. Instead, host system is assumed to
-        # have grpc installed.
-
-    _proto_gen(
-        name = name + "_genproto",
-        testonly = testonly,
-        srcs = srcs,
-        deps = [s + "_genproto" for s in deps],
-        includes = includes,
-        protoc = protoc,
-        langs = ["python"],
-        visibility = ["//visibility:public"],
-        plugin = grpc_python_plugin,
-        plugin_language = "grpc",
-    )
-
-    if default_runtime:
-        # Resolve non-local labels
-        labels = [_to_label(lib) for lib in py_libs + deps]
-        if not _to_label(default_runtime) in labels:
-            py_libs = py_libs + [default_runtime]
-
-    if "deprecation" not in kargs:
-        kargs["deprecation"] = (
-            "internal_py_proto_library is deprecated and will be removed in 2027 Q1. Migrate to py_proto_library from @protobuf//bazel/py_proto_library.bzl."
-        )
-
-    py_library(
-        name = name,
-        testonly = testonly,
-        srcs = [name + "_genproto"] + py_extra_srcs,
-        deps = py_libs + deps,
-        imports = includes,
-        **kargs
     )
 
 def _source_proto_library(

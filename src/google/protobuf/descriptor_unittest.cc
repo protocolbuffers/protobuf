@@ -341,6 +341,236 @@ void AddEmptyEnum(FileDescriptorProto* file, absl::string_view name) {
 
 // ===================================================================
 
+TEST(DescriptorPoolTest, OptionsConstructor) {
+  // 1. Default options: pool can build files directly.
+  {
+    DescriptorPool pool((DescriptorPool::Options()));
+    FileDescriptorProto proto;
+    proto.set_name("default.proto");
+    AddMessage(&proto, "DefaultMsg");
+    const FileDescriptor* file = pool.BuildFile(proto);
+    ASSERT_NE(file, nullptr);
+    EXPECT_EQ(pool.FindFileByName("default.proto"), file);
+    EXPECT_NE(pool.FindMessageTypeByName("DefaultMsg"), nullptr);
+  }
+
+  // 2. Underlay option: lookups find types from the underlay pool.
+  {
+    DescriptorPool underlay;
+    FileDescriptorProto proto;
+    proto.set_name("underlay.proto");
+    AddMessage(&proto, "UnderlayMsg");
+    ASSERT_NE(underlay.BuildFile(proto), nullptr);
+
+    DescriptorPool::Options options;
+    options.underlay = &underlay;
+    DescriptorPool pool(options);
+
+    const Descriptor* desc = pool.FindMessageTypeByName("UnderlayMsg");
+    ASSERT_NE(desc, nullptr);
+    EXPECT_EQ(desc->name(), "UnderlayMsg");
+    EXPECT_EQ(desc->file()->pool(), &underlay);
+    EXPECT_EQ(pool.FindFileByName("underlay.proto"), desc->file());
+  }
+
+  // 3. Fallback database option: loads files on demand from the database.
+  {
+    SimpleDescriptorDatabase db;
+    FileDescriptorProto proto;
+    proto.set_name("db.proto");
+    AddMessage(&proto, "DbMsg");
+    db.Add(proto);
+
+    DescriptorPool::Options options;
+    options.fallback_database = &db;
+    DescriptorPool pool(options);
+
+    const Descriptor* desc = pool.FindMessageTypeByName("DbMsg");
+    ASSERT_NE(desc, nullptr);
+    EXPECT_EQ(desc->name(), "DbMsg");
+    EXPECT_EQ(pool.FindFileByName("db.proto"), desc->file());
+  }
+
+  // 4. Error collector option: captures errors when building from database.
+  {
+    SimpleDescriptorDatabase db;
+    FileDescriptorProto proto;
+    proto.set_name("invalid.proto");
+    DescriptorProto* msg = AddMessage(&proto, "InvalidMsg");
+    AddField(msg, "field1", 1, FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_INT32);
+    AddField(msg, "field2", 1, FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_INT32);
+    db.Add(proto);
+
+    MockErrorCollector error_collector;
+    DescriptorPool::Options options;
+    options.fallback_database = &db;
+    options.error_collector = &error_collector;
+    DescriptorPool pool(options);
+
+    EXPECT_EQ(pool.FindFileByName("invalid.proto"), nullptr);
+    EXPECT_FALSE(error_collector.text_.empty());
+  }
+
+  // 5. Combined underlay and fallback database.
+  {
+    DescriptorPool underlay;
+    FileDescriptorProto underlay_proto;
+    underlay_proto.set_name("underlay_combo.proto");
+    AddMessage(&underlay_proto, "UnderlayComboMsg");
+    ASSERT_NE(underlay.BuildFile(underlay_proto), nullptr);
+
+    SimpleDescriptorDatabase db;
+    FileDescriptorProto db_proto;
+    db_proto.set_name("db_combo.proto");
+    AddMessage(&db_proto, "DbComboMsg");
+    db.Add(db_proto);
+
+    DescriptorPool::Options options;
+    options.underlay = &underlay;
+    options.fallback_database = &db;
+    DescriptorPool pool(options);
+
+    const Descriptor* u_desc = pool.FindMessageTypeByName("UnderlayComboMsg");
+    ASSERT_NE(u_desc, nullptr);
+    EXPECT_EQ(u_desc->file()->pool(), &underlay);
+
+    const Descriptor* db_desc = pool.FindMessageTypeByName("DbComboMsg");
+    ASSERT_NE(db_desc, nullptr);
+    EXPECT_EQ(db_desc->file()->pool(), &pool);
+  }
+}
+
+TEST(DescriptorPoolTest, OptionsUnderlayAndFallbackDatabase) {
+  const auto make_msg_file = [](const std::string& file_name,
+                                const std::string& msg_name,
+                                const std::string& field_name) {
+    FileDescriptorProto proto;
+    proto.set_name(file_name);
+    DescriptorProto* msg = AddMessage(&proto, msg_name);
+    AddField(msg, field_name, 1, FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_INT32);
+    return proto;
+  };
+
+  // Precedence chain: pool -> mid_underlay -> root_underlay -> db.
+  DescriptorPool root_underlay;
+  ASSERT_NE(root_underlay.BuildFile(
+                make_msg_file("root.proto", "RootMsg", "from_root")),
+            nullptr);
+  ASSERT_NE(root_underlay.BuildFile(
+                make_msg_file("shadow.proto", "ShadowMsg", "from_root")),
+            nullptr);
+
+  DescriptorPool::Options mid_options;
+  mid_options.underlay = &root_underlay;
+  DescriptorPool mid_underlay(mid_options);
+  {
+    FileDescriptorProto mid_file =
+        make_msg_file("mid.proto", "MidMsg", "from_mid");
+    AddExtensionRange(mid_file.mutable_message_type(0), 100, 200);
+    AddExtension(&mid_file, "MidMsg", "mid_ext", 100,
+                 FieldDescriptorProto::LABEL_OPTIONAL,
+                 FieldDescriptorProto::TYPE_INT32);
+    ASSERT_NE(mid_underlay.BuildFile(mid_file), nullptr);
+    ASSERT_NE(mid_underlay.BuildFile(
+                  make_msg_file("shadow.proto", "ShadowMsg", "from_mid")),
+              nullptr);
+  }
+
+  SimpleDescriptorDatabase db;
+  // Conflicting definitions in db are shadowed by the underlay chain.
+  ASSERT_TRUE(db.Add(make_msg_file("root.proto", "RootMsg", "from_db")));
+  ASSERT_TRUE(db.Add(make_msg_file("shadow.proto", "ShadowMsg", "from_db")));
+  {
+    FileDescriptorProto db_ext_shadow;
+    db_ext_shadow.set_name("db_ext_shadow.proto");
+    db_ext_shadow.add_dependency("mid.proto");
+    AddExtension(&db_ext_shadow, ".MidMsg", "db_shadow_ext", 100,
+                 FieldDescriptorProto::LABEL_OPTIONAL,
+                 FieldDescriptorProto::TYPE_INT32);
+    ASSERT_TRUE(db.Add(db_ext_shadow));
+  }
+  {
+    // Loaded on demand from db, cross-linking into both underlays.
+    FileDescriptorProto dependent_file;
+    dependent_file.set_name("dependent.proto");
+    dependent_file.add_dependency("root.proto");
+    dependent_file.add_dependency("mid.proto");
+    dependent_file.add_dependency("shadow.proto");
+    DescriptorProto* dep_msg = AddMessage(&dependent_file, "DbDependentMsg");
+    AddField(dep_msg, "root_field", 1, FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_MESSAGE)
+        ->set_type_name("RootMsg");
+    AddField(dep_msg, "mid_field", 2, FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_MESSAGE)
+        ->set_type_name("MidMsg");
+    AddField(dep_msg, "shadow_field", 3, FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_MESSAGE)
+        ->set_type_name("ShadowMsg");
+    ASSERT_TRUE(db.Add(dependent_file));
+  }
+  {
+    // Separate db file so FindExtensionByNumber independently triggers
+    // on-demand loading for an extendee owned by mid_underlay.
+    FileDescriptorProto db_ext_file;
+    db_ext_file.set_name("db_ext.proto");
+    db_ext_file.add_dependency("mid.proto");
+    AddExtension(&db_ext_file, ".MidMsg", "db_ext", 101,
+                 FieldDescriptorProto::LABEL_OPTIONAL,
+                 FieldDescriptorProto::TYPE_INT32);
+    ASSERT_TRUE(db.Add(db_ext_file));
+  }
+
+  DescriptorPool::Options pool_options;
+  pool_options.underlay = &mid_underlay;
+  pool_options.fallback_database = &db;
+  DescriptorPool pool(pool_options);
+
+  // Underlay chain takes precedence over both deeper underlays and db.
+  const Descriptor* root_msg = pool.FindMessageTypeByName("RootMsg");
+  ASSERT_NE(root_msg, nullptr);
+  EXPECT_EQ(root_msg->file()->pool(), &root_underlay);
+  EXPECT_NE(root_msg->FindFieldByName("from_root"), nullptr);
+  EXPECT_EQ(root_msg->FindFieldByName("from_db"), nullptr);
+  EXPECT_EQ(pool.FindFileByName("root.proto"), root_msg->file());
+
+  const Descriptor* shadow_msg = pool.FindMessageTypeByName("ShadowMsg");
+  ASSERT_NE(shadow_msg, nullptr);
+  EXPECT_EQ(shadow_msg->file()->pool(), &mid_underlay);
+  EXPECT_NE(shadow_msg->FindFieldByName("from_mid"), nullptr);
+  EXPECT_EQ(shadow_msg->FindFieldByName("from_root"), nullptr);
+  EXPECT_EQ(shadow_msg->FindFieldByName("from_db"), nullptr);
+  EXPECT_EQ(pool.FindFileByName("shadow.proto"), shadow_msg->file());
+
+  const Descriptor* mid_msg = pool.FindMessageTypeByName("MidMsg");
+  ASSERT_NE(mid_msg, nullptr);
+  EXPECT_EQ(mid_msg->file()->pool(), &mid_underlay);
+
+  const FieldDescriptor* ext100 = pool.FindExtensionByNumber(mid_msg, 100);
+  ASSERT_NE(ext100, nullptr);
+  EXPECT_EQ(ext100->name(), "mid_ext");
+  EXPECT_EQ(ext100->file()->pool(), &mid_underlay);
+
+  // On-demand files loaded from db cross-link with winning underlay symbols.
+  const Descriptor* dep_msg = pool.FindMessageTypeByName("DbDependentMsg");
+  ASSERT_NE(dep_msg, nullptr);
+  EXPECT_EQ(dep_msg->file()->pool(), &pool);
+  EXPECT_EQ(pool.FindFileByName("dependent.proto"), dep_msg->file());
+  EXPECT_EQ(dep_msg->FindFieldByName("root_field")->message_type(), root_msg);
+  EXPECT_EQ(dep_msg->FindFieldByName("mid_field")->message_type(), mid_msg);
+  EXPECT_EQ(dep_msg->FindFieldByName("shadow_field")->message_type(),
+            shadow_msg);
+
+  // On-demand extension loaded from db extending an underlay-owned message.
+  const FieldDescriptor* ext101 = pool.FindExtensionByNumber(mid_msg, 101);
+  ASSERT_NE(ext101, nullptr);
+  EXPECT_EQ(ext101->name(), "db_ext");
+  EXPECT_EQ(ext101->file()->pool(), &pool);
+  EXPECT_EQ(ext101->containing_type(), mid_msg);
+}
+
 // Test simple files.
 class FileDescriptorTest : public testing::Test {
  protected:
@@ -833,6 +1063,243 @@ TEST_F(FileDescriptorTest, AbslStringifyWorks) {
 
 // ===================================================================
 
+FileDescriptorProto MakeFileDescriptorProtoWithImports(
+    absl::string_view name,
+    std::initializer_list<absl::string_view> public_deps,
+    std::initializer_list<absl::string_view> plain_deps = {},
+    std::initializer_list<absl::string_view> weak_deps = {},
+    std::initializer_list<absl::string_view> option_deps = {}) {
+  FileDescriptorProto file;
+  file.set_name(name);
+  if (option_deps.size() > 0) {
+    file.set_syntax("editions");
+    file.set_edition(Edition::EDITION_2024);
+  } else {
+    file.set_syntax("proto2");
+  }
+  for (absl::string_view dep : public_deps) {
+    file.add_public_dependency(file.dependency_size());
+    file.add_dependency(dep);
+  }
+  for (absl::string_view dep : plain_deps) {
+    file.add_dependency(dep);
+  }
+  for (absl::string_view dep : weak_deps) {
+    file.add_weak_dependency(file.dependency_size());
+    file.add_dependency(dep);
+  }
+  for (absl::string_view dep : option_deps) {
+    file.add_option_dependency(dep);
+  }
+  return file;
+}
+
+std::vector<absl::string_view> ClosureNames(const FileDescriptor* file) {
+  std::vector<absl::string_view> names;
+  for (const FileDescriptor* member : file->GetPublicImportClosure()) {
+    ABSL_CHECK_NE(member, nullptr);
+    names.push_back(member->name());
+  }
+  return names;
+}
+
+TEST(PublicImportClosureTest, FileWithoutImportsReturnsOnlySelf) {
+  DescriptorPool pool;
+  const FileDescriptor* base =
+      pool.BuildFile(MakeFileDescriptorProtoWithImports("base.proto", {}));
+  ASSERT_NE(base, nullptr);
+
+  EXPECT_THAT(base->GetPublicImportClosure(), ElementsAre(base));
+}
+
+TEST(PublicImportClosureTest, PlainWeakAndOptionImportsAreNotFollowed) {
+  DescriptorPool pool;
+  FileDescriptorProto empty;
+  empty.set_name("google/protobuf/empty.proto");
+  empty.set_package("proto2");
+  empty.set_syntax("proto2");
+  empty.add_message_type()->set_name("Empty");
+  ASSERT_NE(pool.BuildFile(empty), nullptr);
+
+  ASSERT_NE(
+      pool.BuildFile(MakeFileDescriptorProtoWithImports("reexport.proto", {})),
+      nullptr);
+  ASSERT_NE(pool.BuildFile(MakeFileDescriptorProtoWithImports(
+                "plain.proto", {"reexport.proto"})),
+            nullptr);
+  ASSERT_NE(pool.BuildFile(MakeFileDescriptorProtoWithImports(
+                "weak.proto", {"reexport.proto"})),
+            nullptr);
+  ASSERT_NE(pool.BuildFile(MakeFileDescriptorProtoWithImports(
+                "opt.proto", {"reexport.proto"})),
+            nullptr);
+
+  const FileDescriptor* plain_and_weak =
+      pool.BuildFile(MakeFileDescriptorProtoWithImports(
+          "plain_and_weak.proto", /*public_deps=*/{},
+          /*plain_deps=*/{"plain.proto", "google/protobuf/empty.proto"},
+          /*weak_deps=*/{"weak.proto"}));
+  ASSERT_NE(plain_and_weak, nullptr);
+  EXPECT_THAT(plain_and_weak->GetPublicImportClosure(),
+              ElementsAre(plain_and_weak));
+
+  const FileDescriptor* option_importer =
+      pool.BuildFile(MakeFileDescriptorProtoWithImports(
+          "option_importer.proto", /*public_deps=*/{},
+          /*plain_deps=*/{"plain.proto"}, /*weak_deps=*/{},
+          /*option_deps=*/{"opt.proto"}));
+  ASSERT_NE(option_importer, nullptr);
+  EXPECT_THAT(option_importer->GetPublicImportClosure(),
+              ElementsAre(option_importer));
+}
+
+TEST(PublicImportClosureTest, DirectPublicImportsFollowDeclarationOrder) {
+  DescriptorPool pool;
+  ASSERT_NE(
+      pool.BuildFile(MakeFileDescriptorProtoWithImports("first.proto", {})),
+      nullptr);
+  ASSERT_NE(
+      pool.BuildFile(MakeFileDescriptorProtoWithImports("second.proto", {})),
+      nullptr);
+  const FileDescriptor* shim =
+      pool.BuildFile(MakeFileDescriptorProtoWithImports(
+          "shim.proto", {"first.proto", "second.proto"}));
+  ASSERT_NE(shim, nullptr);
+
+  EXPECT_THAT(ClosureNames(shim),
+              ElementsAre("first.proto", "second.proto", "shim.proto"));
+}
+
+TEST(PublicImportClosureTest, TransitivePublicImportsExcludePlainImports) {
+  DescriptorPool pool;
+  ASSERT_NE(
+      pool.BuildFile(MakeFileDescriptorProtoWithImports("hidden.proto", {})),
+      nullptr);
+  ASSERT_NE(pool.BuildFile(MakeFileDescriptorProtoWithImports(
+                "base.proto", /*public_deps=*/{},
+                /*plain_deps=*/{"hidden.proto"})),
+            nullptr);
+  ASSERT_NE(pool.BuildFile(MakeFileDescriptorProtoWithImports("shim.proto",
+                                                              {"base.proto"})),
+            nullptr);
+  const FileDescriptor* top = pool.BuildFile(
+      MakeFileDescriptorProtoWithImports("top.proto", {"shim.proto"}));
+  ASSERT_NE(top, nullptr);
+
+  EXPECT_THAT(ClosureNames(top),
+              ElementsAre("base.proto", "shim.proto", "top.proto"));
+}
+
+TEST(PublicImportClosureTest, DiamondDeduplicatesAtFirstVisit) {
+  DescriptorPool pool;
+  ASSERT_NE(
+      pool.BuildFile(MakeFileDescriptorProtoWithImports("base.proto", {})),
+      nullptr);
+  ASSERT_NE(pool.BuildFile(MakeFileDescriptorProtoWithImports("left.proto",
+                                                              {"base.proto"})),
+            nullptr);
+  ASSERT_NE(pool.BuildFile(MakeFileDescriptorProtoWithImports("right.proto",
+                                                              {"base.proto"})),
+            nullptr);
+  const FileDescriptor* symmetric =
+      pool.BuildFile(MakeFileDescriptorProtoWithImports(
+          "symmetric.proto", {"left.proto", "right.proto"}));
+  const FileDescriptor* indirect_first =
+      pool.BuildFile(MakeFileDescriptorProtoWithImports(
+          "indirect_first.proto", {"left.proto", "base.proto"}));
+  const FileDescriptor* direct_first =
+      pool.BuildFile(MakeFileDescriptorProtoWithImports(
+          "direct_first.proto", {"base.proto", "left.proto"}));
+  ASSERT_NE(symmetric, nullptr);
+  ASSERT_NE(indirect_first, nullptr);
+  ASSERT_NE(direct_first, nullptr);
+
+  EXPECT_THAT(ClosureNames(symmetric),
+              ElementsAre("base.proto", "left.proto", "right.proto",
+                          "symmetric.proto"));
+  EXPECT_THAT(ClosureNames(indirect_first),
+              ElementsAre("base.proto", "left.proto", "indirect_first.proto"));
+  EXPECT_THAT(ClosureNames(direct_first),
+              ElementsAre("base.proto", "left.proto", "direct_first.proto"));
+}
+
+TEST(PublicImportClosureTest, PlaceholderPublicDependencyIsIncluded) {
+  DescriptorPool pool;
+  pool.AllowUnknownDependencies();
+  const FileDescriptor* shim = pool.BuildFile(
+      MakeFileDescriptorProtoWithImports("shim.proto", {"unknown.proto"}));
+  ASSERT_NE(shim, nullptr);
+
+  std::vector<const FileDescriptor*> closure = shim->GetPublicImportClosure();
+  ASSERT_THAT(closure, SizeIs(2));
+  EXPECT_EQ(closure[0]->name(), "unknown.proto");
+  EXPECT_TRUE(closure[0]->is_placeholder());
+  EXPECT_EQ(closure[1], shim);
+}
+
+TEST(PublicImportClosureTest, LazyDependenciesResolveOnDemandAndHandleCycles) {
+  SimpleDescriptorDatabase db;
+  db.Add(MakeFileDescriptorProtoWithImports("base.proto", {}));
+  db.Add(
+      MakeFileDescriptorProtoWithImports("transitive_under_plain.proto", {}));
+  db.Add(MakeFileDescriptorProtoWithImports("plain.proto",
+                                            {"transitive_under_plain.proto"}));
+  db.Add(MakeFileDescriptorProtoWithImports("shim.proto", {"base.proto"},
+                                            {"plain.proto"}));
+  db.Add(MakeFileDescriptorProtoWithImports("top.proto", {"shim.proto"}));
+  // With lazy dependencies enabled, mutual public imports can exist in the
+  // database without being rejected up front.
+  db.Add(
+      MakeFileDescriptorProtoWithImports("cycle_a.proto", {"cycle_b.proto"}));
+  db.Add(
+      MakeFileDescriptorProtoWithImports("cycle_b.proto", {"cycle_a.proto"}));
+
+  DescriptorPool pool(&db);
+  pool.InternalSetLazilyBuildDependencies();
+
+  const FileDescriptor* top = pool.FindFileByName("top.proto");
+  ASSERT_NE(top, nullptr);
+  EXPECT_FALSE(pool.InternalIsFileLoaded("shim.proto"));
+  EXPECT_FALSE(pool.InternalIsFileLoaded("base.proto"));
+
+  EXPECT_THAT(ClosureNames(top),
+              ElementsAre("base.proto", "shim.proto", "top.proto"));
+  EXPECT_TRUE(pool.InternalIsFileLoaded("shim.proto"));
+  EXPECT_TRUE(pool.InternalIsFileLoaded("base.proto"));
+  EXPECT_FALSE(pool.InternalIsFileLoaded("transitive_under_plain.proto"));
+
+  const FileDescriptor* cycle_a = pool.FindFileByName("cycle_a.proto");
+  ASSERT_NE(cycle_a, nullptr);
+  EXPECT_THAT(ClosureNames(cycle_a),
+              ElementsAre("cycle_b.proto", "cycle_a.proto"));
+}
+
+TEST(PublicImportClosureTest, DeepChainDoesNotOverflowStack) {
+  constexpr int kChainLength = 4000;
+  DescriptorPool pool;
+  const FileDescriptor* prev = nullptr;
+  for (int i = 0; i < kChainLength; ++i) {
+    std::string name = absl::StrCat("f", i, ".proto");
+    FileDescriptorProto proto =
+        prev == nullptr
+            ? MakeFileDescriptorProtoWithImports(name, {})
+            : MakeFileDescriptorProtoWithImports(name, {prev->name()});
+    prev = pool.BuildFile(proto);
+    ASSERT_NE(prev, nullptr);
+  }
+
+  std::vector<const FileDescriptor*> closure;
+  closure = prev->GetPublicImportClosure();
+
+  ASSERT_THAT(closure, SizeIs(kChainLength));
+  for (int i = 0; i < kChainLength; ++i) {
+    EXPECT_EQ(closure[i]->name(), absl::StrCat("f", i, ".proto")) << i;
+  }
+  EXPECT_EQ(closure.back(), prev);
+}
+
+// ===================================================================
+
 // Test simple flat messages and fields.
 class DescriptorTest : public testing::Test {
  protected:
@@ -1067,35 +1534,6 @@ TEST_F(DescriptorTest, FieldNamesDedupOnOptimizedCases) {
   // fieldname7
   EXPECT_THAT(collect_unique_names(message4_->field(6)),
               ElementsAre("fieldname7"));
-}
-
-TEST_F(DescriptorTest, RegressionNamesAreNullTerminated) {
-  // Name accessors where migrated from std::string to absl::string_view.
-  // Some callers were taking the C-String out of the std::string via `.data()`
-  // and that code kept working when the type was changed.
-  // We want to keep that working for now to prevent breaking these users
-  // dynamically.
-  const auto check_nul_terminated = [](absl::string_view view) {
-    EXPECT_EQ(view.data()[view.size()], '\0');
-  };
-  const auto check_nul_names = [&](auto* entity) {
-    check_nul_terminated(entity->name());
-    check_nul_terminated(entity->full_name());
-  };
-
-  const auto check_nul_field_names = [&](auto* field) {
-    check_nul_terminated(field->name());
-    check_nul_terminated(field->full_name());
-    check_nul_terminated(field->lowercase_name());
-    check_nul_terminated(field->camelcase_name());
-    check_nul_terminated(field->json_name());
-  };
-
-  check_nul_names(message4_);
-  check_nul_names(enum_);
-  for (int i = 0; i < message4_->field_count(); ++i) {
-    check_nul_field_names(message4_->field(i));
-  }
 }
 
 TEST_F(DescriptorTest, FieldNamesMatchOnCornerCases) {
@@ -1575,8 +2013,8 @@ TEST_F(DescriptorTest, AllSymbolNamesHaveLengthLimits) {
       proto,
       proto.mutable_message_type(0)->mutable_field(0)->mutable_json_name(),
       // the math here leaks the implementation details of AllocateFieldNames.
-      kNamesImplLimit - 3 * (1 + proto.message_type(0).field(0).name().size()) -
-          proto.message_type(0).name().size() - proto.package().size() - 3,
+      kNamesImplLimit - 3 * proto.message_type(0).field(0).name().size() -
+          proto.message_type(0).name().size() - proto.package().size() - 2,
       "Name too long");
   // FieldDescriptor::name (extension)
   proto = MakeFile(R"pb(name: "foo.proto"
@@ -1591,7 +2029,7 @@ TEST_F(DescriptorTest, AllSymbolNamesHaveLengthLimits) {
                           extendee: "Message"
                         })pb");
   TestBuildFileOnNameLimits(proto, proto.mutable_extension(0)->mutable_name(),
-                            kNamesImplLimit - 1, "Name too long");
+                            kNamesImplLimit, "Name too long");
   // FieldDescriptor::full_name (extension)
   proto = MakeFile(R"pb(name: "foo.proto"
                         package: "Package"
@@ -4086,6 +4524,31 @@ TEST_P(AllowUnknownDependenciesTest, UnknownExtendee) {
 }
 
 
+TEST_P(AllowUnknownDependenciesTest, PlaceholderExtensionRangeDebugString) {
+  // Regression test: placeholder extendable messages previously had
+  // extension_ranges_[0].options_ = nullptr, which caused a null pointer
+  // dereference when DebugString() was called. The options_ field should
+  // use the default instance, consistent with all other placeholder options.
+
+  FileDescriptorProto extension_proto;
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      "name: 'extension.proto'"
+      "extension { extendee: 'UnknownType' name:'some_extension' number:123"
+      "            label:LABEL_OPTIONAL type:TYPE_INT32 }",
+      &extension_proto));
+  const FileDescriptor* file = BuildFile(extension_proto);
+
+  ASSERT_TRUE(file != nullptr);
+  ASSERT_EQ(1, file->extension_count());
+  const Descriptor* extendee = file->extension(0)->containing_type();
+  EXPECT_TRUE(extendee->is_placeholder());
+  ASSERT_EQ(1, extendee->extension_range_count());
+
+  // This must not crash. Previously dereferenced nullptr via options().
+  EXPECT_FALSE(extendee->DebugString().empty());
+}
+
 TEST_P(AllowUnknownDependenciesTest, CustomOption) {
   // Test that we can use a custom option without having parsed
   // descriptor.proto.
@@ -5236,6 +5699,26 @@ TEST(CustomOptions, FeatureSupportValid) {
 
 // ===================================================================
 
+TEST_F(ValidationErrorTest, ShadowedOptionsWithCordField) {
+  const FileDescriptor* file = ParseAndBuildFile(
+      "foo.proto", absl::Substitute(
+                       R"schema(
+            syntax = "proto2";
+            package $0;
+            message Opt { optional string a = 1 [ctype = CORD]; }
+            message FileOptions {
+              optional Opt non_ext = 500;
+              extensions 1000 to max;
+            }
+            extend FileOptions { optional Opt ext = 1000; }
+            option non_ext = {};
+            option (ext) = { a: "hello" };
+          )schema",
+                       FileOptions::descriptor()->file()->package()));
+  ASSERT_NE(file, nullptr);
+  EXPECT_THAT(file->DebugString(), testing::HasSubstr("hello"));
+}
+
 TEST_F(ValidationErrorTest, AlreadyDefined) {
   BuildFileWithErrors(
       R"pb(
@@ -5397,6 +5880,25 @@ TEST_F(ValidationErrorTest, NullCharPackageName) {
       "package: \"\\000\\001\\013.\"",
       STATIC_STR("bar.proto: \0\x1\v.: NAME: \"\0\x1\v.\" contains null "
                  "character.\n"));
+}
+
+TEST_F(ValidationErrorTest, NullCharDependency) {
+  pool_.AllowUnknownDependencies();
+  BuildFileWithErrors(
+      "name: \"bar.proto\" "
+      "dependency: \"foo\\000\\001\\013.proto\"",
+      STATIC_STR("bar.proto: foo\0\x1\v.proto: IMPORT: "
+                 "\"foo\0\x1\v.proto\" contains null character.\n"));
+}
+
+TEST_F(ValidationErrorTest, NullCharOptionDependency) {
+  BuildFileWithErrors(
+      "name: \"bar.proto\" "
+      "syntax: \"editions\" "
+      "edition: EDITION_2024 "
+      "option_dependency: \"foo\\000\\001\\013.proto\"",
+      STATIC_STR("bar.proto: foo\0\x1\v.proto: IMPORT: "
+                 "\"foo\0\x1\v.proto\" contains null character.\n"));
 }
 
 TEST_F(ValidationErrorTest, MissingFileName) {
@@ -8869,6 +9371,37 @@ TEST_F(ValidationErrorTest, GroupFieldPointingToMapEntryIsNotMap) {
       "instead.\n");
 }
 
+TEST_F(ValidationErrorTest, MapEntryOrphanedWithZeroFields) {
+  // A map_entry message with 0 fields and no parent field referencing it.
+  // ValidateMapEntry only runs when a parent field references the map entry,
+  // so the field count check in CrossLinkMessage is needed to catch this.
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "message_type { "
+      "  name: 'OrphanedMapEntry' "
+      "  options { map_entry: true } "
+      "} ",
+
+      "foo.proto: OrphanedMapEntry: NAME: Messages with map_entry set must "
+      "have at least 2 fields.\n");
+}
+
+TEST_F(ValidationErrorTest, MapEntryOrphanedWithOneField) {
+  // A map_entry message with only 1 field (missing value field).
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "message_type { "
+      "  name: 'OrphanedMapEntry' "
+      "  options { map_entry: true } "
+      "  field { "
+      "    name: 'key' number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL "
+      "  } "
+      "} ",
+
+      "foo.proto: OrphanedMapEntry: NAME: Messages with map_entry set must "
+      "have at least 2 fields.\n");
+}
+
 TEST_F(ValidationErrorTest, MapEntryExtensionRange) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
@@ -9305,7 +9838,10 @@ TEST_F(ValidationErrorTest, MapEntryExtraField) {
         }
       )pb",
       file_proto.mutable_message_type(0)->mutable_nested_type(0));
-  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
+  BuildFileWithErrors(
+      file_proto,
+      "foo.proto: Foo.foo_map: TYPE: map_entry should not be set explicitly. "
+      "Use map<KeyType, ValueType> instead.\n");
 }
 
 // Test for the scenario:
@@ -15417,6 +15953,125 @@ TEST_F(DescriptorPoolFeaturesTest, ResolvesFeaturesFor) {
   EXPECT_FALSE(pool_.ResolvesFeaturesFor(pb::cpp));
 }
 
+TEST_F(DescriptorPoolFeaturesTest, ResolvesFeaturesForPartialDefaults) {
+  FeatureSetDefaults defaults = ParseTextOrDie(R"pb(
+    defaults {
+      edition: EDITION_PROTO2
+      fixed_features {
+        [pb.test] {}
+      }
+      overridable_features {
+        [pb.cpp] {}
+      }
+    }
+    defaults {
+      edition: EDITION_PROTO3
+      overridable_features {
+        [pb.test] {}
+      }
+    }
+    minimum_edition: EDITION_PROTO2
+    maximum_edition: EDITION_PROTO3
+  )pb");
+  ASSERT_OK(pool_.SetFeatureSetDefaults(std::move(defaults)));
+
+  EXPECT_TRUE(pool_.ResolvesFeaturesFor(pb::test));
+  EXPECT_FALSE(pool_.ResolvesFeaturesFor(pb::cpp));
+  EXPECT_FALSE(pool_.ResolvesFeaturesFor(pb::TestMessage::test_message));
+}
+
+TEST_F(DescriptorPoolFeaturesTest,
+       GeneratedPoolResolvesFeaturesDoesNotDeadlock) {
+  EXPECT_TRUE(DescriptorPool::generated_pool()->ResolvesFeaturesFor(pb::cpp));
+}
+
+TEST_F(DescriptorPoolFeaturesTest,
+       ResolvesFeaturesForBeforeSetFeatureSetDefaults) {
+  SimpleDescriptorDatabase database;
+  DescriptorPool pool(&database);
+  EXPECT_TRUE(pool.ResolvesFeaturesFor(pb::cpp));
+  EXPECT_FALSE(pool.ResolvesFeaturesFor(pb::test));
+
+  auto test_default_spec = FeatureResolver::CompileDefaults(
+      FeatureSet::descriptor(), {GetExtensionReflection(pb::test)},
+      EDITION_PROTO2, EDITION_99999_TEST_ONLY);
+  ASSERT_OK(test_default_spec);
+  ASSERT_OK(pool.SetFeatureSetDefaults(std::move(test_default_spec).value()));
+
+  EXPECT_TRUE(pool.ResolvesFeaturesFor(pb::test));
+  EXPECT_FALSE(pool.ResolvesFeaturesFor(pb::cpp));
+}
+
+TEST_F(DescriptorPoolFeaturesTest, SetFeatureSetDefaultsTwice) {
+  const auto compile_defaults = [](const FieldDescriptor* extension) {
+    return FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
+                                            {extension}, EDITION_PROTO2,
+                                            EDITION_99999_TEST_ONLY);
+  };
+
+  SimpleDescriptorDatabase database;
+  DescriptorPool db_pool(&database);
+  for (DescriptorPool* pool : {&pool_, &db_pool}) {
+    auto test_spec = compile_defaults(GetExtensionReflection(pb::test));
+    ASSERT_OK(test_spec);
+    ASSERT_OK(pool->SetFeatureSetDefaults(std::move(test_spec).value()));
+    EXPECT_TRUE(pool->ResolvesFeaturesFor(pb::test));
+    EXPECT_FALSE(pool->ResolvesFeaturesFor(pb::cpp));
+
+    auto cpp_spec = compile_defaults(GetExtensionReflection(pb::cpp));
+    ASSERT_OK(cpp_spec);
+    ASSERT_OK(pool->SetFeatureSetDefaults(std::move(cpp_spec).value()));
+    EXPECT_TRUE(pool->ResolvesFeaturesFor(pb::cpp));
+    EXPECT_FALSE(pool->ResolvesFeaturesFor(pb::test));
+  }
+}
+
+TEST_F(DescriptorPoolFeaturesTest, ConcurrentSetFeatureSetDefaultsAndLookup) {
+  auto test_default_spec = FeatureResolver::CompileDefaults(
+      FeatureSet::descriptor(), {GetExtensionReflection(pb::test)},
+      EDITION_PROTO2, EDITION_99999_TEST_ONLY);
+  ASSERT_OK(test_default_spec);
+  auto cpp_default_spec = FeatureResolver::CompileDefaults(
+      FeatureSet::descriptor(), {GetExtensionReflection(pb::cpp)},
+      EDITION_PROTO2, EDITION_99999_TEST_ONLY);
+  ASSERT_OK(cpp_default_spec);
+
+  FileDescriptorProto file_proto = ParseTextOrDie(R"pb(
+    name: "foo.proto"
+    message_type { name: "Foo" }
+  )pb");
+
+  for (int i = 0; i < 20; ++i) {
+    SimpleDescriptorDatabase database;
+    database.Add(file_proto);
+    DescriptorPool pool(&database);
+
+    absl::Notification start;
+    std::vector<std::thread> threads;
+    for (int t = 0; t < 2; ++t) {
+      threads.emplace_back([&, t] {
+        FeatureSetDefaults spec =
+            t == 0 ? *test_default_spec : *cpp_default_spec;
+        start.WaitForNotification();
+        (void)pool.SetFeatureSetDefaults(std::move(spec));
+      });
+      threads.emplace_back([&] {
+        start.WaitForNotification();
+        EXPECT_NE(pool.FindFileByName("foo.proto"), nullptr);
+      });
+      threads.emplace_back([&] {
+        start.WaitForNotification();
+        (void)pool.ResolvesFeaturesFor(pb::test);
+        (void)pool.ResolvesFeaturesFor(pb::cpp);
+      });
+    }
+    start.Notify();
+    for (auto& thread : threads) {
+      thread.join();
+    }
+  }
+}
+
 class DescriptorPoolMemoizationTest : public ::testing::Test {
  protected:
   template <typename Desc, typename Func>
@@ -17395,7 +18050,542 @@ TEST_F(SourceLocationTest, GetSourceLocation) {
                                     "rpc Method(A) returns (A.B);"));
 }
 
-// TODO: b/168903973 - Remove once we update the format.
+TEST_F(SourceLocationTest, AggregateOptionSourceLocation) {
+  SourceLocation loc;
+  const FileDescriptor* file_desc =
+      ABSL_DIE_IF_NULL(pool_.FindFileByName("/test/test.proto"));
+
+  SourceCodePath base_path = {FileDescriptorProto::kServiceFieldNumber,
+                              0,
+                              ServiceDescriptorProto::kOptionsFieldNumber,
+                              kCustomOptionFieldNumber,
+                              0,
+                              -UninterpretedOption::kAggregateValueFieldNumber};
+
+  auto make_path = [&](std::initializer_list<int> sub) {
+    SourceCodePath path = base_path;
+    path.insert(path.end(), sub.begin(), sub.end());
+    return path;
+  };
+
+  // Verify what base_path matches directly (the entire aggregate block).
+  {
+    EXPECT_TRUE(file_desc->GetSourceLocation(base_path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput,
+                                 "{a:100, rep: [1, 2, 3], b_sub: {b: 200}}"));
+  }
+
+  // Path to "a" inside {a:100}
+  {
+    SourceCodePath path =
+        make_path({kAFieldNumber, -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "a"));
+  }
+
+  // Path to "100" inside {a:100}
+  {
+    SourceCodePath path = make_path(
+        {kAFieldNumber, -UninterpretedOption::kPositiveIntValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "100"));
+  }
+
+  // Path to the name of the top-level option (test_svc_opt)
+  {
+    SourceCodePath path = {FileDescriptorProto::kServiceFieldNumber,
+                           0,
+                           ServiceDescriptorProto::kOptionsFieldNumber,
+                           kCustomOptionFieldNumber,
+                           0,
+                           -UninterpretedOption::kNameFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput, "(test_svc_opt)"));
+  }
+
+  // Path to "1" inside {rep: [1, 2, 3]}
+  {
+    SourceCodePath path =
+        make_path({kRepFieldNumber, 0,
+                   -UninterpretedOption::kPositiveIntValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "1"));
+  }
+
+  // Path to "2" inside {rep: [1, 2, 3]}
+  {
+    SourceCodePath path =
+        make_path({kRepFieldNumber, 1,
+                   -UninterpretedOption::kPositiveIntValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "2"));
+  }
+
+  // Path to "3" inside {rep: [1, 2, 3]}
+  {
+    SourceCodePath path =
+        make_path({kRepFieldNumber, 2,
+                   -UninterpretedOption::kPositiveIntValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "3"));
+  }
+
+  // Path to "b_sub" inside {..., b_sub: {b: 200}}
+  {
+    SourceCodePath path =
+        make_path({kBSubFieldNumber, -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "b_sub"));
+  }
+
+  // Path to "b" inside {..., b_sub: {b: 200}}
+  {
+    SourceCodePath path = make_path(
+        {kBSubFieldNumber, -UninterpretedOption::kAggregateValueFieldNumber,
+         kBFieldNumber, -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "b"));
+  }
+
+  // Path to "200" inside {..., b_sub: {b: 200}}
+  {
+    SourceCodePath path = make_path(
+        {kBSubFieldNumber, -UninterpretedOption::kAggregateValueFieldNumber,
+         kBFieldNumber, -UninterpretedOption::kDoubleValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "200"));
+  }
+}
+
+class AnyOptionSourceLocationTest : public ::testing::Test {
+ public:
+  AnyOptionSourceLocationTest() {
+    FileDescriptorProto file_proto;
+    FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+    simple_db_.Add(file_proto);
+    FileDescriptorProto any_proto;
+    google::protobuf::Any::descriptor()->file()->CopyTo(&any_proto);
+    simple_db_.Add(any_proto);
+  }
+
+ protected:
+  const FileDescriptor* BuildFile(absl::string_view proto_text) {
+    source_tree_ = std::make_unique<SingletonSourceTree>(
+        "/test/test.proto", std::string(proto_text));
+    source_tree_db_ = std::make_unique<compiler::SourceTreeDescriptorDatabase>(
+        source_tree_.get());
+    merged_db_ = std::make_unique<MergedDescriptorDatabase>(
+        &simple_db_, source_tree_db_.get());
+    pool_ = std::make_unique<DescriptorPool>(merged_db_.get(), &collector_);
+    return ABSL_DIE_IF_NULL(pool_->FindFileByName("/test/test.proto"));
+  }
+
+ private:
+  AbortingErrorCollector collector_;
+  SimpleDescriptorDatabase simple_db_;
+  std::unique_ptr<SingletonSourceTree> source_tree_;
+  std::unique_ptr<compiler::SourceTreeDescriptorDatabase> source_tree_db_;
+  std::unique_ptr<MergedDescriptorDatabase> merged_db_;
+  std::unique_ptr<DescriptorPool> pool_;
+};
+
+TEST_F(AnyOptionSourceLocationTest, NestedAnyOptionSourceLocations) {
+  using ::google::protobuf::Any;
+
+  constexpr absl::string_view kProto = R"schema(
+    syntax = "proto2";
+    package proto2_unittest;
+    import "google/protobuf/descriptor.proto";
+    import "google/protobuf/any.proto";
+
+    message TargetMessage {
+      optional int32 target_int = 1;
+      optional string target_str = 2;
+    }
+
+    message NestedAny {
+      optional google.protobuf.Any any_field = 1;
+    }
+
+    extend google.protobuf.FileOptions {
+      optional NestedAny nested_any_opt = 50000;
+    }
+
+    option (nested_any_opt) = {
+      any_field: {
+        [type.googleapis.com/proto2_unittest.TargetMessage] {
+          target_int: 42
+          target_str: "hello"
+        }
+      }
+    };
+  )schema";
+
+  const FileDescriptor* file_desc = BuildFile(kProto);
+  SourceLocation loc;
+
+  const SourceCodePath base_path = {
+      FileDescriptorProto::kOptionsFieldNumber, 50000,
+      -UninterpretedOption::kAggregateValueFieldNumber};
+
+  auto make_path = [&](std::initializer_list<int> sub) {
+    SourceCodePath path = base_path;
+    path.insert(path.end(), sub.begin(), sub.end());
+    return path;
+  };
+
+  // Field name "any_field"
+  {
+    SourceCodePath path =
+        make_path({1, -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "any_field"));
+  }
+
+  // Type URL value in Any:
+  // "[type.googleapis.com/proto2_unittest.TargetMessage]"
+  {
+    SourceCodePath path =
+        make_path({1, -UninterpretedOption::kAggregateValueFieldNumber,
+                   Any::kTypeUrlFieldNumber,
+                   -UninterpretedOption::kStringValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(
+        loc,
+        MatchesSubstring(
+            kProto, "[type.googleapis.com/proto2_unittest.TargetMessage]"));
+  }
+
+  // Nested target_int field name inside Any.value
+  {
+    SourceCodePath path =
+        make_path({1, -UninterpretedOption::kAggregateValueFieldNumber,
+                   Any::kValueFieldNumber,
+                   -UninterpretedOption::kAggregateValueFieldNumber, 1,
+                   -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "target_int"));
+  }
+
+  // Nested target_int value "42" inside Any.value
+  {
+    SourceCodePath path =
+        make_path({1, -UninterpretedOption::kAggregateValueFieldNumber,
+                   Any::kValueFieldNumber,
+                   -UninterpretedOption::kAggregateValueFieldNumber, 1,
+                   -UninterpretedOption::kPositiveIntValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "42"));
+  }
+
+  // Nested target_str field name inside Any.value
+  {
+    SourceCodePath path =
+        make_path({1, -UninterpretedOption::kAggregateValueFieldNumber,
+                   Any::kValueFieldNumber,
+                   -UninterpretedOption::kAggregateValueFieldNumber, 2,
+                   -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "target_str"));
+  }
+
+  // Nested target_str value "\"hello\"" inside Any.value
+  {
+    SourceCodePath path =
+        make_path({1, -UninterpretedOption::kAggregateValueFieldNumber,
+                   Any::kValueFieldNumber,
+                   -UninterpretedOption::kAggregateValueFieldNumber, 2,
+                   -UninterpretedOption::kStringValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "\"hello\""));
+  }
+}
+
+TEST_F(AnyOptionSourceLocationTest, DirectAnyOptionSourceLocations) {
+  using ::google::protobuf::Any;
+
+  constexpr absl::string_view kProto = R"schema(
+    syntax = "proto2";
+    package proto2_unittest;
+    import "google/protobuf/descriptor.proto";
+    import "google/protobuf/any.proto";
+
+    message TargetMessage {
+      optional int32 target_int = 1;
+    }
+
+    extend google.protobuf.FileOptions {
+      optional google.protobuf.Any direct_any_opt = 50001;
+    }
+
+    option (direct_any_opt) = {
+      [type.googleapis.com/proto2_unittest.TargetMessage] {
+        target_int: 99
+      }
+    };
+  )schema";
+
+  const FileDescriptor* file_desc = BuildFile(kProto);
+  SourceLocation loc;
+
+  const SourceCodePath direct_base_path = {
+      FileDescriptorProto::kOptionsFieldNumber, 50001,
+      -UninterpretedOption::kAggregateValueFieldNumber};
+
+  auto make_direct_path = [&](std::initializer_list<int> sub) {
+    SourceCodePath path = direct_base_path;
+    path.insert(path.end(), sub.begin(), sub.end());
+    return path;
+  };
+
+  // Direct Any type_url value
+  {
+    SourceCodePath path =
+        make_direct_path({Any::kTypeUrlFieldNumber,
+                          -UninterpretedOption::kStringValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(
+        loc,
+        MatchesSubstring(
+            kProto, "[type.googleapis.com/proto2_unittest.TargetMessage]"));
+  }
+
+  // Nested target_int field name inside direct Any.value
+  {
+    SourceCodePath path =
+        make_direct_path({Any::kValueFieldNumber,
+                          -UninterpretedOption::kAggregateValueFieldNumber, 1,
+                          -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "target_int"));
+  }
+
+  // Nested target_int value "99" inside direct Any.value
+  {
+    SourceCodePath path =
+        make_direct_path({Any::kValueFieldNumber,
+                          -UninterpretedOption::kAggregateValueFieldNumber, 1,
+                          -UninterpretedOption::kPositiveIntValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "99"));
+  }
+}
+
+TEST_F(AnyOptionSourceLocationTest, AnyWithoutTypeUrlOptionSourceLocations) {
+  using ::google::protobuf::Any;
+
+  constexpr absl::string_view kProto = R"schema(
+    syntax = "proto2";
+    package proto2_unittest;
+    import "google/protobuf/descriptor.proto";
+    import "google/protobuf/any.proto";
+
+    extend google.protobuf.FileOptions {
+      optional google.protobuf.Any empty_any_opt = 50002;
+      optional google.protobuf.Any value_only_any_opt = 50003;
+    }
+
+    option (empty_any_opt) = {};
+    option (value_only_any_opt) = {
+      value: "unknown"
+    };
+  )schema";
+
+  const FileDescriptor* file_desc = BuildFile(kProto);
+  SourceLocation loc;
+
+  const SourceCodePath value_only_base_path = {
+      FileDescriptorProto::kOptionsFieldNumber, 50003,
+      -UninterpretedOption::kAggregateValueFieldNumber};
+
+  // Regular field name "value" inside Any without type_url
+  {
+    SourceCodePath path = value_only_base_path;
+    path.insert(path.end(), {Any::kValueFieldNumber,
+                             -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "value"));
+  }
+
+  // Regular field value "\"unknown\"" inside Any without type_url
+  {
+    SourceCodePath path = value_only_base_path;
+    path.insert(path.end(), {Any::kValueFieldNumber,
+                             -UninterpretedOption::kStringValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "\"unknown\""));
+  }
+}
+
+TEST_F(AnyOptionSourceLocationTest, DotNotationOptionSourceLocations) {
+  constexpr absl::string_view kProto = R"schema(
+    syntax = "proto2";
+    package proto2_unittest;
+    import "google/protobuf/descriptor.proto";
+
+    message LeafOption {
+      optional int32 single_val = 1;
+      repeated string rep_val = 2;
+    }
+
+    message ParentOption {
+      optional LeafOption leaf = 1;
+    }
+
+    extend google.protobuf.FileOptions {
+      optional ParentOption dot_opt = 50004;
+    }
+
+    option (dot_opt).leaf.single_val = 42;
+    option (dot_opt).leaf.rep_val = "first";
+    option (dot_opt).leaf.rep_val = "second";
+  )schema";
+
+  const FileDescriptor* file_desc = BuildFile(kProto);
+  SourceLocation loc;
+
+  constexpr int kDotOptFieldNumber = 50004;
+  constexpr int kLeafFieldNumber = 1;
+  constexpr int kSingleValFieldNumber = 1;
+  constexpr int kRepValFieldNumber = 2;
+
+  const SourceCodePath opt_base_path = {
+      FileDescriptorProto::kOptionsFieldNumber, kDotOptFieldNumber};
+  auto make_path = [&](std::initializer_list<int> sub) {
+    SourceCodePath path = opt_base_path;
+    path.insert(path.end(), sub.begin(), sub.end());
+    return path;
+  };
+
+  // Top-level option path and component names
+  {
+    EXPECT_TRUE(file_desc->GetSourceLocation(opt_base_path, &loc));
+    EXPECT_THAT(
+        loc, MatchesSubstring(kProto,
+                              "option (dot_opt).leaf.rep_val = \"second\";"));
+
+    SourceCodePath top_name_path =
+        make_path({-UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(top_name_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "(dot_opt)"));
+
+    SourceCodePath leaf_msg_name_path =
+        make_path({-UninterpretedOption::kAggregateValueFieldNumber,
+                   kLeafFieldNumber, -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(leaf_msg_name_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "leaf"));
+  }
+
+  // Non-repeated leaf field `single_val` name and value
+  {
+    SourceCodePath single_name_path = make_path(
+        {-UninterpretedOption::kAggregateValueFieldNumber, kLeafFieldNumber,
+         -UninterpretedOption::kAggregateValueFieldNumber,
+         kSingleValFieldNumber, -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(single_name_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "single_val"));
+
+    SourceCodePath single_val_path = make_path(
+        {-UninterpretedOption::kAggregateValueFieldNumber, kLeafFieldNumber,
+         -UninterpretedOption::kAggregateValueFieldNumber,
+         kSingleValFieldNumber,
+         -UninterpretedOption::kPositiveIntValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(single_val_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "42"));
+  }
+
+  // Repeated leaf field `rep_val` (elements 0 and 1) names and values
+  {
+    SourceCodePath rep0_name_path = make_path(
+        {-UninterpretedOption::kAggregateValueFieldNumber, kLeafFieldNumber,
+         -UninterpretedOption::kAggregateValueFieldNumber, kRepValFieldNumber,
+         0, -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(rep0_name_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "rep_val"));
+
+    SourceCodePath rep0_val_path = make_path(
+        {-UninterpretedOption::kAggregateValueFieldNumber, kLeafFieldNumber,
+         -UninterpretedOption::kAggregateValueFieldNumber, kRepValFieldNumber,
+         0, -UninterpretedOption::kStringValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(rep0_val_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "\"first\""));
+
+    SourceCodePath rep1_name_path = make_path(
+        {-UninterpretedOption::kAggregateValueFieldNumber, kLeafFieldNumber,
+         -UninterpretedOption::kAggregateValueFieldNumber, kRepValFieldNumber,
+         1, -UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(rep1_name_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "rep_val"));
+
+    SourceCodePath rep1_val_path = make_path(
+        {-UninterpretedOption::kAggregateValueFieldNumber, kLeafFieldNumber,
+         -UninterpretedOption::kAggregateValueFieldNumber, kRepValFieldNumber,
+         1, -UninterpretedOption::kStringValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(rep1_val_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kProto, "\"second\""));
+  }
+}
+
+TEST_F(AnyOptionSourceLocationTest, DotNotationOptionLegacySourceLocations) {
+  constexpr absl::string_view kProto = R"schema(
+    syntax = "proto2";
+    package proto2_unittest;
+    import "google/protobuf/descriptor.proto";
+
+    message LeafOption {
+      optional int32 single_val = 1;
+      repeated string rep_val = 2;
+    }
+
+    message ParentOption {
+      optional LeafOption leaf = 1;
+    }
+
+    extend google.protobuf.FileOptions {
+      optional ParentOption dot_opt = 50004;
+    }
+
+    option (dot_opt).leaf.single_val = 42;
+    option (dot_opt).leaf.rep_val = "first";
+    option (dot_opt).leaf.rep_val = "second";
+  )schema";
+
+  const FileDescriptor* file_desc = BuildFile(kProto);
+  SourceLocation loc;
+
+  constexpr int kDotOptFieldNumber = 50004;
+  constexpr int kLeafFieldNumber = 1;
+  constexpr int kSingleValFieldNumber = 1;
+  constexpr int kRepValFieldNumber = 2;
+
+  const SourceCodePath opt_base_path = {
+      FileDescriptorProto::kOptionsFieldNumber, kDotOptFieldNumber};
+  auto make_path = [&](std::initializer_list<int> sub) {
+    SourceCodePath path = opt_base_path;
+    path.insert(path.end(), sub.begin(), sub.end());
+    return path;
+  };
+
+  SourceCodePath legacy_single_path =
+      make_path({kLeafFieldNumber, kSingleValFieldNumber});
+  EXPECT_TRUE(file_desc->GetSourceLocation(legacy_single_path, &loc));
+  EXPECT_THAT(
+      loc, MatchesSubstring(kProto, "option (dot_opt).leaf.single_val = 42;"));
+
+  SourceCodePath legacy_rep0_path =
+      make_path({kLeafFieldNumber, kRepValFieldNumber, 0});
+  EXPECT_TRUE(file_desc->GetSourceLocation(legacy_rep0_path, &loc));
+  EXPECT_THAT(loc, MatchesSubstring(
+                       kProto, "option (dot_opt).leaf.rep_val = \"first\";"));
+
+  SourceCodePath legacy_rep1_path =
+      make_path({kLeafFieldNumber, kRepValFieldNumber, 1});
+  EXPECT_TRUE(file_desc->GetSourceLocation(legacy_rep1_path, &loc));
+  EXPECT_THAT(loc, MatchesSubstring(
+                       kProto, "option (dot_opt).leaf.rep_val = \"second\";"));
+}
 
 TEST_F(SourceLocationTest, ExtensionSourceLocation) {
   SourceLocation loc;
@@ -17453,7 +18643,19 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
 
     EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
 
-// TODO: b/168903973 - Remove once we update the format.
+    SourceCodePath name_path = {FileDescriptorProto::kOptionsFieldNumber,
+                                FileOptions::kJavaPackageFieldNumber,
+                                -UninterpretedOption::kNameFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(name_path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput, "java_package"));
+
+    SourceCodePath val_path = {FileDescriptorProto::kOptionsFieldNumber,
+                               FileOptions::kJavaPackageFieldNumber,
+                               -UninterpretedOption::kStringValueFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(val_path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput, "\"com.foo.bar\""));
   }
   {
     SourceCodePath path = {FileDescriptorProto::kOptionsFieldNumber,
@@ -17466,7 +18668,18 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
 
     EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
 
-// TODO: b/168903973 - Remove once we update the format.
+    SourceCodePath name_path = {FileDescriptorProto::kOptionsFieldNumber,
+                                kCustomOptionFieldNumber,
+                                -UninterpretedOption::kNameFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(name_path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput, "(test_file_opt)"));
+
+    SourceCodePath val_path = {FileDescriptorProto::kOptionsFieldNumber,
+                               kCustomOptionFieldNumber,
+                               -UninterpretedOption::kStringValueFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(val_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "\"foobar\""));
   }
 
   // Message option

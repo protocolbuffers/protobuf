@@ -1,15 +1,20 @@
 // clang-format off
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 edition = "2024";
 
 package third_party_protobuf_editions_proto;
 
-import option "google/protobuf/java_mutable_features.proto";
 import option "google/protobuf/cpp_features.proto";
 
 option java_outer_classname = "Edition2023";
 option features.default_symbol_visibility = EXPORT_ALL;
 option features.(pb.cpp).enum_name_uses_string_view = false;
-option features.(pb.java_mutable).nest_in_file_class = YES;
 option java_package = "com.google.protobuf.editions.proto";
 
 message Edition2024Transform {

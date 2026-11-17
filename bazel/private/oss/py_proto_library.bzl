@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 """The implementation of the `py_proto_library` rule and its aspect."""
 
 load("@rules_python//python:py_info.bzl", "PyInfo")
@@ -65,13 +72,18 @@ def _py_proto_aspect_impl(target, ctx):
     else:
         proto_lang_toolchain_info = getattr(ctx.attr, "_aspect_proto_toolchain")[proto_common.ProtoLangToolchainInfo]
 
-    api_deps = [proto_lang_toolchain_info.runtime]
+    api_deps = [proto_lang_toolchain_info.runtime] if proto_lang_toolchain_info.runtime else []
 
     generated_sources = []
     generated_stubs = []
     proto_info = target[ProtoInfo]
     proto_root = proto_info.proto_source_root
-    if proto_info.direct_sources:
+    if proto_info.direct_sources and proto_common.experimental_should_generate_code(
+        proto_info,
+        proto_lang_toolchain_info,
+        "py_proto_library",
+        target.label,
+    ):
         # Generate py files
         generated_sources = proto_common.declare_generated_files(
             actions = ctx.actions,

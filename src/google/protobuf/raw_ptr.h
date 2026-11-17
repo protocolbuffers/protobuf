@@ -28,6 +28,8 @@ PROTOBUF_EXPORT ABSL_CACHELINE_ALIGNED extern const char
 template <typename T>
 class RawPtr {
  public:
+  using value_type = T;
+
   constexpr RawPtr() : RawPtr(kZeroBuffer) {
     static_assert(sizeof(T) <= sizeof(kZeroBuffer), "");
     static_assert(alignof(T) <= ABSL_CACHELINE_SIZE, "");
@@ -47,6 +49,14 @@ class RawPtr {
   T* operator->() const { return Get(); }
   T& operator*() const { return *Get(); }
 
+  // For simplicity of codegen, we provide forwarding APIs
+  operator const T&() const { return *Get(); }  // NOLINT
+  operator T&() { return *Get(); }              // NOLINT
+  auto begin() const { return Get()->begin(); }
+  auto end() const { return Get()->end(); }
+  bool empty() const { return Get()->empty(); }
+  int size() const { return Get()->size(); }
+
  private:
   void* p_;
 };
@@ -54,6 +64,11 @@ class RawPtr {
 constexpr void* DefaultRawPtr() {
   return const_cast<void*>(static_cast<const void*>(kZeroBuffer));
 }
+
+template <typename T>
+inline constexpr bool kIsRawPtr = false;
+template <typename T>
+inline constexpr bool kIsRawPtr<RawPtr<T>> = true;
 
 }  // namespace internal
 }  // namespace protobuf

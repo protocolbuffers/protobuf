@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 "Validate that the protoc binary is authentic and not spoofed by a malicious actor."
 
 load("//bazel/common:proto_common.bzl", "proto_common")
@@ -22,19 +29,19 @@ def _protoc_authenticity_impl(ctx):
         toolchain = toolchains.PROTO_TOOLCHAIN,
         command = """\
         {protoc} --version > {validation_output}
-        grep -q -e "-dev$" {validation_output} && {{
+        IFS= read -r version_line < {validation_output}
+        [[ $version_line == *-dev ]] && {{
           echo 'WARNING: Detected a development version of protoc.
           Development versions are not validated for authenticity.
           To ensure a secure build, please use a released version of protoc.'
           exit 0
         }}
-        grep -q "^libprotoc {RELEASE_VERSION}" {validation_output} || {{
+        [[ $version_line == "libprotoc {RELEASE_VERSION}"* ]] || {{
           echo '{severity}: protoc version does not match protobuf Bazel module; we do not support this.
           It is considered undefined behavior that is expected to break in the future even if it appears to work today.'
           echo '{suppression_note}'
           echo 'Expected: libprotoc {RELEASE_VERSION}'
-          echo -n 'Actual:   '
-          cat {validation_output}
+          echo "Actual: $version_line"
           exit {mismatch_exit_code}
         }} >&2
         """.format(
@@ -67,4 +74,14 @@ protoc_authenticity = rule(
         ),
     }),
     toolchains = toolchains.use_toolchain(toolchains.PROTO_TOOLCHAIN),
+)
+
+def _fail_if_analyzed_impl(ctx):
+    fail(ctx.attr.message)
+
+fail_if_analyzed = rule(
+    implementation = _fail_if_analyzed_impl,
+    attrs = {
+        "message": attr.string(mandatory = True),
+    },
 )

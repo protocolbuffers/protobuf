@@ -71,9 +71,9 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount,
       new_capacity = static_cast<int>((alloc.n - kRepHeaderSize) / kPtrSize);
       new_rep = reinterpret_cast<Rep*>(alloc.p);
     } else {
-      if constexpr (internal::ArenaAlignDefault::Ceil(kPtrSize) != kPtrSize) {
+      if constexpr (internal::ArenaAlignDefault{}.Ceil(kPtrSize) != kPtrSize) {
         // We need to manually align the allocation.
-        bytes = internal::ArenaAlignDefault::Ceil(bytes);
+        bytes = internal::ArenaAlignDefault{}.Ceil(bytes);
         new_capacity = (bytes - kRepHeaderSize) / kPtrSize;
       }
 
@@ -125,7 +125,22 @@ void RepeatedPtrFieldBase::ReserveWithArena(Arena* arena, int capacity) {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-void RepeatedPtrFieldBase::DestroyMessageLites(const ClassData* class_data) {
+void RepeatedPtrFieldBase::DebugAssertAllSameType(
+    const ClassData* class_data) const {
+  using H = GenericTypeHandler<MessageLite>;
+  const int n = allocated_size();
+  void* const* elems = elements();
+  for (int i = 0; i < n; ++i) {
+    const auto* ptr = cast<H>(elems[i]);
+    ABSL_DCHECK_EQ(GetClassData(*ptr), class_data)
+        << "Type mismatch in RepeatedPtrField: found element of type "
+        << GetClassData(*ptr)->DebugName() << " at index " << i
+        << " in a repeated field of " << class_data->DebugName();
+  }
+}
+
+void RepeatedPtrFieldBase::DestroyMessageLites(
+    const ClassDataPrefix* class_data) {
   ABSL_DCHECK(NeedsDestroy());
   ABSL_DCHECK_EQ(GetArena(), nullptr);
 
@@ -140,13 +155,6 @@ void RepeatedPtrFieldBase::DestroyMessageLites(const ClassData* class_data) {
       absl::PrefetchToLocalCacheNta(elems[i + 5]);
     }
     auto* ptr = cast<H>(elems[i]);
-
-    ABSL_DCHECK_EQ(GetClassData(*ptr), class_data)
-        << "Type mismatch in RepeatedPtrFieldBase::DestroyMessageLites: found "
-           "element of type "
-        << GetClassData(*ptr)->DebugName() << " at index " << i
-        << " in a repeated field of " << class_data->DebugName();
-
     destroy(*ptr);
     internal::SizedDelete(ptr, allocation_size);
   }
@@ -160,7 +168,11 @@ void RepeatedPtrFieldBase::DestroyProtos() {
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   if (allocated_size() > 0) {
     using H = GenericTypeHandler<MessageLite>;
-    const ClassData* class_data = cast<H>(elements()[0])->GetClassData();
+    const auto* first = cast<H>(elements()[0]);
+#ifndef NDEBUG
+    DebugAssertAllSameType(first->GetClassData());
+#endif
+    const ClassDataPrefix* class_data = first->GetClassDataPrefix();
     PROTOBUF_ALWAYS_INLINE_CALL DestroyMessageLites(class_data);
   } else if (!using_sso()) {
     internal::SizedDelete(rep(), Capacity() * sizeof(void*) + kRepHeaderSize);
@@ -191,6 +203,26 @@ void RepeatedPtrFieldBase::CloseGap(int start, int num) {
 
 void InternalOutOfLineDeleteMessageLite(MessageLite* message) {
   delete message;
+}
+
+void MemswapLarge(char* PROTOBUF_RESTRICT a, char* PROTOBUF_RESTRICT b,
+                  size_t n) {
+  ABSL_DCHECK_GE(n, size_t{16});
+  size_t i = 0;
+  for (; i + 16 < n; i += 8) {
+    MemswapWord(a + i, b + i);
+  }
+  // Swap the remaining (8, 16] bytes using two potentially overlapping 8-byte
+  // words. Load both words before storing so the overlap is not swapped twice.
+  uint64_t a0, a1, b0, b1;
+  std::memcpy(&a0, a + i, sizeof(a0));
+  std::memcpy(&a1, a + n - 8, sizeof(a1));
+  std::memcpy(&b0, b + i, sizeof(b0));
+  std::memcpy(&b1, b + n - 8, sizeof(b1));
+  std::memcpy(a + i, &b0, sizeof(b0));
+  std::memcpy(a + n - 8, &b1, sizeof(b1));
+  std::memcpy(b + i, &a0, sizeof(a0));
+  std::memcpy(b + n - 8, &a1, sizeof(a1));
 }
 
 template PROTOBUF_EXPORT_TEMPLATE_DEFINE void

@@ -8,12 +8,14 @@
 #ifndef GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_DATABASE_H__
 #define GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_DATABASE_H__
 
+#include <vector>
+
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
+
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
-#include <string>
-#include <vector>
 
 #include "google/protobuf/descriptor_database.h"
 
@@ -25,23 +27,22 @@ class PyDescriptorDatabase : public DescriptorDatabase {
  public:
   explicit PyDescriptorDatabase(PyObject* py_database);
   ~PyDescriptorDatabase() override;
-
   // Implement the abstract interface. All these functions fill the output
   // with a copy of FileDescriptorProto.
 
   // Find a file by file name.
-  bool FindFileByName(StringViewArg filename,
+  bool FindFileByName(absl::string_view filename,
                       FileDescriptorProto* output) override;
 
   // Find the file that declares the given fully-qualified symbol name.
-  bool FindFileContainingSymbol(StringViewArg symbol_name,
+  bool FindFileContainingSymbol(absl::string_view symbol_name,
                                 FileDescriptorProto* output) override;
 
   // Find the file which defines an extension extending the given message type
   // with the given field number.
   // Containing_type must be a fully-qualified type name.
   // Python objects are not required to implement this method.
-  bool FindFileContainingExtension(StringViewArg containing_type,
+  bool FindFileContainingExtension(absl::string_view containing_type,
                                    int field_number,
                                    FileDescriptorProto* output) override;
 
@@ -49,7 +50,7 @@ class PyDescriptorDatabase : public DescriptorDatabase {
   // containing_type, and appends them to output in an undefined
   // order.
   // Python objects are not required to implement this method.
-  bool FindAllExtensionNumbers(StringViewArg containing_type,
+  bool FindAllExtensionNumbers(absl::string_view containing_type,
                                std::vector<int>* output) override;
 
  private:

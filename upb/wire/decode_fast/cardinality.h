@@ -12,10 +12,12 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "upb/base/string_view.h"
 #include "upb/message/array.h"
 #include "upb/message/internal/array.h"
 #include "upb/message/internal/types.h"
 #include "upb/message/message.h"
+#include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/combinations.h"
 #include "upb/wire/decode_fast/data.h"
@@ -202,6 +204,24 @@ void upb_DecodeFastField_SetArraySize(upb_DecodeFastArray* field,
       ((uintptr_t)field->dst -
        (uintptr_t)upb_Array_MutableDataPtr(field->arr)) /
       upb_DecodeFast_ValueBytes(type);
+}
+
+// Tells the compiler that the array being appended to (both the upb_Array and
+// its elements) is not part of the decoder. Without this, every element store
+// (an untyped memcpy()) and the final size store force the compiler to reload
+// decoder state such as `d->input.limit_ptr`.
+//
+// This is true because arrays are always allocated from an arena, while every
+// upb_Decoder is a local variable (in decode.c and convert.c) and never
+// arena-allocated. If that ever changes, this must be removed.
+//
+// Call this at the top of each loop iteration, so that it names the current
+// write cursor rather than only the initial one.
+UPB_FORCEINLINE
+void upb_DecodeFast_AssumeArrayIsSeparate(const upb_Decoder* d,
+                                          const upb_DecodeFastArray* field) {
+  UPB_ASSUME_SEPARATE(field->dst, d);
+  UPB_ASSUME_SEPARATE(field->arr, d);
 }
 
 UPB_FORCEINLINE
@@ -406,6 +426,23 @@ bool upb_DecodeFast_Unpacked(upb_Decoder* d, const char** ptr, upb_Message* msg,
 
   void* dst;
 
+  if (card == kUpb_DecodeFast_Oneof && type != kUpb_DecodeFast_Message) {
+    // Decode into a temporary and only set the oneof case once we succeed, so
+    // that if decoding fails the case still points to the previous member,
+    // which is intact.
+    union {
+      uint64_t u64;
+      upb_StringView sv;
+    } tmp;
+    if (!single(d, &p, &tmp, type, ret, ctx)) return false;
+    upb_DecodeFast_GetScalarField(d, p, msg, *data, hasbits, ret, &dst, card,
+                                  type);
+    memcpy(dst, &tmp, upb_DecodeFast_ValueBytes(type));
+    *ptr = p;
+    _upb_Decoder_Trace(d, 'F');
+    return true;
+  }
+
   if (upb_DecodeFast_GetScalarField(d, p, msg, *data, hasbits, ret, &dst, card,
                                     type)) {
     if (!single(d, &p, dst, type, ret, ctx)) return false;
@@ -422,6 +459,7 @@ bool upb_DecodeFast_Unpacked(upb_Decoder* d, const char** ptr, upb_Message* msg,
 
   bool next_tag_matches;
   do {
+    upb_DecodeFast_AssumeArrayIsSeparate(d, &arr);
     if (!single(d, &p, arr.dst, type, ret, ctx)) {
       upb_DecodeFastField_SetArraySize(&arr, type);
       return false;
@@ -551,8 +589,8 @@ UPB_FORCEINLINE
 void upb_DecodeFast_InlineMemcpy(void* dst, const char* src, size_t size) {
   // Disabled for now because we haven't yet measured a benefit to justify
   // the additional complexity.
-#if false && defined(__x86_64__) && defined(__GNUC__) && \
-    !UPB_HAS_FEATURE(memory_sanitizer)
+#if !UPB_HAS_FEATURE(memory_sanitizer) && false && defined(__x86_64__) && \
+    defined(__GNUC__)
   // This is nearly as fast as memcpy(), but saves us from calling an external
   // function and spilling all our registers.
   __asm__ __volatile__("rep movsb"

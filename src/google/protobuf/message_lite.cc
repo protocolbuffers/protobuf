@@ -38,11 +38,9 @@
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_traits.h"
-#include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/type_id.h"
-#include "google/protobuf/unknown_field_set.h"
 
 
 // Must be included last.
@@ -60,7 +58,7 @@ MessageLite* MessageLite::CopyConstruct(Arena* arena, const MessageLite& from) {
 
 void MessageLite::DestroyInstance() {
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  class_data()->destroy_message(*this);
+  class_data_prefix()->destroy_message(*this);
 #else   // PROTOBUF_CUSTOM_VTABLE
   this->~MessageLite();
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -69,7 +67,7 @@ void MessageLite::DestroyInstance() {
 void MessageLite::DeleteInstance() {
   // Cache the size and pointer because we can't access them after the
   // destruction.
-  const size_t size = GetClassData()->allocation_size();
+  const size_t size = GetClassDataPrefix()->allocation_size();
   void* const ptr = this;
   DestroyInstance();
   internal::SizedDelete(ptr, size);
@@ -615,8 +613,10 @@ bool MessageLite::AppendPartialToString(std::string* output) const {
     return false;
   }
 
+  PROTOBUF_IGNORE_DEPRECATION_START
   absl::strings_internal::STLStringResizeUninitializedAmortized(
       output, old_size + byte_size);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   uint8_t* start =
       reinterpret_cast<uint8_t*>(io::mutable_string_data(output) + old_size);
   SerializeToArrayImpl(*this, start, byte_size);
@@ -749,30 +749,6 @@ absl::Cord MessageLite::SerializePartialAsCord() const {
   return output;
 }
 
-namespace internal {
-
-// Non-inline variants of std::string specializations for
-// various InternalMetadata routines.
-template <>
-void InternalMetadata::DoClear<std::string>() {
-  mutable_unknown_fields<std::string>()->clear();
-}
-
-template <>
-void InternalMetadata::DoMergeFrom<std::string>(const std::string& other) {
-  mutable_unknown_fields<std::string>()->append(other);
-}
-
-template <>
-void InternalMetadata::DoSwap<std::string>(std::string* other) {
-  mutable_unknown_fields<std::string>()->swap(*other);
-}
-
-template UnknownFieldSet*
-InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>();
-
-}  // namespace internal
-
 std::string ShortFormat(const MessageLite& message_lite) {
   return message_lite.DebugString();
 }
@@ -813,7 +789,7 @@ void OnShutdown(void (*func)()) {
 
 void OnShutdownRun(void (*f)(const void*), const void* arg) {
   auto shutdown_data = ShutdownData::get();
-  absl::MutexLock lock(&shutdown_data->mutex);
+  absl::MutexLock lock(shutdown_data->mutex);
   shutdown_data->functions.push_back(std::make_pair(f, arg));
 }
 

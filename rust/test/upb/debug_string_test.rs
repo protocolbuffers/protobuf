@@ -28,7 +28,7 @@ fn test_debug_string() {
     repeated_string.push("Hello World");
 
     let mut msg_map = TestMapWithMessages::new();
-    println!("EMPTY MSG: {:?}", msg_map); // Make sure that we can print an empty message. 
+    println!("EMPTY MSG: {:?}", msg_map); // Make sure that we can print an empty message.
     msg_map.map_string_all_types_mut().insert("hello", msg.as_view());
     msg_map.map_string_all_types_mut().insert("fizz", msg.as_view());
     msg_map.map_string_all_types_mut().insert("boo", msg.as_view());
@@ -82,7 +82,5 @@ fn test_debug_string() {
   }
 }
 "#;
-    // C strings are null terminated while Rust strings are not.
-    let null_terminated_str = format!("{}\0", golden);
-    assert_that!(format!("{:?}", msg_map), eq(null_terminated_str.as_str()));
+    assert_that!(format!("{:?}", msg_map), eq(golden));
 }

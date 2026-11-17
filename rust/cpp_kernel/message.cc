@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 #include "google/protobuf/message.h"
 
 #include <cstddef>
@@ -26,8 +33,9 @@ bool proto2_rust_Message_parse_dont_enforce_required(
 }
 
 bool proto2_rust_Message_serialize(const google::protobuf::MessageLite* m,
-                                   google::protobuf::rust::SerializedData* output) {
-  return google::protobuf::rust::SerializeMsg(m, output);
+                                   google::protobuf::rust::SerializedData* output,
+                                   bool deterministic) {
+  return google::protobuf::rust::SerializeMsg(m, output, deterministic);
 }
 
 size_t proto2_rust_Message_serialized_len(const google::protobuf::MessageLite* m) {

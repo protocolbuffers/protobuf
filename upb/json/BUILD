@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 # TODO: describe this package.
 
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
@@ -50,6 +57,8 @@ cc_test(
         "//:any_upb_proto",
         "//:field_mask_upb_proto",
         "//:struct_upb_proto",
+        "//:timestamp_upb_proto",
+        "//:timestamp_upb_reflection_proto",
         "//upb/base",
         "//upb/mem",
         "//upb/message",

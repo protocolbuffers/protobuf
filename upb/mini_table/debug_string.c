@@ -305,7 +305,8 @@ static void upb_MiniTablePrinter_PrintMessage(upb_MiniTablePrinter* p,
 
 size_t upb_MiniTable_DebugString(const upb_MiniTable* mini_table, char* buf,
                                  size_t size) {
-  upb_MiniTablePrinter p = {buf, buf, buf + size, 0, upb_Arena_New(), 0};
+  upb_MiniTablePrinter p = {buf, buf, UPB_PTRADD(buf, size), 0, upb_Arena_New(),
+                            0};
 
   if (!p.arena) return 0;
   if (!upb_inttable_init(&p.inttable, p.arena)) return 0;

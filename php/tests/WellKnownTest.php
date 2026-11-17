@@ -356,6 +356,29 @@ class WellKnownTest extends TestBase {
         $this->assertSame($from->format('u'), $to->format('u'));
     }
 
+    /**
+     * @dataProvider invalidTimestampNanosDataProvider
+     */
+    public function testTimestampInvalidNanos($nanos)
+    {
+        $timestamp = new Timestamp();
+        $timestamp->setSeconds(1);
+        $timestamp->setNanos($nanos);
+
+        $this->expectException(\Exception::class);
+        $timestamp->toDateTime();
+    }
+
+    public static function invalidTimestampNanosDataProvider()
+    {
+        return [
+            [-1],
+            [-1000],
+            [-1000000000],
+            [1000000000],
+        ];
+    }
+
     public function testType()
     {
         $m = new Type();

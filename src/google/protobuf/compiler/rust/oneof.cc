@@ -257,13 +257,25 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof,
         [&] {
           if (ctx.is_cpp()) {
             ctx.Emit({{"case_thunk", ThunkName(ctx, oneof, "case")}},
-                     "unsafe { $case_thunk$(self.raw_msg()) }");
+                     R"rs(
+                // SAFETY:
+                // - `self.raw_msg()` is a live message of this type.
+                // - The thunk returns the C++ case enum, and the Rust case
+                //   enum has a variant for each of its values.
+                unsafe { $case_thunk$(self.raw_msg()) }
+              )rs");
           } else {
             ctx.Emit(
                 // The field index for an arbitrary field that in the oneof.
                 {{"upb_mt_field_index",
                   UpbMiniTableFieldIndex(*oneof.field(0))}},
                 R"rs(
+                // SAFETY:
+                // - `self` is a live message, and `$upb_mt_field_index$` is
+                //   the mini table index of a field in this oneof.
+                // - `which_oneof_field_number_by_index` returns 0 or the
+                //   number of a field in this oneof. The case enum has a
+                //   variant for each of those, so `try_from` returns `Some`.
                 unsafe {
                   let field_num = <Self as $pbr$::UpbGetMessagePtr>::get_ptr(
                       &self, $pbi$::Private)

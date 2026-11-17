@@ -1,14 +1,22 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
-load("//:protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library")
+load("//:protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
+load("//bazel:py_proto_library.bzl", "py_proto_library")
 load("//upb/bazel:upb_proto_library.bzl", "upb_c_proto_library", "upb_proto_reflection_library")
 load(":defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
 
@@ -16,7 +24,10 @@ bzl_library(
     name = "defaults",
     srcs = ["defaults.bzl"],
     visibility = ["//visibility:public"],
-    deps = ["//bazel/common:proto_info_bzl"],
+    deps = [
+        "//bazel/common:proto_info_bzl",
+        "//bazel/private:toolchain_helpers_bzl",
+    ],
 )
 
 # Aggregate all the features owned by the Protobuf repo.
@@ -220,6 +231,7 @@ proto_library(
     srcs = ["golden/test_messages_proto2_editions.proto"],
     visibility = [
         "//conformance/test_protos:__pkg__",
+        "//learning/brain/research/grmf/tools/protolean/conformance:__pkg__",
         "//net/proto2/util/converter/internal/conformance:__pkg__",
     ],
 )
@@ -252,14 +264,11 @@ java_lite_proto_library(
     deps = [":test_messages_proto2_editions_proto"],
 )
 
-internal_py_proto_library(
+py_proto_library(
     name = "test_messages_proto2_editions_py_pb2",
     testonly = True,
-    srcs = ["golden/test_messages_proto2_editions.proto"],
-    srcs_version = "PY2AND3",
-    visibility = [
-        "//conformance:__pkg__",
-    ],
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto2_editions_proto"],
 )
 
 upb_c_proto_library(
@@ -281,6 +290,7 @@ proto_library(
     srcs = ["golden/test_messages_proto3_editions.proto"],
     visibility = [
         "//conformance/test_protos:__pkg__",
+        "//learning/brain/research/grmf/tools/protolean/conformance:__pkg__",
         "//net/proto2/util/converter/internal/conformance:__pkg__",
     ],
     deps = [
@@ -352,15 +362,11 @@ internal_php_proto_library(
     visibility = ["//conformance:__pkg__"],
 )
 
-internal_py_proto_library(
+py_proto_library(
     name = "test_messages_proto3_editions_py_pb2",
     testonly = True,
-    srcs = ["golden/test_messages_proto3_editions.proto"],
-    srcs_version = "PY2AND3",
-    visibility = [
-        "//conformance:__pkg__",
-    ],
-    deps = ["//python:well_known_types_py_pb2"],
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto3_editions_proto"],
 )
 
 upb_c_proto_library(

@@ -19,14 +19,14 @@
 extern "C" {
 #endif
 
-struct upb_Extension;
+struct upb_AuxField;
 
-// Encodes an extension (`upb_Extension*`) to bytes.
+// Encodes an extension (`upb_AuxField*`) to bytes.
 //
 // This can be used to encode an extension into the provided arena.
 // Returns `kUpb_EncodeStatus_Ok` on success.
 UPB_NODISCARD upb_EncodeStatus
-upb_EncodeExtension(const struct upb_Extension* ext, struct upb_Arena* arena,
+upb_EncodeExtension(const struct upb_AuxField* ext, struct upb_Arena* arena,
                     upb_StringView* view, int encode_options);
 
 #ifdef __cplusplus

@@ -17,7 +17,6 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
-#include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
@@ -88,7 +87,7 @@ class ParseFunctionGenerator {
   void GenerateTailCallTable(io::Printer* printer);
   void GenerateFastFieldEntries(io::Printer* printer);
   void GenerateFieldEntries(io::Printer* p);
-  void GenerateFieldNames(Formatter& format);
+  void GenerateFieldNames(io::Printer* p);
 
   const Descriptor* descriptor_;
   const Options& options_;

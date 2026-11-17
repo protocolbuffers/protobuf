@@ -231,13 +231,12 @@ void MessageOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) {
 }
 
 void MessageOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
-  // TODO: We may be able to do better than this
+  // Reuse the existing sub-message if this oneof case is already set, rather
+  // than copying it into a fresh instance on every occurrence; copying makes
+  // parsing N occurrences of the same field quadratic in N.
   printer->Print(
-    variables_,
-    "$type_name$ subBuilder = new $type_name$();\n"
-    "if ($has_property_check$) {\n"
-    "  subBuilder.MergeFrom($property_name$);\n"
-    "}\n");
+      variables_,
+      "$type_name$ subBuilder = $property_name$ ?? new $type_name$();\n");
   if (descriptor_->type() == FieldDescriptor::Type::TYPE_MESSAGE) {
     printer->Print("input.ReadMessage(subBuilder);\n");
   } else {

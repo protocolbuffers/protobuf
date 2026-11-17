@@ -1,5 +1,5 @@
-# Copyright (c) 2024, Google LLC
-# All rights reserved.
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google LLC
 #
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
@@ -78,6 +78,7 @@ cc_library(
         "//upb/message:promote",
         "//upb/mini_table",
         "//upb/wire",
+        "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:check",
         "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings:string_view",
@@ -92,10 +93,7 @@ cc_test(
         "//hpb",
         "//hpb:arena",
         "//hpb:extension",
-        "//hpb:options",
         "//hpb_generator/tests:test_model_hpb_proto",
-        "//upb/mem",
-        "//upb/mini_table",
         "@abseil-cpp//absl/base:core_headers",
         "@abseil-cpp//absl/hash",
         "@abseil-cpp//absl/log:absl_check",

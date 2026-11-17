@@ -1,5 +1,5 @@
-# Copyright (c) 2009-2021, Google LLC
-# All rights reserved.
+# Protocol Buffers - Google's data interchange format
+# Copyright 2009 Google LLC
 #
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
@@ -183,7 +183,10 @@ cc_library(
     hdrs = ["internal/def_pool_init.h"],
     copts = UPB_DEFAULT_COPTS,
     features = UPB_DEFAULT_FEATURES,
-    visibility = ["//rust/upb:__subpackages__"],
+    visibility = [
+        "//rust/upb:__subpackages__",
+        "//upb:__pkg__",
+    ],
     deps = [
         ":internal",
         "//upb/base",

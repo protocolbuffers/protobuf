@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("//bazel/private:compat_flag.bzl", "compat_bool_flag", "compat_label_flag", "compat_string_list_flag")
 
@@ -69,33 +76,25 @@ config_setting(
     visibility = ["//bazel/private/oss/toolchains/prebuilt:__pkg__"],
 )
 
-# TODO: deprecate this flag.
-compat_bool_flag(
-    name = "strict_proto_deps",
-    build_setting_default = True,
-    fragment_field = "strict_proto_deps",
-    scope = "universal",
-    values = {
-        False: [
-            "off",
-            "OFF",
-        ],
-        True: [
-            "warn",
-            "WARN",
-            "error",
-            "ERROR",
-            "strict",
-            "STRICT",
-        ],
-    },
+# Internal-only flag used by CI to assert that prebuilt protoc is used and
+# that protoc is never built from source. Users must not depend on this flag.
+bool_flag(
+    name = "internal_do_not_use_require_prebuilt_protoc",
+    build_setting_default = False,
+    scope = "universal",  # propagate from host to exec configuration
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "internal_do_not_use_require_prebuilt_protoc.flag_set",
+    flag_values = {":internal_do_not_use_require_prebuilt_protoc": "true"},
+    visibility = ["//src/google/protobuf/compiler:__pkg__"],
 )
 
 # TODO: deprecate this flag.
 compat_bool_flag(
     name = "strict_public_imports",
-    build_setting_default = False,
-    fragment_field = "strict_public_imports",
+    build_setting_default = True,
     scope = "universal",
     values = {
         False: [

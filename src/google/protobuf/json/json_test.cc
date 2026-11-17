@@ -36,6 +36,7 @@
 #include "google/protobuf/util/type_resolver_util.h"
 #include "google/protobuf/stubs/status_macros.h"
 
+
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
@@ -1422,6 +1423,41 @@ TEST_P(JsonTest, TestTimestamp) {
   EXPECT_EQ(m2->value().nanos(), 5);
 }
 
+TEST_P(JsonTest, TestTimestampRejectsInvalidComponents) {
+  for (absl::string_view value : {
+           "00001-01-01T00:00:00Z",
+           "1970-1-01T00:00:00Z",
+           "1970-1-01T00:00:00.0Z",
+           "1970-13-01T00:00:00Z",
+           "1970-01-32T00:00:00Z",
+           "2001-02-29T00:00:00Z",
+           "1970-01-01T24:00:00Z",
+           "1970-01-01T00:60:00Z",
+           "1970-01-01T00:00:60Z",
+           "1970-01-01T00:00:00+24:00",
+           "1970-01-01T00:00:00+00:60",
+           "0001-01-01T00:00:00+00:01",
+           "9999-12-31T23:59:59-00:01",
+       }) {
+    EXPECT_THAT(
+        ToProto<google::protobuf::Timestamp>(absl::StrCat("\"", value, "\"")),
+        StatusIs(absl::StatusCode::kInvalidArgument))
+        << value;
+  }
+}
+
+TEST_P(JsonTest, TestTimestampAcceptsValidBoundaries) {
+  // Positive controls cover a leap day and timezone-adjusted range edges.
+  for (absl::string_view value : {
+           "2000-02-29T00:00:00Z",
+           "0001-01-01T00:00:00-00:01",
+           "9999-12-31T23:59:59+00:01",
+       }) {
+    EXPECT_OK(
+        ToProto<google::protobuf::Timestamp>(absl::StrCat("\"", value, "\"")));
+  }
+}
+
 // This test case comes from Envoy's tests. They like to parse a Value out of
 // YAML, turn it into JSON, and then parse it as a different proto. This means
 // we must be extremely careful with integer fields, because they need to
@@ -1785,6 +1821,73 @@ TEST(JsonTest, MapsThroughCodegenWorksProperly) {
                 }
               )pb")));
 }
+
+TEST_P(JsonTest, SerializeRecursionLimit) {
+  // Nesting is counted per JSON object or array, the same as when parsing.
+  auto make_messages = [](int depth, bool repeated) {
+    proto2_unittest::NestedTestAllTypes root;
+    auto* cur = &root;
+    for (int i = 1; i < depth; ++i) {
+      cur = repeated ? cur->add_repeated_child() : cur->mutable_child();
+    }
+    return root;
+  };
+  auto at_limit = ToJson(make_messages(100, /*repeated=*/false));
+  ASSERT_OK(at_limit);
+  EXPECT_OK(ToProto<proto2_unittest::NestedTestAllTypes>(*at_limit));
+  EXPECT_THAT(ToJson(make_messages(101, /*repeated=*/false)),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+  // Each repeated level is two levels of JSON nesting: `[{`.
+  EXPECT_OK(ToJson(make_messages(50, /*repeated=*/true)));
+  EXPECT_THAT(ToJson(make_messages(51, /*repeated=*/true)),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+
+  PrintOptions options;
+  options.recursion_limit = 3;
+  EXPECT_OK(ToJson(make_messages(3, /*repeated=*/false), options));
+  EXPECT_THAT(ToJson(make_messages(4, /*repeated=*/false), options),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+
+  auto make_anys = [](int depth) {
+    google::protobuf::Any cur;
+    for (int i = 1; i < depth; ++i) {
+      google::protobuf::Any outer;
+      EXPECT_TRUE(outer.PackFrom(cur));
+      cur = std::move(outer);
+    }
+    return cur;
+  };
+  EXPECT_OK(ToJson(make_anys(100)));
+  EXPECT_THAT(ToJson(make_anys(101)),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+
+  if (GetParam() == Codec::kReflective) {
+    google::protobuf::Value list, strukt;
+    google::protobuf::Value* cur_list = &list;
+    google::protobuf::Value* cur_struct = &strukt;
+    for (int i = 0; i < 100; ++i) {
+      cur_list = cur_list->mutable_list_value()->add_values();
+      cur_struct =
+          &(*cur_struct->mutable_struct_value()->mutable_fields())["a"];
+    }
+    cur_list->set_null_value(google::protobuf::NULL_VALUE);
+    cur_struct->set_null_value(google::protobuf::NULL_VALUE);
+
+    std::string out;
+    EXPECT_OK(MessageToJsonString(list, &out));
+    EXPECT_OK(MessageToJsonString(strukt, &out));
+
+    cur_list->mutable_list_value()->add_values()->set_null_value(
+        google::protobuf::NULL_VALUE);
+    (*cur_struct->mutable_struct_value()->mutable_fields())["a"].set_null_value(
+        google::protobuf::NULL_VALUE);
+    EXPECT_THAT(MessageToJsonString(list, &out),
+                StatusIs(absl::StatusCode::kInvalidArgument));
+    EXPECT_THAT(MessageToJsonString(strukt, &out),
+                StatusIs(absl::StatusCode::kInvalidArgument));
+  }
+}
+
 
 }  // namespace
 }  // namespace json

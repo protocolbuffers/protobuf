@@ -13,4 +13,5 @@ package pb;
 
 import public "google/protobuf/json_enumvalue_options.proto";
 
+option go_package = "google.golang.org/protobuf/types/jsonoptionspb";
 option java_package = "com.google.protobuf.util";

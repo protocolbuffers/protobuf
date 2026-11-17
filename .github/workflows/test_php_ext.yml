@@ -25,15 +25,15 @@ permissions:
 jobs:
   package:
     name: Package
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: protocolbuffers/protobuf-ci/checkout@v6
+        uses: protocolbuffers/protobuf-ci/checkout@v7
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Package extension
-        uses: protocolbuffers/protobuf-ci/bazel@v6
+        uses: protocolbuffers/protobuf-ci/bazel@v7
         with:
           version: 9.2.0 # Bazel version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -54,11 +54,11 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - version: "8.2"
+          - version: "8.3"
             continuous-only: true
           - version: "8.5"
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Build ${{ matrix.version }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131  # v7.0.0
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
@@ -67,7 +67,7 @@ jobs:
 
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/docker@v6
+        uses: protocolbuffers/protobuf-ci/docker@v7
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-extension:${{ matrix.version }}-f1c24ed6acfbf6ec709b0de2f702209c9d3ac659
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}

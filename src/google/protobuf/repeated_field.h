@@ -41,11 +41,11 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/arena.h"
-#include "google/protobuf/arena_align.h"
 #include "google/protobuf/field_with_arena.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/internal_metadata_locator.h"
 #include "google/protobuf/internal_visibility.h"
+#include "google/protobuf/memory_align.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
@@ -160,7 +160,7 @@ class alignas(8) HeapRep {
 // Note that SOO is disabled on 32-bit platforms due to alignment limitations.
 
 // SOO data is stored in the same space as the size/capacity ints.
-enum { kSooCapacityBytes = 2 * sizeof(int) };
+inline constexpr size_t kSooCapacityBytes = 2 * sizeof(int);
 
 inline constexpr uint32_t kNotSooBit = 0x1;
 // The number of bits at the start of the `InternalMetadataResolver` offset to
@@ -208,7 +208,7 @@ class SooRep {
     return res;
   }
   void set_size(int size) {
-    ABSL_DCHECK(!is_soo() || size <= kSooCapacityBytes);
+    ABSL_DCHECK(!is_soo() || size <= static_cast<int64_t>(kSooCapacityBytes));
     size_ = size;
   }
   int capacity() const {
@@ -269,6 +269,9 @@ class SooRep {
 
 // The untyped common base class for `RepeatedField`.
 class RepeatedFieldBase {
+ public:
+  bool empty() const { return soo_rep_.size() == 0; }
+
  protected:
   constexpr RepeatedFieldBase() = default;
   constexpr explicit RepeatedFieldBase(internal::InternalMetadataOffset offset)
@@ -362,27 +365,24 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
 
   ~RepeatedField();
 
-  PROTOBUF_FUTURE_ADD_NODISCARD bool empty() const;
-  PROTOBUF_FUTURE_ADD_NODISCARD int size() const;
+  [[nodiscard]] bool empty() const;
+  [[nodiscard]] int size() const;
 
-  PROTOBUF_FUTURE_ADD_NODISCARD const_reference
-  Get(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  PROTOBUF_FUTURE_ADD_NODISCARD pointer Mutable(int index)
+  [[nodiscard]] const_reference Get(int index) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  [[nodiscard]] pointer Mutable(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
-  PROTOBUF_FUTURE_ADD_NODISCARD const_reference
-  operator[](int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  [[nodiscard]] const_reference operator[](int index) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return Get(index);
   }
-  PROTOBUF_FUTURE_ADD_NODISCARD reference operator[](int index)
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  [[nodiscard]] reference operator[](int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return *Mutable(index);
   }
 
-  PROTOBUF_FUTURE_ADD_NODISCARD const_reference
-  at(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  PROTOBUF_FUTURE_ADD_NODISCARD reference at(int index)
+  [[nodiscard]] const_reference at(int index) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  [[nodiscard]] reference at(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   void Set(int index, const Element& value);
   void Add(Element value);
@@ -435,7 +435,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   void Truncate(int new_size);
 
   void AddAlreadyReserved(Element value);
-  PROTOBUF_FUTURE_ADD_NODISCARD int Capacity() const;
+  [[nodiscard]] int Capacity() const;
 
   // Adds `n` elements to this instance asserting there is enough capacity.
   // The added elements are uninitialized if `Element` is trivial.
@@ -453,10 +453,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
 
   // Gets the underlying array.  This pointer is possibly invalidated by
   // any add or remove operation.
-  PROTOBUF_FUTURE_ADD_NODISCARD pointer mutable_data()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  PROTOBUF_FUTURE_ADD_NODISCARD const_pointer
-  data() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  [[nodiscard]] pointer mutable_data() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  [[nodiscard]] const_pointer data() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Swaps entire contents with "other". If they are separate arenas, then
   // copies data between each other.
@@ -465,40 +463,34 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   // Swaps two elements.
   void SwapElements(int index1, int index2);
 
-  PROTOBUF_FUTURE_ADD_NODISCARD iterator begin() ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  PROTOBUF_FUTURE_ADD_NODISCARD const_iterator
-  begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  PROTOBUF_FUTURE_ADD_NODISCARD const_iterator
-  cbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  PROTOBUF_FUTURE_ADD_NODISCARD iterator end() ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  PROTOBUF_FUTURE_ADD_NODISCARD const_iterator
-  end() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  PROTOBUF_FUTURE_ADD_NODISCARD const_iterator
-  cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  [[nodiscard]] iterator begin() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  [[nodiscard]] const_iterator begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  [[nodiscard]] const_iterator cbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  [[nodiscard]] iterator end() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  [[nodiscard]] const_iterator end() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  [[nodiscard]] const_iterator cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Reverse iterator support
-  PROTOBUF_FUTURE_ADD_NODISCARD reverse_iterator rbegin()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  [[nodiscard]] reverse_iterator rbegin() ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return reverse_iterator(end());
   }
-  PROTOBUF_FUTURE_ADD_NODISCARD const_reverse_iterator
-  rbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  [[nodiscard]] const_reverse_iterator rbegin() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return const_reverse_iterator(end());
   }
-  PROTOBUF_FUTURE_ADD_NODISCARD reverse_iterator rend()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  [[nodiscard]] reverse_iterator rend() ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return reverse_iterator(begin());
   }
-  PROTOBUF_FUTURE_ADD_NODISCARD const_reverse_iterator
-  rend() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  [[nodiscard]] const_reverse_iterator rend() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return const_reverse_iterator(begin());
   }
 
   // Returns the number of bytes used by the repeated field, excluding
   // sizeof(*this)
-  PROTOBUF_FUTURE_ADD_NODISCARD size_t SpaceUsedExcludingSelfLong() const;
+  [[nodiscard]] size_t SpaceUsedExcludingSelfLong() const;
 
-  PROTOBUF_FUTURE_ADD_NODISCARD int SpaceUsedExcludingSelf() const {
+  [[nodiscard]] int SpaceUsedExcludingSelf() const {
     return internal::ToIntSize(SpaceUsedExcludingSelfLong());
   }
 
@@ -519,7 +511,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
                  const_iterator last) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Gets the Arena on which this RepeatedField stores its elements.
-  PROTOBUF_FUTURE_ADD_NODISCARD inline Arena* GetArena() {
+  [[nodiscard]] inline Arena* GetArena() {
     // Note: we make this function non-const to force callers to call the
     // `mutable_*` accessor on the repeated field before calling `GetArena()`,
     // which initializes the field if it is split. If this method were const,
@@ -599,6 +591,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
 
   template <typename ArenaProvider>
   void ReserveWithArena(ArenaProvider arena_provider, int new_size);
+
+  void TryShrinkToFit(internal::SerialArena* arena);
 
   template <typename ArenaProvider>
   void* AddUninitializedWithArena(ArenaProvider arena_provider);
@@ -734,7 +728,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   void InternalDeallocate(ArenaProvider arena_provider) {
     ABSL_DCHECK(!is_soo());
     ABSL_DCHECK_EQ(ResolveArena(arena_provider), GetSerialArena());
-    const size_t bytes = Capacity(false) * sizeof(Element) + kHeapRepHeaderSize;
+    const size_t bytes =
+        Capacity(/*is_soo=*/false) * sizeof(Element) + kHeapRepHeaderSize;
     if constexpr (in_destructor &&
                   Arena::is_destructor_skippable<RepeatedField>::value) {
       // Repeated fields with destructor-skippable elements are never destroyed
@@ -897,7 +892,7 @@ inline RepeatedField<Element>& RepeatedField<Element>::operator=(
 
 template <typename Element>
 inline bool RepeatedField<Element>::empty() const {
-  return size() == 0;
+  return RepeatedFieldBase::empty();
 }
 
 template <typename Element>
@@ -1410,13 +1405,13 @@ RepeatedField<Element>::cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
 
 template <typename Element>
 inline size_t RepeatedField<Element>::SpaceUsedExcludingSelfLong() const {
-  const int capacity = Capacity();
-  return capacity > kSooCapacityElements
-             ? capacity * sizeof(Element) + kHeapRepHeaderSize
-             : 0;
+  return is_soo() ? 0
+                  : Capacity(/*is_soo=*/false) * sizeof(Element) +
+                        kHeapRepHeaderSize;
 }
 
-// Like C++20's std::erase_if, for RepeatedField
+// Like C++20's std::erase_if, for RepeatedField. The order of calls to the
+// predicate is not specified.
 template <typename T, typename Pred>
 size_t erase_if(RepeatedField<T>& cont, Pred pred) {
   // Intentionally decay `elem` to avoid exposing a reference to elements of the
@@ -1533,6 +1528,31 @@ inline void RepeatedField<Element>::Reserve(int new_size) {
 }
 
 template <typename Element>
+void RepeatedField<Element>::TryShrinkToFit(internal::SerialArena* arena) {
+  if (arena == nullptr || is_soo()) return;
+
+  internal::HeapRep* rep = heap_rep();
+  Element* tail = rep->elements<Element>() + rep->capacity();
+
+  // Array memory returned to the arena via ReturnArrayMemory has the invariant
+  // that it has to be at least kMinimumReturnedArraySize bytes. If we resize
+  // ourselves too small here and then we grow again we might end up returning
+  // an invalid block to the arena on reallocation.
+  const int size_to_use = std::max<int>(
+      size(),
+      (internal::SerialArena::kMinimumReturnedArraySize - kHeapRepHeaderSize) /
+          sizeof(Element));
+
+  // We must Ceil to make sure the new tail is properly aligned.
+  Element* new_tail = internal::ArenaAlignDefault{}.Ceil(
+      rep->elements<Element>() + size_to_use);
+
+  if (arena->TryTrimTail(tail, new_tail)) {
+    rep->set_capacity(new_tail - rep->elements<Element>());
+  }
+}
+
+template <typename Element>
 template <typename ArenaProvider>
 void RepeatedField<Element>::ReserveWithArena(ArenaProvider arena_provider,
                                               int new_size) {
@@ -1574,10 +1594,10 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(
     new_size = static_cast<int>(num_available);
     new_rep = new (res.p) internal::HeapRep(new_size);
   } else {
-    if constexpr (internal::ArenaAlignDefault::Ceil(sizeof(Element)) !=
+    if constexpr (internal::ArenaAlignDefault{}.Ceil(sizeof(Element)) !=
                   sizeof(Element)) {
       // We need to manually align the allocation.
-      bytes = internal::ArenaAlignDefault::Ceil(bytes);
+      bytes = internal::ArenaAlignDefault{}.Ceil(bytes);
       new_size = (bytes - kHeapRepHeaderSize) / sizeof(Element);
     }
 
@@ -1692,12 +1712,8 @@ class RepeatedIterator {
       : it_(other.it_) {}
 
   // dereferenceable
-  PROTOBUF_FUTURE_ADD_NODISCARD constexpr reference operator*() const noexcept {
-    return *it_;
-  }
-  PROTOBUF_FUTURE_ADD_NODISCARD constexpr pointer operator->() const noexcept {
-    return it_;
-  }
+  [[nodiscard]] constexpr reference operator*() const noexcept { return *it_; }
+  [[nodiscard]] constexpr pointer operator->() const noexcept { return it_; }
 
  private:
   // Helper alias to hide the internal type.
@@ -1766,7 +1782,7 @@ class RepeatedIterator {
   }
 
   // indexable
-  PROTOBUF_FUTURE_ADD_NODISCARD constexpr reference operator[](
+  [[nodiscard]] constexpr reference operator[](
       difference_type d) const noexcept {
     return it_[d];
   }

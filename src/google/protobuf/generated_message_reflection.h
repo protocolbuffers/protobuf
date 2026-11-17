@@ -46,7 +46,8 @@ struct Metadata;
 
 namespace io {
 class CodedOutputStream;
-}
+}  // namespace io
+
 }  // namespace protobuf
 }  // namespace google
 
@@ -55,6 +56,7 @@ namespace protobuf {
 namespace internal {
 class DefaultEmptyOneof;
 struct MessageGlobalsBase;
+struct ClassData;
 // Defined in other files.
 class ExtensionSet;  // extension_set.h
 

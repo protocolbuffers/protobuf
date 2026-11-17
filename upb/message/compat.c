@@ -13,6 +13,7 @@
 #include "upb/message/message.h"
 #include "upb/message/value.h"
 #include "upb/mini_table/extension.h"
+#include "upb/mini_table/field.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -31,6 +32,24 @@ const upb_MiniTableExtension* upb_Message_FindExtensionByNumber(
   const upb_MiniTableExtension* result;
   while (upb_Message_NextExtensionReverse(msg, &result, &iter)) {
     if (upb_MiniTableExtension_Number(result) == field_number) return result;
+  }
+  return NULL;
+}
+
+bool upb_Message_NextExtensionFieldReverse(const upb_Message* msg,
+                                           const upb_MiniTableField** result,
+                                           uintptr_t* iter) {
+  upb_MessageValue val;
+  return UPB_PRIVATE(_upb_Message_NextExtensionFieldReverse)(msg, result, &val,
+                                                             iter);
+}
+
+const upb_MiniTableField* upb_Message_FindExtensionFieldByNumber(
+    const upb_Message* msg, uint32_t field_number) {
+  uintptr_t iter = kUpb_Message_ExtensionBegin;
+  const upb_MiniTableField* result;
+  while (upb_Message_NextExtensionFieldReverse(msg, &result, &iter)) {
+    if (upb_MiniTableField_Number(result) == field_number) return result;
   }
   return NULL;
 }

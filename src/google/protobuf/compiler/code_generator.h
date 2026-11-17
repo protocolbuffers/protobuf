@@ -124,6 +124,11 @@ class PROTOC_EXPORT CodeGenerator {
   // proto files with an edition after this will result in an error.
   virtual Edition GetMaximumEdition() const { return Edition::EDITION_UNKNOWN; }
 
+  // Returns true if default json_name values (matching
+  // ToJsonName(field.name())) should be stripped from FileDescriptorProtos
+  // before building descriptors.
+  virtual bool StripDefaultJsonName() const { return false; }
+
   // Builds a default feature set mapping for this generator.
   //
   // This will use the extensions specified by GetFeatureExtensions(), with the

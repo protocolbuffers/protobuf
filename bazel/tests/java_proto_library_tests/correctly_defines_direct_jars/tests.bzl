@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 """Tests that a java_proto_library only provides direct jars corresponding on the
    * proto_library rules it directly depends on, excluding anything that the proto_library rules
    * depends on themselves. This does not concern strict-deps in the compilation of the generated

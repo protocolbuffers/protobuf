@@ -444,6 +444,66 @@ class MapFieldTest extends TestBase {
     }
 
     #########################################################
+    # Test iteration edge cases.
+    #########################################################
+
+    private static function countEntries($arr) {
+        $n = 0;
+        foreach ($arr as $key => $val) {
+          $n++;
+        }
+        return $n;
+    }
+
+    public function testIterateEmptyMap() {
+        $this->assertSame(0, self::countEntries(
+            new MapField(GPBType::INT32, GPBType::INT32)));
+        $this->assertSame(0, self::countEntries(
+            new MapField(GPBType::STRING, GPBType::STRING)));
+
+        $iter = (new MapField(GPBType::INT32, GPBType::INT32))->getIterator();
+        $iter->rewind();
+        $this->assertFalse($iter->valid());
+        $iter->next();
+        $this->assertFalse($iter->valid());
+    }
+
+    public function testIterateEmptiedMap() {
+        $arr = new MapField(GPBType::STRING, GPBType::INT32);
+        $arr['a'] = 1;
+        $arr['b'] = 2;
+        unset($arr['a']);
+        unset($arr['b']);
+        $this->assertSame(0, self::countEntries($arr));
+    }
+
+    public function testIterateZeroKey() {
+        $arr = new MapField(GPBType::INT32, GPBType::INT32);
+        $arr[0] = 5;
+        $this->assertSame(1, self::countEntries($arr));
+        for ($i = 1; $i < 10; $i++) {
+          $arr[$i] = $i;
+        }
+        $this->assertSame(10, self::countEntries($arr));
+    }
+
+    public function testIteratorPastEnd() {
+        $arr = new MapField(GPBType::INT32, GPBType::INT32);
+        $arr[1] = 1;
+        $iter = $arr->getIterator();
+        $iter->rewind();
+        $this->assertTrue($iter->valid());
+        $iter->next();
+        $this->assertFalse($iter->valid());
+        $iter->next();
+        $this->assertFalse($iter->valid());
+        // Rewinding restarts iteration.
+        $iter->rewind();
+        $this->assertTrue($iter->valid());
+        $this->assertSame(1, $iter->key());
+    }
+
+    #########################################################
     # Test reference in map
     #########################################################
 

@@ -76,6 +76,14 @@ public class ExtensionRegistry extends ExtensionRegistryLite {
     return EMPTY_REGISTRY;
   }
 
+  /**
+   * Get an unmodifiable registry that contains the union of the extensions in each supplied
+   * registry.
+   */
+  public static ExtensionRegistry combine(Collection<ExtensionRegistry> registries) {
+    return new MemoizingExtensionRegistry(new CompositeExtensionRegistry(registries));
+  }
+
   /** Returns an unmodifiable view of the registry. */
   @Override
   public ExtensionRegistry getUnmodifiable() {

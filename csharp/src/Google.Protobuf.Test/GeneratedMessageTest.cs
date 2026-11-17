@@ -688,6 +688,58 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void OneofMessage_RepeatedOccurrencesAreMerged()
+        {
+            var first = new Value { ListValue = new ListValue { Values = { Value.ForNumber(1) } } };
+            var second = new Value { ListValue = new ListValue { Values = { Value.ForNumber(2) } } };
+            var bytes = first.ToByteArray().Concat(second.ToByteArray()).ToArray();
+
+            MessageParsingHelpers.AssertReadingMessage(Value.Parser, bytes, parsed =>
+            {
+                Assert.AreEqual(Value.KindOneofCase.ListValue, parsed.KindCase);
+                Assert.AreEqual(
+                    new ListValue { Values = { Value.ForNumber(1), Value.ForNumber(2) } },
+                    parsed.ListValue);
+            });
+        }
+
+        [Test]
+        public void OneofMessage_OtherCaseInBetweenDiscardsEarlierMessage()
+        {
+            var first = new Value { ListValue = new ListValue { Values = { Value.ForNumber(1) } } };
+            var middle = new Value { StringValue = "x" };
+            var last = new Value { ListValue = new ListValue { Values = { Value.ForNumber(2) } } };
+            var bytes = first.ToByteArray()
+                .Concat(middle.ToByteArray())
+                .Concat(last.ToByteArray())
+                .ToArray();
+
+            MessageParsingHelpers.AssertReadingMessage(Value.Parser, bytes, parsed =>
+            {
+                Assert.AreEqual(Value.KindOneofCase.ListValue, parsed.KindCase);
+                Assert.AreEqual(new ListValue { Values = { Value.ForNumber(2) } }, parsed.ListValue);
+            });
+        }
+
+        [Test]
+        public void OneofMessage_ManyOccurrencesParseInLinearTime()
+        {
+            // Each occurrence of a oneof message field used to be merged into a fresh copy of the
+            // accumulated value, making this input take quadratic time (minutes at this size).
+            const int count = 100000;
+            var occurrence = new Value { ListValue = new ListValue { Values = { Value.ForNumber(1) } } }.ToByteArray();
+            var bytes = new byte[occurrence.Length * count];
+            for (int i = 0; i < count; i++)
+            {
+                Buffer.BlockCopy(occurrence, 0, bytes, i * occurrence.Length, occurrence.Length);
+            }
+
+            var parsed = Value.Parser.ParseFrom(bytes);
+            Assert.AreEqual(Value.KindOneofCase.ListValue, parsed.KindCase);
+            Assert.AreEqual(count, parsed.ListValue.Values.Count);
+        }
+
+        [Test]
         public void MapStringString_DeterministicTrue_ThenBytesIdentical()
         {
             // Define three strings consisting of different versions of the letter I.

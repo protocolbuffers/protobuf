@@ -1683,7 +1683,7 @@ bool Parser::ParseOption(Message* options,
         }
         // value too large for an integer; fall through below to treat as
         // floating point
-        ABSL_FALLTHROUGH_INTENDED;
+        [[fallthrough]];
       }
 
       case io::Tokenizer::TYPE_FLOAT: {

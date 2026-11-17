@@ -15,6 +15,35 @@
 #include "upb/port/def.inc"
 
 extern const UPB_PRIVATE(upb_GeneratedExtensionListEntry)* UPB_PRIVATE(upb_generated_extension_list);
+/* google.protobuf.compiler.Version: in-memory layout.
+ *
+ * 64-bit: 40 bytes (3 bytes padding)
+ * +--------+------+-------------------+--------+----------------+---------------------------+
+ * | Offset | Size | Field             | Type   | Storage        | Presence                  |
+ * +--------+------+-------------------+--------+----------------+---------------------------+
+ * |      0 |    8 | (message header)  |        | upb_Message    |                           |
+ * |      8 |    1 | (hasbits: 4 used) |        | uint8_t[]      |                           |
+ * |      9 |    3 | (padding)         |        |                |                           |
+ * |     12 |    4 | major = 1         | int32  | int32_t        | hasbit 64 (byte 8, bit 0) |
+ * |     16 |    4 | minor = 2         | int32  | int32_t        | hasbit 65 (byte 8, bit 1) |
+ * |     20 |    4 | patch = 3         | int32  | int32_t        | hasbit 66 (byte 8, bit 2) |
+ * |     24 |   16 | suffix = 4        | string | upb_StringView | hasbit 67 (byte 8, bit 3) |
+ * +--------+------+-------------------+--------+----------------+---------------------------+
+ *
+ * 32-bit: 32 bytes (3 bytes padding)
+ * +--------+------+-------------------+--------+----------------+---------------------------+
+ * | Offset | Size | Field             | Type   | Storage        | Presence                  |
+ * +--------+------+-------------------+--------+----------------+---------------------------+
+ * |      0 |    8 | (message header)  |        | upb_Message    |                           |
+ * |      8 |    1 | (hasbits: 4 used) |        | uint8_t[]      |                           |
+ * |      9 |    3 | (padding)         |        |                |                           |
+ * |     12 |    4 | major = 1         | int32  | int32_t        | hasbit 64 (byte 8, bit 0) |
+ * |     16 |    4 | minor = 2         | int32  | int32_t        | hasbit 65 (byte 8, bit 1) |
+ * |     20 |    4 | patch = 3         | int32  | int32_t        | hasbit 66 (byte 8, bit 2) |
+ * |     24 |    8 | suffix = 4        | string | upb_StringView | hasbit 67 (byte 8, bit 3) |
+ * +--------+------+-------------------+--------+----------------+---------------------------+
+ */
+
 typedef struct {
   upb_MiniTableField fields[4];
 } google__protobuf__compiler__Version_msg_init_Fields;
@@ -43,6 +72,38 @@ const upb_MiniTable google__protobuf__compiler__Version_msg_init = {
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
+
+/* google.protobuf.compiler.CodeGeneratorRequest: in-memory layout.
+ *
+ * 64-bit: 64 bytes (7 bytes padding)
+ * +--------+------+------------------------------+----------------------------------------------+----------------+---------------------------+
+ * | Offset | Size | Field                        | Type                                         | Storage        | Presence                  |
+ * +--------+------+------------------------------+----------------------------------------------+----------------+---------------------------+
+ * |      0 |    8 | (message header)             |                                              | upb_Message    |                           |
+ * |      8 |    1 | (hasbits: 2 used)            |                                              | uint8_t[]      |                           |
+ * |      9 |    7 | (padding)                    |                                              |                |                           |
+ * |     16 |   16 | parameter = 2                | string                                       | upb_StringView | hasbit 64 (byte 8, bit 0) |
+ * |     32 |    8 | file_to_generate = 1         | repeated string                              | upb_Array*     |                           |
+ * |     40 |    8 | compiler_version = 3         | google.protobuf.compiler.Version             | upb_Message*   | hasbit 65 (byte 8, bit 1) |
+ * |     48 |    8 | proto_file = 15              | repeated google.protobuf.FileDescriptorProto | upb_Array*     |                           |
+ * |     56 |    8 | source_file_descriptors = 17 | repeated google.protobuf.FileDescriptorProto | upb_Array*     |                           |
+ * +--------+------+------------------------------+----------------------------------------------+----------------+---------------------------+
+ *
+ * 32-bit: 40 bytes (7 bytes padding)
+ * +--------+------+------------------------------+----------------------------------------------+----------------+---------------------------+
+ * | Offset | Size | Field                        | Type                                         | Storage        | Presence                  |
+ * +--------+------+------------------------------+----------------------------------------------+----------------+---------------------------+
+ * |      0 |    8 | (message header)             |                                              | upb_Message    |                           |
+ * |      8 |    1 | (hasbits: 2 used)            |                                              | uint8_t[]      |                           |
+ * |      9 |    3 | (padding)                    |                                              |                |                           |
+ * |     12 |    4 | file_to_generate = 1         | repeated string                              | upb_Array*     |                           |
+ * |     16 |    4 | compiler_version = 3         | google.protobuf.compiler.Version             | upb_Message*   | hasbit 65 (byte 8, bit 1) |
+ * |     20 |    4 | proto_file = 15              | repeated google.protobuf.FileDescriptorProto | upb_Array*     |                           |
+ * |     24 |    4 | source_file_descriptors = 17 | repeated google.protobuf.FileDescriptorProto | upb_Array*     |                           |
+ * |     28 |    8 | parameter = 2                | string                                       | upb_StringView | hasbit 64 (byte 8, bit 0) |
+ * |     36 |    4 | (padding)                    |                                              |                |                           |
+ * +--------+------+------------------------------+----------------------------------------------+----------------+---------------------------+
+ */
 
 typedef struct {
   upb_MiniTableField fields[5];
@@ -104,6 +165,38 @@ const upb_MiniTable google__protobuf__compiler__CodeGeneratorRequest_msg_init = 
   })
 };
 
+/* google.protobuf.compiler.CodeGeneratorResponse: in-memory layout.
+ *
+ * 64-bit: 56 bytes (7 bytes padding)
+ * +--------+------+------------------------+--------------------------------------------------------------+----------------+---------------------------+
+ * | Offset | Size | Field                  | Type                                                         | Storage        | Presence                  |
+ * +--------+------+------------------------+--------------------------------------------------------------+----------------+---------------------------+
+ * |      0 |    8 | (message header)       |                                                              | upb_Message    |                           |
+ * |      8 |    1 | (hasbits: 4 used)      |                                                              | uint8_t[]      |                           |
+ * |      9 |    3 | (padding)              |                                                              |                |                           |
+ * |     12 |    4 | minimum_edition = 3    | int32                                                        | int32_t        | hasbit 66 (byte 8, bit 2) |
+ * |     16 |    4 | maximum_edition = 4    | int32                                                        | int32_t        | hasbit 67 (byte 8, bit 3) |
+ * |     20 |    4 | (padding)              |                                                              |                |                           |
+ * |     24 |   16 | error = 1              | string                                                       | upb_StringView | hasbit 64 (byte 8, bit 0) |
+ * |     40 |    8 | supported_features = 2 | uint64                                                       | uint64_t       | hasbit 65 (byte 8, bit 1) |
+ * |     48 |    8 | file = 15              | repeated google.protobuf.compiler.CodeGeneratorResponse.File | upb_Array*     |                           |
+ * +--------+------+------------------------+--------------------------------------------------------------+----------------+---------------------------+
+ *
+ * 32-bit: 40 bytes (3 bytes padding)
+ * +--------+------+------------------------+--------------------------------------------------------------+----------------+---------------------------+
+ * | Offset | Size | Field                  | Type                                                         | Storage        | Presence                  |
+ * +--------+------+------------------------+--------------------------------------------------------------+----------------+---------------------------+
+ * |      0 |    8 | (message header)       |                                                              | upb_Message    |                           |
+ * |      8 |    1 | (hasbits: 4 used)      |                                                              | uint8_t[]      |                           |
+ * |      9 |    3 | (padding)              |                                                              |                |                           |
+ * |     12 |    4 | minimum_edition = 3    | int32                                                        | int32_t        | hasbit 66 (byte 8, bit 2) |
+ * |     16 |    4 | maximum_edition = 4    | int32                                                        | int32_t        | hasbit 67 (byte 8, bit 3) |
+ * |     20 |    4 | file = 15              | repeated google.protobuf.compiler.CodeGeneratorResponse.File | upb_Array*     |                           |
+ * |     24 |    8 | error = 1              | string                                                       | upb_StringView | hasbit 64 (byte 8, bit 0) |
+ * |     32 |    8 | supported_features = 2 | uint64                                                       | uint64_t       | hasbit 65 (byte 8, bit 1) |
+ * +--------+------+------------------------+--------------------------------------------------------------+----------------+---------------------------+
+ */
+
 typedef struct {
   upb_MiniTableField fields[5];
   upb_MiniTableSubInternal subs[1];
@@ -145,6 +238,35 @@ const upb_MiniTable google__protobuf__compiler__CodeGeneratorResponse_msg_init =
     {0x003000003f08007a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
   })
 };
+
+/* google.protobuf.compiler.CodeGeneratorResponse.File: in-memory layout.
+ *
+ * 64-bit: 72 bytes (7 bytes padding)
+ * +--------+------+--------------------------+-----------------------------------+----------------+---------------------------+
+ * | Offset | Size | Field                    | Type                              | Storage        | Presence                  |
+ * +--------+------+--------------------------+-----------------------------------+----------------+---------------------------+
+ * |      0 |    8 | (message header)         |                                   | upb_Message    |                           |
+ * |      8 |    1 | (hasbits: 4 used)        |                                   | uint8_t[]      |                           |
+ * |      9 |    7 | (padding)                |                                   |                |                           |
+ * |     16 |   16 | name = 1                 | string                            | upb_StringView | hasbit 64 (byte 8, bit 0) |
+ * |     32 |   16 | insertion_point = 2      | string                            | upb_StringView | hasbit 65 (byte 8, bit 1) |
+ * |     48 |   16 | content = 15             | string                            | upb_StringView | hasbit 66 (byte 8, bit 2) |
+ * |     64 |    8 | generated_code_info = 16 | google.protobuf.GeneratedCodeInfo | upb_Message*   | hasbit 67 (byte 8, bit 3) |
+ * +--------+------+--------------------------+-----------------------------------+----------------+---------------------------+
+ *
+ * 32-bit: 40 bytes (3 bytes padding)
+ * +--------+------+--------------------------+-----------------------------------+----------------+---------------------------+
+ * | Offset | Size | Field                    | Type                              | Storage        | Presence                  |
+ * +--------+------+--------------------------+-----------------------------------+----------------+---------------------------+
+ * |      0 |    8 | (message header)         |                                   | upb_Message    |                           |
+ * |      8 |    1 | (hasbits: 4 used)        |                                   | uint8_t[]      |                           |
+ * |      9 |    3 | (padding)                |                                   |                |                           |
+ * |     12 |    4 | generated_code_info = 16 | google.protobuf.GeneratedCodeInfo | upb_Message*   | hasbit 67 (byte 8, bit 3) |
+ * |     16 |    8 | name = 1                 | string                            | upb_StringView | hasbit 64 (byte 8, bit 0) |
+ * |     24 |    8 | insertion_point = 2      | string                            | upb_StringView | hasbit 65 (byte 8, bit 1) |
+ * |     32 |    8 | content = 15             | string                            | upb_StringView | hasbit 66 (byte 8, bit 2) |
+ * +--------+------+--------------------------+-----------------------------------+----------------+---------------------------+
+ */
 
 typedef struct {
   upb_MiniTableField fields[4];

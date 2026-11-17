@@ -13,7 +13,7 @@ jobs:
       contents: write  #  for git push
 
     if: github.repository == 'protocolbuffers/protobuf'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     name: Refresh stale files
 
     strategy:

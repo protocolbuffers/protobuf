@@ -14,6 +14,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <memory>
 #include <new>  // IWYU pragma: keep for operator new().
 #include <string>
 #include <type_traits>
@@ -21,7 +22,11 @@
 #include <vector>
 
 #include "absl/base/macros.h"
+#include "absl/base/nullability.h"
+#include "absl/types/optional.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/internal_visibility.h"
+#include "google/protobuf/private_access.h"
 #if defined(_MSC_VER) && !defined(_LIBCPP_STD_VER) && !_HAS_EXCEPTIONS
 // Work around bugs in MSVC <typeinfo> header when _HAS_EXCEPTIONS=0.
 #include <exception>
@@ -36,8 +41,8 @@ using type_info = ::type_info;
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_format.h"
-#include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_allocation_policy.h"
+#include "google/protobuf/memory_align.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/serial_arena.h"
 #include "google/protobuf/thread_safe_arena.h"
@@ -74,7 +79,6 @@ struct ArenaTestPeer;        // defined in arena_test_util.h
 class InternalMetadata;      // defined in metadata_lite.h
 template <typename MessageType>
 class ByTemplate;            // defined in static_message_factory.h
-class EpsCopyInputStream;    // defined in parse_context.h
 class UntypedMapBase;        // defined in map.h
 class RepeatedPtrFieldBase;  // defined in repeated_ptr_field.h
 class TcParser;              // defined in generated_message_tctable_impl.h
@@ -83,6 +87,14 @@ SerialArena* PROTOBUF_NULLABLE GetSerialArena(Arena* PROTOBUF_NULLABLE);
 
 template <typename Type>
 class GenericTypeHandler;  // defined in repeated_field.h
+
+// Returns true if the message is on an arena. As a free function, we can call
+// it in contexts where `MessageLite` is incomplete. Use this instead of
+// `message.GetArena() == nullptr`.
+bool HasArena(const MessageLite& message);
+
+// Defined in message_lite.h
+Arena* PROTOBUF_NULLABLE GetArena(const MessageLite& message);
 
 // This struct maps field types to the types that we will use to represent them
 // when allocated on an arena. This is necessary because fields no longer own an
@@ -182,7 +194,7 @@ struct ABSL_ATTRIBUTE_WARN_UNUSED ArenaOptions final {
   // An initial block of memory for the arena to use, or nullptr for none. If
   // provided, the block must live at least as long as the arena itself. The
   // creator of the Arena retains ownership of the block after the Arena is
-  // destroyed.
+  // destroyed. Must be aligned to at least 8 bytes.
   char* PROTOBUF_NULLABLE initial_block = nullptr;
 
   // The size of the initial block, if provided.
@@ -192,7 +204,8 @@ struct ABSL_ATTRIBUTE_WARN_UNUSED ArenaOptions final {
   // requested. By default, it contains a ptr to the malloc function.
   //
   // NOTE: block_alloc and dealloc functions are expected to behave like
-  // malloc and free, including Asan poisoning.
+  // malloc and free, including Asan poisoning. Returned blocks must be aligned
+  // to at least 8 bytes.
   void* PROTOBUF_NONNULL (*PROTOBUF_NULLABLE block_alloc)(size_t) = nullptr;
   // A function pointer to a dealloc method that takes ownership of the blocks
   // from the arena. By default, it contains a ptr to a wrapper function that
@@ -291,13 +304,13 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
   // Default constructor with sensible default options, tuned for average
   // use-cases.
-  inline Arena() : impl_() {}
+  Arena() : impl_() {}
 
   // Construct an arena with default options, except for the supplied
   // initial block. It is more efficient to use this constructor
   // instead of passing ArenaOptions if the only configuration needed
   // by the caller is supplying an initial block.
-  inline Arena(char* PROTOBUF_NULLABLE initial_block, size_t initial_block_size)
+  Arena(char* PROTOBUF_NULLABLE initial_block, size_t initial_block_size)
       : impl_(initial_block, initial_block_size) {}
 
   // Arena constructor taking custom options. See ArenaOptions above for
@@ -316,7 +329,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
       internal::ThreadSafeArena::kBlockHeaderSize +
       internal::ThreadSafeArena::kSerialArenaSize;
 
-  inline ~Arena() = default;
+  ~Arena() = default;
 
   // Allocates an object type T if the arena passed in is not nullptr;
   // otherwise, returns a heap-allocated object.
@@ -405,8 +418,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   // Allocates memory with the specific size and alignment.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD void* PROTOBUF_NONNULL
   AllocateAligned(size_t size, size_t align = 8) {
-    if (align <= internal::ArenaAlignDefault::align) {
-      return Allocate(internal::ArenaAlignDefault::Ceil(size));
+    if (align <= internal::ArenaAlignDefault{}.align()) {
+      return Allocate(internal::ArenaAlignDefault{}.Ceil(size));
     } else {
       // We are wasting space by over allocating align - 8 bytes. Compared
       // to a dedicated function that takes current alignment in consideration.
@@ -434,7 +447,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
                   "CreateArray requires a trivially destructible type");
     ABSL_CHECK_LE(num_elements,
                   // Max rounded down to the 8 byte alignment.
-                  (std::numeric_limits<size_t>::max() & ~7) / sizeof(T))
+                  internal::ArenaAlignDefault{}.Floor(
+                      std::numeric_limits<size_t>::max()) /
+                      sizeof(T))
         << "Requested size is too large to fit into size_t.";
     if (ABSL_PREDICT_FALSE(arena == nullptr)) {
       return new T[num_elements];
@@ -642,7 +657,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     return InternalHelper<T>::GetArena(p);
   }
 
-  // Helper typetraits that indicates support for arenas in a type T at compile
+  // Helper type traits that indicates support for arenas in a type T at compile
   // time. This is public only to allow construction of higher-level templated
   // utilities.
   //
@@ -662,6 +677,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
  private:
   internal::ThreadSafeArena impl_;
+
+  static constexpr void StaticAssertArenaLayout();
 
   enum class ConstructType { kUnknown, kDefault, kCopy, kMove };
   // Overload set to detect which kind of construction is going to happen for a
@@ -799,8 +816,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   }
 
   void* PROTOBUF_NONNULL AllocateAlignedForArray(size_t n, size_t align) {
-    if (align <= internal::ArenaAlignDefault::align) {
-      return AllocateForArray(internal::ArenaAlignDefault::Ceil(n));
+    if (align <= internal::ArenaAlignDefault{}.align()) {
+      return AllocateForArray(internal::ArenaAlignDefault{}.Ceil(n));
     } else {
       // We are wasting space by over allocating align - 8 bytes. Compared
       // to a dedicated function that takes current alignment in consideration.
@@ -831,21 +848,26 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   friend class internal::InternalMetadata;    // For user_arena().
   template <typename>
   friend class internal::ByTemplate;          // For DefaultConstruct.
-  friend class internal::EpsCopyInputStream;  // For parser performance
   friend class internal::TcParser;            // For parser performance
   friend class MessageLite;
   template <typename Key, typename T>
   friend class Map;
+  friend internal::PrivateAccess;
   template <typename>
   friend class RepeatedField;                   // For ReturnArrayMemory
   friend class internal::RepeatedPtrFieldBase;  // For ReturnArrayMemory
   friend class internal::UntypedMapBase;        // For ReturnArrayMemory
   friend class internal::ExtensionSet;          // For ReturnArrayMemory
-  friend internal::SerialArena* PROTOBUF_NULLABLE
-  internal::GetSerialArena(Arena* PROTOBUF_NULLABLE);
 
   friend struct internal::ArenaTestPeer;
 };
+
+constexpr void Arena::StaticAssertArenaLayout() {
+  static_assert(
+      PROTOBUF_FIELD_OFFSET(Arena, impl_) == 0,
+      "ThreadSafeArena and Arena must have the same start address. Elsewhere, "
+      "we assume this and reinterpret_cast up from ThreadSafeArena to Arena.");
+}
 
 namespace internal {
 // Comparison base to inject relational operators in UniquePtr and Ptr.
@@ -858,13 +880,12 @@ struct ArenaPtrCmpBase {
   }
 
   template <typename T>
-  static auto PROTOBUF_NULLABLE
-  Unpack(const typename Arena::UniquePtr<T>& ptr) {
+  static T* PROTOBUF_NULLABLE Unpack(const typename Arena::UniquePtr<T>& ptr) {
     return ptr.get();
   }
 
   template <typename T>
-  static auto PROTOBUF_NONNULL
+  static T* PROTOBUF_NONNULL
   Unpack(const typename Arena::template Ptr<T>& ptr) {
     return ptr.get();
   }
@@ -1130,30 +1151,13 @@ class [[nodiscard]] ABSL_ATTRIBUTE_TRIVIAL_ABI Arena::Ptr final
 template <typename T>
 PROTOBUF_NOINLINE void* PROTOBUF_NONNULL
 Arena::DefaultConstruct(Arena* PROTOBUF_NULLABLE arena) {
-  if constexpr (internal::FieldHasArenaOffset<T>()) {
-    if (arena != nullptr) {
-      using ArenaRepT = typename internal::FieldArenaRep<T>::Type;
-      static_assert(is_destructor_skippable<ArenaRepT>::value);
-
-      void* mem = arena->AllocateAligned(sizeof(ArenaRepT));
-      ArenaRepT* arena_rep = new (mem) ArenaRepT(arena);
-      return internal::FieldArenaRep<T>::Get(arena_rep);
-    } else {
-      static_assert(is_destructor_skippable<T>::value);
-      // Fields which use arena offsets don't have constructors that take an
-      // arena pointer. Since the arena is nullptr, it is safe to default
-      // construct the object.
-      return new (internal::Allocate(sizeof(T))) T();
-    }
+  static_assert(is_destructor_skippable<T>::value);
+  void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
+                               : internal::Allocate(sizeof(T));
+  if constexpr (internal::HasDeprecatedArenaConstructor<T>()) {
+    return new (mem) T(internal::InternalVisibility(), arena);
   } else {
-    static_assert(is_destructor_skippable<T>::value);
-    void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
-                                 : internal::Allocate(sizeof(T));
-    if constexpr (internal::HasDeprecatedArenaConstructor<T>()) {
-      return new (mem) T(internal::InternalVisibility(), arena);
-    } else {
-      return new (mem) T(arena);
-    }
+    return new (mem) T(arena);
   }
 }
 
@@ -1192,6 +1196,8 @@ inline void* PROTOBUF_NONNULL Arena::AllocateInternal<std::string>() {
 
 namespace internal {
 
+inline std::nullptr_t GetSerialArena(std::nullptr_t) { return nullptr; }
+
 inline SerialArena* PROTOBUF_NULLABLE
 GetSerialArena(SerialArena* PROTOBUF_NULLABLE arena) {
   return arena;
@@ -1200,7 +1206,7 @@ GetSerialArena(SerialArena* PROTOBUF_NULLABLE arena) {
 inline SerialArena* PROTOBUF_NULLABLE
 GetSerialArena(Arena* PROTOBUF_NULLABLE arena) {
   if (arena == nullptr) return nullptr;
-  SerialArena* res = arena->impl_.GetSerialArena();
+  SerialArena* res = PrivateAccess::GetThreadSafeArena(*arena).GetSerialArena();
   PROTOBUF_ASSUME(res != nullptr);
   return res;
 }
@@ -1213,6 +1219,42 @@ inline SerialArena* PROTOBUF_NULLABLE
 GetSerialArena(const MessageLite* PROTOBUF_NONNULL elem) {
   const auto* dependent_elem = (delay, ..., elem);
   return GetSerialArena(dependent_elem->GetArena());
+}
+
+inline Arena* PROTOBUF_NULLABLE GetArena(Arena* PROTOBUF_NULLABLE arena) {
+  return arena;
+}
+
+// Using a template to make member access type dependent and delay it until
+// instantiation when `MessageLite` will be complete.
+// Not really a generic function.
+template <auto... delay>
+inline Arena* PROTOBUF_NULLABLE
+GetArena(const MessageLite* PROTOBUF_NONNULL elem) {
+  const auto* dependent_elem = (delay, ..., elem);
+  return dependent_elem->GetArena();
+}
+
+constexpr ThreadSafeArena& PrivateAccess::GetThreadSafeArena(Arena& arena) {
+  return arena.impl_;
+}
+
+inline void* PROTOBUF_NONNULL
+MessageCreator::AllocateMessage(Arena* PROTOBUF_NULLABLE arena) const {
+  if (arena != nullptr) {
+    return arena->AllocateAligned(allocation_size_);
+  } else {
+    return Allocate(allocation_size_);
+  }
+}
+
+inline void* PROTOBUF_NONNULL
+MessageCreator::AllocateMessage(SerialArena* PROTOBUF_NULLABLE arena) const {
+  if (arena != nullptr) {
+    return arena->AllocateAligned(ArenaAlignDefault{}.Ceil(allocation_size_));
+  } else {
+    return Allocate(allocation_size_);
+  }
 }
 
 // This class is used to define `DestructorSkippable_` for some containing type

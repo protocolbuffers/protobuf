@@ -128,13 +128,9 @@
 // Owner: shaod@, gberg@
 #define PROTOBUF_FUTURE_DESCRIPTOR_EXTENSION_DECL 1
 
-// Marks several logically constant operations on Repeated*Field as nodiscard.
-// Owner: ckennelly@, mkruskal@
-#define PROTOBUF_FUTURE_ADD_NODISCARD [[nodiscard]]
-
-#else
-
-#define PROTOBUF_FUTURE_ADD_NODISCARD
+// Deletes UnknownFieldSet::MergeToInternalMetadata.
+// Owner: cknittel@
+#define PROTOBUF_FUTURE_DELETE_UFS_MERGE_TO_MESSAGE 1
 
 #endif
 
@@ -161,16 +157,6 @@
 #define PROTOBUF_ALWAYS_INLINE inline
 #endif
 
-#ifdef PROTOBUF_ALWAYS_INLINE_NODEBUG
-#error PROTOBUF_ALWAYS_INLINE_NODEBUG was previously defined
-#endif
-// For functions we want to force inline and omit debug info for.
-#if ABSL_HAVE_CPP_ATTRIBUTE(gnu::nodebug)
-#define PROTOBUF_ALWAYS_INLINE_NODEBUG [[gnu::nodebug]] PROTOBUF_ALWAYS_INLINE
-#else
-#define PROTOBUF_ALWAYS_INLINE_NODEBUG PROTOBUF_ALWAYS_INLINE
-#endif
-
 #ifdef PROTOBUF_ALWAYS_INLINE_CALL
 #error PROTOBUF_ALWAYS_INLINE_CALL was previously defined
 #endif
@@ -179,8 +165,8 @@
 // This is useful for lambdas where it is not easy to specify ALWAYS_INLINE.
 // Use like:
 //   PROTOBUF_ALWAYS_INLINE_CALL res = SomeFunc(args...);
-#if defined(__clang__) && !defined(PROTOBUF_NO_INLINE_CALL) && \
-    ABSL_HAVE_CPP_ATTRIBUTE(clang::always_inline)
+#if ABSL_HAVE_CPP_ATTRIBUTE(clang::always_inline) && defined(__clang__) && \
+    !defined(PROTOBUF_NO_INLINE_CALL)
 #define PROTOBUF_ALWAYS_INLINE_CALL [[clang::always_inline]]
 #else
 #define PROTOBUF_ALWAYS_INLINE_CALL

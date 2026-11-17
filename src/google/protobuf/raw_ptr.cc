@@ -9,7 +9,6 @@
 
 #include <algorithm>
 
-#include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
 
 // Must be included last.
@@ -19,8 +18,12 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-ABSL_CONST_INIT PROTOBUF_EXPORT ABSL_CACHELINE_ALIGNED const char
-    kZeroBuffer[std::max(ABSL_CACHELINE_SIZE, 64)] = {};
+alignas(ABSL_CACHELINE_SIZE)
+#if defined(__cpp_constinit) && __cpp_constinit >= 201907L
+    constinit
+#endif
+    PROTOBUF_EXPORT const
+    char kZeroBuffer[std::max(ABSL_CACHELINE_SIZE, 64)] = {};
 
 }  // namespace internal
 }  // namespace protobuf

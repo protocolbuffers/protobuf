@@ -15,8 +15,10 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/java/java_features.pb.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 
@@ -58,6 +60,7 @@ class JavaGeneratorTest : public CommandLineInterfaceTester {
     }
     return contents.find(substring) != std::string::npos;
   }
+
 };
 
 TEST_F(JavaGeneratorTest, Basic) {
@@ -135,6 +138,7 @@ TEST_F(JavaGeneratorTest, NestInFileClassFeatureDefaultEdition2024) {
 
   RunProtoc(
       "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir "
+      "--java_opt=allow_legacy_generic_services "
       "--experimental_editions foo.proto");
 
   ExpectWarningSubstring("Generic services");
@@ -244,6 +248,7 @@ TEST_F(JavaGeneratorTest, SplitNestInFileClassServiceFeatureEdition2024) {
 
   RunProtoc(
       "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir "
+      "--java_opt=allow_legacy_generic_services "
       "--experimental_editions foo.proto");
 
   ExpectWarningSubstring("Generic services");
@@ -283,6 +288,38 @@ TEST_F(JavaGeneratorTest, SplitNestInFileClassEnumFeatureEdition2024) {
       FileGenerated(PACKAGE_PREFIX "proto2_unittest/UnnestedEnum.java"));
   EXPECT_FALSE(FileGenerated(PACKAGE_PREFIX
                              "proto2_unittest/NestedInFileClassEnum.java"));
+}
+
+constexpr char kGenericServicesProto[] = R"schema(
+    syntax = "proto2";
+    package proto2_unittest;
+    option java_generic_services = true;
+    option java_multiple_files = true;
+    message Foo {}
+    service TestService {
+      rpc Method(Foo) returns (Foo);
+    })schema";
+
+TEST_F(JavaGeneratorTest, GenericServicesDefault) {
+  CreateTempFile("foo.proto", kGenericServicesProto);
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir foo.proto");
+
+  ExpectWarningSubstring("Generic services");
+  EXPECT_FALSE(
+      FileGenerated(PACKAGE_PREFIX "proto2_unittest/TestService.java"));
+}
+
+TEST_F(JavaGeneratorTest, GenericServicesGeneratedWithLegacyOption) {
+  CreateTempFile("foo.proto", kGenericServicesProto);
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir "
+      "--java_opt=allow_legacy_generic_services foo.proto");
+
+  ExpectWarningSubstring("Generic services");
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "proto2_unittest/TestService.java"));
 }
 
 TEST_F(JavaGeneratorTest, LargeClosedEnumDisallowedEdition2024) {
@@ -334,6 +371,215 @@ TEST_F(JavaGeneratorTest, LargeOpenEnumAllowedEdition2024) {
 
   ExpectNoErrors();
 }
+
+TEST_F(JavaGeneratorTest, LargeEnumUsesLazyInternalValueMapHolder) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2024";
+    package proto2_unittest;
+    import "third_party/java/protobuf/java_features.proto";
+
+    enum Bar {
+      option features.(pb.java).large_enum = true;
+
+      AAA = 0;
+      BBB = 1;
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_out=lite:$tmpdir "
+      "foo.proto --experimental_editions");
+
+  ExpectNoErrors();
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "proto2_unittest/Bar.java"));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX "proto2_unittest/Bar.java",
+                                    "return InternalValueMap.INSTANCE;"));
+  EXPECT_TRUE(
+      FileContainsSubstring(PACKAGE_PREFIX "proto2_unittest/Bar.java",
+                            "private static final class InternalValueMap"));
+  EXPECT_FALSE(FileContainsSubstring(PACKAGE_PREFIX "proto2_unittest/Bar.java",
+                                     "internalValueMap"));
+}
+
+TEST_F(JavaGeneratorTest, LargeEnumAliasesEmittedInSameShardAsCanonical) {
+  std::string schema = R"schema(
+    edition = "2024";
+    package proto2_unittest;
+    import "third_party/java/protobuf/java_features.proto";
+    enum BigAliasedEnum {
+      option allow_alias = true;
+      option features.(pb.java).large_enum = true;
+  )schema";
+  for (int i = 0; i <= 1996; ++i) {
+    absl::StrAppend(&schema, "  VAL", i, " = ", i, ";\n");
+  }
+  absl::StrAppend(
+      &schema,
+      "  VAL1_ALIAS = 1;\n  VAL998_ALIAS = 998;\n  VAL1995_ALIAS = 1995;\n}\n");
+  CreateTempFile("big_aliased.proto", schema);
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir "
+      "big_aliased.proto --experimental_editions");
+
+  ExpectNoErrors();
+  EXPECT_TRUE(
+      FileGenerated(PACKAGE_PREFIX "proto2_unittest/BigAliasedEnum.java"));
+  // VAL1_ALIAS, VAL998_ALIAS, and VAL1995_ALIAS must be emitted in the same
+  // shard as their canonical values using direct same-interface references
+  // rather than cross-interface references:
+  // - BigAliasedEnum0 has 999 constants (VAL0..VAL997 plus VAL1_ALIAS), because
+  //   (VAL998, VAL998_ALIAS) has group_size = 2 (999 + 2 > 1000) and is pushed
+  //   to the start of BigAliasedEnum1.
+  // - BigAliasedEnum1 has 1000 constants (VAL998..VAL1995 plus VAL998_ALIAS and
+  //   VAL1995_ALIAS), because (VAL1995, VAL1995_ALIAS) starts at size 998
+  //   (998 + 2 == 1000 <= 1000) and fits at the end of BigAliasedEnum1, while
+  //   VAL1996 starts BigAliasedEnum2.
+  EXPECT_TRUE(FileContainsSubstring(
+      PACKAGE_PREFIX "proto2_unittest/BigAliasedEnum.java",
+      "public static final BigAliasedEnum VAL1_ALIAS = VAL1;"));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX
+                                    "proto2_unittest/BigAliasedEnum.java",
+                                    R"(VAL996, VAL997
+    };
+  }
+}
+interface BigAliasedEnum1 {
+
+  /**
+   * <code>VAL998 = 998;</code>
+   */
+  public static final BigAliasedEnum VAL998 = new BigAliasedEnum(998, 998, "VAL998");
+  public static final int VAL998_VALUE = 998;
+  /**
+   * <code>VAL998_ALIAS = 998;</code>
+   */
+  public static final BigAliasedEnum VAL998_ALIAS = VAL998;
+  public static final int VAL998_ALIAS_VALUE = 998;)"));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX
+                                    "proto2_unittest/BigAliasedEnum.java",
+                                    R"(VAL1994, VAL1995
+    };
+  }
+}
+interface BigAliasedEnum2 {
+
+  /**
+   * <code>VAL1996 = 1996;</code>
+   */
+  public static final BigAliasedEnum VAL1996 = new BigAliasedEnum(1996, 1996, "VAL1996");)"));
+  EXPECT_TRUE(FileContainsSubstring(
+      PACKAGE_PREFIX "proto2_unittest/BigAliasedEnum.java",
+      "public static final BigAliasedEnum VAL1995_ALIAS = VAL1995;"));
+  EXPECT_FALSE(FileContainsSubstring(PACKAGE_PREFIX
+                                     "proto2_unittest/BigAliasedEnum.java",
+                                     "interface BigAliasedEnum3"));
+  EXPECT_FALSE(FileContainsSubstring(PACKAGE_PREFIX
+                                     "proto2_unittest/BigAliasedEnum.java",
+                                     "BigAliasedEnum0.VAL1"));
+  EXPECT_FALSE(FileContainsSubstring(PACKAGE_PREFIX
+                                     "proto2_unittest/BigAliasedEnum.java",
+                                     "BigAliasedEnum0.VAL998"));
+  EXPECT_FALSE(FileContainsSubstring(PACKAGE_PREFIX
+                                     "proto2_unittest/BigAliasedEnum.java",
+                                     "BigAliasedEnum1.VAL998"));
+}
+struct OpenEnumUnrecognizedTestCase {
+  absl::string_view test_name;
+  bool lite;
+  absl::string_view enum_options;
+  absl::string_view enum_values;
+  absl::string_view expected_unrecognized;
+};
+
+class OpenEnumUnrecognizedTest
+    : public JavaGeneratorTest,
+      public testing::WithParamInterface<OpenEnumUnrecognizedTestCase> {};
+
+TEST_P(OpenEnumUnrecognizedTest, AvoidsNegativeValueCollision) {
+  const OpenEnumUnrecognizedTestCase& test_case = GetParam();
+  absl::string_view imports =
+      absl::StrContains(test_case.enum_options, "pb.java")
+          ? "import \"third_party/java/protobuf/java_features.proto\";"
+          : "";
+  CreateTempFile("foo.proto",
+                 absl::Substitute(
+                     R"schema(
+    edition = "2024";
+    package proto2_unittest;
+
+    $0
+
+    enum TestEnum {
+      $1
+      $2
+    }
+  )schema",
+                     imports, test_case.enum_options, test_case.enum_values));
+
+  RunProtoc(absl::StrCat("protocol_compiler --proto_path=$tmpdir --java_out=",
+                         test_case.lite ? "lite:" : "",
+                         "$tmpdir foo.proto --experimental_editions"));
+
+  ExpectNoErrors();
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX
+                                    "proto2_unittest/TestEnum.java",
+                                    test_case.expected_unrecognized));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    OpenEnumUnrecognizedTests, OpenEnumUnrecognizedTest,
+    testing::Values(
+        OpenEnumUnrecognizedTestCase{
+            /*test_name=*/"StandardFull",
+            /*lite=*/false,
+            /*enum_options=*/"",
+            /*enum_values=*/"ZERO = 0;\nNEG_ONE = -1;",
+            /*expected_unrecognized=*/"UNRECOGNIZED(-2),",
+        },
+        OpenEnumUnrecognizedTestCase{
+            /*test_name=*/"StandardLite",
+            /*lite=*/true,
+            /*enum_options=*/"",
+            /*enum_values=*/"ZERO = 0;\nNEG_ONE = -1;",
+            /*expected_unrecognized=*/"UNRECOGNIZED(-2),",
+        },
+        OpenEnumUnrecognizedTestCase{
+            /*test_name=*/"AliasingFull",
+            /*lite=*/false,
+            /*enum_options=*/"option allow_alias = true;",
+            /*enum_values=*/
+            "ZERO = 0;\nZERO_ALIAS = 0;\nONE = 1;\nNEG_ONE = -1;",
+            /*expected_unrecognized=*/"UNRECOGNIZED(-1, -2),",
+        },
+        OpenEnumUnrecognizedTestCase{
+            /*test_name=*/"AliasingLite",
+            /*lite=*/true,
+            /*enum_options=*/"option allow_alias = true;",
+            /*enum_values=*/
+            "ZERO = 0;\nZERO_ALIAS = 0;\nONE = 1;\nNEG_ONE = -1;",
+            /*expected_unrecognized=*/"UNRECOGNIZED(-2),",
+        },
+        OpenEnumUnrecognizedTestCase{
+            /*test_name=*/"LargeFull",
+            /*lite=*/false,
+            /*enum_options=*/"option features.(pb.java).large_enum = true;",
+            /*enum_values=*/"ZERO = 0;\nNEG_ONE = -1;\nNEG_TWO = -2;",
+            /*expected_unrecognized=*/
+            "UNRECOGNIZED = new TestEnum(-3, 3, \"UNRECOGNIZED\");",
+        },
+        OpenEnumUnrecognizedTestCase{
+            /*test_name=*/"LargeLite",
+            /*lite=*/true,
+            /*enum_options=*/"option features.(pb.java).large_enum = true;",
+            /*enum_values=*/"ZERO = 0;\nNEG_ONE = -1;\nNEG_TWO = -2;",
+            /*expected_unrecognized=*/
+            "UNRECOGNIZED = new TestEnum(-3, \"UNRECOGNIZED\");",
+        }),
+    [](const testing::TestParamInfo<OpenEnumUnrecognizedTestCase>& info) {
+      return std::string(info.param.test_name);
+    });
 TEST_F(JavaGeneratorTest, LargeEnumDisallowedEdition2023) {
   CreateTempFile("foo.proto",
                  R"schema(
@@ -529,6 +775,74 @@ TEST_F(JavaGeneratorTest, ExtensionsPublicImportsAreKnown) {
                                          "foo.FooProto.fileOpt);")));
 }
 
+
+TEST_F(JavaGeneratorTest, BitFieldsAreTransient) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2024";
+    package proto2_unittest;
+    message Foo {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "proto2_unittest/Foo.java"));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX "proto2_unittest/Foo.java",
+                                    "private transient int bitField0_;"));
+}
+
+TEST_F(JavaGeneratorTest, MultipleBitFieldsAreTransient) {
+  std::string schema = R"schema(
+    edition = "2024";
+    package proto2_unittest;
+    message MultiBitField {
+  )schema";
+  for (int i = 1; i <= 33; ++i) {
+    absl::StrAppend(&schema, "  int32 f", i, " = ", i, ";\n");
+  }
+  absl::StrAppend(&schema, "}\n");
+  CreateTempFile("multi.proto", schema);
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir multi.proto");
+
+  ExpectNoErrors();
+  EXPECT_TRUE(
+      FileGenerated(PACKAGE_PREFIX "proto2_unittest/MultiBitField.java"));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX
+                                    "proto2_unittest/MultiBitField.java",
+                                    "private transient int bitField0_;"));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX
+                                    "proto2_unittest/MultiBitField.java",
+                                    "private transient int bitField1_;"));
+}
+
+TEST_F(JavaGeneratorTest, AllowlistedBitFieldsAreNotTransient) {
+  CreateTempFile("allowlisted.proto",
+                 R"schema(
+    edition = "2024";
+    package com.google.gson.protobuf;
+    message TestAllTypes {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir "
+      "allowlisted.proto");
+
+  ExpectNoErrors();
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX
+                            "com/google/gson/protobuf/TestAllTypes.java"));
+  EXPECT_TRUE(FileContainsSubstring(
+      PACKAGE_PREFIX "com/google/gson/protobuf/TestAllTypes.java",
+      "private int bitField0_;"));
+  EXPECT_FALSE(FileContainsSubstring(
+      PACKAGE_PREFIX "com/google/gson/protobuf/TestAllTypes.java",
+      "private transient int bitField0_;"));
+}
 
 TEST_F(JavaGeneratorTest, OneofHasBitsBuildPartial) {
   CreateTempFile("oneof_has_bits.proto",

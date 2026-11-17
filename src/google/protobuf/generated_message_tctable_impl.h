@@ -20,11 +20,12 @@
 #include "absl/status/status.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/map.h"
+#include "google/protobuf/memory_align.h"
 #include "google/protobuf/message_lite.h"
-#include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/raw_ptr.h"
@@ -699,8 +700,7 @@ class PROTOBUF_EXPORT TcParser final {
 #if !defined(NDEBUG) && !(defined(_MSC_VER) && defined(_M_IX86))
     // Check the alignment in debug mode, except in 32-bit msvc because it does
     // not respect the alignment as expressed by `alignof(T)`
-    if (ABSL_PREDICT_FALSE(reinterpret_cast<uintptr_t>(target) % alignof(T) !=
-                           0)) {
+    if (ABSL_PREDICT_FALSE(!MemoryAlign::Of<T>().IsAligned(target))) {
       AlignFail(std::integral_constant<size_t, alignof(T)>(),
                 reinterpret_cast<uintptr_t>(target));
     }
@@ -715,8 +715,7 @@ class PROTOBUF_EXPORT TcParser final {
 #if !defined(NDEBUG) && !(defined(_MSC_VER) && defined(_M_IX86))
     // Check the alignment in debug mode, except in 32-bit msvc because it does
     // not respect the alignment as expressed by `alignof(T)`
-    if (ABSL_PREDICT_FALSE(reinterpret_cast<uintptr_t>(target) % alignof(T) !=
-                           0)) {
+    if (ABSL_PREDICT_FALSE(!MemoryAlign::Of<T>().IsAligned(target))) {
       AlignFail(std::integral_constant<size_t, alignof(T)>(),
                 reinterpret_cast<uintptr_t>(target));
     }
@@ -726,53 +725,54 @@ class PROTOBUF_EXPORT TcParser final {
 
   static MessageLite* NewMessage(const ClassData* class_data, Arena* arena);
   static MessageLite* AddMessage(const ClassData* class_data,
-                                 RepeatedPtrFieldBase& field, Arena* arena);
+                                 RepeatedPtrFieldBase& field,
+                                 SerialArena* arena);
 
-  template <typename T>
-  static inline const T& GetFieldAtMaybeSplit(const void* x, size_t offset,
-                                              const MessageLite* msg,
-                                              bool is_split) {
-    if (ABSL_PREDICT_TRUE(!is_split)) return RefAt<const T>(x, offset);
-    return *RefAt<const T*>(x, offset);
-  }
-
-  template <typename T>
-  static inline const T& GetRepeatedFieldAt(const void* x, size_t offset,
-                                            const MessageLite* msg,
-                                            bool is_split) {
-    return GetFieldAtMaybeSplit<T>(x, offset, msg, is_split);
-  }
-
-  static inline const UntypedMapBase& GetMapFieldAt(const void* x,
-                                                    size_t offset,
-                                                    const MessageLite* msg) {
-    return GetFieldAtMaybeSplit<MapFieldBaseForParse>(x, offset, msg,
-                                                      /*is_split=*/false)
-        .GetMap();
-  }
+  static void* MutableSplitField(MessageLite* msg,
+                                 const TcParseTableBase* table,
+                                 const TcParseTableBase::FieldEntry& entry);
 
   template <typename T, bool is_split>
-  static inline T& MaybeCreateRepeatedRefAt(void* x, size_t offset,
-                                            MessageLite* msg) {
-    if (!is_split) return RefAt<T>(x, offset);
-    void*& ptr = RefAt<void*>(x, offset);
-    if (ptr == DefaultRawPtr()) {
-      ptr = Arena::Create<T>(msg->GetArena());
+  static T& MutableField(MessageLite* msg, const TcParseTableBase* table,
+                         const TcParseTableBase::FieldEntry& entry);
+
+  template <typename T>
+  static const T& GetField(const MessageLite* msg,
+                           const TcParseTableBase* table,
+                           const TcParseTableBase::FieldEntry& entry);
+
+  template <typename T>
+  static const T& GetRepeatedField(const MessageLite* msg,
+                                   const TcParseTableBase* table,
+                                   const TcParseTableBase::FieldEntry& entry);
+
+  template <typename T, bool is_split>
+  static T& MutableRepeatedImpl(MessageLite* msg, const TcParseTableBase* table,
+                                const TcParseTableBase::FieldEntry& entry) {
+    if constexpr (!is_split) {
+      return MutableField<T, is_split>(msg, table, entry);
+    } else {
+      auto& raw = MutableField<RawPtr<T>, is_split>(msg, table, entry);
+      if (raw.IsDefault()) {
+        raw.Set(Arena::Create<T>(msg->GetArena()));
+      }
+      return *raw;
     }
-    return *static_cast<T*>(ptr);
   }
 
   template <typename T, bool is_split>
-  static inline RepeatedField<T>& MaybeCreateRepeatedFieldRefAt(
-      void* x, size_t offset, MessageLite* msg) {
-    return MaybeCreateRepeatedRefAt<RepeatedField<T>, is_split>(x, offset, msg);
+  static RepeatedField<T>& MutableRepeatedField(
+      MessageLite* msg, const TcParseTableBase* table,
+      const TcParseTableBase::FieldEntry& entry) {
+    return MutableRepeatedImpl<RepeatedField<T>, is_split>(msg, table, entry);
   }
 
   template <typename T, bool is_split>
-  static inline RepeatedPtrField<T>& MaybeCreateRepeatedPtrFieldRefAt(
-      void* x, size_t offset, MessageLite* msg) {
-    return MaybeCreateRepeatedRefAt<RepeatedPtrField<T>, is_split>(x, offset,
-                                                                   msg);
+  static inline RepeatedPtrField<T>& MutableRepeatedPtrField(
+      MessageLite* msg, const TcParseTableBase* table,
+      const TcParseTableBase::FieldEntry& entry) {
+    return MutableRepeatedImpl<RepeatedPtrField<T>, is_split>(msg, table,
+                                                              entry);
   }
 
   template <typename T>
@@ -840,8 +840,7 @@ class PROTOBUF_EXPORT TcParser final {
   // well-optimized, so it should only be called in debug builds.
   static bool RepeatedFieldIsEmptySlow(
       const MessageLite* msg, const TcParseTableBase* table,
-      const TcParseTableBase::FieldEntry& entry, const void* base,
-      bool is_split);
+      const TcParseTableBase::FieldEntry& entry);
 
   template <typename TagTaype>
   PROTOBUF_ALWAYS_INLINE PROTOBUF_CC static const char* FastMpImpl(
@@ -852,8 +851,6 @@ class PROTOBUF_EXPORT TcParser final {
   PROTOBUF_CC static const char* FastVarintS1(PROTOBUF_TC_PARAM_DECL);
 
   friend class GeneratedTcTableLiteTest;
-  static void* MaybeGetSplitBase(MessageLite* msg, bool is_split,
-                                 const TcParseTableBase* table);
 
   // Test only access to verify that the right function is being called via
   // MiniParse.
@@ -933,9 +930,9 @@ class PROTOBUF_EXPORT TcParser final {
 
     ABSL_DCHECK(table->extension_offset != 0);
     return RefAt<ExtensionSet>(msg, table->extension_offset)
-        .ParseField(tag, ptr,
+        .ParseField(*msg, tag, ptr,
                     static_cast<const MessageBaseT*>(table->default_instance()),
-                    &msg->_internal_metadata_, ctx);
+                    ctx);
   }
 
   template <class MessageBaseT>
@@ -943,8 +940,8 @@ class PROTOBUF_EXPORT TcParser final {
       PROTOBUF_TC_PARAM_NO_DATA_DECL) {
     return RefAt<ExtensionSet>(msg, table->extension_offset)
         .ParseMessageSet(
-            ptr, static_cast<const MessageBaseT*>(table->default_instance()),
-            &msg->_internal_metadata_, ctx);
+            *msg, ptr,
+            static_cast<const MessageBaseT*>(table->default_instance()), ctx);
   }
 
   // Note: `inline` is needed on template function declarations below to avoid

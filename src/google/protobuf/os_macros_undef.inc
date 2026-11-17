@@ -73,6 +73,8 @@
 #undef ERROR_RETRY
 #pragma push_macro("ERROR_TIMEOUT")
 #undef ERROR_TIMEOUT
+#pragma push_macro("FAR")
+#undef FAR
 #pragma push_macro("GetClassName")
 #undef GetClassName
 #pragma push_macro("GetCurrentTime")

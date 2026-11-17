@@ -88,7 +88,13 @@ upb_DecodeFast_Dispatch(UPB_PARSE_PARAMS) {
 UPB_FORCEINLINE
 void upb_DecodeFast_SetHasbits(upb_Message* msg, uint64_t hasbits) {
   // TODO: Can we use `=` instead of` |=`?
-  *(uint32_t*)&msg[1] |= hasbits;
+  // This is called unconditionally, even for messages that have no hasbits, in
+  // which case these bytes belong to some other field (eg. a upb_Array*). Use
+  // memcpy() so the access is untyped and does not violate strict aliasing.
+  uint32_t word;
+  UPB_MEMCPY_INLINE(&word, &msg[1], sizeof(word));
+  word |= hasbits;
+  UPB_MEMCPY_INLINE(&msg[1], &word, sizeof(word));
 }
 
 #include "upb/port/undef.inc"

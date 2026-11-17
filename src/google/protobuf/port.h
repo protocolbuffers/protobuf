@@ -26,12 +26,12 @@
 #include <arm_acle.h>
 #endif
 
-#include "absl/base/optimization.h"
-
 
 #include "absl/base/attributes.h"
 #include "absl/base/config.h"
 #include "absl/base/dynamic_annotations.h"
+#include "absl/base/optimization.h"
+#include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/numeric/int128.h"
 #include "absl/strings/string_view.h"
@@ -79,8 +79,8 @@ PROTOBUF_ALWAYS_INLINE void StrongPointer() {
 
 template <typename T, typename TraitsImpl = MessageTraitsImpl>
 PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
-  static constexpr auto ptr =
-      decltype(TraitsImpl::template value<T>)::StrongPointer();
+  static constexpr auto ptr = decltype(TraitsImpl::template value<
+                                       std::remove_cv_t<T>>)::StrongPointer();
   // This is identical to the implementation of StrongPointer() above, but it
   // has to be explicitly inlined here or else Clang 19 will raise an error in
   // some configurations.
@@ -96,8 +96,8 @@ PROTOBUF_ALWAYS_INLINE void StrongPointer() {
 
 template <typename T, typename TraitsImpl = MessageTraitsImpl>
 PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
-  return StrongPointer(
-      decltype(TraitsImpl::template value<T>)::StrongPointer());
+  return StrongPointer(decltype(TraitsImpl::template value<
+                                std::remove_cv_t<T>>)::StrongPointer());
 }
 #endif  // .reloc
 
@@ -148,6 +148,15 @@ PROTOBUF_ALWAYS_INLINE PROTOBUF_MALLOC void* Allocate(size_t size) {
 #endif
 }
 
+PROTOBUF_ALWAYS_INLINE PROTOBUF_MALLOC void* AllocateAligned(
+    size_t size, std::align_val_t alignment) {
+#if ABSL_HAVE_BUILTIN(__builtin_operator_new)
+  return __builtin_operator_new(size, alignment);
+#else
+  return ::operator new(size, alignment);
+#endif
+}
+
 // Allocates at least `size` bytes. This function follows the c++ language
 // proposal from D0901R10 (http://wg21.link/D0901R10) and will be implemented
 // in terms of the new operator new semantics when available. The allocated
@@ -178,6 +187,17 @@ inline void SizedArrayDelete(void* p, size_t size) {
   // Avoid -Wunused-parameter
   (void)size;
   ::operator delete[](p);
+#endif
+}
+inline void SizedAlignedDelete(void* p, size_t size,
+                               std::align_val_t alignment) {
+#if ABSL_HAVE_BUILTIN(__builtin_operator_delete) && \
+    defined(__cpp_sized_deallocation)
+  __builtin_operator_delete(p, size, alignment);
+#else
+  // Avoid -Wunused-parameter
+  (void)size;
+  ::operator delete(p, alignment);
 #endif
 }
 
@@ -280,6 +300,14 @@ constexpr bool EnableStableExperiments() {
 #endif
 }
 
+// In some cases we can generate extra compile time harderning in protoc just to
+// make sure our code generation is consistent. Since this can be noop code
+// bloat that we want to avoid in normal builds we only turn it on during
+// test-only builds.
+constexpr bool GenerateCompileTimeHardeningInProtoc() {
+  return EnableStableExperiments();
+}
+
 constexpr bool EnableExperimentalMicroString() {
 #if defined(PROTOBUF_ENABLE_EXPERIMENTAL_MICRO_STRING)
   return true;
@@ -312,7 +340,8 @@ constexpr bool DebugHardenClearOneofMessageOnArena() {
 }
 
 constexpr bool HasAnySanitizer() {
-#if defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER) ||   \
+    defined(ABSL_HAVE_HWADDRESS_SANITIZER) || \
     defined(ABSL_HAVE_MEMORY_SANITIZER) || defined(ABSL_HAVE_THREAD_SANITIZER)
   return true;
 #else
@@ -369,6 +398,20 @@ constexpr bool DebugHardenCheckHasBitConsistency() {
   return true;
 #endif
   return false;
+}
+
+// Provides a compile-time check that the given pointer is aligned to
+// `alignment` for toolchains that support `__builtin_is_aligned`. Otherwise,
+// with C++20, this is an assertion only at runtime. For older C++ versions,
+// this is a no-op.
+constexpr void DebugAssertPtrIsAligned(const void* ptr, size_t alignment) {
+#if ABSL_HAVE_BUILTIN(__builtin_is_aligned)
+  ABSL_DCHECK(__builtin_is_aligned(ptr, alignment));
+#elif defined(__cpp_lib_is_constant_evaluated)
+  if (!std::is_constant_evaluated()) {
+    ABSL_DCHECK(reinterpret_cast<uintptr_t>(ptr) % alignment == 0);
+  }
+#endif
 }
 
 // Reads n bytes from p, if PerformDebugChecks() is true. This allows ASAN to
@@ -496,7 +539,7 @@ struct PrefetchOpts {
 
 // NOTE: Enable prefetching with Clang only: various problems with other
 // compilers, especially old ones.
-#if defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_prefetch)
+#if ABSL_HAVE_BUILTIN(__builtin_prefetch) && defined(__clang__)
 
 namespace detail {
 
@@ -607,7 +650,7 @@ inline void PrefetchToLocalCache(const void* ptr) {
   Prefetch<kOpts>(ptr);
 }
 
-#else  // defined(__clang__) || ABSL_HAVE_BUILTIN(__builtin_prefetch)
+#else  // ABSL_HAVE_BUILTIN(__builtin_prefetch) && defined(__clang__)
 
 template <const PrefetchOpts& kOpts, typename T, typename U>
 PROTOBUF_ALWAYS_INLINE void Prefetch(const void*) {}
@@ -615,9 +658,9 @@ PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom7Lines(const void* ptr) {}
 PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom1Line(const void* ptr) {}
 inline void PrefetchToLocalCache(const void* ptr) {}
 
-#endif  // defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_prefetch)
+#endif  // ABSL_HAVE_BUILTIN(__builtin_prefetch) && defined(__clang__)
 
-#if defined(NDEBUG) && ABSL_HAVE_BUILTIN(__builtin_unreachable)
+#if ABSL_HAVE_BUILTIN(__builtin_unreachable) && defined(NDEBUG)
 [[noreturn]] ABSL_ATTRIBUTE_COLD PROTOBUF_ALWAYS_INLINE void Unreachable() {
   __builtin_unreachable();
 }
@@ -658,7 +701,7 @@ inline void UnpoisonMemoryRegion([[maybe_unused]] const void* p,
     // There is no official API for this, so we just probe.
     alignas(8) char buf[8];
     ASAN_POISON_MEMORY_REGION(buf, sizeof(buf));
-    bool res = __asan_address_is_poisoned(buf);
+    bool res = __asan_address_is_poisoned(buf) != 0;
     ASAN_UNPOISON_MEMORY_REGION(buf, sizeof(buf));
     return res;
   }();

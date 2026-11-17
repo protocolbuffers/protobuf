@@ -398,6 +398,13 @@ TEST_F(CppGeneratorTest, DeprecatedEnumMessageIsNotSelfWarning) {
       "foo.pb.h",
       "PROTOBUF_IGNORE_DEPRECATION_START\n"
       "template <>\n"
+      "internal::EnumTraitsT<::Result_Status_internal_data_>\n"
+      "    internal::EnumTraitsImpl::value<::Result_Status>;\n"
+      "PROTOBUF_IGNORE_DEPRECATION_STOP\n");
+  ExpectFileContentContainsSubstring(
+      "foo.pb.h",
+      "PROTOBUF_IGNORE_DEPRECATION_START\n"
+      "template <>\n"
       "struct is_proto_enum<::Result_Status> : std::true_type {};\n"
       "template <>\n"
       "inline const EnumDescriptor* PROTOBUF_NONNULL "
