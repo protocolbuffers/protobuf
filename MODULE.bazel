@@ -193,12 +193,11 @@ python = use_extension("@rules_python//python/extensions:python.bzl", "python", 
 
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust", dev_dependency = True)
 
-# As of October 2025, our minimum supported Rust version is 1.79. However, we
-# use 1.85.0 here so that we can get some test coverage with Rust edition 2024.
-# Cargo and our Bazel WORKSPACE build are both still on Rust edition 2021.
+# Minimum supported Rust version per the Foundational Rust Support Policy:
+# https://github.com/google/oss-policies-info/blob/main/foundational-rust-support-matrix.md
 rust.toolchain(
     edition = "2024",
-    versions = ["1.85.0"],
+    versions = ["1.92.0"],
 )
 
 crate = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")

@@ -6,7 +6,8 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
-load("@rules_rust//rust:defs.bzl", "rust_library")
+load("@rules_rust//cargo:defs.bzl", "cargo_build_script")
+load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 load("//bazel:proto_library.bzl", "proto_library")
 load(
     "//rust:defs.bzl",
@@ -611,4 +612,21 @@ rust_cc_proto_library(
     # Ensure this library builds even when layering check is disabled.
     features = ["-layering_check"],
     deps = [":unittest_proto"],
+)
+
+cargo_build_script(
+    name = "rust_version_test_build_script",
+    testonly = True,
+    srcs = ["rust_version_test_build.rs"],
+    edition = "2024",
+)
+
+rust_test(
+    name = "rust_version_test",
+    srcs = ["rust_version_test.rs"],
+    edition = "2024",
+    deps = [
+        ":rust_version_test_build_script",
+        "@crate_index//:googletest",
+    ],
 )

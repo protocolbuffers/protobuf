@@ -43,7 +43,12 @@ sh_binary(
     data = [
         ":workspace",
         "//:protoc",
+        "@rules_rust//rust/toolchain:current_cargo_files",
+        "@rules_rust//rust/toolchain:current_rust_toolchain",
     ],
+    env = {
+        "CARGO_RLOCATION": "$(rlocationpath @rules_rust//rust/toolchain:current_cargo_files)",
+    },
     tags = ["manual"],
     deps = ["@bazel_tools//tools/bash/runfiles"],
 )

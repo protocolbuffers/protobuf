@@ -5,7 +5,7 @@ readme = "README.md"
 version = "{PROTOBUF_LEGACY_VERSION}"
 description = "Code generator for Rust Protocol Buffers bindings"
 license = "BSD-3-Clause"
-rust-version = "1.79"
+rust-version = "1.92"
 # Superseded by the google-protobuf-codegen crate, which this crate re-exports.
 # No new versions are published to crates.io.
 publish = false
