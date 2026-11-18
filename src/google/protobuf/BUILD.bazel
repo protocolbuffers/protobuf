@@ -506,6 +506,7 @@ cc_test(
     }),
     deps = [
         ":arena",
+        ":cc_lite_test_protos",
         ":cc_test_protos",
         ":lite_test_util",
         ":protobuf",

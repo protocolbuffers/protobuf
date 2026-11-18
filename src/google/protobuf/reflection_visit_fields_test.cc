@@ -19,11 +19,16 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/extension_set.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_lite.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include "google/protobuf/wire_format.h"
@@ -34,6 +39,7 @@ namespace protobuf {
 namespace internal {
 namespace {
 
+using ::proto2_unittest::ForeignMessageLite;
 using ::proto2_unittest::NestedTestAllTypes;
 using ::proto2_unittest::TestAllExtensions;
 using ::proto2_unittest::TestAllTypes;
@@ -468,6 +474,51 @@ TEST(ReflectionVisitTest, VisitMapAfterMutableRepeated) {
 
   EXPECT_THAT(key_val_pairs, testing::UnorderedElementsAre(
                                  testing::Pair(0, 200), testing::Pair(1, 200)));
+}
+
+TEST(ReflectionVisitTest, SkipsLiteMessageAndGroupExtensions) {
+  const ExtensionIdentifier<TestAllExtensions,
+                            MessageTypeTraits<ForeignMessageLite>,
+                            WireFormatLite::TYPE_MESSAGE, false>
+      singular_msg(900001, MessageGlobalsBase::FromDefaultInstance(
+                               &ForeignMessageLite::default_instance()));
+  const ExtensionIdentifier<TestAllExtensions,
+                            MessageTypeTraits<ForeignMessageLite>,
+                            WireFormatLite::TYPE_GROUP, false>
+      singular_group(900002, MessageGlobalsBase::FromDefaultInstance(
+                                 &ForeignMessageLite::default_instance()));
+  const ExtensionIdentifier<TestAllExtensions,
+                            RepeatedMessageTypeTraits<ForeignMessageLite>,
+                            WireFormatLite::TYPE_MESSAGE, false>
+      repeated_msg(900003, &ForeignMessageLite::default_instance());
+  const ExtensionIdentifier<TestAllExtensions,
+                            RepeatedMessageTypeTraits<ForeignMessageLite>,
+                            WireFormatLite::TYPE_GROUP, false>
+      repeated_group(900004, &ForeignMessageLite::default_instance());
+
+  TestAllExtensions message;
+  message.MutableExtension(proto2_unittest::optional_foreign_message_extension)
+      ->set_c(1);
+  message.MutableExtension(singular_msg)->set_c(2);
+  message.MutableExtension(singular_group)->set_c(3);
+  message.AddExtension(repeated_msg)->set_c(4);
+  message.AddExtension(repeated_group)->set_c(5);
+
+  int visited = 0;
+  VisitMessageFields(message, [&](const Message& sub) {
+    EXPECT_EQ(sub.GetDescriptor(),
+              proto2_unittest::ForeignMessage::descriptor());
+    ++visited;
+  });
+  EXPECT_EQ(visited, 1);
+
+  visited = 0;
+  VisitMutableMessageFields(message, [&](Message& sub) {
+    EXPECT_EQ(sub.GetDescriptor(),
+              proto2_unittest::ForeignMessage::descriptor());
+    ++visited;
+  });
+  EXPECT_EQ(visited, 1);
 }
 
 }  // namespace
