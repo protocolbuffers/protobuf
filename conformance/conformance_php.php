@@ -21,6 +21,8 @@ require_once('Protobuf_test_messages/Editions/Proto3/TestAllTypesProto3.php');
 require_once('Protobuf_test_messages/Editions/Proto3/NullHypothesisProto3.php');
 require_once('Protobuf_test_messages/Editions/Proto3/ForeignEnum.php');
 require_once('Protobuf_test_messages/Editions/Proto3/ForeignMessage.php');
+require_once('Protobuf_test_messages/Editions/EnumEmptyOptionBeforeEmptyStringEdition2026.php');
+require_once('Protobuf_test_messages/Editions/EnumOnlyEmptyOptionEdition2026.php');
 require_once('Protobuf_test_messages/Editions/ForeignEnumEdition2026.php');
 require_once('Protobuf_test_messages/Editions/TestAllTypesEdition2026.php');
 require_once('Pb/Enumvalue/JsonEnumValueOptions.php');

@@ -24,6 +24,11 @@ message TestAllTypesEdition2026 {
   map<string, ForeignEnumEdition2026> map_string_foreign_enum = 4;
 
   map<int32, int32> map_int32_int32 = 5;
+
+  EnumOnlyEmptyOptionEdition2026 optional_empty_option_enum = 6;
+
+  EnumEmptyOptionBeforeEmptyStringEdition2026
+      optional_empty_option_before_empty_string = 7;
 }
 
 enum ForeignEnumEdition2026 {
@@ -43,4 +48,24 @@ enum ForeignEnumEdition2026 {
   FOREIGN_ENUM_EDITION2026_ALIAS_TOO = 5
       [(pb.enumvalue.json).string = "customAlias"];
   FOREIGN_ENUM_EDITION2026_NUMERIC = 6 [(pb.enumvalue.json).string = "6"];
+  FOREIGN_ENUM_EDITION2026_EMPTY_OPTION = 7 [(pb.enumvalue.json) = {}];
+  FOREIGN_ENUM_EDITION2026_EMPTY_OPTION_TWO = 8 [(pb.enumvalue.json) = {}];
+  FOREIGN_ENUM_EDITION2026_ALIAS_EMPTY_OPTION = 9 [(pb.enumvalue.json) = {}];
+  FOREIGN_ENUM_EDITION2026_ALIAS_OMITTED = 9;
+  FOREIGN_ENUM_EDITION2026_ALIAS_OMITTED_FIRST = 10;
+  FOREIGN_ENUM_EDITION2026_ALIAS_EMPTY_OPTION_SECOND = 10
+      [(pb.enumvalue.json) = {}];
+}
+
+enum EnumOnlyEmptyOptionEdition2026 {
+  ENUM_ONLY_EMPTY_OPTION_EDITION2026_UNSPECIFIED = 0 [(pb.enumvalue.json) = {}];
+  ENUM_ONLY_EMPTY_OPTION_EDITION2026_FOO = 1 [(pb.enumvalue.json) = {}];
+}
+
+enum EnumEmptyOptionBeforeEmptyStringEdition2026 {
+  ENUM_EMPTY_OPTION_BEFORE_EMPTY_STRING_EDITION2026_UNSPECIFIED = 0;
+  ENUM_EMPTY_OPTION_BEFORE_EMPTY_STRING_EDITION2026_EMPTY_OPTION_FIRST = 1
+      [(pb.enumvalue.json) = {}];
+  ENUM_EMPTY_OPTION_BEFORE_EMPTY_STRING_EDITION2026_EMPTY_STRING_SECOND = 2
+      [(pb.enumvalue.json).string = ""];
 }

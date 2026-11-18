@@ -535,7 +535,7 @@ def build_targets(name):
             ":use_fast_cpp_protos": ["@platforms//:incompatible"],
             "//conditions:default": [],
         }),
-        maximum_edition = "2023",
+        maximum_edition = "2026",
         testee = "//conformance:conformance_python",
         text_format_failure_list = "//conformance:text_format_failure_list_python.txt",
     )
@@ -549,7 +549,7 @@ def build_targets(name):
             ":use_fast_cpp_protos": [],
             "//conditions:default": ["@platforms//:incompatible"],
         }),
-        maximum_edition = "2023",
+        maximum_edition = "2026",
         testee = "//conformance:conformance_python",
         text_format_failure_list = "//conformance:text_format_failure_list_python.txt",
     )
@@ -562,7 +562,7 @@ def build_targets(name):
             ":use_fast_cpp_protos": ["@platforms//:incompatible"],
             "//conditions:default": [],
         }),
-        maximum_edition = "2023",
+        maximum_edition = "2026",
         testee = "//conformance:conformance_python",
         text_format_failure_list = "//conformance:text_format_failure_list_python.txt",
     )

@@ -16,6 +16,7 @@ load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
 load("//bazel:py_proto_library.bzl", "py_proto_library")
+load("//upb/bazel:upb_proto_library.bzl", "upb_proto_reflection_library")
 
 package(
     default_testonly = True,
@@ -155,6 +156,12 @@ py_proto_library(
     deps = [":test_messages_edition_unstable_proto"],
 )
 
+upb_proto_reflection_library(
+    name = "test_messages_edition2026_upbdefs",
+    visibility = ["//upb/conformance:__pkg__"],
+    deps = [":test_messages_edition2026_proto"],
+)
+
 internal_objc_proto_library(
     name = "test_messages_edition2023_objc_proto",
     srcs = [":test_messages_edition2023.proto"],
@@ -187,6 +194,8 @@ internal_php_proto_library(
     srcs = ["test_messages_edition2026.proto"],
     outs = [
         "GPBMetadata/TestMessagesEdition2026.php",
+        "Protobuf_test_messages/Editions/EnumEmptyOptionBeforeEmptyStringEdition2026.php",
+        "Protobuf_test_messages/Editions/EnumOnlyEmptyOptionEdition2026.php",
         "Protobuf_test_messages/Editions/ForeignEnumEdition2026.php",
         "Protobuf_test_messages/Editions/TestAllTypesEdition2026.php",
     ],
