@@ -239,8 +239,11 @@ void ExtensionSet::UnsafeArenaAddAllocatedMessage(
 }
 
 bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
+  if (GeneratedExtensionFinder(extendee_).Find(number, output)) {
+    return true;
+  }
   const FieldDescriptor* extension =
-      pool_->FindExtensionByNumber(containing_type_, number);
+      pool_->FindExtensionByNumber(extendee_->GetDescriptor(), number);
   if (extension == nullptr) {
     return false;
   } else {
@@ -280,7 +283,7 @@ bool ExtensionSet::FindExtension(int wire_type, uint32_t field,
     }
   } else {
     DescriptorPoolExtensionFinder finder(ctx->data().pool, ctx->data().factory,
-                                         extendee->GetDescriptor());
+                                         extendee);
     if (!FindExtensionInfoFromFieldNumber(wire_type, field, &finder, extension,
                                           was_packed_on_wire)) {
       return false;
