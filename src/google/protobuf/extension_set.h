@@ -212,8 +212,8 @@ class PROTOBUF_EXPORT DescriptorPoolExtensionFinder {
  public:
   DescriptorPoolExtensionFinder(const DescriptorPool* pool,
                                 MessageFactory* factory,
-                                const Descriptor* extendee)
-      : pool_(pool), factory_(factory), containing_type_(extendee) {}
+                                const Message* extendee)
+      : pool_(pool), factory_(factory), extendee_(extendee) {}
 
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Find(int number,
                                                 ExtensionInfo* output);
@@ -221,7 +221,7 @@ class PROTOBUF_EXPORT DescriptorPoolExtensionFinder {
  private:
   const DescriptorPool* pool_;
   MessageFactory* factory_;
-  const Descriptor* containing_type_;
+  const Message* extendee_;
 };
 
 // This is an internal helper class intended for use within the protocol buffer
