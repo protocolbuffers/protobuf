@@ -393,6 +393,10 @@ static NSMutableDictionary *CloneExtensionMap(NSDictionary *extensionMap, NSZone
   return result;
 }
 
+GPB_INLINE BOOL FieldMapKeyIsString(GPBFieldDescriptor *field) {
+  return (field->description_->flags & GPBFieldMapKeyMask) == GPBFieldMapKeyString;
+}
+
 static id CreateArrayForField(GPBFieldDescriptor *field, GPBMessage *autocreator) {
   id result;
   GPBDataType fieldDataType = GPBGetFieldDataType(field);
@@ -820,7 +824,7 @@ static id GetMapIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
   }
 
   // Some other thread set it, release the one created and return what got set.
-  if ((field.mapKeyDataType == GPBDataTypeString) && GPBFieldDataTypeIsObject(field)) {
+  if (FieldMapKeyIsString(field) && GPBFieldDataTypeIsObject(field)) {
     GPBAutocreatedDictionary *autoDict = autocreated;
     autoDict->_autocreator = nil;
   } else {
@@ -1066,7 +1070,7 @@ void GPBAutocreatedDictionaryModified(GPBMessage *self, id dictionary) {
     if (field.fieldType == GPBFieldTypeMap) {
       id curDict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
       if (curDict == dictionary) {
-        if ((field.mapKeyDataType == GPBDataTypeString) && GPBFieldDataTypeIsObject(field)) {
+        if (FieldMapKeyIsString(field) && GPBFieldDataTypeIsObject(field)) {
           GPBAutocreatedDictionary *autoDict = dictionary;
           autoDict->_autocreator = nil;
         } else {
@@ -1261,7 +1265,7 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
               [copiedMsg release];
             }
           } else {
-            if (field.mapKeyDataType == GPBDataTypeString) {
+            if (FieldMapKeyIsString(field)) {
               // Map is an NSDictionary.
               NSDictionary *existingDict = value;
               NSMutableDictionary *newDict =
@@ -1291,7 +1295,7 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
               newValue = [value copyWithZone:zone];
             }
           } else {
-            if ((field.mapKeyDataType == GPBDataTypeString) && GPBFieldDataTypeIsObject(field)) {
+            if (FieldMapKeyIsString(field) && GPBFieldDataTypeIsObject(field)) {
               // NSDictionary
               newValue = [value mutableCopyWithZone:zone];
             } else {
@@ -1374,7 +1378,7 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
             }
           }
         } else {
-          if ((field.mapKeyDataType == GPBDataTypeString) && GPBFieldDataTypeIsObject(field)) {
+          if (FieldMapKeyIsString(field) && GPBFieldDataTypeIsObject(field)) {
             if ([arrayOrMap isKindOfClass:[GPBAutocreatedDictionary class]]) {
               GPBAutocreatedDictionary *autoDict = arrayOrMap;
               if (autoDict->_autocreator == self) {
@@ -1476,7 +1480,7 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
           }
         }
       } else {  // fieldType == GPBFieldTypeMap
-        if (field.mapKeyDataType == GPBDataTypeString) {
+        if (FieldMapKeyIsString(field)) {
           NSDictionary *map = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
           if (map && !GPBDictionaryIsInitializedInternalHelper(map, field)) {
             return NO;
@@ -2887,9 +2891,8 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
       // _hasIvar to worry about setting.
       id otherDict = GPBGetObjectIvarWithFieldNoAutocreate(other, field);
       if (otherDict) {
-        GPBDataType keyDataType = field.mapKeyDataType;
         GPBDataType valueDataType = field->description_->dataType;
-        if (GPBDataTypeIsObject(keyDataType) && GPBDataTypeIsObject(valueDataType)) {
+        if (FieldMapKeyIsString(field) && GPBDataTypeIsObject(valueDataType)) {
           NSMutableDictionary *resultDict = GetOrCreateMapIvarWithField(self, field);
           [resultDict addEntriesFromDictionary:otherDict];
         } else if (valueDataType == GPBDataTypeEnum) {
@@ -3338,8 +3341,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
 
       // Map<> Fields
     } else {  // fieldType == GPBFieldTypeMap
-      if (GPBDataTypeIsObject(fieldDataType) &&
-          (fieldDescriptor.mapKeyDataType == GPBDataTypeString)) {
+      if (GPBDataTypeIsObject(fieldDataType) && FieldMapKeyIsString(fieldDescriptor)) {
         // If key type was string, then the map is an NSDictionary.
         NSDictionary *map = GPBGetObjectIvarWithFieldNoAutocreate(self, fieldDescriptor);
         if (map) {
