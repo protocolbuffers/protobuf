@@ -3829,7 +3829,8 @@ static void PopulateTcParseLookupTable(
   for (const auto& entry_block : table_info.num_to_entry_table.blocks) {
     *lookup_table++ = entry_block.first_fnum & 0xFFFF;
     *lookup_table++ = entry_block.first_fnum >> 16;
-    *lookup_table++ = entry_block.entries.size();
+    *lookup_table++ =
+        internal::CheckedNarrow<uint16_t>(entry_block.entries.size());
     for (auto se16 : entry_block.entries) {
       *lookup_table++ = se16.skipmap;
       *lookup_table++ = se16.field_entry_offset;
@@ -3953,9 +3954,10 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   const size_t fast_entries_count = table_info.fast_path_fields.size();
   ABSL_CHECK_EQ(static_cast<int>(fast_entries_count),
                 1 << table_info.table_size_log2);
-  const uint16_t lookup_table_offset = AlignTo<uint16_t>(
-      sizeof(TcParseTableBase) +
-      fast_entries_count * sizeof(TcParseTableBase::FastFieldEntry));
+  const uint16_t lookup_table_offset =
+      internal::CheckedNarrow<uint16_t>(AlignTo<uint16_t>(
+          sizeof(TcParseTableBase) +
+          fast_entries_count * sizeof(TcParseTableBase::FastFieldEntry)));
   const uint32_t field_entry_offset = AlignTo<TcParseTableBase::FieldEntry>(
       lookup_table_offset +
       sizeof(uint16_t) * table_info.num_to_entry_table.size16());
@@ -3970,22 +3972,22 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
 
   void* p = internal::Allocate(byte_size);
   auto* res = ::new (p) TcParseTableBase{
-      static_cast<uint16_t>(
+      internal::CheckedNarrow<uint16_t>(
           schema_.HasHasbits()
               ? schema_.HasBitsOffset()
               // Just put something safe here. _cached_size_ is fine.
               : internal::GetClassData(*schema_.default_instance())
                     ->cached_size_offset),
       schema_.HasExtensionSet()
-          ? static_cast<uint16_t>(schema_.GetExtensionSetOffset())
+          ? internal::CheckedNarrow<uint16_t>(schema_.GetExtensionSetOffset())
           : uint16_t{0},
       static_cast<uint32_t>(fields.empty() ? 0 : fields.back().field->number()),
-      static_cast<uint8_t>((fast_entries_count - 1) << 3),
+      internal::CheckedNarrow<uint8_t>((fast_entries_count - 1) << 3),
       lookup_table_offset,
       table_info.num_to_entry_table.skipmap32,
       field_entry_offset,
-      static_cast<uint16_t>(fields.size()),
-      static_cast<uint16_t>(table_info.aux_entries.size()),
+      internal::CheckedNarrow<uint16_t>(fields.size()),
+      internal::CheckedNarrow<uint16_t>(table_info.aux_entries.size()),
       aux_offset,
       /*sizeof_self=*/static_cast<uint32_t>(byte_size),
       internal::GetClassData(*schema_.default_instance()),
