@@ -48,8 +48,9 @@ impl<Extendee, T: Proxied> ExtensionId<Extendee, T> {
 pub static EXTENSIONS: [LazyLock<MiniTableExtensionInitPtr>];
 
 // The sentinel sections use ELF-only directives, so skip every Apple (Mach-O) target, not just
-// macOS.
-#[cfg(all(target_family = "unix", not(target_vendor = "apple")))]
+// macOS. Also skip 32-bit ARM: `@` starts a comment in ARM assembly, so `@progbits` is rejected
+// there.
+#[cfg(all(target_family = "unix", not(target_vendor = "apple"), not(target_arch = "arm")))]
 core::arch::global_asm!(
     r#"
     .section linkme_EXTENSIONS,"awR",@progbits
@@ -78,7 +79,12 @@ pub struct ExtensionMiniTableToDefInit {
 #[linkme::distributed_slice]
 pub static EXTENSION_MINI_TABLE_TO_DEF_INITS: [ExtensionMiniTableToDefInit];
 
-#[cfg(all(not(lite_runtime), target_family = "unix", not(target_vendor = "apple")))]
+#[cfg(all(
+    not(lite_runtime),
+    target_family = "unix",
+    not(target_vendor = "apple"),
+    not(target_arch = "arm")
+))]
 core::arch::global_asm!(
     r#"
     .section linkme_EXTENSION_MINI_TABLE_TO_DEF_INITS,"awR",@progbits
