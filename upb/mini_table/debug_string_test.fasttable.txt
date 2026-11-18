@@ -185,7 +185,7 @@ MiniTable#1 {
   .required_count = 0
   .table_mask = ff
   .dense_below = 2
-  .ext = 00 (NonExtendable)
+  .ext = 04 (NonExtendable | MapEntry)
   .fields[2] = {
     MiniTableField {
       .number = 1

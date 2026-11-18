@@ -1124,6 +1124,39 @@ TEST(DecodeTest, SetSubMessageMapValidation) {
   EXPECT_FALSE(upb_MiniTable_SetSubMessage(map_entry, val_field, map_entry));
 }
 
+TEST(DecodeTest, SetSubMessageRecognizesGeneratedMapEntry) {
+  Arena arena;
+  upb_Status status;
+  upb_Status_Clear(&status);
+
+  upb::MtDataEncoder parent_enc;
+  parent_enc.StartMessage(kUpb_MessageModifier_IsExtendable);
+  parent_enc.PutField(kUpb_FieldType_Message, 1, kUpb_FieldModifier_IsRepeated);
+  upb_MiniTable* parent_mt = upb_MiniTable_Build(
+      parent_enc.data().data(), parent_enc.data().size(), arena.ptr(), &status);
+  ASSERT_TRUE(upb_Status_IsOk(&status)) << upb_Status_ErrorMessage(&status);
+  upb_MiniTableField* repeated_field = const_cast<upb_MiniTableField*>(
+      upb_MiniTable_GetFieldByIndex(parent_mt, 0));
+
+  // A generated map entry must be treated like a MiniDescriptor-built one:
+  // linking it turns the repeated field into a map field.
+  const upb_MiniTable* generated_entry =
+      &upb_0test__MapTest__MapStringDoubleEntry_msg_init;
+  EXPECT_TRUE(
+      upb_MiniTable_SetSubMessage(parent_mt, repeated_field, generated_entry));
+  EXPECT_TRUE(upb_MiniTableField_IsMap(repeated_field));
+
+  // ...and it cannot be used as an extension's submessage.
+  upb::MtDataEncoder ext_enc;
+  ext_enc.EncodeExtension(kUpb_FieldType_Message, 100,
+                          kUpb_FieldModifier_IsRepeated);
+  upb_MiniTableExtension* ext =
+      upb_MiniTableExtension_Build(ext_enc.data().data(), ext_enc.data().size(),
+                                   parent_mt, arena.ptr(), &status);
+  ASSERT_TRUE(upb_Status_IsOk(&status)) << upb_Status_ErrorMessage(&status);
+  EXPECT_FALSE(upb_MiniTableExtension_SetSubMessage(ext, generated_entry));
+}
+
 TEST(DecodeTest, SetSubEnumMapValidation) {
   Arena arena;
   upb_Status status;

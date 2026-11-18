@@ -248,7 +248,12 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
 
   std::string msgext = "kUpb_ExtMode_NonExtendable";
 
-  if (message.extension_range_count()) {
+  if (message.mapentry()) {
+    // Map entries cannot be extended. Tag them the same way the MiniDescriptor
+    // decoder does (upb_MtDecoder_ParseMap), so generated and runtime-built
+    // map entry MiniTables are indistinguishable.
+    msgext = "kUpb_ExtMode_IsMapEntry";
+  } else if (message.extension_range_count()) {
     if (google_protobuf_MessageOptions_message_set_wire_format(message.options())) {
       msgext = "kUpb_ExtMode_IsMessageSet";
     } else {

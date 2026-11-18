@@ -45,8 +45,10 @@ typedef enum {
   kUpb_ExtMode_IsMessageSet_ITEM =
       3,  // MessageSet item (temporary only, see decode.c)
 
-  // During table building we steal a bit to indicate that the message is a map
-  // entry.  *Only* used during table building!
+  // Indicates that the message is a map entry. Set by the MiniDescriptor
+  // decoder and by the MiniTable code generator; read when linking map fields,
+  // validating extensions, building fasttables, and in debug output. Also
+  // folded into the base mode returned by _upb_ExtMode_Base().
   kUpb_ExtMode_IsMapEntry = 4,
 
   // Indicates that all eligible fields (with 1- or 2-byte) tags were
