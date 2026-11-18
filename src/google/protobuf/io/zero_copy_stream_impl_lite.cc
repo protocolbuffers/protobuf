@@ -470,9 +470,11 @@ bool LimitingInputStream::ReadCord(absl::Cord* cord, int count) {
     limit_ -= count;
     return true;
   }
-  // TODO: Remove this suppression.
-  (void)input_->ReadCord(cord, limit_);
-  limit_ = 0;
+  if (limit_ > 0) {
+    // TODO: Remove this suppression.
+    (void)input_->ReadCord(cord, limit_);
+    limit_ = 0;
+  }
   return false;
 }
 
@@ -553,6 +555,7 @@ int64_t CordInputStream::ByteCount() const {
 }
 
 bool CordInputStream::ReadCord(absl::Cord* cord, int count) {
+  if (count <= 0) return true;
   // Advance the iterator to the current position
   const size_t used = size_ - available_;
   absl::Cord::Advance(&it_, used);
