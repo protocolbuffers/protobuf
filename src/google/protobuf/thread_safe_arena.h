@@ -72,6 +72,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 
   template <AllocationClient alloc_client = AllocationClient::kDefault>
   void* AllocateDefaultAligned(size_t n) {
+    ABSL_DCHECK(internal::ArenaAlignDefault{}.IsAligned(n));
     SerialArena* arena;
     if (ABSL_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
       return arena->AllocateDefaultAligned<alloc_client>(n);

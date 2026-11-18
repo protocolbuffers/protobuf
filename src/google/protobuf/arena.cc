@@ -1030,7 +1030,7 @@ void* PROTOBUF_NONNULL Arena::AllocateOverAligned(size_t n, size_t align) {
   return impl_.AllocateOverAligned(n, align);
 }
 
-void* PROTOBUF_NONNULL Arena::AllocateForArray(size_t n) {
+void* PROTOBUF_NONNULL Arena::AllocateDefaultAlignedForArray(size_t n) {
   return impl_.AllocateDefaultAligned<internal::AllocationClient::kArray>(n);
 }
 
