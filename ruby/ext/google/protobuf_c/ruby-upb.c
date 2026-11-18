@@ -13476,55 +13476,115 @@ const upb_FileDef* upb_DefPool_AddFile(
   return _upb_DefPool_AddFile(s, file_proto, NULL, status);
 }
 
+typedef struct {
+  // Current init
+  const _upb_DefPool_Init* init;
+  // A list of deps of the current init
+  _upb_DefPool_Init** next_dep;
+} upb_LoadDefInitFrame;
+
+// Loads a single def init node into the def pool. This should only be called
+// internally by _upb_DefPool_LoadDefInitEx.
+static bool load_def_init_node(upb_DefPool* s, const _upb_DefPool_Init* init,
+                               bool rebuild_minitable, upb_Status* status) {
+  upb_Arena* arena = upb_Arena_New();
+  if (!arena) {
+    upb_Status_SetErrorMessage(status, "out of memory");
+    return false;
+  }
+  google_protobuf_FileDescriptorProto* file = google_protobuf_FileDescriptorProto_parse_ex(
+      init->descriptor.data, init->descriptor.size, NULL,
+      kUpb_DecodeOption_AliasString, arena);
+  s->bytes_loaded += init->descriptor.size;
+  bool ok = false;
+  if (!file) {
+    upb_Status_SetErrorFormat(
+        status,
+        "Failed to parse compiled-in descriptor for file '%s'. This should "
+        "never happen.",
+        init->filename);
+  } else {
+    const upb_MiniTableFile* mt = rebuild_minitable ? NULL : init->layout;
+    ok = _upb_DefPool_AddFile(s, file, mt, status) != NULL;
+  }
+  upb_Arena_Free(arena);
+  return ok;
+}
+
 bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
                                 bool rebuild_minitable) {
   /* Since this function should never fail (it would indicate a bug in upb) we
    * print errors to stderr instead of returning error status to the user. */
-  _upb_DefPool_Init** deps = init->deps;
-  google_protobuf_FileDescriptorProto* file;
-  upb_Arena* arena;
-  upb_Status status;
-
-  upb_Status_Clear(&status);
-
   if (upb_DefPool_FindFileByName(s, init->filename)) {
     return true;
   }
 
-  arena = upb_Arena_New();
+  upb_Status status;
+  upb_Status_Clear(&status);
+  const char* err_file = init->filename;
 
-  for (; *deps; deps++) {
-    if (!_upb_DefPool_LoadDefInitEx(s, *deps, rebuild_minitable)) goto err;
-  }
-
-  file = google_protobuf_FileDescriptorProto_parse_ex(
-      init->descriptor.data, init->descriptor.size, NULL,
-      kUpb_DecodeOption_AliasString, arena);
-  s->bytes_loaded += init->descriptor.size;
-
-  if (!file) {
-    upb_Status_SetErrorFormat(
-        &status,
-        "Failed to parse compiled-in descriptor for file '%s'. This should "
-        "never happen.",
-        init->filename);
+  size_t cap = 16;
+  size_t len = 0;
+  upb_LoadDefInitFrame* stack = upb_gmalloc(cap * sizeof(*stack));
+  if (!stack) {
+    upb_Status_SetErrorMessage(&status, "out of memory");
     goto err;
   }
 
-  const upb_MiniTableFile* mt = rebuild_minitable ? NULL : init->layout;
-  if (!_upb_DefPool_AddFile(s, file, mt, &status)) {
-    goto err;
+  stack[len++] = (upb_LoadDefInitFrame){init, init->deps};
+
+  while (len > 0) {
+    // Post-order traversal requires popping the last frame on the stack.
+    upb_LoadDefInitFrame* top = &stack[len - 1];
+
+    if (top->next_dep != NULL && *top->next_dep != NULL) {
+      // There are more deps to process.
+      const _upb_DefPool_Init* dep = *top->next_dep++;
+      if (upb_DefPool_FindFileByName(s, dep->filename)) continue;
+
+      // Grow stack if necessary.
+      if (len == cap) {
+        size_t new_cap, old_bytes, new_bytes;
+        if (upb_MulOverflow(cap, (size_t)2, &new_cap) ||
+            upb_MulOverflow(cap, sizeof(*stack), &old_bytes) ||
+            upb_MulOverflow(new_cap, sizeof(*stack), &new_bytes)) {
+          err_file = dep->filename;
+          upb_Status_SetErrorMessage(&status, "out of memory");
+          goto err;
+        }
+        upb_LoadDefInitFrame* new_stack =
+            upb_grealloc(stack, old_bytes, new_bytes);
+        if (!new_stack) {
+          err_file = dep->filename;
+          upb_Status_SetErrorMessage(&status, "out of memory");
+          goto err;
+        }
+        stack = new_stack;
+        cap = new_cap;
+      }
+
+      stack[len++] = (upb_LoadDefInitFrame){dep, dep->deps};
+    } else {
+      // Current init has no more deps.
+      const _upb_DefPool_Init* cur = top->init;
+      len--;
+      // Load the current init into the def pool.
+      if (!load_def_init_node(s, cur, rebuild_minitable, &status)) {
+        err_file = cur->filename;
+        goto err;
+      }
+    }
   }
 
-  upb_Arena_Free(arena);
+  upb_gfree(stack);
   return true;
 
 err:
   fprintf(stderr,
           "Error loading compiled-in descriptor for file '%s' (this should "
           "never happen): %s\n",
-          init->filename, upb_Status_ErrorMessage(&status));
-  upb_Arena_Free(arena);
+          err_file, upb_Status_ErrorMessage(&status));
+  if (stack) upb_gfree(stack);
   return false;
 }
 
