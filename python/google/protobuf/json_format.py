@@ -529,6 +529,26 @@ _INT_OR_FLOAT = (int, float)
 _LIST_LIKE = (list, tuple)
 
 
+class _LazyPath:
+  """Lazily formatted error path to avoid O(key_len * descendants) copying."""
+
+  __slots__ = ('_parent', '_parts')
+
+  def __init__(self, parent, *parts):
+    self._parent = parent
+    self._parts = parts
+
+  def __str__(self):
+    chunks = []
+    cur = self
+    while isinstance(cur, _LazyPath):
+      chunks.extend(reversed(cur._parts))
+      cur = cur._parent
+    chunks.append(cur)
+    chunks.reverse()
+    return ''.join(map(str, chunks))
+
+
 class _Parser(object):
   """JSON format parser for protocol message."""
 
@@ -701,7 +721,7 @@ class _Parser(object):
         if _IsMapEntry(field):
           _ClearFieldOrExtension(message, field)
           self._ConvertMapFieldValue(
-              value, message, field, '{0}.{1}'.format(path, name)
+              value, message, field, _LazyPath(path, '.', name)
           )
         elif field.is_repeated:
           _ClearFieldOrExtension(message, field)
@@ -728,7 +748,7 @@ class _Parser(object):
                     )
                 )
               self.ConvertMessage(
-                  item, sub_message, '{0}.{1}[{2}]'.format(path, name, index)
+                  item, sub_message, _LazyPath(path, '.', name, '[', index, ']')
               )
           else:
             # Repeated scalar field.
@@ -741,15 +761,18 @@ class _Parser(object):
                     )
                 )
               self._ConvertAndAppendScalar(
-                  message, field, item, '{0}.{1}[{2}]'.format(path, name, index)
+                  message,
+                  field,
+                  item,
+                  _LazyPath(path, '.', name, '[', index, ']'),
               )
         elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
           sub_message = _GetFieldOrExtension(message, field)
           sub_message.SetInParent()
-          self.ConvertMessage(value, sub_message, '{0}.{1}'.format(path, name))
+          self.ConvertMessage(value, sub_message, _LazyPath(path, '.', name))
         else:
           self._ConvertAndSetScalar(
-              message, field, value, '{0}.{1}'.format(path, name)
+              message, field, value, _LazyPath(path, '.', name)
           )
       except ParseError as e:
         if field and field.containing_oneof is None:
@@ -786,12 +809,14 @@ class _Parser(object):
     full_name = message_descriptor.full_name
     if _IsWrapperMessage(message_descriptor):
       self._ConvertWrapperMessage(
-          value['value'], sub_message, '{0}.value'.format(path)
+          value['value'], sub_message, _LazyPath(path, '.value')
       )
     elif full_name in _WKTJSONMETHODS:
       # For well-known types (including nested Any), use ConvertMessage
       # to ensure recursion depth is properly tracked
-      self.ConvertMessage(value['value'], sub_message, '{0}.value'.format(path))
+      self.ConvertMessage(
+          value['value'], sub_message, _LazyPath(path, '.value')
+      )
     else:
       del value['@type']
       try:
@@ -841,7 +866,7 @@ class _Parser(object):
     message.ClearField('values')
     for index, item in enumerate(value):
       self.ConvertMessage(
-          item, message.values.add(), '{0}[{1}]'.format(path, index)
+          item, message.values.add(), _LazyPath(path, '[', index, ']')
       )
 
   def _ConvertStructMessage(self, value, message, path):
@@ -855,7 +880,7 @@ class _Parser(object):
     message.Clear()
     for key in value:
       self.ConvertMessage(
-          value[key], message.fields[key], '{0}.{1}'.format(path, key)
+          value[key], message.fields[key], _LazyPath(path, '.', key)
       )
     return
 
@@ -863,7 +888,7 @@ class _Parser(object):
     """Convert a JSON representation into Wrapper message."""
     field = message.DESCRIPTOR.fields_by_name['value']
     self._ConvertAndSetScalar(
-        message, field, value, path='{0}.value'.format(path)
+        message, field, value, path=_LazyPath(path, '.value')
     )
 
   def _ConvertMapFieldValue(self, value, message, field, path):
@@ -890,7 +915,7 @@ class _Parser(object):
       key_value = _ConvertScalarFieldValue(
           key,
           key_field,
-          '{0}.key'.format(path),
+          _LazyPath(path, '.key'),
           self._custom_enum_names_cache,
           self._GetEnumValueJsonExtension(),
           require_str=True,
@@ -899,7 +924,7 @@ class _Parser(object):
         self.ConvertMessage(
             value[key],
             getattr(message, field.name)[key_value],
-            '{0}[{1}]'.format(path, key_value),
+            _LazyPath(path, '[', key_value, ']'),
         )
       else:
         self._ConvertAndSetScalarToMapKey(
@@ -907,7 +932,7 @@ class _Parser(object):
             field,
             key_value,
             value[key],
-            path='{0}[{1}]'.format(path, key_value),
+            path=_LazyPath(path, '[', key_value, ']'),
         )
 
   def _ConvertAndSetScalar(self, message, field, js_value, path):
