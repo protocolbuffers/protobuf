@@ -9,7 +9,8 @@ syntax = "proto3";
 
 package objc.protobuf.tests;
 
-// Explicit empty prefix, matching map_unittest.proto / unittest_runtime_proto3.proto.
+// Explicit empty prefix, matching map_unittest.proto /
+// unittest_runtime_proto3.proto.
 option objc_class_prefix = "";
 
 // Exercises all 12 map key types x 17 map value types (204 combinations).
