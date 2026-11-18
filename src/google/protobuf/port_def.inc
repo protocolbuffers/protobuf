@@ -380,9 +380,9 @@
 // But compilers have trouble mixing __attribute__((...)) syntax with
 // alignas(...) syntax.
 //
-// Doesn't work in clang or gcc:
+// Doesn't work in clang < 13 or gcc < 13:
 //   struct alignas(16) __attribute__((packed)) S { char c; };
-// Works in clang but not gcc:
+// Works in clang but not gcc < 13:
 //   struct __attribute__((packed)) alignas(16) S2 { char c; };
 // Works in clang and gcc:
 //   struct alignas(16) S3 { char c; } __attribute__((packed));
