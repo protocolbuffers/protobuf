@@ -5,9 +5,11 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <array>
 #include <cstring>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.upb.h"
@@ -768,6 +770,37 @@ TEST(ReflectionTest, FileDefResolvesDiamondDag) {
   ASSERT_TRUE(top);
   EXPECT_TRUE(top.resolves("f_0.proto"));
   EXPECT_FALSE(top.resolves("priv.proto"));
+}
+
+TEST(ReflectionTest, LoadDefInitDeepChain) {
+  constexpr int kLen = 15000;
+  std::vector<std::string> names(kLen), ser(kLen);
+  std::vector<std::array<_upb_DefPool_Init*, 2>> dep_ptrs(kLen);
+  std::vector<_upb_DefPool_Init> inits(kLen);
+  for (int i = 0; i < kLen; ++i) {
+    names[i] = absl::StrFormat("f_%d.proto", i);
+    google::protobuf::FileDescriptorProto proto;
+    proto.set_name(names[i]);
+    if (i > 0) {
+      proto.add_dependency(names[i - 1]);
+      dep_ptrs[i] = {&inits[i - 1], nullptr};
+    }
+    ser[i] = proto.SerializeAsString();
+    inits[i] = {i > 0 ? dep_ptrs[i].data() : nullptr, nullptr, names[i].c_str(),
+                upb_StringView_FromDataAndSize(ser[i].data(), ser[i].size())};
+  }
+  upb::DefPool pool;
+  ASSERT_TRUE(_upb_DefPool_LoadDefInitEx(pool.ptr(), &inits.back(), true));
+  EXPECT_TRUE(pool.FindFileByName("f_0.proto"));
+  EXPECT_TRUE(pool.FindFileByName("f_14999.proto"));
+
+  _upb_DefPool_Init bad_dep = {nullptr, nullptr, "bad.proto",
+                               upb_StringView_FromDataAndSize("\xff", 1)};
+  _upb_DefPool_Init* bad_deps[] = {&bad_dep, nullptr};
+  _upb_DefPool_Init bad_top = {
+      bad_deps, nullptr, "bad_top.proto",
+      upb_StringView_FromDataAndSize(ser[0].data(), ser[0].size())};
+  EXPECT_FALSE(_upb_DefPool_LoadDefInitEx(pool.ptr(), &bad_top, true));
 }
 
 }  // namespace
