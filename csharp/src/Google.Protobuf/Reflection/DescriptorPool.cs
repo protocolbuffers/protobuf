@@ -36,8 +36,10 @@ namespace Google.Protobuf.Reflection
         {
             foreach (FileDescriptor dependencyFile in dependencyFiles)
             {
-                dependencies.Add(dependencyFile);
-                ImportPublicDependencies(dependencyFile);
+                if (dependencies.Add(dependencyFile))
+                {
+                    ImportPublicDependencies(dependencyFile);
+                }
             }
 
             foreach (FileDescriptor dependency in dependencyFiles)
@@ -48,11 +50,22 @@ namespace Google.Protobuf.Reflection
 
         private void ImportPublicDependencies(FileDescriptor file)
         {
-            foreach (FileDescriptor dependency in file.PublicDependencies)
+            if (file.PublicDependencies.Count == 0)
             {
-                if (dependencies.Add(dependency))
+                return;
+            }
+
+            var queue = new Queue<FileDescriptor>();
+            queue.Enqueue(file);
+            while (queue.Count > 0)
+            {
+                FileDescriptor current = queue.Dequeue();
+                foreach (FileDescriptor dependency in current.PublicDependencies)
                 {
-                    ImportPublicDependencies(dependency);
+                    if (dependencies.Add(dependency) && dependency.PublicDependencies.Count > 0)
+                    {
+                        queue.Enqueue(dependency);
+                    }
                 }
             }
         }

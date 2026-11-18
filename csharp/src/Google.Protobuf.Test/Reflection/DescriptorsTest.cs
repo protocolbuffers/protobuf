@@ -16,6 +16,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
+using System.Threading;
 using System.Threading.Tasks;
 using UnitTest.Issues.TestProtos;
 using static Google.Protobuf.Reflection.FeatureSet.Types;
@@ -297,6 +299,95 @@ namespace Google.Protobuf.Reflection
             // This will fail, because the dependencies should come first
             Assert.Throws<ArgumentException>(() => FileDescriptor.BuildFromByteStrings(descriptorData));
 
+        }
+
+        [Test]
+        public void FileDescriptor_BuildFromByteStrings_DeepPublicDependencyChain()
+        {
+            // Warm up on the test thread so JIT compilation does not consume the worker's stack.
+            FileDescriptor.BuildFromByteStrings(CreatePublicDependencyChain(3));
+
+            const int chainLength = 4000;
+            var descriptorData = CreatePublicDependencyChain(chainLength);
+
+            IReadOnlyList<FileDescriptor> descriptors = null;
+            Exception threadException = null;
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    descriptors = FileDescriptor.BuildFromByteStrings(descriptorData);
+                }
+                catch (Exception ex)
+                {
+                    threadException = ex;
+                }
+            }, maxStackSize: 256 * 1024);
+            thread.Start();
+            thread.Join();
+
+            if (threadException != null)
+            {
+                ExceptionDispatchInfo.Capture(threadException).Throw();
+            }
+
+            Assert.NotNull(descriptors);
+            Assert.AreEqual(chainLength, descriptors.Count);
+            var leafMessage = descriptors[0].FindTypeByName<MessageDescriptor>("Leaf");
+            var topMessage = descriptors[chainLength - 1].FindTypeByName<MessageDescriptor>("Top");
+            Assert.AreSame(leafMessage, topMessage.FindFieldByName("leaf").MessageType);
+        }
+
+        private static List<ByteString> CreatePublicDependencyChain(int chainLength)
+        {
+            var descriptorData = new List<ByteString>(chainLength)
+            {
+                new FileDescriptorProto
+                {
+                    Name = "file_0.proto",
+                    Package = "pkg0",
+                    Syntax = "proto3",
+                    MessageType = { new DescriptorProto { Name = "Leaf" } }
+                }.ToByteString()
+            };
+
+            for (int i = 1; i < chainLength - 1; i++)
+            {
+                descriptorData.Add(new FileDescriptorProto
+                {
+                    Name = $"file_{i}.proto",
+                    Syntax = "proto3",
+                    Dependency = { $"file_{i - 1}.proto" },
+                    PublicDependency = { 0 }
+                }.ToByteString());
+            }
+
+            descriptorData.Add(new FileDescriptorProto
+            {
+                Name = $"file_{chainLength - 1}.proto",
+                Syntax = "proto3",
+                Dependency = { $"file_{chainLength - 2}.proto" },
+                MessageType =
+                {
+                    new DescriptorProto
+                    {
+                        Name = "Top",
+                        Field =
+                        {
+                            new FieldDescriptorProto
+                            {
+                                Name = "leaf",
+                                Number = 1,
+                                Label = FieldDescriptorProto.Types.Label.Optional,
+                                Type = FieldDescriptorProto.Types.Type.Message,
+                                TypeName = ".pkg0.Leaf"
+                            }
+                        }
+                    }
+                }
+            }.ToByteString());
+
+            return descriptorData;
         }
 
         [Test]
