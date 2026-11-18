@@ -466,8 +466,8 @@ TEST_F(ArenaTest, CreateDestroy) {
   Arena::Destroy(arena_message);
 
   // The arena message should still exist.
-  EXPECT_EQ(strlen(original.optional_string().c_str()),
-            strlen(arena_message->optional_string().c_str()));
+  EXPECT_EQ(original.optional_string().size(),
+            arena_message->optional_string().size());
 }
 
 TEST_F(ArenaTest, MoveCtorOnArena) {
@@ -680,8 +680,8 @@ TEST_F(ArenaTest, Parsing) {
   TestUtil::ExpectAllFieldsSet(*arena_message);
 
   // Test that string fields have nul terminator bytes (earlier bug).
-  EXPECT_EQ(strlen(original.optional_string().c_str()),
-            strlen(arena_message->optional_string().c_str()));
+  EXPECT_EQ(original.optional_string().size(),
+            arena_message->optional_string().size());
 }
 
 TEST_F(ArenaTest, UnknownFields) {
