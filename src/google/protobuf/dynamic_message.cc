@@ -867,6 +867,16 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   int size = sizeof(DynamicMessage);
   size = AlignOffset(size);
 
+  // Next the ExtensionSet, if any, matching generated C++ layout.
+  if (type->extension_range_count() > 0) {
+    type_info->extensions_offset = size;
+    size += sizeof(ExtensionSet);
+    size = AlignOffset(size);
+  } else {
+    // No extensions.
+    type_info->extensions_offset = -1;
+  }
+
   // Next the has_bits, which is an array of uint32s.
   type_info->has_bits_offset = -1;
   int max_hasbit = 0;
@@ -939,16 +949,6 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   } else {
     // No oneofs.
     type_info->oneof_case_offset = -1;
-  }
-
-  // The ExtensionSet, if any.
-  if (type->extension_range_count() > 0) {
-    type_info->extensions_offset = size;
-    size += sizeof(ExtensionSet);
-    size = AlignOffset(size);
-  } else {
-    // No extensions.
-    type_info->extensions_offset = -1;
   }
 
   // All the fields.
