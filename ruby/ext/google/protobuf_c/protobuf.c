@@ -164,13 +164,12 @@ static void Arena_free(void* data) {
 
 static size_t Arena_memsize(const void* data) {
   const Arena* arena = data;
-  size_t fused_count;
-  size_t memsize = upb_Arena_SpaceAllocated(arena->arena, &fused_count);
-  if (fused_count > 1) {
-    // If other arena were fused we attribute an equal
-    // share of memory usage to each one.
-    memsize /= fused_count;
-  }
+  size_t memsize = upb_Arena_SpaceAllocated(arena->arena, NULL);
+  // Blocks of a fused group stay allocated until every arena in it is freed.
+  // Each Ruby Arena not yet freed holds one ref on the group, so we attribute
+  // an equal share of the memory to each of them.
+  uint32_t live_count = upb_Arena_DebugRefCount(arena->arena);
+  if (live_count > 1) memsize /= live_count;
   return memsize + sizeof(Arena);
 }
 
