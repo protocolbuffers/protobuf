@@ -51,14 +51,28 @@ static upb_UnknownToMessageRet upb_MiniTable_ParseUnknownMessage(
   size_t size;
   if (unknown->type == kUpb_MessageUnknownType_StringView) {
     const char* ptr = unknown->value.bytes.data;
+    const char* end = ptr + unknown->value.bytes.size;
     uint32_t tag;
     uint64_t message_len = 0;
-    // This assumes that the unknown field is a message type, so it is
-    // a delimited wire type.
+    // Validate that the unknown field has a delimited wire type and that its
+    // length prefix fits within the captured unknown span.
+    if (ptr >= end) {
+      ret.status = kUpb_UnknownToMessage_ParseError;
+      return ret;
+    }
     ptr = upb_WireReader_ReadTag(ptr, &tag, NULL);
+    if (!ptr || ptr >= end ||
+        upb_WireReader_GetWireType(tag) != kUpb_WireType_Delimited) {
+      ret.status = kUpb_UnknownToMessage_ParseError;
+      return ret;
+    }
     ptr = upb_WireReader_ReadVarint(ptr, &message_len, NULL);
+    if (!ptr || ptr > end || (uint64_t)(end - ptr) < message_len) {
+      ret.status = kUpb_UnknownToMessage_ParseError;
+      return ret;
+    }
     data = ptr;
-    size = message_len;
+    size = (size_t)message_len;
   } else {
     // TODO: b/531520525 - After `upb_Message_Convert` supports non-canonical
     // extensions, this can be optimized via converting the
@@ -299,6 +313,8 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
             ret.status = kUpb_UnknownToMessage_OutOfMemory;
             return ret;
           }
+        } else {
+          return ret;
         }
       } break;
       case kUpb_FindUnknown_ParseError:
