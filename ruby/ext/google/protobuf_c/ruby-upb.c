@@ -16879,10 +16879,85 @@ static upb_MiniTable* _upb_MessageDef_MakeMiniTable(upb_DefBuilder* ctx,
   return ret;
 }
 
+static bool is_valid_map_key_type(upb_FieldType type) {
+  switch (type) {
+    case kUpb_FieldType_Double:
+    case kUpb_FieldType_Float:
+    case kUpb_FieldType_Group:
+    case kUpb_FieldType_Message:
+    case kUpb_FieldType_Bytes:
+    case kUpb_FieldType_Enum:
+      return false;
+    default:
+      return true;
+  }
+}
+
+static void validate_map_entry(upb_DefBuilder* ctx, const upb_MessageDef* m) {
+  if (m->nested_ext_count != 0 || m->ext_range_count != 0 ||
+      m->nested_msg_count != 0 || m->nested_enum_count != 0 ||
+      m->oneof_count != 0) {
+    _upb_DefBuilder_Errf(ctx,
+                         "map entry (%s) cannot contain extensions, extension "
+                         "ranges, nested types, or oneofs",
+                         m->full_name);
+  }
+
+  if (m->field_count != 2) {
+    _upb_DefBuilder_Errf(ctx, "map entry (%s) must have exactly 2 fields",
+                         m->full_name);
+  }
+
+  const upb_FieldDef* key = upb_MessageDef_Field(m, 0);
+  if (upb_FieldDef_Label(key) != kUpb_Label_Optional ||
+      upb_FieldDef_Number(key) != kUpb_MapEntry_KeyFieldNumber ||
+      strcmp(upb_FieldDef_Name(key), "key") != 0) {
+    _upb_DefBuilder_Errf(ctx,
+                         "map entry (%s) first field must be optional key = 1",
+                         m->full_name);
+  }
+
+  const upb_FieldDef* val = upb_MessageDef_Field(m, 1);
+  if (upb_FieldDef_Label(val) != kUpb_Label_Optional ||
+      upb_FieldDef_Number(val) != kUpb_MapEntry_ValueFieldNumber ||
+      strcmp(upb_FieldDef_Name(val), "value") != 0) {
+    _upb_DefBuilder_Errf(
+        ctx, "map entry (%s) second field must be optional value = 2",
+        m->full_name);
+  }
+
+  if (!is_valid_map_key_type(upb_FieldDef_Type(key))) {
+    _upb_DefBuilder_Errf(ctx, "invalid key type for map entry (%s)",
+                         m->full_name);
+  }
+
+  const upb_FieldType val_type = upb_FieldDef_Type(val);
+  if (val_type == kUpb_FieldType_Group) {
+    _upb_DefBuilder_Errf(ctx, "map entry (%s) value cannot be a group",
+                         m->full_name);
+  } else if (val_type == kUpb_FieldType_Message) {
+    if (upb_MessageDef_IsMapEntry(upb_FieldDef_MessageSubDef(val))) {
+      _upb_DefBuilder_Errf(ctx,
+                           "map entry (%s) value cannot be another map entry",
+                           m->full_name);
+    }
+  } else if (val_type == kUpb_FieldType_Enum) {
+    if (upb_EnumDef_Default(upb_FieldDef_EnumSubDef(val)) != 0) {
+      _upb_DefBuilder_Errf(
+          ctx, "enum value in map entry (%s) must define 0 as the first value",
+          m->full_name);
+    }
+  }
+}
+
 void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m) {
   for (int i = 0; i < m->field_count; i++) {
     upb_FieldDef* f = (upb_FieldDef*)upb_MessageDef_Field(m, i);
     _upb_FieldDef_Resolve(ctx, m->full_name, f);
+  }
+
+  if (upb_MessageDef_IsMapEntry(m)) {
+    validate_map_entry(ctx, m);
   }
 
   m->in_message_set = false;
@@ -17020,10 +17095,13 @@ void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
     UPB_ASSERT(layout_index < upb_MiniTable_FieldCount(m->layout));
     const upb_MiniTableField* mt_f =
         &m->layout->UPB_PRIVATE(fields)[layout_index];
+    UPB_ASSERT(upb_FieldDef_Number(f) == upb_MiniTableField_Number(mt_f));
     UPB_ASSERT(upb_FieldDef_Type(f) == upb_MiniTableField_Type(mt_f));
     UPB_ASSERT(upb_FieldDef_CType(f) == upb_MiniTableField_CType(mt_f));
     UPB_ASSERT(upb_FieldDef_HasPresence(f) ==
                upb_MiniTableField_HasPresence(mt_f));
+    UPB_ASSERT((upb_FieldDef_RealContainingOneof(f) != NULL) ==
+               upb_MiniTableField_IsInOneof(mt_f));
   }
 #endif
 }
