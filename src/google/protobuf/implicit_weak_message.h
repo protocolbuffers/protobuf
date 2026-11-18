@@ -45,7 +45,7 @@ extern ImplicitWeakMessageDefaultType PROTOBUF_ALIGNAS(kClassDataAlignment)
 // message type does not get linked into the binary.
 class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
  public:
-  ImplicitWeakMessage() : ImplicitWeakMessage(nullptr) {}
+  ImplicitWeakMessage() : ImplicitWeakMessage(/*arena=*/nullptr) {}
   explicit constexpr ImplicitWeakMessage(ConstantInitialized);
   ImplicitWeakMessage(const ImplicitWeakMessage&) = delete;
   ImplicitWeakMessage& operator=(const ImplicitWeakMessage&) = delete;
