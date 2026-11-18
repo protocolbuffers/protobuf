@@ -18,6 +18,7 @@
 
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/io/coded_stream.h"
