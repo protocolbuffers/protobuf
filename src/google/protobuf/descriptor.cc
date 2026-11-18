@@ -118,7 +118,7 @@ using ::google::protobuf::internal::ToJsonName;
 
 namespace {
 
-constexpr int kPackageLimit = 100;
+constexpr int kPackageLimit = 64;
 
 #ifdef PROTOBUF_UNSAFE_DISABLE_MAX_FIELD_COUNT_CHECK
 constexpr int kMaxFieldsPerMessage = std::numeric_limits<int32_t>::max();
@@ -4963,8 +4963,7 @@ bool internal::DescriptorBuilder::AddSymbol(const absl::string_view full_name,
 
 void internal::DescriptorBuilder::AddPackage(const absl::string_view name,
                                              const Message& proto,
-                                             FileDescriptor* file,
-                                             bool toplevel) {
+                                             FileDescriptor* file) {
   if (absl::StrContains(name, '\0')) {
     AddError(name, proto, DescriptorPool::ErrorCollector::NAME, [&] {
       return absl::StrCat("\"", name, "\" contains null character.");
@@ -4972,40 +4971,65 @@ void internal::DescriptorBuilder::AddPackage(const absl::string_view name,
     return;
   }
 
-  Symbol existing_symbol = tables_->FindSymbol(name);
-  // It's OK to redefine a package.
-  if (existing_symbol.IsNull()) {
-    if (toplevel) {
+  // Walk right-to-left inserting missing package prefixes, then validate newly
+  // added segments left-to-right so behavior and error order match recursive
+  // insertion without using O(depth) stack space.
+  absl::string_view current = name;
+  bool is_toplevel = true;
+  std::string::size_type existing_prefix_len = std::string::npos;
+  while (true) {
+    Symbol existing_symbol = tables_->FindSymbol(current);
+    // It's OK to redefine a package.
+    if (!existing_symbol.IsNull()) {
+      if (!existing_symbol.IsPackage()) {
+        // Symbol seems to have been defined in a different file.
+        const FileDescriptor* other_file = existing_symbol.GetFile();
+        AddError(current, proto, DescriptorPool::ErrorCollector::NAME, [&] {
+          return absl::StrCat(
+              "\"", current,
+              "\" is already defined (as something other than "
+              "a package) in file \"",
+              (other_file == nullptr ? "null" : other_file->name()), "\".");
+        });
+      }
+      existing_prefix_len = current.size();
+      break;
+    }
+
+    if (is_toplevel) {
       // It is the toplevel package name, so insert the descriptor directly.
       tables_->AddSymbol(file->package(), Symbol(file));
+      is_toplevel = false;
     } else {
       auto* package = tables_->Allocate<Symbol::Subpackage>();
-      // If the name is the package name, then it is already in the arena.
-      // If not, copy it there. It came from the call to AddPackage below.
-      package->name_size = static_cast<int>(name.size());
+      // `current` is a prefix of `file->package()`, which is already in the
+      // arena.
+      package->name_size = static_cast<int>(current.size());
       package->file = file;
-      tables_->AddSymbol(name, Symbol(package));
+      tables_->AddSymbol(current, Symbol(package));
     }
-    // Also add parent package, if any.
-    std::string::size_type dot_pos = name.find_last_of('.');
+
+    std::string::size_type dot_pos = current.find_last_of('.');
     if (dot_pos == std::string::npos) {
-      // No parents.
-      ValidateSymbolName(name, name, proto);
-    } else {
-      // Has parent.
-      AddPackage(name.substr(0, dot_pos), proto, file, false);
-      ValidateSymbolName(name.substr(dot_pos + 1), name, proto);
+      break;
     }
-  } else if (!existing_symbol.IsPackage()) {
-    // Symbol seems to have been defined in a different file.
-    const FileDescriptor* other_file = existing_symbol.GetFile();
-    AddError(name, proto, DescriptorPool::ErrorCollector::NAME, [&] {
-      return absl::StrCat("\"", name,
-                          "\" is already defined (as something other than "
-                          "a package) in file \"",
-                          (other_file == nullptr ? "null" : other_file->name()),
-                          "\".");
-    });
+    current = current.substr(0, dot_pos);
+  }
+
+  if (existing_prefix_len == std::string::npos ||
+      existing_prefix_len < name.size()) {
+    std::string::size_type start =
+        existing_prefix_len == std::string::npos ? 0 : existing_prefix_len + 1;
+    while (true) {
+      std::string::size_type dot_pos = name.find('.', start);
+      if (dot_pos == std::string::npos) {
+        ValidateSymbolName(name.substr(start), name, proto);
+        break;
+      }
+      ValidateSymbolName(name.substr(start, dot_pos - start),
+                         name.substr(0, dot_pos), proto);
+      start = dot_pos + 1;
+    }
   }
 }
 
@@ -5530,7 +5554,8 @@ const FileDescriptor* internal::DescriptorBuilder::BuildFile(
     }
   }
 
-  if (proto.package().size() > internal::NameLimits::kPackageName) {
+  if (!pool_->unsafe_disable_limit_checks_ &&
+      proto.package().size() > internal::NameLimits::kPackageName) {
     AddError(proto.package(), proto, DescriptorPool::ErrorCollector::NAME,
              "Package name is too long");
     return nullptr;
@@ -5671,13 +5696,14 @@ PROTOBUF_NOINLINE FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
     return nullptr;
   }
   if (!result->package().empty()) {
-    if (std::count(result->package().begin(), result->package().end(), '.') >
-        kPackageLimit) {
+    if (!pool_->unsafe_disable_limit_checks_ &&
+        std::count(result->package().begin(), result->package().end(), '.') >
+            kPackageLimit) {
       AddError(result->package(), proto, DescriptorPool::ErrorCollector::NAME,
                "Exceeds Maximum Package Depth");
       return nullptr;
     }
-    AddPackage(result->package(), proto, result, true);
+    AddPackage(result->package(), proto, result);
   }
 
   // Make sure all dependencies are loaded.

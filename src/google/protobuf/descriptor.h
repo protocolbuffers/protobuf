@@ -2632,6 +2632,15 @@ class PROTOBUF_EXPORT DescriptorPool {
   // by the protobuf compiler will be compilable on standard tool chains.
   void EnforceProtoLimits(bool enforce) { enforce_proto_limits_ = enforce; }
 
+  // Disables descriptor limit checks (such as package name length and depth
+  // limits) when building files in this pool.
+  //
+  // Warning: Disabling limit checks may expose the process to denial-of-service
+  // risks and should not be set if untrusted descriptors are in use.
+  void UnsafeDisableLimitChecks(bool disable = true) {
+    unsafe_disable_limit_checks_ = disable;
+  }
+
   // Enforce validation of feature support.
   //
   // This is used to guard feature support validation for the lifetimes of
@@ -2964,6 +2973,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool deprecated_legacy_json_field_conflicts_ = false;
   bool enforce_naming_style_ = false;
   bool enforce_proto_limits_ = false;
+  bool unsafe_disable_limit_checks_ = false;
   bool enforce_feature_support_validation_ = false;
   bool enforce_symbol_visibility_ = false;
   mutable bool build_started_ = false;

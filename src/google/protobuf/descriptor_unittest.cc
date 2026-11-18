@@ -5848,6 +5848,37 @@ TEST_F(ValidationErrorTest, InvalidPackageName) {
       "foo.proto: foo.$: NAME: \"$\" is not a valid identifier.\n");
 }
 
+TEST_F(ValidationErrorTest, InvalidPackageNameLeftToRightOrder) {
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto" package: "foo.$.bar.#"
+      )pb",
+
+      "foo.proto: foo.$: NAME: \"$\" is not a valid identifier.\n"
+      "foo.proto: foo.$.bar.#: NAME: \"#\" is not a valid identifier.\n");
+}
+
+TEST_F(ValidationErrorTest, SharedPackagePrefixLookup) {
+  const FileDescriptor* f1 = BuildFile(R"pb(
+    name: "a_b_c.proto"
+    package: "a.b.c"
+    message_type { name: "M1" }
+  )pb");
+  const FileDescriptor* f2 = BuildFile(R"pb(
+    name: "a_b_d.proto"
+    package: "a.b.d"
+    message_type { name: "M2" }
+  )pb");
+  ASSERT_NE(f1, nullptr);
+  ASSERT_NE(f2, nullptr);
+  EXPECT_EQ(pool_.FindFileContainingSymbol("a"), f1);
+  EXPECT_EQ(pool_.FindFileContainingSymbol("a.b"), f1);
+  EXPECT_EQ(pool_.FindFileContainingSymbol("a.b.c"), f1);
+  EXPECT_EQ(pool_.FindFileContainingSymbol("a.b.d"), f2);
+  EXPECT_NE(pool_.FindMessageTypeByName("a.b.c.M1"), nullptr);
+  EXPECT_NE(pool_.FindMessageTypeByName("a.b.d.M2"), nullptr);
+}
+
 // 'str' is a static C-style string that may contain '\0'
 #define STATIC_STR(str) std::string((str), sizeof(str) - 1)
 
@@ -17076,6 +17107,77 @@ TEST_F(ValidationErrorTest, PackageTooLong) {
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
       "aaaaaaaa: NAME: Package name is too long\n");
+}
+
+TEST_F(DescriptorTest, UnsafeDisableLimitChecks) {
+  DescriptorPool pool;
+  pool.UnsafeDisableLimitChecks(true);
+
+  FileDescriptorProto long_pkg;
+  long_pkg.set_name("long_pkg.proto");
+  long_pkg.set_package(std::string(512, 'a'));
+  EXPECT_NE(pool.BuildFile(long_pkg), nullptr);
+
+  std::string deep_name = "a";
+  for (int i = 0; i < 2000; ++i) {
+    absl::StrAppend(&deep_name, ".a");
+  }
+  FileDescriptorProto deep_pkg;
+  deep_pkg.set_name("deep_pkg.proto");
+  deep_pkg.set_package(deep_name);
+  deep_pkg.add_message_type()->set_name("Foo");
+  const FileDescriptor* deep_file = pool.BuildFile(deep_pkg);
+  ASSERT_NE(deep_file, nullptr);
+  EXPECT_EQ(pool.FindFileContainingSymbol("a"), deep_file);
+  EXPECT_NE(pool.FindMessageTypeByName(absl::StrCat(deep_name, ".Foo")),
+            nullptr);
+
+  pool.UnsafeDisableLimitChecks(false);
+  FileDescriptorProto rejected_long;
+  rejected_long.set_name("rejected_long.proto");
+  rejected_long.set_package(std::string(512, 'b'));
+  MockErrorCollector long_errors;
+  EXPECT_EQ(pool.BuildFileCollectingErrors(rejected_long, &long_errors),
+            nullptr);
+  EXPECT_THAT(long_errors.text_, HasSubstr("Package name is too long"));
+
+  std::string rejected_deep_name = "b";
+  for (int i = 0; i < 101; ++i) {
+    absl::StrAppend(&rejected_deep_name, ".b");
+  }
+  FileDescriptorProto rejected_deep;
+  rejected_deep.set_name("rejected_deep.proto");
+  rejected_deep.set_package(rejected_deep_name);
+  MockErrorCollector deep_errors;
+  EXPECT_EQ(pool.BuildFileCollectingErrors(rejected_deep, &deep_errors),
+            nullptr);
+  EXPECT_THAT(deep_errors.text_, HasSubstr("Exceeds Maximum Package Depth"));
+}
+
+TEST_F(DescriptorTest, PackagePeriodLimit) {
+  auto dotted_pkg = [](int dots) {
+    std::string pkg = "a";
+    for (int i = 0; i < dots; ++i) {
+      absl::StrAppend(&pkg, ".a");
+    }
+    return pkg;
+  };
+
+  DescriptorPool pool;
+  FileDescriptorProto ok_pkg;
+  ok_pkg.set_name("ok_pkg.proto");
+  ok_pkg.set_package(dotted_pkg(64));
+  EXPECT_NE(pool.BuildFile(ok_pkg), nullptr);
+
+  FileDescriptorProto too_deep;
+  too_deep.set_name("too_deep.proto");
+  too_deep.set_package(dotted_pkg(65));
+  MockErrorCollector errors;
+  EXPECT_EQ(pool.BuildFileCollectingErrors(too_deep, &errors), nullptr);
+  EXPECT_THAT(errors.text_, HasSubstr("Exceeds Maximum Package Depth"));
+
+  pool.UnsafeDisableLimitChecks(true);
+  EXPECT_NE(pool.BuildFile(too_deep), nullptr);
 }
 
 TEST_F(ValidationErrorTest, TooManyFieldsInMessage) {
