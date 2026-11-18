@@ -803,5 +803,157 @@ TEST(ReflectionTest, LoadDefInitDeepChain) {
   EXPECT_FALSE(_upb_DefPool_LoadDefInitEx(pool.ptr(), &bad_top, true));
 }
 
+absl::Status LoadMapEntry(std::string_view entry_body) {
+  return LoadDescriptorProto(absl::StrFormat(
+                                 R"(
+               syntax: "proto2" name: "m.proto"
+               message_type { name: "Sub" }
+               enum_type { name: "ZeroEnum" value { name: "Z" number: 0 } }
+               enum_type {
+                 name: "NonZeroEnum"
+                 value { name: "ONE" number: 1 }
+                 value { name: "ZERO" number: 0 }
+               }
+               message_type {
+                 name: "Outer"
+                 field {
+                   name: "m" number: 1 label: LABEL_REPEATED
+                   type: TYPE_MESSAGE type_name: ".Outer.Entry"
+                 }
+                 nested_type { name: "Entry" options { map_entry: true } %s }
+               }
+             )",
+                                 entry_body))
+      .status();
+}
+
+TEST(ReflectionTest, ValidateMapEntry) {
+  for (std::string_view valid_entry : {
+           "field { name: 'key' number: 1 type: TYPE_INT32 } "
+           "field { name: 'value' number: 2 type: TYPE_STRING }",
+           "field { name: 'key' number: 1 type: TYPE_STRING } "
+           "field { name: 'value' number: 2 type: TYPE_MESSAGE "
+           "type_name: '.Sub' }",
+           "field { name: 'key' number: 1 type: TYPE_BOOL } "
+           "field { name: 'value' number: 2 type: TYPE_ENUM "
+           "type_name: '.ZeroEnum' }",
+       }) {
+    SCOPED_TRACE(valid_entry);
+    EXPECT_TRUE(LoadMapEntry(valid_entry).ok());
+  }
+
+  // Editions DELIMITED encoding applies to normal submessage fields, not map
+  // entries or message-typed map values.
+  absl::StatusOr<upb::DefPool> delimited_pool = LoadDescriptorProto(R"pb(
+    syntax: "editions"
+    edition: EDITION_2023
+    name: "delimited_map.proto"
+    options { features { message_encoding: DELIMITED } }
+    message_type { name: "Sub" }
+    message_type {
+      name: "Outer"
+      field { name: "sub" number: 1 type: TYPE_MESSAGE type_name: ".Sub" }
+      field {
+        name: "m"
+        number: 2
+        label: LABEL_REPEATED
+        type: TYPE_MESSAGE
+        type_name: ".Outer.Entry"
+      }
+      nested_type {
+        name: "Entry"
+        options { map_entry: true }
+        field { name: "key" number: 1 type: TYPE_STRING }
+        field { name: "value" number: 2 type: TYPE_MESSAGE type_name: ".Sub" }
+      }
+    }
+  )pb");
+  ASSERT_TRUE(delimited_pool.ok()) << delimited_pool.status();
+  EXPECT_EQ(
+      delimited_pool->FindMessageByName("Outer").FindFieldByNumber(1).type(),
+      kUpb_FieldType_Group);
+  EXPECT_EQ(delimited_pool->FindMessageByName("Outer.Entry").map_value().type(),
+            kUpb_FieldType_Message);
+
+  struct InvalidCase {
+    std::string_view entry_body;
+    std::string_view expected_error;
+  };
+  constexpr InvalidCase kInvalidCases[] = {
+      {"field { name: 'key' number: 1 type: TYPE_INT32 }",
+       "must have exactly 2 fields"},
+      {"field { name: 'key' number: 1 type: TYPE_INT32 } "
+       "field { name: 'value' number: 2 type: TYPE_INT32 } "
+       "field { name: 'extra' number: 3 type: TYPE_INT32 }",
+       "must have exactly 2 fields"},
+      {"field { name: 'value' number: 2 type: TYPE_INT64 } "
+       "field { name: 'key' number: 1 type: TYPE_MESSAGE type_name: '.Sub' }",
+       "first field must be optional key = 1"},
+      {"field { name: 'k' number: 1 type: TYPE_INT32 } "
+       "field { name: 'value' number: 2 type: TYPE_INT32 }",
+       "first field must be optional key = 1"},
+      {"field { name: 'key' number: 1 label: LABEL_REQUIRED type: TYPE_INT32 } "
+       "field { name: 'value' number: 2 type: TYPE_INT32 }",
+       "first field must be optional key = 1"},
+      {"field { name: 'key' number: 1 type: TYPE_INT32 } "
+       "field { name: 'value' number: 3 type: TYPE_INT32 }",
+       "second field must be optional value = 2"},
+      {"field { name: 'key' number: 1 type: TYPE_INT32 } "
+       "field { name: 'v' number: 2 type: TYPE_INT32 }",
+       "second field must be optional value = 2"},
+      {"field { name: 'key' number: 1 type: TYPE_INT32 } "
+       "field { name: 'value' number: 2 label: LABEL_REPEATED "
+       "type: TYPE_INT32 }",
+       "second field must be optional value = 2"},
+      {"oneof_decl { name: 'o' } "
+       "field { name: 'key' number: 1 type: TYPE_INT32 oneof_index: 0 } "
+       "field { name: 'value' number: 2 type: TYPE_INT32 }",
+       "oneofs"},
+      {"extension_range { start: 5 end: 9 } "
+       "field { name: 'key' number: 1 type: TYPE_INT32 } "
+       "field { name: 'value' number: 2 type: TYPE_INT32 }",
+       "extension ranges"},
+      {"nested_type { name: 'N' } "
+       "field { name: 'key' number: 1 type: TYPE_INT32 } "
+       "field { name: 'value' number: 2 type: TYPE_INT32 }",
+       "nested types"},
+      {"field { name: 'key' number: 1 type: TYPE_FLOAT } "
+       "field { name: 'value' number: 2 type: TYPE_INT32 }",
+       "invalid key type"},
+      {"field { name: 'key' number: 1 type: TYPE_DOUBLE } "
+       "field { name: 'value' number: 2 type: TYPE_INT32 }",
+       "invalid key type"},
+      {"field { name: 'key' number: 1 type: TYPE_BYTES } "
+       "field { name: 'value' number: 2 type: TYPE_INT32 }",
+       "invalid key type"},
+      {"field { name: 'key' number: 1 type: TYPE_ENUM type_name: '.ZeroEnum' } "
+       "field { name: 'value' number: 2 type: TYPE_INT32 }",
+       "invalid key type"},
+      {"field { name: 'key' number: 1 type: TYPE_MESSAGE type_name: '.Sub' } "
+       "field { name: 'value' number: 2 type: TYPE_INT32 }",
+       "invalid key type"},
+      {"field { name: 'key' number: 1 type: TYPE_GROUP type_name: '.Sub' } "
+       "field { name: 'value' number: 2 type: TYPE_INT32 }",
+       "invalid key type"},
+      {"field { name: 'key' number: 1 type: TYPE_INT32 } "
+       "field { name: 'value' number: 2 type: TYPE_GROUP type_name: '.Sub' }",
+       "value cannot be a group"},
+      {"field { name: 'key' number: 1 type: TYPE_INT32 } "
+       "field { name: 'value' number: 2 type: TYPE_MESSAGE "
+       "type_name: '.Outer.Entry' }",
+       "value cannot be another map entry"},
+      {"field { name: 'key' number: 1 type: TYPE_INT32 } "
+       "field { name: 'value' number: 2 type: TYPE_ENUM "
+       "type_name: '.NonZeroEnum' }",
+       "must define 0 as the first value"},
+  };
+  for (const InvalidCase& test_case : kInvalidCases) {
+    SCOPED_TRACE(test_case.entry_body);
+    absl::Status status = LoadMapEntry(test_case.entry_body);
+    EXPECT_FALSE(status.ok());
+    EXPECT_THAT(status.message(), HasSubstr(test_case.expected_error));
+  }
+}
+
 }  // namespace
 }  // namespace upb_test
