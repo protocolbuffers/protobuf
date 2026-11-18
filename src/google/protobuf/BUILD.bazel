@@ -2267,6 +2267,7 @@ cc_test(
         ":port",
         ":protobuf",
         ":protobuf_lite",
+        ":test_textproto",
         ":test_util",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",

@@ -3848,13 +3848,11 @@ void Reflection::PopulateTcParseEntries(
     entries->offset = schema_.GetFieldOffset(field);
     if (oneof != nullptr) {
       entries->has_idx = schema_.GetOneofCaseOffset(oneof);
-    } else if (schema_.HasHasbits()) {
+    } else if (schema_.HasHasbits() && entry.hasbit_idx >= 0) {
       entries->has_idx =
-          entry.hasbit_idx >= 0
-              ? static_cast<int>(8 * schema_.HasBitsOffset() + entry.hasbit_idx)
-              : kNoHasbit;
+          static_cast<int>(8 * schema_.HasBitsOffset() + entry.hasbit_idx);
     } else {
-      entries->has_idx = 0;
+      entries->has_idx = kNoHasbit;
     }
     entries->aux_idx = entry.aux_idx;
     entries->type_card = entry.type_card;

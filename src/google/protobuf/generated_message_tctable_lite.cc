@@ -85,6 +85,8 @@ const char* TcParser::GenericFallbackLite(PROTOBUF_TC_PARAM_DECL) {
 namespace {
 
 bool ReadHas(const FieldEntry& entry, const MessageLite* msg) {
+  // Hasbits never overlap the MessageLite base object.
+  ABSL_DCHECK_GE(entry.has_idx, static_cast<int32_t>(sizeof(MessageLite) * 8));
   auto has_idx = static_cast<uint32_t>(entry.has_idx);
   const auto& hasblock = TcParser::RefAt<const uint32_t>(msg, has_idx / 32 * 4);
   return (hasblock & (uint32_t{1} << (has_idx % 32))) != 0;
@@ -1928,6 +1930,8 @@ PROTOBUF_NOINLINE const char* TcParser::FastUcR2(PROTOBUF_TC_PARAM_DECL) {
 
 namespace {
 inline void SetHas(const FieldEntry& entry, MessageLite* msg) {
+  // Hasbits never overlap the MessageLite base object.
+  ABSL_DCHECK_GE(entry.has_idx, static_cast<int32_t>(sizeof(MessageLite) * 8));
   auto has_idx = static_cast<uint32_t>(entry.has_idx);
   auto& hasblock = TcParser::RefAt<uint32_t>(msg, has_idx / 32 * 4);
   hasblock |= uint32_t{1} << (has_idx % 32);

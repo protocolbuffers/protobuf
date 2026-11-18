@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
@@ -35,10 +36,15 @@
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/edition_unittest.pb.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/has_bits.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/test_textproto.h"
 #include "google/protobuf/test_util.h"
+#include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
 #include "google/protobuf/unittest_import_public.pb.h"
@@ -50,6 +56,13 @@
 namespace google {
 namespace protobuf {
 namespace {
+
+const internal::TcParseTableBase* GetTcParseTable(const Message& msg) {
+  struct Robber : MessageLite {
+    using MessageLite::GetTcParseTable;
+  };
+  return (msg.*&Robber::GetTcParseTable)();
+}
 
 void AddUnittestDescriptors(
     DescriptorPool& pool, std::vector<const FileDescriptor*>* files = nullptr) {
@@ -168,12 +181,7 @@ std::unique_ptr<OverflowTestCase> GenerateOverflowTestCase(int num_oneofs) {
   ABSL_CHECK(file);
   auto* desc = file->message_type(0);
   test_case->prototype = test_case->factory.GetPrototype(desc);
-
-  struct Robber : MessageLite {
-    using MessageLite::GetTcParseTable;
-  };
-
-  test_case->table = (test_case->prototype->*&Robber::GetTcParseTable)();
+  test_case->table = GetTcParseTable(*test_case->prototype);
 
   // Verify that we have the fields.
   {
