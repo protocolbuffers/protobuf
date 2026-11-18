@@ -943,17 +943,27 @@ uint64_t ThreadSafeArena::SpaceUsed() const {
 }
 
 template <AllocationClient alloc_client>
-PROTOBUF_NOINLINE void* ThreadSafeArena::AllocateAlignedFallback(size_t n) {
+PROTOBUF_NOINLINE void* ThreadSafeArena::AllocateDefaultAlignedFallback(
+    size_t n) {
   size_t min_block_size = MinBlockSizeForAllocation(n, ArenaAlignDefault{},
                                                     SerialArena::NoCleanup{});
   return GetSerialArenaFallback(min_block_size)
-      ->AllocateAligned<alloc_client>(n);
+      ->AllocateDefaultAligned<alloc_client>(n);
 }
 
-template void*
-ThreadSafeArena::AllocateAlignedFallback<AllocationClient::kDefault>(size_t);
-template void*
-ThreadSafeArena::AllocateAlignedFallback<AllocationClient::kArray>(size_t);
+template void* ThreadSafeArena::AllocateDefaultAlignedFallback<
+    AllocationClient::kDefault>(size_t);
+template void* ThreadSafeArena::AllocateDefaultAlignedFallback<
+    AllocationClient::kArray>(size_t);
+
+PROTOBUF_NOINLINE void* ThreadSafeArena::AllocateOverAlignedFallback(
+    size_t n, size_t align) {
+  size_t min_block_size = MinBlockSizeForAllocation(n, ArenaAlignAs(align),
+                                                    SerialArena::NoCleanup{});
+  return GetSerialArenaFallback(min_block_size)
+      ->AllocateImpl<SerialArena::AllocationMode::kDefault>(
+          n, ArenaAlignAs(align));
+}
 
 void ThreadSafeArena::CleanupList() {
   if constexpr (HasMemoryPoisoning()) {
@@ -1012,12 +1022,16 @@ SerialArena* ThreadSafeArena::GetSerialArenaFallback(size_t n) {
 
 }  // namespace internal
 
-void* PROTOBUF_NONNULL Arena::Allocate(size_t n) {
-  return impl_.AllocateAligned(n);
+void* PROTOBUF_NONNULL Arena::AllocateDefaultAligned(size_t n) {
+  return impl_.AllocateDefaultAligned(n);
+}
+
+void* PROTOBUF_NONNULL Arena::AllocateOverAligned(size_t n, size_t align) {
+  return impl_.AllocateOverAligned(n, align);
 }
 
 void* PROTOBUF_NONNULL Arena::AllocateForArray(size_t n) {
-  return impl_.AllocateAligned<internal::AllocationClient::kArray>(n);
+  return impl_.AllocateDefaultAligned<internal::AllocationClient::kArray>(n);
 }
 
 void* PROTOBUF_NONNULL Arena::AllocateAlignedWithCleanup(

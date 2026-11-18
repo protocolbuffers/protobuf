@@ -119,11 +119,11 @@ class PROTOBUF_EXPORT SerialArena {
   // the right size. We can statically know if the allocation size can benefit
   // from it.
   template <AllocationClient alloc_client = AllocationClient::kDefault>
-  void* AllocateAligned(size_t n) {
+  void* AllocateDefaultAligned(size_t n) {
     ABSL_DCHECK(internal::ArenaAlignDefault{}.IsAligned(n));
     ABSL_DCHECK_GE(limit_, ptr());
 
-    if (alloc_client == AllocationClient::kArray) {
+    if constexpr (alloc_client == AllocationClient::kArray) {
       if (void* res = TryAllocateFromCachedBlock(n)) {
         return res;
       }
