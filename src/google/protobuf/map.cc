@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include "absl/base/no_destructor.h"
 #include "absl/base/optimization.h"
@@ -54,23 +55,21 @@ void UntypedMapBase::MergeFromImpl(Arena* arena, const UntypedMapBase& other,
 
   // Do the merging in steps to avoid Key*Value number of instantiations and
   // reduce code duplication per instantation.
-  NodeBase* nodes = nullptr;
 
   // First, allocate all the nodes without types.
+  std::vector<NodeBase*> nodes;
+  nodes.reserve(other.num_elements_);
   for (size_t i = 0; i < other.num_elements_; ++i) {
-    NodeBase* new_node = AllocNode(arena);
-    new_node->next = nodes;
-    nodes = new_node;
+    nodes.push_back(AllocNode(arena));
   }
 
   // Then, copy the values.
+  size_t i = 0;
   VisitValueType([&](auto value_type) {
     using Value = typename decltype(value_type)::type;
-    NodeBase* out_node = nodes;
 
     for (auto it = other.begin(); !it.Equals(EndIterator()); it.PlusPlus()) {
-      Value* out = GetValue<Value>(out_node);
-      out_node = out_node->next;
+      Value* out = GetValue<Value>(nodes[i++]);
       auto& in = *other.GetValue<Value>(it.node_);
       if constexpr (std::is_same_v<MessageLite, Value>) {
         init_value(out, in);
@@ -81,11 +80,11 @@ void UntypedMapBase::MergeFromImpl(Arena* arena, const UntypedMapBase& other,
   });
 
   // Finally, copy the keys and insert the nodes.
+  i = 0;
   VisitKeyType([&](auto key_type) {
     using Key = typename decltype(key_type)::type;
     for (auto it = other.begin(); !it.Equals(EndIterator()); it.PlusPlus()) {
-      NodeBase* node = nodes;
-      nodes = nodes->next;
+      NodeBase* node = nodes[i++];
       const Key& in = *other.GetKey<Key>(it.node_);
       Key* out = GetKey<Key>(node);
       InitializeKey(out, in, arena);
