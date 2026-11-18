@@ -13,6 +13,9 @@ use super::{Arena, AssociatedMiniTable, MessagePtr};
 #[allow(unused)] // FFI constants.
 pub mod decode_options {
     // LINT.IfChange(decode_option)
+    /// If set, strings and unknown fields alias the input buffer instead of
+    /// copying into the arena. The input buffer must outlive the message, even
+    /// if decoding fails: fields decoded before the failure still alias it.
     pub const ALIAS_STRING: i32 = 1;
     pub const CHECK_REQUIRED: i32 = 2;
     pub const EXPERIMENTAL_ALLOW_UNLINKED: i32 = 4;
@@ -111,7 +114,8 @@ pub unsafe fn decode<T: AssociatedMiniTable>(
 /// - `msg` must be mutable.
 /// - `extreg` must be null or point to a valid `upb_ExtensionRegistry` that is not mutated during
 ///   the call, and every extension in it must outlive `msg`.
-/// - `decode_options_bitmask` is a bitmask of constants from the `decode_options` module.
+/// - `decode_options_bitmask` is a bitmask of constants from the `decode_options` module. If
+///   `decode_options::ALIAS_STRING` is set, `buf` must outlive `msg` (even if `Err` is returned).
 pub unsafe fn decode_with_options<T: AssociatedMiniTable>(
     buf: &[u8],
     msg: MessagePtr<T>,
