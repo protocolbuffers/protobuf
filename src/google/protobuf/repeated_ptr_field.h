@@ -380,6 +380,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   // Specialized destructor routine for repeated message objects.
   void DestroyMessageLites(const ClassDataPrefix* class_data);
+
+  template <typename ClassDataT>
+  void DestroyMessageLitesImpl(const ClassDataT* class_data);
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
   bool NeedsDestroy() const {
