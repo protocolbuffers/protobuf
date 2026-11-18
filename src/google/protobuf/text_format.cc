@@ -2697,7 +2697,7 @@ class MapEntryMessageComparator {
       }
       default:
         ABSL_DLOG(FATAL) << "Invalid key for map field.";
-        return true;
+        return false;
     }
   }
 
