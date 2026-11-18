@@ -54,6 +54,9 @@ public class InvalidProtocolBufferException extends IOException {
 
   /**
    * Returns the unfinished message attached to the exception, or null if no message is attached.
+   *
+   * <p>The contents of the unfinished message may be arbitrary, since parsing failed partway
+   * through. It must not be used for anything other than internal diagnostics.
    */
   public MessageLite getUnfinishedMessage() {
     return unfinishedMessage;

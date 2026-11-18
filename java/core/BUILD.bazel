@@ -438,6 +438,7 @@ FULL_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/TestUtil.java",
     "src/test/java/com/google/protobuf/TestUtilLite.java",
     "src/test/java/com/google/protobuf/RuntimeVersionTest.java",
+    "src/test/java/com/google/protobuf/ByteArraySliceParsingLiteTest.java",
     "src/test/java/com/google/protobuf/ParserLiteTest.java",
     "src/test/java/com/google/protobuf/UnknownFieldSetLiteTest.java",
     # Defunct experimental schema tests
