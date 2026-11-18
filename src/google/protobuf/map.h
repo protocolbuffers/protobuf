@@ -32,12 +32,14 @@
 #include "absl/base/casts.h"
 #include "absl/base/optimization.h"
 #include "absl/base/prefetch.h"
+#include "absl/functional/function_ref.h"
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/field_with_arena.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/internal_metadata_locator.h"
@@ -303,6 +305,12 @@ class PROTOBUF_EXPORT UntypedMapBase {
     TypeKind value_type_kind() const {
       return static_cast<TypeKind>(value_type);
     }
+
+    friend constexpr bool operator==(const TypeInfo& t1, const TypeInfo& t2) {
+      return t1.node_size == t2.node_size &&
+             t1.value_offset == t2.value_offset && t1.key_type == t2.key_type &&
+             t1.value_type == t2.value_type;
+    }
   };
   static_assert(sizeof(TypeInfo) == 4);
 
@@ -490,6 +498,11 @@ class PROTOBUF_EXPORT UntypedMapBase {
   static void InitializeKey(Key* ptr, K&& k, Arena* arena);
 
   void DeallocNode(NodeBase* node) { DeallocNode(node, type_info_.node_size); }
+
+  using InitMessageValueFn =
+      absl::FunctionRef<void(void* out, const MessageLite& in)>;
+  void MergeFromImpl(Arena* arena, const UntypedMapBase& other,
+                     InitMessageValueFn init_value);
 
   void DeallocNode(NodeBase* node, size_t node_size) {
     ABSL_DCHECK(arena() == nullptr);

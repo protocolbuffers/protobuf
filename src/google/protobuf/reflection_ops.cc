@@ -62,21 +62,14 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
 
   const Reflection* from_reflection = GetReflectionOrDie(from);
   const Reflection* to_reflection = GetReflectionOrDie(*to);
-  bool is_from_generated = (from_reflection->GetMessageFactory() ==
-                            google::protobuf::MessageFactory::generated_factory());
-  bool is_to_generated = (to_reflection->GetMessageFactory() ==
-                          google::protobuf::MessageFactory::generated_factory());
 
   std::vector<const FieldDescriptor*> fields;
   from_reflection->ListFields(from, &fields);
   for (const FieldDescriptor* field : fields) {
     if (field->is_repeated()) {
-      // Use map reflection if both are in map status and have the
-      // same map type to avoid sync with repeated field.
-      // Note: As from and to messages have the same descriptor, the
-      // map field types are the same if they are both generated
-      // messages or both dynamic messages.
-      if (is_from_generated == is_to_generated && field->is_map()) {
+      // Use map reflection if both are in map status to avoid sync with
+      // repeated field.
+      if (field->is_map()) {
         const MapFieldBase* from_field =
             from_reflection->GetMapData(from, field);
         MapFieldBase* to_field = to_reflection->MutableMapData(to, field);

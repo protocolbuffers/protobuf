@@ -36,10 +36,12 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/compiler/cpp/cpp_file_options_test.pb.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/map_field.h"
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/test_textproto.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
@@ -92,6 +94,14 @@ class GeneratedMessageReflectionTestHelper {
   static const T& GetRaw(const Message& msg, const FieldDescriptor* field) {
     const Reflection* reflection = msg.GetReflection();
     return reflection->GetRaw<T>(msg, field);
+  }
+  static const internal::MapFieldBase* GetMapData(
+      const Message& msg, const FieldDescriptor* field) {
+    return msg.GetReflection()->GetMapData(msg, field);
+  }
+  static internal::MapFieldBase* MutableMapData(Message* msg,
+                                                const FieldDescriptor* field) {
+    return msg->GetReflection()->MutableMapData(msg, field);
   }
 };
 

@@ -364,6 +364,10 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   const Message* GetPrototype() const;
   void ClearMapNoSync();
 
+  // Merges `other` into `this`, where `other`'s message values come from a
+  // different message factory than `this`'s.
+  void MergeFromCrossFactory(Arena* arena, const MapFieldBase& other);
+
   // Synchronizes the content in Map to RepeatedPtrField if there is any change
   // to Map after last synchronization.
   const RepeatedPtrFieldBase& SyncRepeatedFieldWithMap(bool for_mutation) const;

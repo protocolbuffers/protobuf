@@ -13,6 +13,8 @@
 #include <string>
 #include <type_traits>
 
+#include "google/protobuf/message_traits.h"
+
 #include "absl/functional/overload.h"
 #include "absl/log/absl_check.h"
 #include "absl/status/status.h"
@@ -35,10 +37,39 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+namespace {
+
+// Returns true if the map entries `entry_prototype` and `other_entry_prototype`
+// have message values from different message factories.
+bool IsCrossFactoryMessage(const Message& entry_prototype,
+                           const Message& other_entry_prototype) {
+  return entry_prototype.GetDescriptor()->map_value()->cpp_type() ==
+             FieldDescriptor::CPPTYPE_MESSAGE &&
+         &GetMapEntryValuePrototype(entry_prototype) !=
+             &GetMapEntryValuePrototype(other_entry_prototype);
+}
+
+}  // namespace
+
 MapFieldBase::~MapFieldBase() { delete maybe_payload(); }
 
 void MapFieldBase::MergeFrom(Arena* arena, const MapFieldBase& other) {
+  if (IsCrossFactoryMessage(*GetPrototype(), *other.GetPrototype())) {
+    MergeFromCrossFactory(arena, other);
+    return;
+  }
   MutableMap()->UntypedMergeFrom(arena, other.GetMap());
+}
+
+void MapFieldBase::MergeFromCrossFactory(Arena* arena,
+                                         const MapFieldBase& other) {
+  const ClassData* class_data =
+      GetClassData(GetMapEntryValuePrototype(*GetPrototype()));
+  MutableMap()->MergeFromImpl(
+      arena, other.GetMap(), [&](void* out, const MessageLite& in) {
+        DownCastMessage<Message>(class_data->PlacementNew(out, arena))
+            ->MergeFrom(DownCastMessage<Message>(in));
+      });
 }
 
 void MapFieldBase::Swap(Arena* arena, MapFieldBase* other, Arena* other_arena) {

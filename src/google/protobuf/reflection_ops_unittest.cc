@@ -13,14 +13,19 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include <gtest/gtest.h>
+#include "absl/status/statusor.h"
 #include "absl/strings/str_join.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
@@ -182,6 +187,7 @@ TEST(ReflectionOpsTest, MergeFromSelf) {
 }
 
 #endif  // GTEST_HAS_DEATH_TEST
+
 
 TEST(ReflectionOpsTest, Clear) {
   unittest::TestAllTypes message;

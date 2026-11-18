@@ -38,6 +38,17 @@ std::atomic<MapFieldBaseForParse::SyncFunc>
 
 void UntypedMapBase::UntypedMergeFrom(Arena* arena,
                                       const UntypedMapBase& other) {
+  // Both maps must have the same layout, since we are using `other`'s
+  // `ClassData` to populate this map's message-valued nodes.
+  ABSL_CHECK(type_info_ == other.type_info_)
+      << "Merging maps with different layouts.";
+  MergeFromImpl(arena, other, [&](void* out, const MessageLite& in) {
+    GetClassData(in)->PlacementNew(out, arena)->CheckTypeAndMergeFrom(in);
+  });
+}
+
+void UntypedMapBase::MergeFromImpl(Arena* arena, const UntypedMapBase& other,
+                                   InitMessageValueFn init_value) {
   ABSL_DCHECK_EQ(arena, this->arena());
   if (other.empty()) return;
 
@@ -57,18 +68,12 @@ void UntypedMapBase::UntypedMergeFrom(Arena* arena,
     using Value = typename decltype(value_type)::type;
     NodeBase* out_node = nodes;
 
-    // Get the ClassData once to avoid redundant virtual function calls.
-    const internal::ClassData* class_data =
-        std::is_same_v<MessageLite, Value>
-            ? GetClassData(*other.GetValue<MessageLite>(other.begin().node_))
-            : nullptr;
-
     for (auto it = other.begin(); !it.Equals(EndIterator()); it.PlusPlus()) {
       Value* out = GetValue<Value>(out_node);
       out_node = out_node->next;
       auto& in = *other.GetValue<Value>(it.node_);
       if constexpr (std::is_same_v<MessageLite, Value>) {
-        class_data->PlacementNew(out, arena)->CheckTypeAndMergeFrom(in);
+        init_value(out, in);
       } else {
         Arena::CreateInArenaStorage(out, arena, in);
       }
