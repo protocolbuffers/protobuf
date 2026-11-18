@@ -106,14 +106,16 @@ class PROTOBUF_EXPORT WireFormat {
   // Any embedded messages within the message must have their correct sizes
   // cached.  However, the top-level message need not; its size is passed as
   // a parameter to this procedure.
-  //
-  // These return false iff the underlying stream returns a write error.
   static void SerializeWithCachedSizes(const Message& message, int size,
                                        io::CodedOutputStream* output) {
-    int expected_endpoint = output->ByteCount() + size;
+    const int64_t original_byte_count = internal::ByteCount64(output);
     output->SetCur(
         _InternalSerialize(message, output->Cur(), output->EpsCopy()));
-    ABSL_CHECK_EQ(output->ByteCount(), expected_endpoint)
+    if (output->HadError()) {
+      return;
+    }
+    ABSL_CHECK_EQ(internal::ByteCount64(output) - original_byte_count,
+                  static_cast<int64_t>(size))
         << ": Protocol message serialized to a size different from what was "
            "originally expected.  Perhaps it was modified by another thread "
            "during serialization?";

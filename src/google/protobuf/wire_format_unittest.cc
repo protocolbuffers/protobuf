@@ -27,6 +27,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
@@ -303,6 +304,111 @@ TEST(WireFormatTest, ParseMessageSetItemInvalidInputAllocatesHuge) {
   // It should return false because it cannot read 2,000,000,000 bytes.
   EXPECT_FALSE(
       WireFormat::ParseAndMergeMessageSetItem(&coded_input, &message_set));
+}
+
+// ZeroCopyOutputStream that discards output into a small scratch buffer until
+// Capture() is called, allowing >2 GiB / >4 GiB offsets to be reached cheaply.
+class TailCapturingOutputStream final : public io::ZeroCopyOutputStream {
+ public:
+  bool Next(void** data, int* size) override {
+    last_captured_ = false;
+    if (fail_) return false;
+    if (chunk_size_ > 0) {
+      captured_.resize(captured_.size() + chunk_size_);
+      *data = captured_.data() + captured_.size() - chunk_size_;
+      *size = static_cast<int>(chunk_size_);
+      last_captured_ = true;
+    } else {
+      *data = scratch_;
+      *size = sizeof(scratch_);
+    }
+    byte_count_ += *size;
+    return true;
+  }
+
+  void BackUp(int count) override {
+    ASSERT_GE(count, 0);
+    byte_count_ -= count;
+    if (last_captured_) {
+      ASSERT_LE(static_cast<size_t>(count), captured_.size());
+      captured_.resize(captured_.size() - static_cast<size_t>(count));
+      last_captured_ = false;
+    }
+  }
+
+  int64_t ByteCount() const override { return byte_count_; }
+
+  void Capture(size_t chunk_size) {
+    captured_.clear();
+    chunk_size_ = chunk_size;
+  }
+  void Discard() { chunk_size_ = 0; }
+  void Fail() { fail_ = true; }
+  absl::string_view captured() const { return captured_; }
+
+ private:
+  char scratch_[4096]{};
+  std::string captured_;
+  int64_t byte_count_ = 0;
+  size_t chunk_size_ = 0;
+  bool last_captured_ = false;
+  bool fail_ = false;
+};
+
+TEST(WireFormatTest, CodedOutputStreamSerializeOver2G) {
+  proto2_unittest::TestAllTypes message;
+  message.set_optional_string("0123456789abcdef");
+  const std::string expected = message.SerializeAsString();
+  const int size = static_cast<int>(expected.size());
+  ASSERT_GT(size, 10);
+
+  auto verify = [&](absl::string_view name, auto serialize) {
+    SCOPED_TRACE(name);
+    TailCapturingOutputStream raw_output;
+    {
+      // Exercise non-zero CodedOutputStream::start_count_.
+      io::CodedOutputStream initial(&raw_output);
+      initial.WriteRaw("12345", 5);
+    }
+    io::CodedOutputStream output(&raw_output);
+
+    // Cross 2 GiB from an active direct buffer (chunk_size = 64 > kSlopBytes)
+    // and >4 GiB in patch-buffer mode (chunk_size = 16 <= kSlopBytes), each
+    // after a 3-byte prefix so EpsCopyOutputStream's delta is non-zero.
+    const struct {
+      int skip;
+      size_t chunk_size;
+    } kPhases[] = {{std::numeric_limits<int>::max() - 10, 64},
+                   {std::numeric_limits<int>::max(), 16}};
+    for (const auto& [skip, chunk_size] : kPhases) {
+      SCOPED_TRACE(chunk_size);
+      raw_output.Discard();
+      ASSERT_TRUE(output.Skip(skip));
+      output.Trim();
+      const int64_t start = raw_output.ByteCount();
+      raw_output.Capture(chunk_size);
+      output.WriteRaw("abc", 3);
+      EXPECT_TRUE(serialize(output));
+      EXPECT_EQ(internal::ByteCount64(&output), start + 3 + size - 5);
+      output.Trim();
+      EXPECT_FALSE(output.HadError());
+      EXPECT_EQ(raw_output.captured(), "abc" + expected);
+      EXPECT_EQ(raw_output.ByteCount(), start + 3 + size);
+    }
+
+    raw_output.Fail();
+    EXPECT_FALSE(serialize(output));
+    EXPECT_TRUE(output.HadError());
+  };
+
+  verify("SerializePartialToCodedStream", [&](io::CodedOutputStream& out) {
+    return message.SerializePartialToCodedStream(&out);
+  });
+  verify("WireFormat::SerializeWithCachedSizes",
+         [&](io::CodedOutputStream& out) {
+           WireFormat::SerializeWithCachedSizes(message, size, &out);
+           return !out.HadError();
+         });
 }
 
 

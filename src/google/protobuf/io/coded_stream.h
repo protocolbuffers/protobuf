@@ -124,9 +124,14 @@ class DescriptorPool;
 class MessageFactory;
 class ZeroCopyCodedInputStream;
 
+namespace io {
+class CodedOutputStream;
+}  // namespace io
+
 namespace internal {
 void MapTestForceDeterministic();
 class EpsCopyByteStream;
+[[nodiscard]] inline int64_t ByteCount64(const io::CodedOutputStream* output);
 }  // namespace internal
 
 namespace io {
@@ -1336,6 +1341,8 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodedOutputStream {
   }
 
  private:
+  friend int64_t google::protobuf::internal::ByteCount64(const CodedOutputStream* output);
+
   template <class Stream>
   void InitEagerly(Stream* stream);
 
@@ -1879,6 +1886,13 @@ inline uint8_t* CodedOutputStream::WriteStringToArray(absl::string_view str,
 }
 
 }  // namespace io
+
+namespace internal {
+inline int64_t ByteCount64(const io::CodedOutputStream* output) {
+  return output->impl_.ByteCount(output->cur_) - output->start_count_;
+}
+}  // namespace internal
+
 }  // namespace protobuf
 }  // namespace google
 

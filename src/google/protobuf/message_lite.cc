@@ -537,16 +537,17 @@ bool MessageLite::SerializePartialToCodedStream(
     return false;
   }
 
-  int original_byte_count = output->ByteCount();
+  const int64_t original_byte_count = internal::ByteCount64(output);
   SerializeWithCachedSizes(output);
   if (output->HadError()) {
     return false;
   }
-  int final_byte_count = output->ByteCount();
+  const int64_t final_byte_count = internal::ByteCount64(output);
 
   if (final_byte_count - original_byte_count != static_cast<int64_t>(size)) {
-    ByteSizeConsistencyError(size, ByteSizeLong(),
-                             final_byte_count - original_byte_count, *this);
+    ByteSizeConsistencyError(
+        size, ByteSizeLong(),
+        static_cast<size_t>(final_byte_count - original_byte_count), *this);
   }
 
   return true;
