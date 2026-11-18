@@ -1072,7 +1072,7 @@ FileDescriptorProto MakeFileDescriptorProtoWithImports(
     std::initializer_list<absl::string_view> option_deps = {}) {
   FileDescriptorProto file;
   file.set_name(name);
-  if (option_deps.size() > 0) {
+  if (!option_deps.empty()) {
     file.set_syntax("editions");
     file.set_edition(Edition::EDITION_2024);
   } else {
