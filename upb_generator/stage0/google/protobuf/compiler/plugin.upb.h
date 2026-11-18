@@ -445,15 +445,15 @@ UPB_INLINE struct google_protobuf_FileDescriptorProto** google_protobuf_compiler
 UPB_INLINE struct google_protobuf_FileDescriptorProto* google_protobuf_compiler_CodeGeneratorRequest_add_proto_file(
     google_protobuf_compiler_CodeGeneratorRequest* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorRequest_msg_init(), 15);
+  struct google_protobuf_FileDescriptorProto* sub =
+      (struct google_protobuf_FileDescriptorProto*)_upb_Message_New(google__protobuf__FileDescriptorProto_msg_init(), arena);
+  if (!sub) return NULL;
   upb_Array* arr = upb_Message_GetOrCreateMutableArray(
       UPB_UPCAST(msg), &field, arena);
   if (!arr || !UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
                   arr, arr->UPB_PRIVATE(size) + 1, arena)) {
     return NULL;
   }
-  struct google_protobuf_FileDescriptorProto* sub =
-      (struct google_protobuf_FileDescriptorProto*)_upb_Message_New(google__protobuf__FileDescriptorProto_msg_init(), arena);
-  if (!arr || !sub) return NULL;
   UPB_PRIVATE(_upb_Array_Set)
   (arr, arr->UPB_PRIVATE(size) - 1, &sub, sizeof(sub));
   return sub;
@@ -481,15 +481,15 @@ UPB_INLINE struct google_protobuf_FileDescriptorProto** google_protobuf_compiler
 UPB_INLINE struct google_protobuf_FileDescriptorProto* google_protobuf_compiler_CodeGeneratorRequest_add_source_file_descriptors(
     google_protobuf_compiler_CodeGeneratorRequest* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorRequest_msg_init(), 17);
+  struct google_protobuf_FileDescriptorProto* sub =
+      (struct google_protobuf_FileDescriptorProto*)_upb_Message_New(google__protobuf__FileDescriptorProto_msg_init(), arena);
+  if (!sub) return NULL;
   upb_Array* arr = upb_Message_GetOrCreateMutableArray(
       UPB_UPCAST(msg), &field, arena);
   if (!arr || !UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
                   arr, arr->UPB_PRIVATE(size) + 1, arena)) {
     return NULL;
   }
-  struct google_protobuf_FileDescriptorProto* sub =
-      (struct google_protobuf_FileDescriptorProto*)_upb_Message_New(google__protobuf__FileDescriptorProto_msg_init(), arena);
-  if (!arr || !sub) return NULL;
   UPB_PRIVATE(_upb_Array_Set)
   (arr, arr->UPB_PRIVATE(size) - 1, &sub, sizeof(sub));
   return sub;
@@ -683,15 +683,15 @@ UPB_INLINE google_protobuf_compiler_CodeGeneratorResponse_File** google_protobuf
 UPB_INLINE struct google_protobuf_compiler_CodeGeneratorResponse_File* google_protobuf_compiler_CodeGeneratorResponse_add_file(
     google_protobuf_compiler_CodeGeneratorResponse* msg, upb_Arena* arena) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorResponse_msg_init(), 15);
+  struct google_protobuf_compiler_CodeGeneratorResponse_File* sub =
+      (struct google_protobuf_compiler_CodeGeneratorResponse_File*)_upb_Message_New(google__protobuf__compiler__CodeGeneratorResponse__File_msg_init(), arena);
+  if (!sub) return NULL;
   upb_Array* arr = upb_Message_GetOrCreateMutableArray(
       UPB_UPCAST(msg), &field, arena);
   if (!arr || !UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
                   arr, arr->UPB_PRIVATE(size) + 1, arena)) {
     return NULL;
   }
-  struct google_protobuf_compiler_CodeGeneratorResponse_File* sub =
-      (struct google_protobuf_compiler_CodeGeneratorResponse_File*)_upb_Message_New(google__protobuf__compiler__CodeGeneratorResponse__File_msg_init(), arena);
-  if (!arr || !sub) return NULL;
   UPB_PRIVATE(_upb_Array_Set)
   (arr, arr->UPB_PRIVATE(size) - 1, &sub, sizeof(sub));
   return sub;

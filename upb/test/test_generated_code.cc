@@ -1034,3 +1034,51 @@ TEST(GeneratedCode, MutablePrefix) {
 
   upb_Arena_Free(arena);
 }
+
+TEST(GeneratedCode, AddRepeatedMessageOom) {
+  bool saw_first_add_oom = false;
+  bool saw_spare_capacity_oom = false;
+  bool saw_realloc_oom = false;
+
+  for (size_t cap = UPB_MALLOC_ALIGN; cap <= 2048; cap += UPB_MALLOC_ALIGN) {
+    SCOPED_TRACE(cap);
+    alignas(UPB_MALLOC_ALIGN) char buf[2048];
+    upb_Arena* arena = upb_Arena_Init(buf, cap, nullptr);
+    upb_test_ModelWithSubMessages* msg =
+        arena ? upb_test_ModelWithSubMessages_new(arena) : nullptr;
+    if (msg != nullptr) {
+      int added = 0;
+      for (; added < 6; ++added) {
+        upb_test_ModelWithExtensions* item =
+            upb_test_ModelWithSubMessages_add_items(msg, arena);
+        if (item == nullptr) {
+          saw_first_add_oom |= (added == 0);
+          saw_spare_capacity_oom |= (added > 0 && added < 4);
+          saw_realloc_oom |= (added >= 4);
+          break;
+        }
+        upb_test_ModelWithExtensions_set_random_int32(item, 100 + added);
+      }
+
+      size_t actual_count = 999;
+      const upb_test_ModelWithExtensions* const* items =
+          upb_test_ModelWithSubMessages_items(msg, &actual_count);
+      ASSERT_EQ(actual_count, static_cast<size_t>(added));
+      for (int i = 0; i < added; ++i) {
+        EXPECT_EQ(upb_test_ModelWithExtensions_random_int32(items[i]), 100 + i)
+            << "at index " << i;
+      }
+
+      upb::Arena encode_arena;
+      size_t wire_size = 0;
+      EXPECT_NE(upb_test_ModelWithSubMessages_serialize(msg, encode_arena.ptr(),
+                                                        &wire_size),
+                nullptr);
+    }
+    if (arena != nullptr) upb_Arena_Free(arena);
+  }
+
+  EXPECT_TRUE(saw_first_add_oom);
+  EXPECT_TRUE(saw_spare_capacity_oom);
+  EXPECT_TRUE(saw_realloc_oom);
+}

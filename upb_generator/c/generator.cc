@@ -856,15 +856,15 @@ void GenerateRepeatedSetters(Context& c, upb::FieldDefPtr field,
           UPB_INLINE struct $sub_ctype$* $msg_name$_add_$name$(
               $msg_name$* msg, upb_Arena* arena) {
             upb_MiniTableField field = $field_init$;
+            struct $sub_ctype$* sub =
+                (struct $sub_ctype$*)_upb_Message_New($sub_mini_table$, arena);
+            if (!sub) return NULL;
             upb_Array* arr = upb_Message_GetOrCreateMutableArray(
                 UPB_UPCAST(msg), &field, arena);
             if (!arr || !UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
                             arr, arr->UPB_PRIVATE(size) + 1, arena)) {
               return NULL;
             }
-            struct $sub_ctype$* sub =
-                (struct $sub_ctype$*)_upb_Message_New($sub_mini_table$, arena);
-            if (!arr || !sub) return NULL;
             UPB_PRIVATE(_upb_Array_Set)
             (arr, arr->UPB_PRIVATE(size) - 1, &sub, sizeof(sub));
             return sub;
