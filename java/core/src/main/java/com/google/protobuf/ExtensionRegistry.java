@@ -242,11 +242,34 @@ public class ExtensionRegistry extends ExtensionRegistryLite {
     add(info, Extension.ExtensionType.MUTABLE);
   }
 
-  /** Add a message-type extension to the registry by descriptor. */
+  /**
+   * Add a message-type extension to the registry by descriptor.
+   *
+   * @param defaultInstance a default instance of the extension's message type, which is used to
+   *     parse the extension's payload
+   * @throws IllegalArgumentException if {@code type} is not a message-typed extension, or if {@code
+   *     defaultInstance} is not of the extension's message type
+   */
   public void add(final FieldDescriptor type, final Message defaultInstance) {
     if (type.getJavaType() != FieldDescriptor.JavaType.MESSAGE) {
       throw new IllegalArgumentException(
           "ExtensionRegistry.add() provided a default instance for a non-message extension.");
+    }
+    Internal.checkNotNull(defaultInstance, "defaultInstance");
+    Descriptor expectedType = type.getMessageType();
+    Descriptor actualType = defaultInstance.getDescriptorForType();
+    // Compare by full name rather than identity so that a generated default instance can still be
+    // registered for an equivalent extension descriptor built in a different pool.
+    if (actualType != expectedType
+        && !actualType.getFullName().equals(expectedType.getFullName())) {
+      throw new IllegalArgumentException(
+          "ExtensionRegistry.add() was given a default instance of type "
+              + actualType.getFullName()
+              + " for extension "
+              + type.getFullName()
+              + ", whose type is "
+              + expectedType.getFullName()
+              + ".");
     }
       add(new ExtensionInfo(type, defaultInstance), Extension.ExtensionType.IMMUTABLE);
   }
