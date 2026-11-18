@@ -14,6 +14,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include "google/protobuf/type.pb.h"
@@ -39,6 +40,19 @@ namespace google {
 namespace protobuf {
 namespace json_internal {
 
+template <typename T>
+constexpr bool IsGoodParam() {
+  static_assert(sizeof(T) <= 16);
+  static_assert(std::is_trivially_copyable_v<T>);
+  return true;
+}
+
+// We use this for lambdas to make sure we are passing them in registers instead
+// of by ref to avoid stack usage on the caller.
+// If the assertion fails it means we are capturing too much on the lambda.
+template <typename T, bool = IsGoodParam<T>()>
+using GoodParam = T;
+
 enum class SeenState {
   kFirstSeen,
   kOneofAlreadySeen,
@@ -62,15 +76,22 @@ struct ParseProto2Descriptor : Proto2Descriptor {
   // A message value that fields can be written to, but not read from.
   class Msg {
    public:
-    explicit Msg(Message* msg) : msg_(msg) {}
+    explicit Msg(Message* msg) : impl_(std::make_unique<Impl>()) {
+      impl_->msg = msg;
+    }
 
    private:
     friend ParseProto2Descriptor;
-    Message* msg_;
-    // Because `msg` might already have oneofs set, we need to track which were
-    // set *during* the parse separately.
-    absl::flat_hash_set<int> parsed_oneofs_indices_;
-    absl::flat_hash_set<int> parsed_fields_;
+    // Use pImpl to reduce stack usage.
+    struct Impl {
+      Message* msg;
+      // Because `msg` might already have oneofs set, we need to track which
+      // were set *during* the parse separately.
+      absl::flat_hash_set<int> parsed_oneofs_indices;
+      absl::flat_hash_set<int> parsed_fields;
+    };
+
+    std::unique_ptr<Impl> impl_;
   };
 
   /// Functions for writing fields. ///
@@ -82,7 +103,7 @@ struct ParseProto2Descriptor : Proto2Descriptor {
     if (f->real_containing_oneof() != nullptr) {
       int oneof_index = f->real_containing_oneof()->index();
       bool oneof_inserted =
-          msg.parsed_oneofs_indices_.insert(oneof_index).second;
+          msg.impl_->parsed_oneofs_indices.insert(oneof_index).second;
       if (!oneof_inserted) {
         // Oneof takes precedent over Field in the case of "this is in a oneof
         // and the field is set"
@@ -90,7 +111,7 @@ struct ParseProto2Descriptor : Proto2Descriptor {
       }
     }
 
-    bool field_inserted = msg.parsed_fields_.insert(f->number()).second;
+    bool field_inserted = msg.impl_->parsed_fields.insert(f->number()).second;
     if (!field_inserted) {
       return SeenState::kFieldAlreadySeen;
     }
@@ -99,19 +120,20 @@ struct ParseProto2Descriptor : Proto2Descriptor {
   }
 
   static void ClearField(Field f, Msg& msg) {
-    msg.msg_->GetReflection()->ClearField(msg.msg_, f);
+    msg.impl_->msg->GetReflection()->ClearField(msg.impl_->msg, f);
   }
 
   // Adds a new message and calls body on it.
   //
   // Body should have a signature `absl::Status(const Desc&, Msg&)`.
   template <typename F>
-  static absl::Status NewMsg(Field f, Msg& msg, F body) {
+  static absl::Status NewMsg(Field f, Msg& msg, GoodParam<F> body) {
     Message* new_msg;
     if (f->is_repeated()) {
-      new_msg = msg.msg_->GetReflection()->AddMessage(msg.msg_, f);
+      new_msg = msg.impl_->msg->GetReflection()->AddMessage(msg.impl_->msg, f);
     } else {
-      new_msg = msg.msg_->GetReflection()->MutableMessage(msg.msg_, f);
+      new_msg =
+          msg.impl_->msg->GetReflection()->MutableMessage(msg.impl_->msg, f);
     }
     Msg wrapper(new_msg);
     return body(*f->message_type(), wrapper);
@@ -122,7 +144,7 @@ struct ParseProto2Descriptor : Proto2Descriptor {
   // Body should have a signature `absl::Status(const Desc&, Msg&)`.
   template <typename F>
   static absl::Status NewDynamic(Field f, const std::string& type_url, Msg& msg,
-                                 F body) {
+                                 GoodParam<F> body) {
     return WithDynamicType(
         *f->containing_type(), type_url, [&](const Desc& desc) -> absl::Status {
           DynamicMessageFactory factory;
@@ -131,11 +153,11 @@ struct ParseProto2Descriptor : Proto2Descriptor {
           RETURN_IF_ERROR(body(desc, wrapper));
 
           if (f->is_repeated()) {
-            msg.msg_->GetReflection()->AddString(
-                msg.msg_, f, dynamic->SerializePartialAsString());
+            msg.impl_->msg->GetReflection()->AddString(
+                msg.impl_->msg, f, dynamic->SerializePartialAsString());
           } else {
-            msg.msg_->GetReflection()->SetString(
-                msg.msg_, f, dynamic->SerializePartialAsString());
+            msg.impl_->msg->GetReflection()->SetString(
+                msg.impl_->msg, f, dynamic->SerializePartialAsString());
           }
           return absl::OkStatus();
         });
@@ -143,73 +165,75 @@ struct ParseProto2Descriptor : Proto2Descriptor {
 
   static void SetFloat(Field f, Msg& msg, float x) {
     if (f->is_repeated()) {
-      msg.msg_->GetReflection()->AddFloat(msg.msg_, f, x);
+      msg.impl_->msg->GetReflection()->AddFloat(msg.impl_->msg, f, x);
     } else {
-      msg.msg_->GetReflection()->SetFloat(msg.msg_, f, x);
+      msg.impl_->msg->GetReflection()->SetFloat(msg.impl_->msg, f, x);
     }
   }
 
   static void SetDouble(Field f, Msg& msg, double x) {
     if (f->is_repeated()) {
-      msg.msg_->GetReflection()->AddDouble(msg.msg_, f, x);
+      msg.impl_->msg->GetReflection()->AddDouble(msg.impl_->msg, f, x);
     } else {
-      msg.msg_->GetReflection()->SetDouble(msg.msg_, f, x);
+      msg.impl_->msg->GetReflection()->SetDouble(msg.impl_->msg, f, x);
     }
   }
 
   static void SetInt64(Field f, Msg& msg, int64_t x) {
     if (f->is_repeated()) {
-      msg.msg_->GetReflection()->AddInt64(msg.msg_, f, x);
+      msg.impl_->msg->GetReflection()->AddInt64(msg.impl_->msg, f, x);
     } else {
-      msg.msg_->GetReflection()->SetInt64(msg.msg_, f, x);
+      msg.impl_->msg->GetReflection()->SetInt64(msg.impl_->msg, f, x);
     }
   }
 
   static void SetUInt64(Field f, Msg& msg, uint64_t x) {
     if (f->is_repeated()) {
-      msg.msg_->GetReflection()->AddUInt64(msg.msg_, f, x);
+      msg.impl_->msg->GetReflection()->AddUInt64(msg.impl_->msg, f, x);
     } else {
-      msg.msg_->GetReflection()->SetUInt64(msg.msg_, f, x);
+      msg.impl_->msg->GetReflection()->SetUInt64(msg.impl_->msg, f, x);
     }
   }
 
   static void SetInt32(Field f, Msg& msg, int32_t x) {
     if (f->is_repeated()) {
-      msg.msg_->GetReflection()->AddInt32(msg.msg_, f, x);
+      msg.impl_->msg->GetReflection()->AddInt32(msg.impl_->msg, f, x);
     } else {
-      msg.msg_->GetReflection()->SetInt32(msg.msg_, f, x);
+      msg.impl_->msg->GetReflection()->SetInt32(msg.impl_->msg, f, x);
     }
   }
 
   static void SetUInt32(Field f, Msg& msg, uint32_t x) {
     if (f->is_repeated()) {
-      msg.msg_->GetReflection()->AddUInt32(msg.msg_, f, x);
+      msg.impl_->msg->GetReflection()->AddUInt32(msg.impl_->msg, f, x);
     } else {
-      msg.msg_->GetReflection()->SetUInt32(msg.msg_, f, x);
+      msg.impl_->msg->GetReflection()->SetUInt32(msg.impl_->msg, f, x);
     }
   }
 
   static void SetBool(Field f, Msg& msg, bool x) {
     if (f->is_repeated()) {
-      msg.msg_->GetReflection()->AddBool(msg.msg_, f, x);
+      msg.impl_->msg->GetReflection()->AddBool(msg.impl_->msg, f, x);
     } else {
-      msg.msg_->GetReflection()->SetBool(msg.msg_, f, x);
+      msg.impl_->msg->GetReflection()->SetBool(msg.impl_->msg, f, x);
     }
   }
 
   static void SetString(Field f, Msg& msg, absl::string_view x) {
     if (f->is_repeated()) {
-      msg.msg_->GetReflection()->AddString(msg.msg_, f, std::string(x));
+      msg.impl_->msg->GetReflection()->AddString(msg.impl_->msg, f,
+                                                 std::string(x));
     } else {
-      msg.msg_->GetReflection()->SetString(msg.msg_, f, std::string(x));
+      msg.impl_->msg->GetReflection()->SetString(msg.impl_->msg, f,
+                                                 std::string(x));
     }
   }
 
   static void SetEnum(Field f, Msg& msg, int32_t x) {
     if (f->is_repeated()) {
-      msg.msg_->GetReflection()->AddEnumValue(msg.msg_, f, x);
+      msg.impl_->msg->GetReflection()->AddEnumValue(msg.impl_->msg, f, x);
     } else {
-      msg.msg_->GetReflection()->SetEnumValue(msg.msg_, f, x);
+      msg.impl_->msg->GetReflection()->SetEnumValue(msg.impl_->msg, f, x);
     }
   }
 };
@@ -223,13 +247,19 @@ struct ParseProto2Descriptor : Proto2Descriptor {
 struct ParseProto3Type : Proto3Type {
   class Msg {
    public:
-    explicit Msg(io::ZeroCopyOutputStream* stream) : stream_(stream) {}
+    explicit Msg(io::ZeroCopyOutputStream* stream)
+        : impl_(std::make_unique<Impl>(stream)) {}
 
    private:
     friend ParseProto3Type;
-    io::CodedOutputStream stream_;
-    absl::flat_hash_set<int32_t> parsed_oneofs_indices_;
-    absl::flat_hash_set<int32_t> parsed_fields_;
+    // Use pImpl to reduce stack usage.
+    struct Impl {
+      Impl(io::ZeroCopyOutputStream* zs) : stream(zs) {}
+      io::CodedOutputStream stream;
+      absl::flat_hash_set<int32_t> parsed_oneofs_indices;
+      absl::flat_hash_set<int32_t> parsed_fields;
+    };
+    std::unique_ptr<Impl> impl_;
   };
 
   /// Functions for writing fields. ///
@@ -238,7 +268,7 @@ struct ParseProto3Type : Proto3Type {
     int oneof_index = f->proto().oneof_index();
     if (oneof_index != 0) {
       bool oneof_inserted =
-          msg.parsed_oneofs_indices_.insert(oneof_index).second;
+          msg.impl_->parsed_oneofs_indices.insert(oneof_index).second;
       if (!oneof_inserted) {
         // Oneof takes precedent over Field in the case of "this is in a oneof
         // and the field is set"
@@ -246,7 +276,8 @@ struct ParseProto3Type : Proto3Type {
       }
     }
 
-    bool field_inserted = msg.parsed_fields_.insert(f->proto().number()).second;
+    bool field_inserted =
+        msg.impl_->parsed_fields.insert(f->proto().number()).second;
     if (!field_inserted) {
       return SeenState::kFieldAlreadySeen;
     }
@@ -257,21 +288,21 @@ struct ParseProto3Type : Proto3Type {
   static void ClearField(Field f, Msg& msg) {}
 
   template <typename F>
-  static absl::Status NewMsg(Field f, Msg& msg, F body) {
+  static absl::Status NewMsg(Field f, Msg& msg, GoodParam<F> body) {
     return NewDynamic(f, f->proto().type_url(), msg, body);
   }
 
   template <typename F>
   static absl::Status NewDynamic(Field f, const std::string& type_url, Msg& msg,
-                                 F body) {
+                                 GoodParam<F> body) {
     return WithDynamicType(
         f->parent(), type_url, [&](const Desc& desc) -> absl::Status {
           if (f->proto().kind() == google::protobuf::Field::TYPE_GROUP) {
-            msg.stream_.WriteTag(f->proto().number() << 3 |
-                                 WireFormatLite::WIRETYPE_START_GROUP);
+            msg.impl_->stream.WriteTag(f->proto().number() << 3 |
+                                       WireFormatLite::WIRETYPE_START_GROUP);
             RETURN_IF_ERROR(body(desc, msg));
-            msg.stream_.WriteTag(f->proto().number() << 3 |
-                                 WireFormatLite::WIRETYPE_END_GROUP);
+            msg.impl_->stream.WriteTag(f->proto().number() << 3 |
+                                       WireFormatLite::WIRETYPE_END_GROUP);
             return absl::OkStatus();
           }
 
@@ -280,24 +311,24 @@ struct ParseProto3Type : Proto3Type {
           Msg new_msg(&stream);
           RETURN_IF_ERROR(body(desc, new_msg));
 
-          new_msg.stream_.Trim();  // Should probably be called "Flush()".
+          new_msg.impl_->stream.Trim();  // Should probably be called "Flush()".
           absl::string_view written = absl::string_view(out).substr(
-              0, static_cast<size_t>(new_msg.stream_.ByteCount()));
+              0, static_cast<size_t>(new_msg.impl_->stream.ByteCount()));
           SetString(f, msg, written);
           return absl::OkStatus();
         });
   }
 
   static void SetFloat(Field f, Msg& msg, float x) {
-    msg.stream_.WriteTag(f->proto().number() << 3 |
-                         WireFormatLite::WIRETYPE_FIXED32);
-    msg.stream_.WriteLittleEndian32(absl::bit_cast<uint32_t>(x));
+    msg.impl_->stream.WriteTag(f->proto().number() << 3 |
+                               WireFormatLite::WIRETYPE_FIXED32);
+    msg.impl_->stream.WriteLittleEndian32(absl::bit_cast<uint32_t>(x));
   }
 
   static void SetDouble(Field f, Msg& msg, double x) {
-    msg.stream_.WriteTag(f->proto().number() << 3 |
-                         WireFormatLite::WIRETYPE_FIXED64);
-    msg.stream_.WriteLittleEndian64(absl::bit_cast<uint64_t>(x));
+    msg.impl_->stream.WriteTag(f->proto().number() << 3 |
+                               WireFormatLite::WIRETYPE_FIXED64);
+    msg.impl_->stream.WriteLittleEndian64(absl::bit_cast<uint64_t>(x));
   }
 
   static void SetInt64(Field f, Msg& msg, int64_t x) {
@@ -325,22 +356,22 @@ struct ParseProto3Type : Proto3Type {
   }
 
   static void SetBool(Field f, Msg& msg, bool x) {
-    msg.stream_.WriteTag(f->proto().number() << 3);
+    msg.impl_->stream.WriteTag(f->proto().number() << 3);
     char b = x ? 0x01 : 0x00;
-    msg.stream_.WriteRaw(&b, 1);
+    msg.impl_->stream.WriteRaw(&b, 1);
   }
 
   static void SetString(Field f, Msg& msg, absl::string_view x) {
-    msg.stream_.WriteTag(f->proto().number() << 3 |
-                         WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
-    msg.stream_.WriteVarint64(static_cast<uint64_t>(x.size()));
-    msg.stream_.WriteRaw(x.data(), x.size());
+    msg.impl_->stream.WriteTag(f->proto().number() << 3 |
+                               WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+    msg.impl_->stream.WriteVarint64(static_cast<uint64_t>(x.size()));
+    msg.impl_->stream.WriteRaw(x.data(), x.size());
   }
 
   static void SetEnum(Field f, Msg& msg, int32_t x) {
-    msg.stream_.WriteTag(f->proto().number() << 3);
+    msg.impl_->stream.WriteTag(f->proto().number() << 3);
     // Sign extension is deliberate here.
-    msg.stream_.WriteVarint32(x);
+    msg.impl_->stream.WriteVarint32(x);
   }
 
  private:
@@ -359,23 +390,23 @@ struct ParseProto3Type : Proto3Type {
             internal::WireFormatLite::ZigZagEncode64(static_cast<int64_t>(x)));
         [[fallthrough]];
       case varint:
-        msg.stream_.WriteTag(f->proto().number() << 3 |
-                             WireFormatLite::WIRETYPE_VARINT);
+        msg.impl_->stream.WriteTag(f->proto().number() << 3 |
+                                   WireFormatLite::WIRETYPE_VARINT);
         if (sizeof(Int) == 4) {
-          msg.stream_.WriteVarint32(static_cast<uint32_t>(x));
+          msg.impl_->stream.WriteVarint32(static_cast<uint32_t>(x));
         } else {
-          msg.stream_.WriteVarint64(static_cast<uint64_t>(x));
+          msg.impl_->stream.WriteVarint64(static_cast<uint64_t>(x));
         }
         break;
       case fixed: {
         if (sizeof(Int) == 4) {
-          msg.stream_.WriteTag(f->proto().number() << 3 |
-                               WireFormatLite::WIRETYPE_FIXED32);
-          msg.stream_.WriteLittleEndian32(static_cast<uint32_t>(x));
+          msg.impl_->stream.WriteTag(f->proto().number() << 3 |
+                                     WireFormatLite::WIRETYPE_FIXED32);
+          msg.impl_->stream.WriteLittleEndian32(static_cast<uint32_t>(x));
         } else {
-          msg.stream_.WriteTag(f->proto().number() << 3 |
-                               WireFormatLite::WIRETYPE_FIXED64);
-          msg.stream_.WriteLittleEndian64(static_cast<uint64_t>(x));
+          msg.impl_->stream.WriteTag(f->proto().number() << 3 |
+                                     WireFormatLite::WIRETYPE_FIXED64);
+          msg.impl_->stream.WriteLittleEndian64(static_cast<uint64_t>(x));
         }
         break;
       }

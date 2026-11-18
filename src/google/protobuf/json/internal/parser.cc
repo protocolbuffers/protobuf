@@ -25,6 +25,7 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
@@ -235,8 +236,9 @@ absl::StatusOr<LocationWith<T>> ParseIntInner(JsonLexer& lex, double lo,
   return n;
 }
 
-template <typename Traits>
-absl::StatusOr<int64_t> ParseInt(JsonLexer& lex, Field<Traits> field) {
+template <typename Traits, typename Set>
+PROTOBUF_NOINLINE absl::Status ParseInt(JsonLexer& lex, Field<Traits> field,
+                                        GoodParam<Set> set) {
   absl::StatusOr<LocationWith<int64_t>> n =
       ParseIntInner<int64_t>(lex, -9007199254740992.0, 9007199254740992.0);
   RETURN_IF_ERROR(n.status());
@@ -248,11 +250,13 @@ absl::StatusOr<int64_t> ParseInt(JsonLexer& lex, Field<Traits> field) {
     }
   }
 
-  return n->value;
+  set(field, n->value);
+  return absl::OkStatus();
 }
 
-template <typename Traits>
-absl::StatusOr<uint64_t> ParseUInt(JsonLexer& lex, Field<Traits> field) {
+template <typename Traits, typename Set>
+PROTOBUF_NOINLINE absl::Status ParseUInt(JsonLexer& lex, Field<Traits> field,
+                                         GoodParam<Set> set) {
   absl::StatusOr<LocationWith<uint64_t>> n =
       ParseIntInner<uint64_t>(lex, 0, 18014398509481984.0);
   RETURN_IF_ERROR(n.status());
@@ -263,11 +267,13 @@ absl::StatusOr<uint64_t> ParseUInt(JsonLexer& lex, Field<Traits> field) {
     }
   }
 
-  return n->value;
+  set(field, n->value);
+  return absl::OkStatus();
 }
 
-template <typename Traits>
-absl::StatusOr<double> ParseFp(JsonLexer& lex, Field<Traits> field) {
+template <typename Traits, typename Set>
+PROTOBUF_NOINLINE absl::Status ParseFp(JsonLexer& lex, Field<Traits> field,
+                                       GoodParam<Set> set) {
   absl::StatusOr<JsonLexer::Kind> kind = lex.PeekKind();
   RETURN_IF_ERROR(kind.status());
 
@@ -309,12 +315,55 @@ absl::StatusOr<double> ParseFp(JsonLexer& lex, Field<Traits> field) {
     }
   }
 
-  return n;
+  set(field, n);
+  return absl::OkStatus();
 }
 
-template <typename Traits>
-absl::StatusOr<std::string> ParseStrOrBytes(JsonLexer& lex,
-                                            Field<Traits> field) {
+template <typename Traits, typename Set>
+PROTOBUF_NOINLINE absl::Status ParseBool(JsonLexer& lex, Field<Traits> field,
+                                         GoodParam<Set> set) {
+  absl::StatusOr<JsonLexer::Kind> kind = lex.PeekKind();
+  RETURN_IF_ERROR(kind.status());
+
+  switch (*kind) {
+    case JsonLexer::kTrue:
+      RETURN_IF_ERROR(lex.Expect("true"));
+      set(field, true);
+      break;
+    case JsonLexer::kFalse:
+      RETURN_IF_ERROR(lex.Expect("false"));
+      set(field, false);
+      break;
+    case JsonLexer::kStr: {
+      if (!lex.options().allow_legacy_nonconformant_behavior) {
+        goto bad;
+      }
+
+      auto x = lex.ParseUtf8();
+      RETURN_IF_ERROR(x.status());
+
+      bool flag;
+      if (!absl::SimpleAtob(x->value, &flag)) {
+        // Is this error a lie? Do we accept things other than "true" and
+        // "false" because SimpleAtob does? Absolutely!
+        return x->loc.Invalid("expected 'true' or 'false'");
+      }
+      set(field, flag);
+
+      break;
+    }
+    bad:
+    default:
+      return lex.Invalid("expected 'true' or 'false'");
+  }
+
+  return absl::OkStatus();
+}
+
+template <typename Traits, typename Set>
+PROTOBUF_NOINLINE absl::Status ParseStrOrBytes(JsonLexer& lex,
+                                               Field<Traits> field,
+                                               GoodParam<Set> set) {
   absl::StatusOr<LocationWith<MaybeOwnedString>> str = lex.ParseUtf8();
   RETURN_IF_ERROR(str.status());
 
@@ -328,7 +377,8 @@ absl::StatusOr<std::string> ParseStrOrBytes(JsonLexer& lex,
     b64.resize(decoded->size());
   }
 
-  return std::move(str->value.ToString());
+  set(field, str->value.AsView());
+  return absl::OkStatus();
 }
 
 template <typename Traits>
@@ -353,9 +403,9 @@ absl::StatusOr<absl::optional<int32_t>> ParseEnumFromStr(
 
 // Parses an enum; can return nullopt if a quoted enumerator that we don't
 // know about is received and `ignore_unknown_fields` is set.
-template <typename Traits>
-absl::StatusOr<absl::optional<int32_t>> ParseEnum(JsonLexer& lex,
-                                                  Field<Traits> field) {
+template <typename Traits, typename Set>
+PROTOBUF_NOINLINE absl::Status ParseEnum(JsonLexer& lex, Field<Traits> field,
+                                         GoodParam<Set> set) {
   absl::StatusOr<JsonLexer::Kind> kind = lex.PeekKind();
   RETURN_IF_ERROR(kind.status());
 
@@ -368,18 +418,20 @@ absl::StatusOr<absl::optional<int32_t>> ParseEnum(JsonLexer& lex,
       auto e = ParseEnumFromStr<Traits>(lex.options(), str->value, field);
       RETURN_IF_ERROR(e.status());
       if (!e->has_value()) {
-        return {absl::nullopt};
+        set(field, absl::nullopt);
+        return absl::OkStatus();
       }
       n = **e;
       break;
     }
     case JsonLexer::kNum:
-      return ParseInt<Traits>(lex, field);
+      return ParseInt<Traits>(lex, field, set);
     default:
       return lex.Invalid("expected number or string");
   }
 
-  return n;
+  set(field, n);
+  return absl::OkStatus();
 }
 
 // Mutually recursive with functions that follow.
@@ -389,6 +441,12 @@ absl::Status ParseMessage(JsonLexer& lex, const Desc<Traits>& desc,
 template <typename Traits>
 absl::Status ParseField(JsonLexer& lex, const Desc<Traits>& desc,
                         absl::string_view name, Msg<Traits>& msg);
+
+PROTOBUF_NOINLINE absl::Status UnsupportedFieldType(
+    JsonLexer& lex, FieldDescriptor::Type type,
+    JsonLexer::SourceLocation sl = JsonLexer::SourceLocation::current()) {
+  return lex.Invalid(absl::StrCat("unsupported field type: ", type), sl);
+}
 
 template <typename Traits>
 PROTOBUF_NOINLINE absl::Status ParseSingular(JsonLexer& lex,
@@ -415,115 +473,64 @@ PROTOBUF_NOINLINE absl::Status ParseSingular(JsonLexer& lex,
   }
 
   switch (field_type) {
-    case FieldDescriptor::TYPE_FLOAT: {
-      auto x = ParseFp<Traits>(lex, field);
-      RETURN_IF_ERROR(x.status());
-      Traits::SetFloat(field, msg, *x);
-      break;
-    }
-    case FieldDescriptor::TYPE_DOUBLE: {
-      auto x = ParseFp<Traits>(lex, field);
-      RETURN_IF_ERROR(x.status());
-      Traits::SetDouble(field, msg, *x);
-      break;
-    }
+    case FieldDescriptor::TYPE_FLOAT:
+      return ParseFp<Traits>(lex, field, [&msg](auto f, double v) {
+        Traits::SetFloat(f, msg, static_cast<float>(v));
+      });
+    case FieldDescriptor::TYPE_DOUBLE:
+      return ParseFp<Traits>(lex, field, [&msg](auto f, double v) {
+        Traits::SetDouble(f, msg, v);
+      });
 
     case FieldDescriptor::TYPE_SFIXED64:
     case FieldDescriptor::TYPE_SINT64:
-    case FieldDescriptor::TYPE_INT64: {
-      auto x = ParseInt<Traits>(lex, field);
-      RETURN_IF_ERROR(x.status());
-      Traits::SetInt64(field, msg, *x);
-      break;
-    }
+    case FieldDescriptor::TYPE_INT64:
+      return ParseInt<Traits>(lex, field, [&msg](auto f, int64_t v) {
+        Traits::SetInt64(f, msg, v);
+      });
     case FieldDescriptor::TYPE_FIXED64:
-    case FieldDescriptor::TYPE_UINT64: {
-      auto x = ParseUInt<Traits>(lex, field);
-      RETURN_IF_ERROR(x.status());
-      Traits::SetUInt64(field, msg, *x);
-      break;
-    }
+    case FieldDescriptor::TYPE_UINT64:
+      return ParseUInt<Traits>(lex, field, [&msg](auto f, uint64_t v) {
+        Traits::SetUInt64(f, msg, v);
+      });
 
     case FieldDescriptor::TYPE_SFIXED32:
     case FieldDescriptor::TYPE_SINT32:
-    case FieldDescriptor::TYPE_INT32: {
-      auto x = ParseInt<Traits>(lex, field);
-      RETURN_IF_ERROR(x.status());
-      Traits::SetInt32(field, msg, static_cast<int32_t>(*x));
-      break;
-    }
+    case FieldDescriptor::TYPE_INT32:
+      return ParseInt<Traits>(lex, field, [&msg](auto f, int64_t v) {
+        Traits::SetInt32(f, msg, static_cast<int32_t>(v));
+      });
     case FieldDescriptor::TYPE_FIXED32:
-    case FieldDescriptor::TYPE_UINT32: {
-      auto x = ParseUInt<Traits>(lex, field);
-      RETURN_IF_ERROR(x.status());
-      Traits::SetUInt32(field, msg, static_cast<uint32_t>(*x));
-      break;
-    }
-    case FieldDescriptor::TYPE_BOOL: {
-      absl::StatusOr<JsonLexer::Kind> kind = lex.PeekKind();
-      RETURN_IF_ERROR(kind.status());
-
-      switch (*kind) {
-        case JsonLexer::kTrue:
-          RETURN_IF_ERROR(lex.Expect("true"));
-          Traits::SetBool(field, msg, true);
-          break;
-        case JsonLexer::kFalse:
-          RETURN_IF_ERROR(lex.Expect("false"));
-          Traits::SetBool(field, msg, false);
-          break;
-        case JsonLexer::kStr: {
-          if (!lex.options().allow_legacy_nonconformant_behavior) {
-            goto bad;
-          }
-
-          auto x = lex.ParseUtf8();
-          RETURN_IF_ERROR(x.status());
-
-          bool flag;
-          if (!absl::SimpleAtob(x->value, &flag)) {
-            // Is this error a lie? Do we accept things otyher than "true" and
-            // "false" because SimpleAtob does? Absolutely!
-            return x->loc.Invalid("expected 'true' or 'false'");
-          }
-          Traits::SetBool(field, msg, flag);
-
-          break;
-        }
-        bad:
-        default:
-          return lex.Invalid("expected 'true' or 'false'");
-      }
-      break;
-    }
+    case FieldDescriptor::TYPE_UINT32:
+      return ParseUInt<Traits>(lex, field, [&msg](auto f, uint64_t v) {
+        Traits::SetUInt32(f, msg, static_cast<uint32_t>(v));
+      });
+    case FieldDescriptor::TYPE_BOOL:
+      return ParseBool<Traits>(
+          lex, field, [&msg](auto f, bool v) { Traits::SetBool(f, msg, v); });
     case FieldDescriptor::TYPE_STRING:
-    case FieldDescriptor::TYPE_BYTES: {
-      auto x = ParseStrOrBytes<Traits>(lex, field);
-      RETURN_IF_ERROR(x.status());
-      Traits::SetString(field, msg, *x);
-      break;
-    }
-    case FieldDescriptor::TYPE_ENUM: {
-      absl::StatusOr<absl::optional<int32_t>> x = ParseEnum<Traits>(lex, field);
-      RETURN_IF_ERROR(x.status());
-
-      if (x->has_value() || Traits::IsImplicitPresence(field)) {
-        Traits::SetEnum(field, msg, x->value_or(0));
-      }
-      break;
-    }
+    case FieldDescriptor::TYPE_BYTES:
+      return ParseStrOrBytes<Traits>(lex, field,
+                                     [&msg](auto f, absl::string_view v) {
+                                       Traits::SetString(f, msg, v);
+                                     });
+    case FieldDescriptor::TYPE_ENUM:
+      return ParseEnum<Traits>(
+          lex, field, [&msg](auto f, absl::optional<int32_t> v) {
+            if (v.has_value() || Traits::IsImplicitPresence(f)) {
+              Traits::SetEnum(f, msg, v.value_or(0));
+            }
+          });
     case FieldDescriptor::TYPE_MESSAGE:
-    case FieldDescriptor::TYPE_GROUP: {
+    case FieldDescriptor::TYPE_GROUP:
       return Traits::NewMsg(
           field, msg,
           [&](const Desc<Traits>& type, Msg<Traits>& msg) -> absl::Status {
             return ParseMessage<Traits>(lex, type, msg,
                                         /*any_reparse=*/false);
           });
-    }
     default:
-      return lex.Invalid(
-          absl::StrCat("unsupported field type: ", Traits::FieldType(field)));
+      return UnsupportedFieldType(lex, Traits::FieldType(field));
   }
 
   return absl::OkStatus();
@@ -707,18 +714,18 @@ absl::Status ParseMapOfEnumsEntry(JsonLexer& lex, Field<Traits> map_field,
   absl::optional<int32_t> enum_value;
   RETURN_IF_ERROR(Traits::WithFieldType(
       map_field, [&lex, &enum_value](const Desc<Traits>& map_entry_desc) {
-        ASSIGN_OR_RETURN(
-            enum_value,
-            ParseEnum<Traits>(lex, Traits::ValueField(map_entry_desc)));
-        return absl::OkStatus();
+        return ParseEnum<Traits>(
+            lex, Traits::ValueField(map_entry_desc),
+            [&enum_value](auto, auto e) { enum_value = e; });
       }));
 
   if (enum_value.has_value()) {
     return Traits::NewMsg(
         map_field, parent_msg,
-        [&](const Desc<Traits>& type, Msg<Traits>& entry) -> absl::Status {
+        [&key, value = *enum_value](const Desc<Traits>& type,
+                                    Msg<Traits>& entry) -> absl::Status {
           RETURN_IF_ERROR(ParseMapKey<Traits>(type, entry, key));
-          Traits::SetEnum(Traits::ValueField(type), entry, *enum_value);
+          Traits::SetEnum(Traits::ValueField(type), entry, value);
           return absl::OkStatus();
         });
   } else {

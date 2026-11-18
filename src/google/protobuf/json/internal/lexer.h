@@ -146,10 +146,7 @@ class JsonLexer {
 
   // Like Peek(string), but returns true if and only if a token of the given
   // kind can be lexed next. Returns false on EOF, just like Peek(string).
-  bool Peek(Kind needle) {
-    auto kind = PeekKind();
-    return kind.ok() && *kind == needle;
-  }
+  bool Peek(Kind needle);
 
   // Consumes all whitespace and other ignored characters until the next
   // token.

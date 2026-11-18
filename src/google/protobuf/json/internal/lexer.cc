@@ -137,6 +137,11 @@ absl::StatusOr<JsonLexer::Kind> JsonLexer::PeekKind() {
   }
 }
 
+bool JsonLexer::Peek(Kind needle) {
+  auto kind = PeekKind();
+  return kind.ok() && *kind == needle;
+}
+
 absl::Status JsonLexer::SkipValue() {
   absl::StatusOr<Kind> kind = PeekKind();
   RETURN_IF_ERROR(kind.status());
