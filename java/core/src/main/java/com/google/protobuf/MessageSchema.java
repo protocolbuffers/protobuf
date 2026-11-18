@@ -2676,12 +2676,13 @@ final class MessageSchema<T> implements Schema<T> {
               {
                 List<Integer> enumList =
                     listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset));
+                int fromIndex = enumList.size();
                 reader.readEnumList(enumList);
                 unknownFields =
                     SchemaUtil.filterUnknownEnumList(
                         message,
                         number,
-                        enumList,
+                        enumList.subList(fromIndex, enumList.size()),
                         getEnumFieldVerifier(pos),
                         unknownFields,
                         unknownFieldSchema);
@@ -2743,12 +2744,13 @@ final class MessageSchema<T> implements Schema<T> {
               {
                 List<Integer> enumList =
                     listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset));
+                int fromIndex = enumList.size();
                 reader.readEnumList(enumList);
                 unknownFields =
                     SchemaUtil.filterUnknownEnumList(
                         message,
                         number,
-                        enumList,
+                        enumList.subList(fromIndex, enumList.size()),
                         getEnumFieldVerifier(pos),
                         unknownFields,
                         unknownFieldSchema);
@@ -3187,6 +3189,7 @@ final class MessageSchema<T> implements Schema<T> {
         break;
       case 30: // ENUM_LIST:
       case 44: // ENUM_LIST_PACKED:
+        final int fromIndex = list.size();
         if (wireType == WireFormat.WIRETYPE_LENGTH_DELIMITED) {
           position = decodePackedVarint32List(data, position, list, registers);
         } else if (wireType == WireFormat.WIRETYPE_VARINT) {
@@ -3197,7 +3200,7 @@ final class MessageSchema<T> implements Schema<T> {
         SchemaUtil.filterUnknownEnumList(
             message,
             number,
-            (ProtobufList<Integer>) list,
+            ((ProtobufList<Integer>) list).subList(fromIndex, list.size()),
             getEnumFieldVerifier(bufferPosition),
             null,
             (UnknownFieldSchema<UnknownFieldSetLite, UnknownFieldSetLite>) unknownFieldSchema);

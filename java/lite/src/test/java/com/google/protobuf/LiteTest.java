@@ -30,6 +30,7 @@ import com.google.protobuf.UnittestLite.TestAllTypesLite.RepeatedGroup;
 import com.google.protobuf.UnittestLite.TestAllTypesLiteOrBuilder;
 import com.google.protobuf.UnittestLite.TestHugeFieldNumbersLite;
 import com.google.protobuf.UnittestLite.TestNestedExtensionLite;
+import com.google.protobuf.UnittestLite.TestPackedTypesLite;
 import com.google.protobuf.testing.Proto3TestingLite.Proto3MessageLite;
 import map_lite_test.MapTestProto.MapContainer;
 import map_lite_test.MapTestProto.TestMap;
@@ -47,6 +48,7 @@ import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestOneofEquals;
 import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestOneofWithMultipleVariants;
 import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestRecursiveOneof;
 import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
+import proto3_unittest.UnittestProto3;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -123,6 +125,71 @@ public class LiteTest {
     // at runtime so no need to assert.
     TestAllTypesLite unused =
         TestAllTypesLite.parseFrom(new ByteArrayInputStream(byteStream.toByteArray()));
+  }
+
+  @Test
+  public void testLite_multipleRepeatedFieldChunksAreConcatenated() throws Exception {
+    ByteString chunk1 =
+        UnittestProto3.TestAllTypes.newBuilder()
+            .addRepeatedInt32(1)
+            .addRepeatedInt32(2)
+            .addRepeatedString("a")
+            .addRepeatedNestedEnumValue(NestedEnum.FOO_VALUE)
+            .addRepeatedNestedEnumValue(5432)
+            .build()
+            .toByteString();
+    ByteString chunk2 =
+        TestAllTypesLite.newBuilder()
+            .addRepeatedInt32(3)
+            .addRepeatedBool(true)
+            .addRepeatedNestedEnum(NestedEnum.BAZ)
+            .build()
+            .toByteString();
+    ByteString chunk3 =
+        UnittestProto3.TestAllTypes.newBuilder()
+            .addRepeatedInt32(4)
+            .addRepeatedString("b")
+            .addRepeatedNestedEnumValue(6543)
+            .addRepeatedNestedEnumValue(NestedEnum.BAR_VALUE)
+            .build()
+            .toByteString();
+    ByteString payload = chunk1.concat(chunk2).concat(chunk3);
+
+    TestAllTypesLite fromBytes = TestAllTypesLite.parseFrom(payload.toByteArray());
+    TestAllTypesLite fromStream = TestAllTypesLite.parseFrom(payload.newInput());
+
+    assertThat(fromBytes.getRepeatedInt32List()).containsExactly(1, 2, 3, 4).inOrder();
+    assertThat(fromBytes.getRepeatedBoolList()).containsExactly(true);
+    assertThat(fromBytes.getRepeatedStringList()).containsExactly("a", "b").inOrder();
+    assertThat(fromBytes.getRepeatedNestedEnumList())
+        .containsExactly(NestedEnum.FOO, NestedEnum.BAZ, NestedEnum.BAR)
+        .inOrder();
+    assertThat(
+            UnittestProto3.TestAllTypes.parseFrom(fromBytes.toByteString())
+                .getRepeatedNestedEnumValueList())
+        .containsExactly(
+            NestedEnum.FOO_VALUE, NestedEnum.BAZ_VALUE, NestedEnum.BAR_VALUE, 5432, 6543)
+        .inOrder();
+    assertThat(fromStream).isEqualTo(fromBytes);
+  }
+
+  @Test(timeout = 10_000L)
+  public void testLite_manySplitPackedClosedEnumChunks() throws Exception {
+    byte[] singleChunk =
+        TestPackedTypesLite.newBuilder()
+            .addPackedEnum(ForeignEnumLite.FOREIGN_LITE_FOO)
+            .build()
+            .toByteArray();
+    int chunkCount = 100_000;
+    byte[] payload = new byte[singleChunk.length * chunkCount];
+    for (int offset = 0; offset < payload.length; offset += singleChunk.length) {
+      System.arraycopy(singleChunk, 0, payload, offset, singleChunk.length);
+    }
+
+    assertThat(TestPackedTypesLite.parseFrom(payload).getPackedEnumCount()).isEqualTo(chunkCount);
+    assertThat(
+            TestPackedTypesLite.parseFrom(new ByteArrayInputStream(payload)).getPackedEnumCount())
+        .isEqualTo(chunkCount);
   }
 
   @Test
