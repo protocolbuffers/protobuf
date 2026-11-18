@@ -1,0 +1,76 @@
+name: Rust Tests
+
+on:
+  workflow_call:
+    inputs:
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  # This job should be run on presubmit, if any continuous-only tests are added we will need to input test-type above
+  linux:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        config:
+          - { name: "Bzlmod and Workspace", flags: --enable_bzlmod --enable_workspace }
+          - { name: Optimized, flags: --config=opt }
+          - { name: ASAN, flags: --config=asan }
+
+        include:
+          - targets: "//rust/... //src/google/protobuf/compiler/rust/..."
+          - image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.2.0-4d8e80ef93b0219fb907af9dd4596b92946995d8"
+          - bazel_cmd: "test"
+
+          # Override cases with custom images
+          - config: { name: Cargo, flags: -- 1.92.0 }
+            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.2.0-4d8e80ef93b0219fb907af9dd4596b92946995d8"
+            bazel_cmd: "run"
+            targets: "//rust/release_crates:cargo_test"
+
+    name: Linux ${{ matrix.config.name }}
+    runs-on: ubuntu-22-4core
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v7
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v7
+        with:
+          image: ${{ matrix.image }}
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: rust_linux
+          bazel: >-
+            ${{ matrix.bazel_cmd }} --crosstool_top=//toolchain:clang_suite --@rules_rust//rust/settings:experimental_use_cc_common_link=True
+            --test_env=KOKORO_RUST_VERSION=1.92.0
+            ${{ matrix.targets }} ${{ matrix.config.flags }}
+
+  windows:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+    name: Windows Cargo
+    runs-on: windows-2022
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v7
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Windows startup flags
+        shell: bash
+        run: echo "startup --output_user_root=C:/ --windows_enable_symlinks" >> .bazelrc
+      - name: Install Rust
+        shell: bash
+        run: rustup default 1.92.0
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel@v7
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel: run //rust/release_crates:cargo_test -- 1.92.0
+          bazel-cache: windows-cargo
+          version: 9.2.0

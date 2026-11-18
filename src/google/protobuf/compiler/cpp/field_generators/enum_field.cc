@@ -1,0 +1,564 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Author: kenton@google.com (Kenton Varda)
+//  Based on original Protocol Buffers design by
+//  Sanjay Ghemawat, Jeff Dean, and others.
+
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
+#include "absl/memory/memory.h"
+#include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/cpp/field.h"
+#include "google/protobuf/compiler/cpp/field_generators/generators.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/printer.h"
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
+namespace google {
+namespace protobuf {
+namespace compiler {
+namespace cpp {
+namespace {
+using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
+using Sub = ::google::protobuf::io::Printer::Sub;
+
+std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
+  const EnumValueDescriptor* default_value = field->default_value_enum();
+  bool split = ShouldSplit(field, opts);
+  bool is_open = internal::cpp::HasPreservingUnknownEnumSemantics(field);
+  auto enum_name = QualifiedClassName(field->enum_type(), opts);
+  return {
+      {"Enum", enum_name},
+      {"kDefault", Int32ToString(default_value->number())},
+      Sub("assert_valid", is_open ? ""
+                                  : absl::Substitute(
+                                        R"cc(
+                                          assert(::$0::internal::ValidateEnum(
+                                              value, $1_internal_data_));
+                                        )cc",
+                                        ProtobufNamespace(opts), enum_name))
+          .WithSuffix(";"),
+
+      {"cached_size_name", MakeVarintCachedSizeName(field)},
+      {"cached_size_", MakeVarintCachedSizeFieldName(field, split)},
+  };
+}
+
+class SingularEnum : public FieldGeneratorBase {
+ public:
+  SingularEnum(const FieldDescriptor* field, const Options& opts)
+      : FieldGeneratorBase(field, opts), opts_(&opts) {}
+  ~SingularEnum() override = default;
+
+  std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
+
+  void GeneratePrivateMembers(io::Printer* p) const override {
+    p->Emit(R"cc(
+      int $name$_;
+    )cc");
+  }
+
+  void GenerateMessageClearingCode(io::Printer* p) const override {
+    p->Emit(R"cc(
+      $this_mutable_field$ = $kDefault$;
+    )cc");
+  }
+
+  void GenerateClearingCode(io::Printer* p) const override {
+    if (should_split()) {
+      p->Emit(R"cc(
+        if (auto* f = $try_mutable_field_$) *f = $kDefault$;
+      )cc");
+    } else {
+      p->Emit(R"cc(
+        $ensure_mutable_field_$ = $kDefault$;
+      )cc");
+    }
+  }
+
+  void GenerateMergingCode(io::Printer* p) const override {
+    p->Emit(R"cc(
+      this_.$ensure_mutable_field_$ = $from_field$;
+    )cc");
+  }
+
+  void GenerateSwappingCode(io::Printer* p) const override {
+    if (is_oneof()) return;
+
+    p->Emit(R"cc(
+      swap($field_$, other->$field_$);
+    )cc");
+  }
+
+  void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override {
+    p->Emit(R"cc(
+      target = stream->EnsureSpace(target);
+      target = ::_pbi::WireFormatLite::WriteEnumToArray(
+          $number$, this_._internal_$name$(), target);
+    )cc");
+  }
+
+  void GenerateByteSize(io::Printer* p) const override {
+    p->Emit(R"cc(
+      total_size +=
+          $kTagBytes$ + ::_pbi::WireFormatLite::EnumSize($this_field$);
+    )cc");
+  }
+
+  void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
+    p->Emit(R"cc(
+      /*decltype($field_$)*/ $kDefault$,
+    )cc");
+  }
+
+  void GenerateAccessorDeclarations(io::Printer* p) const override;
+  void GeneratePrivateAccessorDeclarations(io::Printer* p) const override;
+  void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
+
+ private:
+  const Options* opts_;
+};
+
+void SingularEnum::GenerateAccessorDeclarations(io::Printer* p) const {
+  auto v = p->WithVars(AnnotatedAccessors(field_, {""}));
+  auto vs = p->WithVars(AnnotatedAccessors(field_, {"set_"}, Semantic::kSet));
+  p->Emit(R"cc(
+    [[nodiscard]] $DEPRECATED$ $Enum$ $name$() const;
+    $DEPRECATED$ void $set_name$($Enum$ value);
+  )cc");
+}
+
+void SingularEnum::GeneratePrivateAccessorDeclarations(io::Printer* p) const {
+  auto v =
+      p->WithVars(AnnotatedAccessors(field_, {"_internal_", "_internal_set_"}));
+  p->Emit(R"cc(
+    $Enum$ $_internal_name$() const;
+    void $_internal_set_name$($Enum$ value);
+  )cc");
+}
+
+void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
+  p->Emit(R"cc(
+    inline $Enum$ $Msg$::$name$() const {
+      $WeakDescriptorSelfPin$;
+      $annotate_get$;
+      // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
+      return _internal_$name_internal$();
+    }
+  )cc");
+
+  if (is_oneof()) {
+    p->Emit(R"cc(
+      inline void $Msg$::set_$name$($Enum$ value) {
+        $WeakDescriptorSelfPin$;
+        $assert_valid$;
+        if ($not_has_field$) {
+          clear_$oneof_name$();
+          set_has_$name_internal$();
+        }
+        $ensure_mutable_field_$ = value;
+        $annotate_set$;
+        // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
+      }
+      inline $Enum$ $Msg$::_internal_$name_internal$() const {
+        if ($has_field$) {
+          return static_cast<$Enum$>($field_$);
+        }
+        return static_cast<$Enum$>($kDefault$);
+      }
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      inline void $Msg$::set_$name$($Enum$ value) {
+        $WeakDescriptorSelfPin$;
+        _internal_set_$name_internal$(value);
+        $set_hasbit$;
+        $annotate_set$;
+        // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
+      }
+      inline $Enum$ $Msg$::_internal_$name_internal$() const {
+        $TsanDetectConcurrentRead$;
+        return static_cast<$Enum$>($field_$);
+      }
+      inline void $Msg$::_internal_set_$name_internal$($Enum$ value) {
+        $TsanDetectConcurrentMutation$;
+        $assert_valid$;
+        $ensure_mutable_field_$ = value;
+      }
+    )cc");
+  }
+}
+
+class RepeatedEnum : public FieldGeneratorBase {
+ public:
+  RepeatedEnum(const FieldDescriptor* field, const Options& opts)
+      : FieldGeneratorBase(field, opts),
+        opts_(&opts),
+        has_cached_size_(field_->is_packed() &&
+                         HasGeneratedMethods(field_->file(), opts) &&
+                         !should_split()),
+        cpp_repeated_type_(CalculateFieldDescriptorRepeatedType(field)) {}
+  ~RepeatedEnum() override = default;
+
+  std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
+
+  void GeneratePrivateMembers(io::Printer* p) const override {
+    if (should_split()) {
+      p->Emit(R"cc(
+        $pbi$::RawPtr<$pb$::RepeatedField<int>> $name$_;
+      )cc");
+    } else {
+      p->Emit(R"cc(
+        $pb$::RepeatedField<int> $name$_;
+      )cc");
+    }
+
+#if defined(PROTOBUF_INTERNAL_TEMPORARY_CACHED_SIZE_LAYOUT_OPTOUT)
+    if (has_cached_size_) {
+      p->Emit(R"cc(
+        $pbi$::CachedSize $cached_size_name$;
+      )cc");
+    }
+#endif
+  }
+
+  void GenerateSecondaryPrivateMembers(io::Printer* p) const override {
+#if !defined(PROTOBUF_INTERNAL_TEMPORARY_CACHED_SIZE_LAYOUT_OPTOUT)
+    if (has_cached_size_) {
+      p->Emit(R"cc(
+        $pbi$::CachedSize $cached_size_name$;
+      )cc");
+    }
+#endif
+  }
+
+  void GenerateMessageClearingCode(io::Printer* p) const override {
+    if (should_split()) {
+      p->Emit("$this_mutable_field$.ClearIfNotDefault();\n");
+    } else {
+      p->Emit("$this_mutable_field$.Clear();\n");
+    }
+  }
+
+  void GenerateClearingCode(io::Printer* p) const override {
+    if (should_split()) {
+      p->Emit("if (auto* f = $try_mutable_field_$) f->Clear();\n");
+    } else {
+      p->Emit("$field_$.Clear();\n");
+    }
+  }
+
+  void GenerateMergingCode(io::Printer* p) const override {
+    p->Emit(R"cc(
+      if (const auto& f = $from_field$; !f.empty()) {
+        this_._internal_mutable_$name$()->MergeFrom(f);
+      }
+    )cc");
+  }
+
+  void GenerateSwappingCode(io::Printer* p) const override {
+    ABSL_CHECK(!should_split());
+    p->Emit(R"cc(
+      $field_$.InternalSwap(&other->$field_$);
+    )cc");
+  }
+
+  void GenerateDestructorCode(io::Printer* p) const override {
+    if (should_split()) {
+      p->Emit(R"cc(
+        $this_mutable_field$.DeleteIfNotDefault();
+      )cc");
+    }
+  }
+
+  void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
+    p->Emit(R"cc(
+      /*decltype($field_$)*/ {},
+    )cc");
+  }
+
+  void GenerateMemberConstexprConstructor(io::Printer* p) const override {
+    p->Emit({InternalMetadataOffsetSub(p)},
+            R"cc(
+              $name$_ { visibility, $internal_metadata_offset$ }
+            )cc");
+  }
+
+  void GenerateMemberConstructor(io::Printer* p) const override {
+    p->Emit({InternalMetadataOffsetSub(p)},
+            R"cc(
+              $name$_ { visibility, $internal_metadata_offset$ }
+            )cc");
+  }
+
+  void GenerateMemberCopyConstructor(io::Printer* p) const override {
+    p->Emit({InternalMetadataOffsetSub(p)},
+            R"cc(
+              $name$_ {
+                visibility, $internal_metadata_offset$, arena, from.$name$_
+              }
+            )cc");
+  }
+
+  void GenerateOneofCopyConstruct(io::Printer* p) const override {
+    ABSL_LOG(FATAL) << "Not supported";
+  }
+
+  void GenerateAccessorDeclarations(io::Printer* p) const override;
+  void GeneratePrivateAccessorDeclarations(io::Printer* p) const override;
+  void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
+  void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
+  void GenerateByteSize(io::Printer* p) const override;
+
+ private:
+  const Options* opts_;
+  bool has_cached_size_;
+  FieldDescriptor::CppRepeatedType cpp_repeated_type_;
+};
+
+void RepeatedEnum::GenerateAccessorDeclarations(io::Printer* p) const {
+  auto v = p->WithVars(AnnotatedAccessors(field_, {""}));
+  auto vs =
+      p->WithVars(AnnotatedAccessors(field_, {"set_", "add_"}, Semantic::kSet));
+  auto vm =
+      p->WithVars(AnnotatedAccessors(field_, {"mutable_"}, Semantic::kAlias));
+
+  auto decl_field_accessors = [&] {
+    switch (cpp_repeated_type_) {
+      case FieldDescriptor::CppRepeatedType::kRepeated:
+        p->Emit(R"cc(
+          [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedField<int>& $name$()
+              const;
+          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedField<int>* $nonnull$ $mutable_name$();
+        )cc");
+        break;
+      case FieldDescriptor::CppRepeatedType::kProxy:
+        p->Emit(R"cc(
+          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<const $Enum$>
+          $name$() const;
+          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<$Enum$> $mutable_name$();
+        )cc");
+        break;
+    }
+  };
+
+  p->Emit({{"decl_field_accessors", decl_field_accessors}}, R"cc(
+    [[nodiscard]] $DEPRECATED$ $Enum$ $name$(int index) const;
+    $DEPRECATED$ void $set_name$(int index, $Enum$ value);
+    $DEPRECATED$ void $add_name$($Enum$ value);
+    $decl_field_accessors$;
+  )cc");
+}
+
+void RepeatedEnum::GeneratePrivateAccessorDeclarations(io::Printer* p) const {
+  auto v = p->WithVars(
+      AnnotatedAccessors(field_, {"_internal_", "_internal_mutable_"}));
+  p->Emit(R"cc(
+    const $pb$::RepeatedField<int>& $_internal_name$() const;
+    $pb$::RepeatedField<int>* $nonnull$ $_internal_mutable_name$();
+  )cc");
+}
+
+void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
+  p->Emit(R"cc(
+    inline $Enum$ $Msg$::$name$(int index) const {
+      $WeakDescriptorSelfPin$;
+      $annotate_get$;
+      // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
+      return static_cast<$Enum$>(_internal_$name_internal$().Get(index));
+    }
+  )cc");
+  p->Emit(R"cc(
+    //~ Note: no need to set hasbit in set_$name$(int index). Hasbits only
+    //~ need to be updated if a new element is (potentially) added, not if an
+    //~ existing element is mutated.
+    inline void $Msg$::set_$name$(int index, $Enum$ value) {
+      $WeakDescriptorSelfPin$;
+      $assert_valid$;
+      _internal_mutable_$name_internal$()->Set(index, value);
+      $annotate_set$
+      // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
+    }
+  )cc");
+  p->Emit(R"cc(
+    inline void $Msg$::add_$name$($Enum$ value) {
+      $WeakDescriptorSelfPin$;
+      $assert_valid$;
+      $TsanDetectConcurrentMutation$;
+      _internal_mutable_$name_internal$()
+          ->InternalAddWithArena<const $pb$::MessageLite*>(
+              internal_visibility(), this, value);
+      $set_hasbit$;
+      $annotate_add$
+      // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
+    }
+  )cc");
+  switch (cpp_repeated_type_) {
+    case FieldDescriptor::CppRepeatedType::kRepeated:
+      p->Emit(R"cc(
+        inline const $pb$::RepeatedField<int>& $Msg$::$name$() const
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $annotate_list$;
+          // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
+          return _internal_$name_internal$();
+        }
+      )cc");
+      p->Emit(R"cc(
+        inline $pb$::RepeatedField<int>* $nonnull$ $Msg$::mutable_$name$()
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $set_hasbit$;
+          $annotate_mutable_list$;
+          // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
+          $TsanDetectConcurrentMutation$;
+          return _internal_mutable_$name_internal$();
+        }
+      )cc");
+      break;
+    case FieldDescriptor::CppRepeatedType::kProxy:
+      p->Emit(R"cc(
+        inline $pb$::RepeatedFieldProxy<const $Enum$> $Msg$::$name$() const
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $annotate_list$;
+          // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
+          return $pbi$::RepeatedFieldProxyInternalPrivateAccessHelper<
+              const $Enum$>::Construct(_internal_$name_internal$());
+        }
+      )cc");
+      p->Emit(R"cc(
+        inline $pb$::RepeatedFieldProxy<$Enum$> $Msg$::mutable_$name$()
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $set_hasbit$;
+          $annotate_mutable_list$;
+          // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
+          $TsanDetectConcurrentMutation$;
+          return $pbi$::RepeatedFieldProxyInternalPrivateAccessHelper<
+              $Enum$>::Construct(*_internal_mutable_$name_internal$(),
+                                 GetArena());
+        }
+      )cc");
+      break;
+  }
+
+  p->Emit(R"cc(
+    inline const $pb$::RepeatedField<int>& $Msg$::_internal_$name_internal$()
+        const {
+      $TsanDetectConcurrentRead$;
+      return $field_$;
+    }
+    inline $pb$::RepeatedField<int>* $nonnull$
+    $Msg$::_internal_mutable_$name_internal$() {
+      $TsanDetectConcurrentRead$;
+      return &$ensure_mutable_field_$;
+    }
+  )cc");
+}
+
+void RepeatedEnum::GenerateSerializeWithCachedSizesToArray(
+    io::Printer* p) const {
+  if (field_->is_packed()) {
+    p->Emit(
+        {
+            {"byte_size",
+             [&] {
+               if (has_cached_size_) {
+                 p->Emit(
+                     R"cc(::size_t byte_size = this_.$cached_size_$.Get();)cc");
+               } else {
+                 p->Emit(R"cc(
+                   ::size_t byte_size = 0;
+                   for (int v : this_._internal_$name$()) {
+                     byte_size += ::_pbi::WireFormatLite::EnumSize(v);
+                   }
+                 )cc");
+               }
+             }},
+        },
+        R"cc(
+          {
+            $byte_size$;
+            if (byte_size > 0) {
+              target = stream->WriteEnumPacked(
+                  $number$, this_._internal_$name$(), byte_size, target);
+            }
+          }
+        )cc");
+    return;
+  }
+  p->Emit(R"cc(
+    for (int v : this_._internal_$name$()) {
+      target = stream->EnsureSpace(target);
+      target = ::_pbi::WireFormatLite::WriteEnumToArray($number$, v, target);
+    }
+  )cc");
+}
+
+void RepeatedEnum::GenerateByteSize(io::Printer* p) const {
+  if (has_cached_size_) {
+    ABSL_CHECK(field_->is_packed());
+    p->Emit(R"cc(
+      total_size += ::_pbi::WireFormatLite::EnumSizeWithPackedTagSize(
+          $this_field$, $kTagBytes$, this_.$cached_size_$);
+    )cc");
+    return;
+  }
+  p->Emit(
+      {
+          {"tag_size",
+           [&] {
+             if (field_->is_packed()) {
+               p->Emit(R"cc(
+                 data_size == 0
+                     ? 0
+                     : $kTagBytes$ + ::_pbi::WireFormatLite::Int32Size(
+                                         static_cast<::int32_t>(data_size));
+               )cc");
+             } else {
+               p->Emit(R"cc(
+                 ::size_t{$kTagBytes$} *
+                     ::_pbi::FromIntSize($this_field$.size());
+               )cc");
+             }
+           }},
+      },
+      R"cc(
+        ::size_t data_size = ::_pbi::WireFormatLite::EnumSize($this_field$);
+        ::size_t tag_size = $tag_size$;
+        total_size += data_size + tag_size;
+      )cc");
+}
+}  // namespace
+
+std::unique_ptr<FieldGeneratorBase> MakeSinguarEnumGenerator(
+    const FieldDescriptor* desc, const Options& options) {
+  return std::make_unique<SingularEnum>(desc, options);
+}
+
+std::unique_ptr<FieldGeneratorBase> MakeRepeatedEnumGenerator(
+    const FieldDescriptor* desc, const Options& options) {
+  return std::make_unique<RepeatedEnum>(desc, options);
+}
+
+}  // namespace cpp
+}  // namespace compiler
+}  // namespace protobuf
+}  // namespace google
+
+#include "google/protobuf/port_undef.inc"

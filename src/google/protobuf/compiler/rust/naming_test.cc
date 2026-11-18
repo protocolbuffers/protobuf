@@ -1,0 +1,104 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+#include "google/protobuf/compiler/rust/naming.h"
+
+#include <string>
+
+#include <gtest/gtest.h>
+#include "google/protobuf/descriptor.h"
+
+using google::protobuf::compiler::rust::CamelToSnakeCase;
+using google::protobuf::compiler::rust::DefInitName;
+using google::protobuf::compiler::rust::RustModuleName;
+using google::protobuf::compiler::rust::ScreamingSnakeToUpperCamelCase;
+
+namespace {
+TEST(RustProtoNaming, RustModuleName) {
+  auto get_internal_module_name = [](const std::string& name) {
+    google::protobuf::FileDescriptorProto file_proto;
+    file_proto.set_name(name);
+    google::protobuf::DescriptorPool pool;
+    return RustModuleName(*pool.BuildFile(file_proto));
+  };
+
+  EXPECT_EQ(get_internal_module_name("strong_bad/lol.proto"),
+            "strong_bad_lol_proto");
+  EXPECT_EQ(get_internal_module_name("0.1.proto"), "pb_0_1_proto");
+  EXPECT_EQ(get_internal_module_name("2fa.proto"), "pb_2fa_proto");
+  EXPECT_EQ(get_internal_module_name("_.proto"), "pb___proto");
+  EXPECT_EQ(get_internal_module_name("abc   .proto"), "abc_20__20__20__proto");
+  EXPECT_EQ(get_internal_module_name("hello (2).proto"),
+            "hello_20__28_2_29__proto");
+  EXPECT_EQ(get_internal_module_name("k8s.min.proto"), "k8s_min_proto");
+  EXPECT_EQ(get_internal_module_name("c++.proto"), "c_2b__2b__proto");
+  EXPECT_EQ(get_internal_module_name("hello,world.proto"),
+            "hello_2c_world_proto");
+  EXPECT_EQ(get_internal_module_name("hello..world.proto"),
+            "hello__world_proto");
+  EXPECT_EQ(get_internal_module_name("hello_你好.proto"),
+            "hello__e4__bd__a0__e5__a5__bd__proto");
+  // Common separators (`/`, `-`, `.`, `_`) all collapse to a single underscore,
+  // so files differing only by these separators intentionally map to the same
+  // module name (any collision surfaces as a rustc E0428 error at build time).
+  EXPECT_EQ(get_internal_module_name("my-message.proto"), "my_message_proto");
+  EXPECT_EQ(get_internal_module_name("my_message.proto"), "my_message_proto");
+  EXPECT_EQ(get_internal_module_name("foo-bar.proto"),
+            get_internal_module_name("foo_bar.proto"));
+}
+
+TEST(RustProtoNaming, CamelToSnakeCase) {
+  // TODO: Review this behavior.
+  EXPECT_EQ(CamelToSnakeCase("CamelCase"), "camel_case");
+  EXPECT_EQ(CamelToSnakeCase("_CamelCase"), "_camel_case");
+  EXPECT_EQ(CamelToSnakeCase("camelCase"), "camel_case");
+  EXPECT_EQ(CamelToSnakeCase("Number2020"), "number2020");
+  EXPECT_EQ(CamelToSnakeCase("Number_2020"), "number_2020");
+  EXPECT_EQ(CamelToSnakeCase("camelCase_"), "camel_case_");
+  EXPECT_EQ(CamelToSnakeCase("CamelCaseTrio"), "camel_case_trio");
+  EXPECT_EQ(CamelToSnakeCase("UnderIn_Middle"), "under_in_middle");
+  EXPECT_EQ(CamelToSnakeCase("Camel_Case"), "camel_case");
+  EXPECT_EQ(CamelToSnakeCase("Camel__Case"), "camel__case");
+  EXPECT_EQ(CamelToSnakeCase("CAMEL_CASE"), "c_a_m_e_l_c_a_s_e");
+}
+
+TEST(RustProtoNaming, ScreamingSnakeToUpperCamelCase) {
+  // TODO: Review this behavior.
+  EXPECT_EQ(ScreamingSnakeToUpperCamelCase("CAMEL_CASE"), "CamelCase");
+  EXPECT_EQ(ScreamingSnakeToUpperCamelCase("NUMBER2020"), "Number2020");
+  EXPECT_EQ(ScreamingSnakeToUpperCamelCase("NUMBER_2020"), "Number2020");
+  EXPECT_EQ(ScreamingSnakeToUpperCamelCase("FOO_4040_BAR"), "Foo4040Bar");
+  EXPECT_EQ(ScreamingSnakeToUpperCamelCase("FOO_4040bar"), "Foo4040Bar");
+  EXPECT_EQ(ScreamingSnakeToUpperCamelCase("_CAMEL_CASE"), "CamelCase");
+
+  // This function doesn't currently preserve prefix/suffix underscore,
+  // while CamelToSnakeCase does.
+  EXPECT_EQ(ScreamingSnakeToUpperCamelCase("CAMEL_CASE_"), "CamelCase");
+  EXPECT_EQ(ScreamingSnakeToUpperCamelCase("camel_case"), "CamelCase");
+  EXPECT_EQ(ScreamingSnakeToUpperCamelCase("CAMEL_CASE_TRIO"), "CamelCaseTrio");
+  EXPECT_EQ(ScreamingSnakeToUpperCamelCase("UNDER_IN__MIDDLE"),
+            "UnderInMiddle");
+}
+
+TEST(RustProtoNaming, DefInitName) {
+  auto get_def_init_name = [](const std::string& name) {
+    google::protobuf::FileDescriptorProto file_proto;
+    file_proto.set_name(name);
+    google::protobuf::DescriptorPool pool;
+    return DefInitName(*pool.BuildFile(file_proto));
+  };
+
+  EXPECT_EQ(get_def_init_name("foo.proto"), "foo_proto_def_init");
+  EXPECT_EQ(get_def_init_name("strong_bad/lol.proto"),
+            "strong_bad_lol_proto_def_init");
+  EXPECT_EQ(get_def_init_name("my-service.proto"), "my_service_proto_def_init");
+  EXPECT_EQ(get_def_init_name("Foo/BarBaz.proto"), "Foo_BarBaz_proto_def_init");
+  EXPECT_EQ(get_def_init_name("foo.v1.proto"), "foo_v1_proto_def_init");
+  EXPECT_EQ(get_def_init_name("2fa.proto"), "pb_2fa_proto_def_init");
+}
+
+}  // namespace

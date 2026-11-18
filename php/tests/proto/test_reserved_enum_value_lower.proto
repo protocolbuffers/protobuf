@@ -1,0 +1,99 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto3";
+
+package lower_enum_value;
+
+enum NotAllowed {
+  // BEGIN RESERVED NAMES
+  // @see php/update_reserved_words.sh - DO NOT MODIFY THIS LIST MANUALLY
+  abstract = 0;
+  and = 1;
+  array = 2;
+  as = 3;
+  bool = 4;
+  break = 5;
+  callable = 6;
+  case = 7;
+  catch = 8;
+  class = 9;
+  clone = 10;
+  const = 11;
+  continue = 12;
+  declare = 13;
+  default = 14;
+  die = 15;
+  do = 16;
+  echo = 17;
+  else = 18;
+  elseif = 19;
+  empty = 20;
+  enddeclare = 21;
+  endfor = 22;
+  endforeach = 23;
+  endif = 24;
+  endswitch = 25;
+  endwhile = 26;
+  eval = 27;
+  exit = 28;
+  extends = 29;
+  false = 30;
+  final = 31;
+  finally = 32;
+  float = 33;
+  fn = 34;
+  for = 35;
+  foreach = 36;
+  function = 37;
+  global = 38;
+  goto = 39;
+  if = 40;
+  implements = 41;
+  include = 42;
+  include_once = 43;
+  instanceof = 44;
+  insteadof = 45;
+  int = 46;
+  interface = 47;
+  isset = 48;
+  iterable = 49;
+  list = 50;
+  match = 51;
+  mixed = 52;
+  namespace = 53;
+  never = 54;
+  new = 55;
+  null = 56;
+  object = 57;
+  or = 58;
+  parent = 59;
+  print = 60;
+  private = 61;
+  protected = 62;
+  public = 63;
+  readonly = 64;
+  require = 65;
+  require_once = 66;
+  return = 67;
+  self = 68;
+  static = 69;
+  string = 70;
+  switch = 71;
+  throw = 72;
+  trait = 73;
+  true = 74;
+  try = 75;
+  unset = 76;
+  use = 77;
+  var = 78;
+  void = 79;
+  while = 80;
+  xor = 81;
+  yield = 82;
+  // END RESERVED NAMES
+}

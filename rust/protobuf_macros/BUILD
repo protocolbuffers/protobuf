@@ -1,0 +1,46 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# An alternate implementation of the proto! macro as a proc macro instead of macro_rules.
+
+# This is only in a separate directory due to the top level package being part of the 'core'
+# component, and it not being a resolved decision if we want to add all deps of this proc macro to
+# the core component.
+
+load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
+load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
+
+PROC_MACRO_SRCS = ["proto_proc_macro_impl.rs"]
+
+rust_proc_macro(
+    name = "protobuf_macros",
+    srcs = PROC_MACRO_SRCS,
+    edition = "2021",
+    visibility = [
+        "//devtools/rust/rust_analyzer/proc_macros:__pkg__",
+        "//rust:__subpackages__",
+    ],
+    deps = [
+        "@crate_index//:quote",
+        "@crate_index//:syn",
+    ],
+)
+
+pkg_files(
+    name = "rust_protobuf_macros_src",
+    srcs = PROC_MACRO_SRCS,
+    strip_prefix = strip_prefix.from_root("rust/protobuf_macros"),
+)
+
+pkg_filegroup(
+    name = "rust_protobuf_macros_src_dir",
+    srcs = [
+        ":rust_protobuf_macros_src",
+    ],
+    prefix = "src",
+    visibility = ["//rust/release_crates:__subpackages__"],
+)

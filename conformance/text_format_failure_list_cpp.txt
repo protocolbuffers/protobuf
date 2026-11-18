@@ -1,0 +1,22 @@
+Recommended.*.TextFormatInput.StringLiteralLongUnicodeEscapeSurrogateFirstOnlyBytes                                # Should have failed to parse, but didn't.
+Recommended.*.TextFormatInput.StringLiteralLongUnicodeEscapeSurrogateFirstOnlyString                               # Should have failed to parse, but didn't.
+Recommended.*.TextFormatInput.StringLiteralLongUnicodeEscapeSurrogatePairBytes                                     # Should have failed to parse, but didn't.
+Recommended.*.TextFormatInput.StringLiteralLongUnicodeEscapeSurrogatePairString                                    # Should have failed to parse, but didn't.
+Recommended.*.TextFormatInput.StringLiteralLongUnicodeEscapeSurrogateSecondOnlyBytes                               # Should have failed to parse, but didn't.
+Recommended.*.TextFormatInput.StringLiteralLongUnicodeEscapeSurrogateSecondOnlyString                              # Should have failed to parse, but didn't.
+Recommended.*.TextFormatInput.StringLiteralShortUnicodeEscapeSurrogateFirstOnlyBytes                               # Should have failed to parse, but didn't.
+Recommended.*.TextFormatInput.StringLiteralShortUnicodeEscapeSurrogateFirstOnlyString                              # Should have failed to parse, but didn't.
+Recommended.*.TextFormatInput.StringLiteralShortUnicodeEscapeSurrogatePairBytes                                    # Should have failed to parse, but didn't.
+Recommended.*.TextFormatInput.StringLiteralShortUnicodeEscapeSurrogatePairString                                   # Should have failed to parse, but didn't.
+Recommended.*.TextFormatInput.StringLiteralShortUnicodeEscapeSurrogateSecondOnlyBytes                              # Should have failed to parse, but didn't.
+Recommended.*.TextFormatInput.StringLiteralShortUnicodeEscapeSurrogateSecondOnlyString                             # Should have failed to parse, but didn't.
+Recommended.*.TextFormatInput.StringLiteralUnicodeEscapeSurrogatePairLongShortBytes                                # Should have failed to parse, but didn't.
+Recommended.*.TextFormatInput.StringLiteralUnicodeEscapeSurrogatePairLongShortString                               # Should have failed to parse, but didn't.
+Recommended.*.TextFormatInput.StringLiteralUnicodeEscapeSurrogatePairShortLongBytes                                # Should have failed to parse, but didn't.
+Recommended.*.TextFormatInput.StringLiteralUnicodeEscapeSurrogatePairShortLongString                               # Should have failed to parse, but didn't.
+Required.*.TextFormatInput.StringFieldBadUTF8Hex                                                                   # Should have failed to parse, but didn't.
+Required.*.TextFormatInput.StringFieldBadUTF8Octal                                                                 # Should have failed to parse, but didn't.
+Required.*.TextFormatInput.StringLiteralLongUnicodeEscapeTooLargeBytes                                             # Should have failed to parse, but didn't.
+Required.*.TextFormatInput.StringLiteralLongUnicodeEscapeTooLargeString                                            # Should have failed to parse, but didn't.
+
+# End up setting the high bit as a sign instead of failing to parse.

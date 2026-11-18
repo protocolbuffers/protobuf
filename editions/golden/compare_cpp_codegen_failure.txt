@@ -1,0 +1,138 @@
+[ RUN      ] third_party/protobuf/editions/golden/simple_proto3.pb.cc (Go)
+@@ @@
+       nullptr,  // post_loop_handler
+       ::_pbi::TcParser::MpUnknownFields,  // fallback
+     }, {{
+-      // optional int32 int32_field = 1;
++      // int32 int32_field = 1;
+       {::_pbi::TcParser::FastV32S1,
+        {8, 0, 0,
+         PROTOBUF_FIELD_OFFSET(SimpleProto3, _impl_.int32_field_)}},
+     }}, {{
+       65535, 65535
+     }}, {{
+-      // optional int32 int32_field = 1;
++      // int32 int32_field = 1;
+       {PROTOBUF_FIELD_OFFSET(SimpleProto3, _impl_.int32_field_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
+     }}, {{
+       // no aux_entries
+@@ @@
+   (void)cached_has_bits;
+ 
+   cached_has_bits = this_._impl_._has_bits_[0];
+-  // optional int32 int32_field = 1;
++  // int32 int32_field = 1;
+   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+     target =
+         ::proto2::internal::WireFormatLite::WriteInt32ToArrayWithField<1>(
+@@ @@
+   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
+ 
+    {
+-    // optional int32 int32_field = 1;
++    // int32 int32_field = 1;
+     cached_has_bits = this_._impl_._has_bits_[0];
+     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+       total_size +=
+[  FAILED  ] third_party/protobuf/editions/golden/simple_proto3.pb.cc (Go)
+[ RUN      ] third_party/protobuf/editions/golden/simple_proto3.pb.cc (Java)
+@@ @@
+       nullptr,  // post_loop_handler
+       ::_pbi::TcParser::MpUnknownFields,  // fallback
+     }, {{
+-      // optional int32 int32_field = 1;
++      // int32 int32_field = 1;
+       {::_pbi::TcParser::FastV32S1,
+        {8, 0, 0,
+         PROTOBUF_FIELD_OFFSET(SimpleProto3, _impl_.int32_field_)}},
+     }}, {{
+       65535, 65535
+     }}, {{
+-      // optional int32 int32_field = 1;
++      // int32 int32_field = 1;
+       {PROTOBUF_FIELD_OFFSET(SimpleProto3, _impl_.int32_field_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
+     }}, {{
+       // no aux_entries
+@@ @@
+   (void)cached_has_bits;
+ 
+   cached_has_bits = this_._impl_._has_bits_[0];
+-  // optional int32 int32_field = 1;
++  // int32 int32_field = 1;
+   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+     target =
+         ::proto2::internal::WireFormatLite::WriteInt32ToArrayWithField<1>(
+@@ @@
+   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
+ 
+    {
+-    // optional int32 int32_field = 1;
++    // int32 int32_field = 1;
+     cached_has_bits = this_._impl_._has_bits_[0];
+     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+       total_size +=
+[  FAILED  ] third_party/protobuf/editions/golden/simple_proto3.pb.cc (Java)
+[ RUN      ] third_party/protobuf/editions/golden/simple_proto3.pb.h (Go)
+@@ @@
+   enum : int {
+     kInt32FieldFieldNumber = 1,
+   };
+-  // optional int32 int32_field = 1;
++  // int32 int32_field = 1;
+   [[nodiscard]] bool has_int32_field() const;
+   void clear_int32_field() ;
+   [[nodiscard]] ::int32_t int32_field() const;
+@@ @@
+   static void SharedDtor(MessageLite& self);
+   void InternalSwap(SimpleProto3* PROTOBUF_NONNULL other);
+ 
+-  // optional int32 int32_field = 1;
++  // int32 int32_field = 1;
+   ::int32_t _internal_int32_field() const;
+   void _internal_set_int32_field(::int32_t value);
+ 
+@@ @@
+ 
+ // SimpleProto3
+ 
+-// optional int32 int32_field = 1;
++// int32 int32_field = 1;
+ inline bool SimpleProto3::has_int32_field() const {
+   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000001U);
+   return value;
+[  FAILED  ] third_party/protobuf/editions/golden/simple_proto3.pb.h (Go)
+[ RUN      ] third_party/protobuf/editions/golden/simple_proto3.pb.h (Java)
+@@ @@
+   enum : int {
+     kInt32FieldFieldNumber = 1,
+   };
+-  // optional int32 int32_field = 1;
++  // int32 int32_field = 1;
+   [[nodiscard]] bool has_int32_field() const;
+   void clear_int32_field() ;
+   [[nodiscard]] ::int32_t int32_field() const;
+@@ @@
+   static void SharedDtor(MessageLite& self);
+   void InternalSwap(SimpleProto3* PROTOBUF_NONNULL other);
+ 
+-  // optional int32 int32_field = 1;
++  // int32 int32_field = 1;
+   ::int32_t _internal_int32_field() const;
+   void _internal_set_int32_field(::int32_t value);
+ 
+@@ @@
+ 
+ // SimpleProto3
+ 
+-// optional int32 int32_field = 1;
++// int32 int32_field = 1;
+ inline bool SimpleProto3::has_int32_field() const {
+   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000001U);
+   return value;
+[  FAILED  ] third_party/protobuf/editions/golden/simple_proto3.pb.h (Java)
+[ RUN      ] third_party/protobuf/editions/golden/simple_proto3.proto.static_reflection.h (Go)
+[  OK      ] third_party/protobuf/editions/golden/simple_proto3.proto.static_reflection.h (Go)
+[ RUN      ] third_party/protobuf/editions/golden/simple_proto3.proto.static_reflection.h (Java)
+[  OK      ] third_party/protobuf/editions/golden/simple_proto3.proto.static_reflection.h (Java)
+[ RUN      ] third_party/protobuf/editions/golden/simple_proto3.proto (Go vs Java Equivalence)
+[  OK      ] third_party/protobuf/editions/golden/simple_proto3.proto (Go vs Java Equivalence)

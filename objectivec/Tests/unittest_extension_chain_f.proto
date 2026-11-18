@@ -1,0 +1,24 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2016 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package objc.protobuf.tests.chain;
+
+import "objectivec/Tests/unittest_extension_chain_g.proto";
+
+option objc_class_prefix = "Chain";
+
+// The Root for this file should just be merging in the extensions from C's
+// Root (because G doesn't define anything itself).
+
+// The generated source will also have to directly import C's .h file so it can
+// compile the reference to C's Root class.
+
+message FMessage {
+  optional GMessage g = 1;
+}

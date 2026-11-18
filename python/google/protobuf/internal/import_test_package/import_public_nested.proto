@@ -1,0 +1,17 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// A proto file which is imported by import_public.proto to test nested public
+// importing.
+
+syntax = "proto2";
+
+package google.protobuf.python.internal.import_test_package;
+
+message ImportPublicNestedMessage {
+  optional int32 value = 1 [default = 58];
+}

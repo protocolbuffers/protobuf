@@ -1,0 +1,30 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package upb_wire_test;
+
+option java_multiple_files = true;
+option java_outer_classname = "ConvertTest";
+
+message TestInt32 {
+  optional int32 i32 = 1;
+}
+
+message TestRecursive {
+  optional TestRecursive recursive = 1;
+}
+
+message TestExtensions {
+  extensions 100 to max;
+}
+
+extend TestExtensions {
+  optional int32 ext_i32 = 100;
+  optional TestRecursive ext_recursive = 101;
+}

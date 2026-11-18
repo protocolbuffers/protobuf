@@ -1,0 +1,22 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package third_party_protobuf_util;
+
+option optimize_for = SPEED;
+
+message TestTrimMessageRepeatedField {
+  message NestedMessage {
+    optional int32 f1 = 1;
+    optional int32 f2 = 2;
+  }
+  optional NestedMessage nested_message = 1;
+  repeated NestedMessage repeated_nested_message = 2;
+  optional NestedMessage nested_message2 = 3;
+}

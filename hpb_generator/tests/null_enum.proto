@@ -1,0 +1,29 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2024";
+
+package hpb_test;
+
+enum TestEnumWithNull {
+  TYPE_UNSPECIFIED = 0;
+  NULL = 1;
+}
+
+message MessageWithEnum {
+  enum NestedEnum {
+    NESTED_TYPE_UNSPECIFIED = 0;
+    NULL = 1;
+  }
+}
+
+message MessageWithNullEnum {
+  enum NULL {
+    UNSPECIFIED = 0;
+    VALUE = 1;
+  }
+}

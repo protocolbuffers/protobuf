@@ -1,0 +1,71 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package objc.protobuf.tests.mset;
+
+option objc_class_prefix = "MSet";
+
+// A message with message_set_wire_format.
+message Message {
+  option message_set_wire_format = true;
+
+  extensions 4 to max;
+}
+
+// A message without the message_set_wire_format option but still supports
+// extensions.
+message MessageEx {
+  extensions 4 to max;
+}
+
+message MessageExtension1 {
+  extend Message {
+    optional MessageExtension1 message_set_extension = 1545008;
+  }
+  // Also extend a non-MessageSet with the same field number. This will allow us
+  // to test parsing a normal extension into a MessageSet.
+  extend MessageEx {
+    optional MessageExtension1 doppelganger_message_set_extension = 1545008;
+  }
+  optional int32 i = 15;
+  optional Message recursive = 16;
+  optional string test_aliasing = 17 [ctype = STRING_PIECE];
+}
+
+message MessageExtension2 {
+  extend Message {
+    optional MessageExtension2 message_set_extension = 1547769;
+  }
+  optional string str = 25;
+}
+
+// This isn't on Message, so it will be unknown when parsing there
+message MessageExtension3 {
+  extend MessageEx {
+    optional MessageExtension3 doppelganger_message_set_extension = 1547770;
+  }
+  optional int32 x = 26;
+}
+
+// MessageSet wire format is equivalent to this.
+message RawMessageSet {
+  repeated group Item = 1 {
+    required int32 type_id = 2;
+    required bytes message = 3;
+  }
+}
+
+// MessageSet wire format is equivalent to this but since the fields
+// are repeated they can be left off or over present to testing.
+message RawBreakableMessageSet {
+  repeated group Item = 1 {
+    repeated int32 type_id = 2;
+    repeated bytes message = 3;
+  }
+}

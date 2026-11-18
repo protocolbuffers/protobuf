@@ -1,0 +1,34 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Author: jonp@google.com (Jon Perlow)
+edition = "2023";
+
+package proto2_unittest;
+
+option java_multiple_files = true;
+option java_outer_classname = "NestedBuilders";
+
+message Vehicle {
+  Engine engine = 1;
+  repeated Wheel wheel = 2;
+}
+
+message Engine {
+  int32 cylinder = 1;
+  int32 liters = 2;
+  TimingBelt timing_belt = 3;
+}
+
+message TimingBelt {
+  int32 number_of_teeth = 1;
+}
+
+message Wheel {
+  int32 radius = 1;
+  int32 width = 2;
+}

@@ -1,0 +1,13 @@
+[package]
+name = "protobuf-well-known-types"
+readme = "README.md"
+version = "{PROTOBUF_RUST_VERSION}"
+edition = "2021"
+description = "Protobuf Well-Known Types"
+license = "BSD-3-Clause"
+# Superseded by the google-protobuf-well-known-types crate, which this crate
+# re-exports. No new versions are published to crates.io.
+publish = false
+
+[dependencies]
+google_protobuf_well_known_types = { version = "{PROTOBUF_RUST_VERSION}", path = "../google_protobuf_well_known_types", package = "google-protobuf-well-known-types" }

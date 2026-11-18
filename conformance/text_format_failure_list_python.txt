@@ -1,0 +1,9 @@
+# This is the list of text format conformance tests that are known to fail right
+# now.
+# TODO: These should be fixed.
+Required.*.TextFormatInput.ReservedFieldName.*.ProtobufOutput                                                      # Failed to parse input or produce output.
+Required.*.TextFormatInput.ReservedFieldName.*.TextFormatOutput                                                    # Failed to parse input or produce output.
+Required.*.TextFormatInput.ExtensionNameWithComment.ProtobufOutput                                                 # Failed to parse input or produce output.
+Required.*.TextFormatInput.ExtensionNameWithComment.TextFormatOutput                                               # Failed to parse input or produce output.
+Required.*.TextFormatInput.ExtensionNameWithWhitespace.ProtobufOutput                                              # Failed to parse input or produce output.
+Required.*.TextFormatInput.ExtensionNameWithWhitespace.TextFormatOutput                                            # Failed to parse input or produce output.

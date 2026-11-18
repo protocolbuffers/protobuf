@@ -1,0 +1,18 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "UNSTABLE";
+
+package cpp.file.options.test;
+
+import option "google/protobuf/cpp_options.proto";
+
+option (pb.file.cpp).namespace = "cpp::file";
+
+message NewMessage {
+  string some_message = 1;
+}

@@ -1,0 +1,92 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+#import <Foundation/Foundation.h>
+
+#import "GPBDescriptor.h"
+
+NS_ASSUME_NONNULL_BEGIN
+
+/**
+ * A table of known extensions, searchable by name or field number.  When
+ * parsing a protocol message that might have extensions, you must provide a
+ * GPBExtensionRegistry in which you have registered any extensions that you
+ * want to be able to parse. Otherwise, those extensions will just be treated
+ * like unknown fields.
+ **/
+@protocol GPBExtensionRegistry <NSObject>
+
+/**
+ * Looks for the extension registered for the given field number on a given
+ * GPBDescriptor.
+ *
+ * @param descriptor  The descriptor to look for a registered extension on.
+ * @param fieldNumber The field number of the extension to look for.
+ *
+ * @return The registered GPBExtensionDescriptor or nil if none was found.
+ **/
+- (nullable GPBExtensionDescriptor *)extensionForDescriptor:(GPBDescriptor *)descriptor
+                                                fieldNumber:(NSInteger)fieldNumber;
+@end
+
+/**
+ * A concrete implementation of `GPBExtensionRegistry`.
+ *
+ * The *Root classes provide `+extensionRegistry` for the extensions defined
+ * in a given file *and* all files it imports. You can also create a
+ * GPBExtensionRegistry, and merge those registries to handle parsing
+ * extensions defined from non overlapping files.
+ *
+ * ```
+ * GPBExtensionRegistry *registry = [[MyProtoFileRoot extensionRegistry] copy];
+ * [registry addExtension:[OtherMessage neededExtension]]; // Not in MyProtoFile
+ * NSError *parseError;
+ * MyMessage *msg = [MyMessage parseData:data extensionRegistry:registry error:&parseError];
+ * ```
+ **/
+__attribute__((objc_subclassing_restricted))
+@interface GPBExtensionRegistry : NSObject<NSCopying, GPBExtensionRegistry>
+
+/**
+ * Adds the given GPBExtensionDescriptor to this registry.
+ *
+ * @param extension The extension description to add.
+ **/
+- (void)addExtension:(GPBExtensionDescriptor *)extension;
+
+/**
+ * Adds all the extensions from another registry to this registry.
+ *
+ * @param registry The registry to merge into this registry.
+ **/
+- (void)addExtensions:(GPBExtensionRegistry *)registry;
+
+/**
+ * Returns the process-wide registry of the extensions that are linked into the
+ * process and were generated with the experimental
+ * `experimental_global_extension_registry` generator option (C function
+ * extensions only).
+ *
+ * The returned registry is shared by the whole process and is immutable: it can
+ * be used from any thread, and calling `-addExtension:` or `-addExtensions:` on
+ * it asserts in debug builds and does nothing otherwise. To combine it with
+ * other extensions, `-copy` it, or add it to another registry with
+ * `-addExtensions:`; either is O(1), and the resulting registry also finds every
+ * extension the global registry finds.
+ *
+ * Extensions in an image that is loaded with dlopen() after data was parsed
+ * are not applied to that already parsed data (the fields stay unknown fields).
+ * If the same extension is linked into more than one image (a misconfigured
+ * build graph, which also duplicates the generated message classes), lookups
+ * return the descriptor of the image that was loaded first. The descriptors of
+ * the different images are distinct instances that are not interchangeable.
+ **/
++ (GPBExtensionRegistry *)globalExtensionRegistry;
+
+@end
+
+NS_ASSUME_NONNULL_END

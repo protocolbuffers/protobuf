@@ -1,0 +1,12 @@
+[package]
+name = "google-protobuf-well-known-types"
+readme = "README.md"
+version = "{PROTOBUF_RUST_VERSION}"
+edition = "2021"
+description = "Protobuf Well-Known Types"
+license = "BSD-3-Clause"
+rust-version = "1.92"
+
+[dependencies]
+protobuf = { version = "{PROTOBUF_RUST_VERSION}", path = "../google_protobuf", package = "google-protobuf" }
+protobuf-codegen = { version = "{PROTOBUF_RUST_VERSION}", path = "../google_protobuf_codegen", package = "google-protobuf-codegen" }

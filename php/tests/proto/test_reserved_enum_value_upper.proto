@@ -1,0 +1,99 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto3";
+
+package upper_enum_value;
+
+enum NotAllowed {
+  // BEGIN RESERVED NAMES
+  // @see php/update_reserved_words.sh - DO NOT MODIFY THIS LIST MANUALLY
+  ABSTRACT = 0;
+  AND = 1;
+  ARRAY = 2;
+  AS = 3;
+  BOOL = 4;
+  BREAK = 5;
+  CALLABLE = 6;
+  CASE = 7;
+  CATCH = 8;
+  CLASS = 9;
+  CLONE = 10;
+  CONST = 11;
+  CONTINUE = 12;
+  DECLARE = 13;
+  DEFAULT = 14;
+  DIE = 15;
+  DO = 16;
+  ECHO = 17;
+  ELSE = 18;
+  ELSEIF = 19;
+  EMPTY = 20;
+  ENDDECLARE = 21;
+  ENDFOR = 22;
+  ENDFOREACH = 23;
+  ENDIF = 24;
+  ENDSWITCH = 25;
+  ENDWHILE = 26;
+  EVAL = 27;
+  EXIT = 28;
+  EXTENDS = 29;
+  FALSE = 30;
+  FINAL = 31;
+  FINALLY = 32;
+  FLOAT = 33;
+  FN = 34;
+  FOR = 35;
+  FOREACH = 36;
+  FUNCTION = 37;
+  GLOBAL = 38;
+  GOTO = 39;
+  IF = 40;
+  IMPLEMENTS = 41;
+  INCLUDE = 42;
+  INCLUDE_ONCE = 43;
+  INSTANCEOF = 44;
+  INSTEADOF = 45;
+  INT = 46;
+  INTERFACE = 47;
+  ISSET = 48;
+  ITERABLE = 49;
+  LIST = 50;
+  MATCH = 51;
+  MIXED = 52;
+  NAMESPACE = 53;
+  NEVER = 54;
+  NEW = 55;
+  NULL = 56;
+  OBJECT = 57;
+  OR = 58;
+  PARENT = 59;
+  PRINT = 60;
+  PRIVATE = 61;
+  PROTECTED = 62;
+  PUBLIC = 63;
+  READONLY = 64;
+  REQUIRE = 65;
+  REQUIRE_ONCE = 66;
+  RETURN = 67;
+  SELF = 68;
+  STATIC = 69;
+  STRING = 70;
+  SWITCH = 71;
+  THROW = 72;
+  TRAIT = 73;
+  TRUE = 74;
+  TRY = 75;
+  UNSET = 76;
+  USE = 77;
+  VAR = 78;
+  VOID = 79;
+  WHILE = 80;
+  XOR = 81;
+  YIELD = 82;
+  // END RESERVED NAMES
+}

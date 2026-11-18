@@ -1,0 +1,52 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Author: Naoki Iwasaki (niwasaki@google.com)
+//
+// A proto file with lazy fields
+
+edition = "2023";
+
+package proto2_unittest;
+
+option features.utf8_validation = NONE;
+
+message LazyMessageLite {
+  int32 num = 1;
+  int32 num_with_default = 2 [default = 421];
+
+  LazyInnerMessageLite inner = 3 [lazy = true];
+
+  repeated LazyInnerMessageLite repeated_inner = 4;
+
+  oneof oneof_field {
+    int32 oneof_num = 5;
+    LazyInnerMessageLite oneof_inner = 6 [lazy = true];
+  }
+}
+
+message LazyInnerMessageLite {
+  int32 num = 1;
+  int32 num_with_default = 2 [default = 42];
+
+  LazyNestedInnerMessageLite nested = 3 [lazy = true];
+
+  extensions 1000 to max;
+}
+
+message LazyExtension {
+  extend LazyInnerMessageLite {
+    LazyExtension extension = 1000;
+  }
+
+  string name = 1;
+}
+
+message LazyNestedInnerMessageLite {
+  int32 num = 1;
+  int32 num_with_default = 2 [default = 4];
+}

@@ -1,0 +1,31 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2016 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package objc.protobuf.tests.chain;
+
+import "objectivec/Tests/unittest.proto";
+
+import "objectivec/Tests/unittest_extension_chain_b.proto";
+import "objectivec/Tests/unittest_extension_chain_c.proto";
+import "objectivec/Tests/unittest_extension_chain_d.proto";
+
+option objc_class_prefix = "Chain";
+
+// The Root for this file should end up adding the local extension and merging
+// in the extensions from D's Root (unittest and C will come via D's).
+
+message AMessage {
+  optional BMessage b = 1;
+  optional CMessage c = 2;
+  optional DMessage d = 3;
+}
+
+extend objc.protobuf.tests.TestAllExtensions {
+  optional int32 chain_a_extension = 10001;
+}

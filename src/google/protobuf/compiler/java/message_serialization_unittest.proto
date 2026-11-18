@@ -1,0 +1,33 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2023";
+
+package proto2_unittest;
+
+option java_multiple_files = true;
+option java_package = "";
+
+// Each batch of extension ranges not separated by a non-extension field should
+// be serialized using a single ExtensionWriter#writeUntil call.
+message TestMessageWithManyExtensionRanges {
+  // First extension range: ends at field number 3 (exclusive)
+  extensions 1 to 2 [verification = UNVERIFIED];
+
+  int32 foo = 3;
+  int32 bar = 5;
+
+  // Second extension range: ends at field number 13 (exclusive)
+  extensions 6 [verification = UNVERIFIED];
+  extensions 8 [verification = UNVERIFIED];
+  extensions 10 to 12 [verification = UNVERIFIED];
+
+  int32 baz = 23;
+
+  // Third extension range: ends at field number 43 (exclusive)
+  extensions 42 [verification = UNVERIFIED];
+}

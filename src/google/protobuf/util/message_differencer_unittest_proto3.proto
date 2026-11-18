@@ -1,0 +1,24 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// This file contains messages for testing repeated field comparison
+// LINT: ALLOW_GROUPS
+
+syntax = "proto3";
+
+package proto3_unittest;
+
+option optimize_for = SPEED;
+
+message TestNoPresenceField {
+  bool no_presence_bool = 1;
+  TestNoPresenceField no_presence_nested = 2;
+  repeated TestNoPresenceField no_presence_repeated_nested = 3;
+  string no_presence_string = 4;
+  bool no_presence_bool2 = 5;
+  bool no_presence_bool3 = 6;
+}

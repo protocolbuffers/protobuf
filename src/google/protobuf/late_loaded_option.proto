@@ -1,0 +1,20 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2026";
+
+package proto2_unittest;
+
+import "google/protobuf/descriptor.proto";
+
+message LateLoadedOption {
+  int32 value = 1;
+
+  extend google.protobuf.MessageOptions {
+    LateLoadedOption ext = 95126892;
+  }
+}

@@ -1,0 +1,219 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+load(
+    "//:protobuf.bzl",
+    "internal_csharp_proto_library",
+    "internal_objc_proto_library",
+    "internal_php_proto_library",
+)
+load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
+load("//bazel:java_proto_library.bzl", "java_proto_library")
+load("//bazel:proto_library.bzl", "proto_library")
+load("//bazel:py_proto_library.bzl", "py_proto_library")
+
+package(
+    default_testonly = True,
+    default_visibility = ["//conformance:__subpackages__"],
+)
+
+exports_files([
+    "test_messages_edition2023.proto",
+    "test_messages_edition2026.proto",
+    "test_messages_edition_unstable.proto",
+])
+
+internal_csharp_proto_library(
+    name = "test_messages_edition2023_csharp_proto",
+    srcs = ["test_messages_edition2023.proto"],
+)
+
+internal_csharp_proto_library(
+    name = "test_messages_edition2026_csharp_proto",
+    srcs = ["test_messages_edition2026.proto"],
+    includes = [
+        ".",
+        "src",
+    ],
+    proto_deps = [
+        "//:json_enumvalue_options_proto_srcs",
+        "//:well_known_protos",
+    ],
+)
+
+internal_csharp_proto_library(
+    name = "test_messages_edition_unstable_csharp_proto",
+    srcs = ["test_messages_edition_unstable.proto"],
+)
+
+# Aliases for older monolithic conformance test protos defined elsewhere.
+alias(
+    name = "test_messages_proto2_editions_proto",
+    actual = "//editions:test_messages_proto2_editions_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "test_messages_proto3_editions_proto",
+    actual = "//editions:test_messages_proto3_editions_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "test_messages_proto2_proto",
+    actual = "//src/google/protobuf:test_messages_proto2_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "test_messages_proto3_proto",
+    actual = "//src/google/protobuf:test_messages_proto3_proto",
+    visibility = ["//visibility:public"],
+)
+
+proto_library(
+    name = "test_messages_edition2023_proto",
+    srcs = ["test_messages_edition2023.proto"],
+    visibility = ["//visibility:public"],
+)
+
+proto_library(
+    name = "test_messages_edition2026_proto",
+    srcs = ["test_messages_edition2026.proto"],
+    visibility = ["//visibility:public"],
+    deps = ["//src/google/protobuf:json_enumvalue_options_proto"],
+)
+
+proto_library(
+    name = "test_messages_edition_unstable_proto",
+    srcs = ["test_messages_edition_unstable.proto"],
+    visibility = ["//visibility:public"],
+)
+
+java_lite_proto_library(
+    name = "test_messages_edition2023_java_proto_lite",
+    deps = [":test_messages_edition2023_proto"],
+)
+
+java_lite_proto_library(
+    name = "test_messages_edition2026_java_proto_lite",
+    deps = [":test_messages_edition2026_proto"],
+)
+
+java_lite_proto_library(
+    name = "test_messages_edition_unstable_java_proto_lite",
+    deps = [":test_messages_edition_unstable_proto"],
+)
+
+java_proto_library(
+    name = "test_messages_edition2023_java_proto",
+    deps = [":test_messages_edition2023_proto"],
+)
+
+java_proto_library(
+    name = "test_messages_edition2026_java_proto",
+    deps = [":test_messages_edition2026_proto"],
+)
+
+java_proto_library(
+    name = "test_messages_edition_unstable_java_proto",
+    deps = [":test_messages_edition_unstable_proto"],
+)
+
+cc_proto_library(
+    name = "test_messages_edition2023_cc_proto",
+    deps = [":test_messages_edition2023_proto"],
+)
+
+cc_proto_library(
+    name = "test_messages_edition2026_cc_proto",
+    deps = [":test_messages_edition2026_proto"],
+)
+
+cc_proto_library(
+    name = "test_messages_edition_unstable_cc_proto",
+    deps = [":test_messages_edition_unstable_proto"],
+)
+
+py_proto_library(
+    name = "test_messages_edition2023_py_pb2",
+    deps = [":test_messages_edition2023_proto"],
+)
+
+py_proto_library(
+    name = "test_messages_edition2026_py_pb2",
+    deps = [":test_messages_edition2026_proto"],
+)
+
+py_proto_library(
+    name = "test_messages_edition_unstable_py_pb2",
+    deps = [":test_messages_edition_unstable_proto"],
+)
+
+internal_objc_proto_library(
+    name = "test_messages_edition2023_objc_proto",
+    srcs = [":test_messages_edition2023.proto"],
+)
+
+# The generated metadata for test_messages_edition2026.proto references
+# \GPBMetadata\Google\Protobuf\JsonEnumvalueOptions, which requires generating
+# the import with its full google/protobuf/ path. internal_php_proto_library
+# only supports outputs rooted next to the source file, so use protoc directly.
+genrule(
+    name = "json_enumvalue_options_php_proto",
+    srcs = [
+        "//:well_known_protos",
+        "//src/google/protobuf:json_enumvalue_options_proto_srcs",
+    ],
+    outs = [
+        "GPBMetadata/Google/Protobuf/JsonEnumvalueOptions.php",
+        "Pb/Enumvalue/JsonEnumValueOptions.php",
+    ],
+    cmd = """
+        $(location //:protoc) --php_out=$(RULEDIR) -Isrc \\
+            $(location //src/google/protobuf:json_enumvalue_options_proto_srcs)
+    """,
+    tools = ["//:protoc"],
+    visibility = ["//conformance:__pkg__"],
+)
+
+internal_php_proto_library(
+    name = "test_messages_edition2026_php_proto",
+    srcs = ["test_messages_edition2026.proto"],
+    outs = [
+        "GPBMetadata/TestMessagesEdition2026.php",
+        "Protobuf_test_messages/Editions/ForeignEnumEdition2026.php",
+        "Protobuf_test_messages/Editions/TestAllTypesEdition2026.php",
+    ],
+    includes = [
+        ".",
+        "src",
+    ],
+    proto_deps = [
+        "//:json_enumvalue_options_proto_srcs",
+        "//:well_known_protos",
+    ],
+)
+
+internal_objc_proto_library(
+    name = "test_messages_edition2026_objc_proto",
+    srcs = [":test_messages_edition2026.proto"],
+    includes = [
+        ".",
+        "src",
+    ],
+    proto_deps = [
+        "//:json_enumvalue_options_proto_srcs",
+        "//:well_known_protos",
+    ],
+)
+
+internal_objc_proto_library(
+    name = "test_messages_edition_unstable_objc_proto",
+    srcs = [":test_messages_edition_unstable.proto"],
+)

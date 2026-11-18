@@ -1,0 +1,28 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Author: kenton@google.com (Kenton Varda)
+//  Based on original Protocol Buffers design by
+//  Sanjay Ghemawat, Jeff Dean, and others.
+//
+// A proto file we will use for unit testing.
+//
+// LINT: ALLOW_GROUPS, LEGACY_NAMES
+
+// This file is part of the unit test for issue #6822. It is
+// generated with protoc from version 3.10.1.
+
+syntax = "proto3";
+
+// Import the proto file containing the extension. We don't use it,
+// but the import is what caused the issue.
+import "csharp/protos/old_extensions2.proto";
+
+option csharp_namespace = "Google.Protobuf.TestProtos.OldGenerator";
+
+// We don't use this message other than to get its descriptor.
+message TestMessage {}

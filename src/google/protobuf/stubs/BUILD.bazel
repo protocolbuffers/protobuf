@@ -1,0 +1,98 @@
+# Protobuf stubs library.
+#   These are utilities that mirror the behavior of internal Google code.
+
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
+
+package(
+    default_visibility = ["//:__subpackages__"],
+)
+
+cc_library(
+    name = "lite",
+    srcs = [
+        "common.cc",
+    ],
+    hdrs = [
+        "callback.h",
+        "common.h",
+        "platform_macros.h",
+        "port.h",
+        "status_macros.h",
+    ],
+    copts = COPTS,
+    linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        "//src/google/protobuf:port",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "stubs",
+    srcs = [
+    ],
+    hdrs = [
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    textual_hdrs = [
+        "callback.h",
+        "common.h",
+        "platform_macros.h",
+        "port.h",
+        "status_macros.h",
+    ],
+    deps = [
+        ":lite",
+        "//src/google/protobuf:port",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "stubs_test",
+    srcs = [
+        "common_unittest.cc",
+    ],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
+    linkopts = LINK_OPTS,
+    deps = [
+        ":lite",
+        ":stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+################################################################################
+# Distribution packaging
+################################################################################
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob(
+        [
+            "*_test.cc",
+            "*unittest.cc",
+        ],
+        allow_empty = True,
+    ),
+    visibility = ["//pkg:__pkg__"],
+)

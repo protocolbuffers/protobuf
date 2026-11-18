@@ -1,0 +1,121 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+#ifndef UPB_MINI_TABLE_INTERNAL_EXTENSION_H_
+#define UPB_MINI_TABLE_INTERNAL_EXTENSION_H_
+
+#include <stddef.h>
+#include <stdint.h>
+
+#include "upb/base/descriptor_constants.h"
+#include "upb/mini_table/internal/field.h"
+#include "upb/mini_table/internal/message.h"
+#include "upb/mini_table/internal/sub.h"
+
+// Must be last.
+#include "upb/port/def.inc"
+
+struct upb_MiniTableExtension {
+  // Do not move this field. We need to be able to alias pointers.
+  struct upb_MiniTableField UPB_PRIVATE(field);
+
+  // A known extendee schema for a canonical extension. For a non-canonical
+  // extension, it's typically converted from a canonical extension via the
+  // upb_Message_Convert() API, but is not registered on the extension
+  // registry of the target message when it gets converted. In this case, the
+  // `extendee` info is present on the source message before conversion.
+  const struct upb_MiniTable* UPB_PRIVATE(extendee);
+};
+
+// The layout of an extension that has a sub-message or closed enum (ie.
+// `field.submsg_ofs != kUpb_NoSub`): the sub is stored directly after the
+// upb_MiniTableExtension. Extensions without a sub are just a bare
+// upb_MiniTableExtension.
+typedef struct {
+  struct upb_MiniTableExtension UPB_PRIVATE(ext);
+  upb_MiniTableSubInternal UPB_PRIVATE(sub);
+} upb_MiniTableExtensionWithSub;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_API_INLINE upb_CType
+upb_MiniTableExtension_CType(const struct upb_MiniTableExtension* e) {
+  return upb_MiniTableField_CType(&e->UPB_PRIVATE(field));
+}
+
+UPB_API_INLINE uint32_t
+upb_MiniTableExtension_Number(const struct upb_MiniTableExtension* e) {
+  return e->UPB_PRIVATE(field).UPB_ONLYBITS(number);
+}
+
+UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableExtension_Extendee(
+    const struct upb_MiniTableExtension* e) {
+  return e->UPB_PRIVATE(extendee);
+}
+
+UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableExtension_GetSubMessage(
+    const struct upb_MiniTableExtension* e) {
+  if (upb_MiniTableExtension_CType(e) != kUpb_CType_Message) {
+    return NULL;
+  }
+  return upb_MiniTable_GetSubMessageTable(&e->UPB_PRIVATE(field));
+}
+
+UPB_API_INLINE const struct upb_MiniTableEnum*
+upb_MiniTableExtension_GetSubEnum(const struct upb_MiniTableExtension* e) {
+  if (upb_MiniTableExtension_CType(e) != kUpb_CType_Enum) {
+    return NULL;
+  }
+  return upb_MiniTable_GetSubEnumTable(&e->UPB_PRIVATE(field));
+}
+
+UPB_API_INLINE bool upb_MiniTableExtension_SetSubMessage(
+    struct upb_MiniTableExtension* e, const struct upb_MiniTable* m) {
+  if (e->UPB_PRIVATE(field).UPB_PRIVATE(descriptortype) !=
+          kUpb_FieldType_Message &&
+      e->UPB_PRIVATE(field).UPB_PRIVATE(descriptortype) !=
+          kUpb_FieldType_Group) {
+    return false;
+  }
+  if (m->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry) {
+    return false;
+  }
+  UPB_PRIVATE(_upb_MiniTableField_Sub)(&e->UPB_PRIVATE(field))
+      ->UPB_PRIVATE(submsg) = m;
+  return true;
+}
+
+UPB_API_INLINE bool upb_MiniTableExtension_SetSubEnum(
+    struct upb_MiniTableExtension* e, const struct upb_MiniTableEnum* en) {
+  if (e->UPB_PRIVATE(field).UPB_PRIVATE(descriptortype) !=
+      kUpb_FieldType_Enum) {
+    return false;
+  }
+  UPB_PRIVATE(_upb_MiniTableField_Sub)(&e->UPB_PRIVATE(field))
+      ->UPB_PRIVATE(subenum) = en;
+  return true;
+}
+
+UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTableExtension_ToField(
+    const struct upb_MiniTableExtension* e) {
+  return &e->UPB_PRIVATE(field);
+}
+
+UPB_INLINE upb_FieldRep UPB_PRIVATE(_upb_MiniTableExtension_GetRep)(
+    const struct upb_MiniTableExtension* e) {
+  return UPB_PRIVATE(_upb_MiniTableField_GetRep)(&e->UPB_PRIVATE(field));
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#include "upb/port/undef.inc"
+
+#endif /* UPB_MINI_TABLE_INTERNAL_EXTENSION_H_ */

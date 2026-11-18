@@ -1,0 +1,438 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+package com.google.protobuf.util;
+
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.FieldMask;
+import com.google.protobuf.Internal;
+import com.google.protobuf.Message;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
+/** Utility helper functions to work with {@link com.google.protobuf.FieldMask}. */
+public final class FieldMaskUtil {
+  private static final String FIELD_PATH_SEPARATOR = ",";
+  private static final String FIELD_PATH_SEPARATOR_REGEX = ",";
+  private static final String FIELD_SEPARATOR_REGEX = "\\.";
+
+  private FieldMaskUtil() {}
+
+  /** Converts a FieldMask to a string. */
+  public static String toString(FieldMask fieldMask) {
+    StringBuilder result = new StringBuilder();
+    boolean first = true;
+    for (String value : fieldMask.getPathsList()) {
+      if (value.isEmpty()) {
+        // Ignore empty paths.
+        continue;
+      }
+      if (first) {
+        first = false;
+      } else {
+        result.append(FIELD_PATH_SEPARATOR);
+      }
+      result.append(value);
+    }
+    return result.toString();
+  }
+
+  /** Parses from a string to a FieldMask. */
+  public static FieldMask fromString(String value) {
+    return fromStringList(Arrays.asList(value.split(FIELD_PATH_SEPARATOR_REGEX)));
+  }
+
+  /**
+   * Parses from a string to a FieldMask and validates all field paths.
+   *
+   * @throws IllegalArgumentException if any of the field path is invalid.
+   */
+  public static FieldMask fromString(Class<? extends Message> type, String value) {
+    return fromStringList(type, Arrays.asList(value.split(FIELD_PATH_SEPARATOR_REGEX)));
+  }
+
+  /**
+   * Constructs a FieldMask for a list of field paths in a certain type.
+   *
+   * @throws IllegalArgumentException if any of the field path is not valid
+   */
+  public static FieldMask fromStringList(Class<? extends Message> type, Iterable<String> paths) {
+    return fromStringList(Internal.getDefaultInstance(type).getDescriptorForType(), paths);
+  }
+
+  /**
+   * Constructs a FieldMask for a list of field paths in a certain type.
+   *
+   * @throws IllegalArgumentException if any of the field path is not valid.
+   */
+  public static FieldMask fromStringList(Descriptor descriptor, Iterable<String> paths) {
+    return fromStringList(Optional.of(descriptor), paths);
+  }
+
+  /**
+   * Constructs a FieldMask for a list of field paths in a certain type. Does not validate the given
+   * paths.
+   */
+  public static FieldMask fromStringList(Iterable<String> paths) {
+    return fromStringList(Optional.<Descriptor>empty(), paths);
+  }
+
+  private static FieldMask fromStringList(Optional<Descriptor> descriptor, Iterable<String> paths) {
+    FieldMask.Builder builder = FieldMask.newBuilder();
+    for (String path : paths) {
+      if (path.isEmpty()) {
+        // Ignore empty field paths.
+        continue;
+      }
+      if (descriptor.isPresent() && !isValid(descriptor.get(), path)) {
+        throw new IllegalArgumentException(
+            path + " is not a valid path for " + descriptor.get().getFullName());
+      }
+      builder.addPaths(path);
+    }
+    return builder.build();
+  }
+
+  /**
+   * Constructs a FieldMask from the passed field numbers.
+   *
+   * @throws IllegalArgumentException if any of the fields are invalid for the message.
+   */
+  public static FieldMask fromFieldNumbers(Class<? extends Message> type, int... fieldNumbers) {
+    return fromFieldNumbers(type, Arrays.stream(fieldNumbers).boxed().collect(Collectors.toList()));
+  }
+
+  /**
+   * Constructs a FieldMask from the passed field numbers.
+   *
+   * @throws IllegalArgumentException if any of the fields are invalid for the message.
+   */
+  public static FieldMask fromFieldNumbers(
+      Class<? extends Message> type, Iterable<Integer> fieldNumbers) {
+    Descriptor descriptor = Internal.getDefaultInstance(type).getDescriptorForType();
+    FieldMask.Builder builder = FieldMask.newBuilder();
+    for (Integer fieldNumber : fieldNumbers) {
+      FieldDescriptor field = descriptor.findFieldByNumber(fieldNumber);
+      if (field == null) {
+        throw new IllegalArgumentException(
+            String.format(
+                "%s is not a valid field number for %s.", fieldNumber, descriptor.getFullName()));
+      }
+      builder.addPaths(field.getName());
+    }
+    return builder.build();
+  }
+
+  /** Converts a lower_underscore to lowerCamelCase style. */
+  private static String lowerUnderscoreToLowerCamel(String str) {
+    StringBuilder sb = new StringBuilder();
+    boolean capitalizeNext = false;
+    for (int i = 0; i < str.length(); i++) {
+      char c = str.charAt(i);
+      if (c == '_') {
+        capitalizeNext = true;
+      } else if (capitalizeNext) {
+        sb.append(Character.toUpperCase(c));
+        capitalizeNext = false;
+      } else {
+        sb.append(Character.toLowerCase(c));
+      }
+    }
+    return sb.toString();
+  }
+
+  /** Converts a lowerCamelCase string to lower_underscore style. */
+  private static String lowerCamelToLowerUnderscore(String str) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < str.length(); i++) {
+      char c = str.charAt(i);
+      if (c >= 'A' && c <= 'Z') {
+        sb.append('_');
+      }
+      sb.append(Character.toLowerCase(c));
+    }
+    return sb.toString();
+  }
+
+  /**
+   * Converts a field mask to a ProtoJSON string, that is converting from snake case to camel case
+   * and joining all paths into one string with commas.
+   */
+  public static String toJsonString(FieldMask fieldMask) {
+    List<String> paths = new ArrayList<String>(fieldMask.getPathsCount());
+    for (String path : fieldMask.getPathsList()) {
+      if (path.isEmpty()) {
+        continue;
+      }
+      paths.add(lowerUnderscoreToLowerCamel(path));
+    }
+    return String.join(FIELD_PATH_SEPARATOR, paths);
+  }
+
+  /**
+   * Converts a field mask from a ProtoJSON string, that is splitting the paths along commas and
+   * converting from camel case to snake case.
+   */
+  @SuppressWarnings("StringSplitter")
+  public static FieldMask fromJsonString(String value) {
+    String[] paths = value.split(FIELD_PATH_SEPARATOR);
+    FieldMask.Builder builder = FieldMask.newBuilder();
+    for (String path : paths) {
+      if (path.isEmpty()) {
+        continue;
+      }
+      builder.addPaths(lowerCamelToLowerUnderscore(path));
+    }
+    return builder.build();
+  }
+
+  /** Checks whether paths in a given fields mask are valid. */
+  public static boolean isValid(Class<? extends Message> type, FieldMask fieldMask) {
+    Descriptor descriptor = Internal.getDefaultInstance(type).getDescriptorForType();
+
+    return isValid(descriptor, fieldMask);
+  }
+
+  /** Checks whether paths in a given fields mask are valid. */
+  public static boolean isValid(Descriptor descriptor, FieldMask fieldMask) {
+    for (String path : fieldMask.getPathsList()) {
+      if (!isValid(descriptor, path)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /** Checks whether a given field path is valid. */
+  public static boolean isValid(Class<? extends Message> type, String path) {
+    Descriptor descriptor = Internal.getDefaultInstance(type).getDescriptorForType();
+
+    return isValid(descriptor, path);
+  }
+
+  /** Checks whether paths in a given fields mask are valid. */
+  public static boolean isValid(@Nullable Descriptor descriptor, String path) {
+    String[] parts = path.split(FIELD_SEPARATOR_REGEX);
+    if (parts.length == 0) {
+      return false;
+    }
+    for (String name : parts) {
+      if (descriptor == null) {
+        return false;
+      }
+      FieldDescriptor field = descriptor.findFieldByName(name);
+      if (field == null) {
+        return false;
+      }
+      if (!field.isRepeated() && field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
+        descriptor = field.getMessageType();
+      } else {
+        descriptor = null;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Converts a FieldMask to its canonical form. In the canonical form of a FieldMask, all field
+   * paths are sorted alphabetically and redundant field paths are removed.
+   */
+  public static FieldMask normalize(FieldMask mask) {
+    return new FieldMaskTree(mask).toFieldMask();
+  }
+
+  /** Creates a union of two or more FieldMasks. */
+  public static FieldMask union(
+      FieldMask firstMask, FieldMask secondMask, FieldMask... otherMasks) {
+    FieldMaskTree maskTree = new FieldMaskTree(firstMask).mergeFromFieldMask(secondMask);
+    for (FieldMask mask : otherMasks) {
+      maskTree.mergeFromFieldMask(mask);
+    }
+    return maskTree.toFieldMask();
+  }
+
+  /**
+   * Subtracts {@code secondMask} and {@code otherMasks} from {@code firstMask}.
+   *
+   * <p>This method disregards proto structure. That is, if {@code firstMask} is "foo" and {@code
+   * secondMask} is "foo.bar", the response will always be "foo" without considering the internal
+   * proto structure of message "foo".
+   */
+  public static FieldMask subtract(
+      FieldMask firstMask, FieldMask secondMask, FieldMask... otherMasks) {
+    FieldMaskTree maskTree = new FieldMaskTree(firstMask).removeFromFieldMask(secondMask);
+    for (FieldMask mask : otherMasks) {
+      maskTree.removeFromFieldMask(mask);
+    }
+    return maskTree.toFieldMask();
+  }
+
+  /** Calculates the intersection of two FieldMasks. */
+  public static FieldMask intersection(FieldMask mask1, FieldMask mask2) {
+    FieldMaskTree tree = new FieldMaskTree(mask1);
+    FieldMaskTree result = new FieldMaskTree();
+    for (String path : mask2.getPathsList()) {
+      tree.intersectFieldPath(path, result);
+    }
+    return result.toFieldMask();
+  }
+
+  /** Options to customize merging behavior. */
+  public static final class MergeOptions {
+    private boolean replaceMessageFields = false;
+    private boolean replaceRepeatedFields = false;
+    // TODO: change the default behavior to always replace primitive fields after
+    // fixing all failing TAP tests.
+    private boolean replacePrimitiveFields = false;
+
+    /**
+     * Whether to replace message fields (i.e., discard existing content in destination message
+     * fields).
+     */
+    public boolean replaceMessageFields() {
+      return replaceMessageFields;
+    }
+
+    /**
+     * Whether to replace repeated fields (i.e., discard existing content in destination repeated
+     * fields).
+     */
+    public boolean replaceRepeatedFields() {
+      return replaceRepeatedFields;
+    }
+
+    /**
+     * Whether to replace primitive (non-repeated and non-message) fields in destination message
+     * fields with the source primitive fields (i.e., clear destination field if source field is not
+     * set).
+     */
+    public boolean replacePrimitiveFields() {
+      return replacePrimitiveFields;
+    }
+
+    /**
+     * Specify whether to replace message fields. Defaults to false.
+     *
+     * <p>If true, discard existing content in destination message fields when merging.
+     *
+     * <p>If false, merge the source message field into the destination message field.
+     */
+    @CanIgnoreReturnValue
+    public MergeOptions setReplaceMessageFields(boolean value) {
+      replaceMessageFields = value;
+      return this;
+    }
+
+    /**
+     * Specify whether to replace repeated fields. Defaults to false.
+     *
+     * <p>If true, discard existing content in destination repeated fields) when merging.
+     *
+     * <p>If false, append elements from source repeated field to the destination repeated field.
+     */
+    @CanIgnoreReturnValue
+    public MergeOptions setReplaceRepeatedFields(boolean value) {
+      replaceRepeatedFields = value;
+      return this;
+    }
+
+    /**
+     * Specify whether to replace primitive (non-repeated and non-message) fields in destination
+     * message fields with the source primitive fields. Defaults to false.
+     *
+     * <p>If true, set the value of the destination primitive field to the source primitive field if
+     * the source field is set, but clear the destination field otherwise.
+     *
+     * <p>If false, always set the value of the destination primitive field to the source primitive
+     * field, and if the source field is unset, the default value of the source field is copied to
+     * the destination.
+     */
+    @CanIgnoreReturnValue
+    public MergeOptions setReplacePrimitiveFields(boolean value) {
+      replacePrimitiveFields = value;
+      return this;
+    }
+  }
+
+  /**
+   * Merges fields specified by a FieldMask from one message to another with the specified merge
+   * options. The destination will remain unchanged if an empty FieldMask is provided.
+   */
+  public static void merge(
+      FieldMask mask, Message source, Message.Builder destination, MergeOptions options) {
+    new FieldMaskTree(mask).merge(source, destination, options);
+  }
+
+  /** Merges fields specified by a FieldMask from one message to another. */
+  public static void merge(FieldMask mask, Message source, Message.Builder destination) {
+    merge(mask, source, destination, new MergeOptions());
+  }
+
+  /** Options to customize trimming behavior. */
+  public static final class TrimOptions {
+    private boolean retainPrimitiveFieldUnsetState = false;
+
+    /** Whether the unset state of primitive fields should be retained when trimming. */
+    public boolean retainPrimitiveFieldUnsetState() {
+      return retainPrimitiveFieldUnsetState;
+    }
+
+    /**
+     * Specify whether the unset state of primitive fields should be retained when trimming.
+     * Defaults to false.
+     *
+     * <p>If true, unset primitive fields indicated by the field mask will remain unset.
+     *
+     * <p>If false, unset primitive fields indicated by the field mask will be set to their default
+     * values.
+     */
+    @CanIgnoreReturnValue
+    public TrimOptions setRetainPrimitiveFieldUnsetState(boolean value) {
+      retainPrimitiveFieldUnsetState = value;
+      return this;
+    }
+  }
+
+  /**
+   * Returns the result of keeping only the masked fields of the given proto with the specified trim
+   * options.
+   *
+   * <p>Note that the behavior with the default {@link TrimOptions} is for unset primitive fields
+   * indicated in the field mask to be explicitly set to their default values. Use {@code new
+   * TrimOptions().setRetainPrimitiveFieldUnsetState(true)} to retain the unset state of primitive
+   * fields.
+   */
+  @SuppressWarnings("unchecked")
+  public static <P extends Message> P trim(FieldMask mask, P source, TrimOptions options) {
+    Message.Builder destination = source.newBuilderForType();
+    merge(
+        mask,
+        source,
+        destination,
+        new MergeOptions().setReplacePrimitiveFields(options.retainPrimitiveFieldUnsetState()));
+    return (P) destination.build();
+  }
+
+  /**
+   * Returns the result of keeping only the masked fields of the given proto.
+   *
+   * <p>This method is equivalent to {@link #trim(FieldMask, Message, TrimOptions)} with default
+   * {@link TrimOptions}.
+   *
+   * <p>Note that unset primitive fields indicated in the field mask will be explicitly set to their
+   * default values.
+   */
+  public static <P extends Message> P trim(FieldMask mask, P source) {
+    return trim(mask, source, new TrimOptions());
+  }
+}

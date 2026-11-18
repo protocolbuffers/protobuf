@@ -1,0 +1,47 @@
+configuration:
+  - Debug
+
+environment:
+  matrix:
+    # Only test few combinations: "Visual Studio 2017 (15) + Win64/MinGW + Debug + DLL". We can
+    # test more combinations but AppVeyor just takes too long to finish (each
+    # combination takes ~15mins).
+    - platform: MinGW
+      language: cpp
+      image: Visual Studio 2017
+
+    - platform: Win64
+      language: cpp
+      image: Visual Studio 2017
+      BUILD_DLL: ON
+      UNICODE: ON
+
+    - platform: Win64
+      language: cpp
+      image: Visual Studio 2017
+      BUILD_DLL: OFF
+      UNICODE: ON
+
+    - platform: Win64
+      language: csharp
+      image: Visual Studio 2017
+
+# Our build scripts run tests automatically; we don't want AppVeyor
+# to try to detect them itself.
+test: off
+
+install:
+  - git submodule update --init --recursive
+
+before_build:
+  - if %platform%==MinGW set generator=MinGW Makefiles
+  - if %platform%==Win32 set generator=Visual Studio 15
+  - if %platform%==Win64 set generator=Visual Studio 15 Win64
+  - if %platform%==Win32 set vcplatform=Win32
+  - if %platform%==Win64 set vcplatform=x64
+
+build_script:
+  - CALL appveyor.bat
+
+skip_commits:
+  message: /.*\[skip appveyor\].*/

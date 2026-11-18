@@ -1,0 +1,31 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+#ifndef GOOGLE_PROTOBUF_BREAKING_CHANGES_H__
+#define GOOGLE_PROTOBUF_BREAKING_CHANGES_H__
+
+// Future versions of Protobuf Python will include breaking changes.
+// This file tracks Python-specific breaking changes that need to wait,
+// unlike upb-core breaking changes which can land immediately.
+
+#ifdef PROTOBUF_PY_FUTURE_BREAKING_CHANGES
+
+// Raise AssertionError on message, map and repeated scalar field self-merge
+// (msg.MergeFrom(msg), msg.map_field.MergeFrom(msg.map_field) and
+// msg.repeated_field.MergeFrom(msg.repeated_field)) in upb, like the C++
+// implementation, instead of merging from a copy (messages and repeated
+// fields) or doing nothing (maps).
+// Owner: haberman@
+#define PROTOBUF_PY_FUTURE_SELF_MERGE_RAISES 1
+
+#else
+
+#define PROTOBUF_PY_FUTURE_SELF_MERGE_RAISES 0
+
+#endif
+
+#endif  // GOOGLE_PROTOBUF_BREAKING_CHANGES_H__

@@ -1,0 +1,36 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2015 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package objc.protobuf.tests.cycle;
+
+option objc_class_prefix = "Cycle";
+
+// Cycles in the Message graph can cause problems for message class
+// initialization order.
+
+// You can't make a object graph that spans files, so this can only be done
+// within a single proto file.
+
+message Foo {
+  optional Foo a_foo = 1;
+  optional Bar a_bar = 2;
+  optional Baz a_baz = 3;
+}
+
+message Bar {
+  optional Bar a_bar = 1;
+  optional Baz a_baz = 2;
+  optional Foo a_foo = 3;
+}
+
+message Baz {
+  optional Baz a_baz = 1;
+  optional Foo a_foo = 2;
+  optional Bar a_bar = 3;
+}

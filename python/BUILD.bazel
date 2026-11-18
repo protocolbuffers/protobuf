@@ -1,0 +1,160 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2009 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
+load("//python:build_targets.bzl", "build_targets")
+load("//python:cc_link_bundle.bzl", "py_extension_with_bundled_deps")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_FEATURES")
+
+build_targets(name = "python")
+
+licenses(["notice"])
+
+package(
+    default_applicable_licenses = ["//:license"],
+    default_visibility = ["//python/dist:__pkg__"],
+)
+
+LIMITED_API_FLAG_SELECT = {
+    ":limited_api_3.11": ["-DPy_LIMITED_API=0x030b0000"],
+    "//conditions:default": [],
+}
+
+bool_flag(
+    name = "limited_api",
+    build_setting_default = True,
+)
+
+string_flag(
+    name = "python_version",
+    build_setting_default = "system",
+    values = [
+        "system",
+        "311",
+    ],
+)
+
+bool_flag(
+    name = "use_hermetic_python",
+    build_setting_default = False,
+    visibility = ["//:__subpackages__"],
+)
+
+config_setting(
+    name = "is_system_python",
+    flag_values = {
+        ":python_version": "system",
+        ":use_hermetic_python": "false",
+    },
+    visibility = [
+        "//:__subpackages__",
+        "@local_toolchains//:__pkg__",
+    ],
+)
+
+config_setting(
+    name = "limited_api_3.11",
+    flag_values = {
+        ":limited_api": "True",
+        ":python_version": "311",
+    },
+)
+
+config_setting(
+    name = "limited_api_3.11_win32",
+    constraint_values = [
+        "@platforms//cpu:x86_32",
+        "@platforms//os:windows",
+    ],
+    flag_values = {
+        ":limited_api": "True",
+        ":python_version": "311",
+    },
+)
+
+config_setting(
+    name = "limited_api_3.11_win64",
+    constraint_values = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:windows",
+    ],
+    flag_values = {
+        ":limited_api": "True",
+        ":python_version": "311",
+    },
+)
+
+filegroup(
+    name = "message_srcs",
+    srcs = [
+        "buffer_convert.c",
+        "buffer_convert.h",
+        "convert.c",
+        "convert.h",
+        "descriptor.c",
+        "descriptor.h",
+        "descriptor_containers.c",
+        "descriptor_containers.h",
+        "descriptor_pool.c",
+        "descriptor_pool.h",
+        "extension_dict.c",
+        "extension_dict.h",
+        "free_threading/lazy_ptr.c",
+        "free_threading/lazy_ptr.h",
+        "free_threading/mutex.h",
+        "free_threading/weak_map.c",
+        "free_threading/weak_map.h",
+        "map.c",
+        "map.h",
+        "message.c",
+        "message.h",
+        "protobuf.c",
+        "protobuf.h",
+        "python_api.h",
+        "repeated.c",
+        "repeated.h",
+        "unknown_fields.c",
+        "unknown_fields.h",
+    ],
+)
+
+# Equivalent to py_extension(), except on Bazel 8 in OSS. See cc_link_bundle.bzl.
+py_extension_with_bundled_deps(
+    name = "google/_upb/_message",
+    srcs = [":message_srcs"],
+    copts = UPB_DEFAULT_COPTS + select(LIMITED_API_FLAG_SELECT),
+    features = UPB_DEFAULT_FEATURES,
+    # copybara:uncomment py_limited_api = "3.10",
+    visibility = [
+        ":__subpackages__",
+        "//conformance:__pkg__",
+    ],
+    deps = [
+        ":breaking_changes",
+        "//src/google/protobuf:descriptor_upb_minitable_proto",
+        "//src/google/protobuf:descriptor_upb_reflection_proto",
+        "//third_party/utf8_range",
+        "//upb/base",
+        "//upb/hash",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/message:compare",
+        "//upb/message:copy",
+        "//upb/message:message_unknowns",
+        "//upb/mini_table",
+        "//upb/port",
+        "//upb/reflection",
+        "//upb/text",
+        "//upb/util:def_to_proto",
+        "//upb/util:required_fields",
+        "//upb/wire",
+        "//upb/wire:encode_extension",
+        "//upb/wire:eps_copy_input_stream",
+        "//upb/wire:reader",
+        "@abseil-cpp//absl/base:core_headers",
+    ],
+)

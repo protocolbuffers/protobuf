@@ -1,0 +1,85 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+"""upb_minitable_proto_library() exposes upb's generated minitables (foo.upb_minitable.h)"""
+
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
+load("@rules_cc//cc/common:cc_shared_library_hint_info.bzl", "CcSharedLibraryHintInfo")
+load("//bazel/common:proto_info.bzl", "ProtoInfo")
+load("//upb/bazel:visibility.bzl", "upb_clients")
+load("//upb/bazel/private:upb_proto_library_internal/aspect.bzl", "upb_proto_aspect_impl")
+load("//upb/bazel/private:upb_proto_library_internal/cc_library_func.bzl", "upb_use_cpp_toolchain")
+load("//upb/bazel/private:upb_proto_library_internal/rule.bzl", "upb_proto_rule_impl")
+
+visibility(upb_clients)
+
+UpbMinitableCcInfo = provider(
+    "Provider for cc_info for protos",
+    fields = ["cc_info"],
+)
+
+_UpbWrappedGeneratedSrcsInfo = provider(
+    "Provider for generated sources",
+    fields = ["srcs"],
+)
+
+def _upb_minitable_proto_library_aspect_impl(target, ctx):
+    return upb_proto_aspect_impl(
+        target = target,
+        ctx = ctx,
+        generator = "upb_minitable",
+        cc_provider = UpbMinitableCcInfo,
+        dep_cc_provider = None,
+        file_provider = _UpbWrappedGeneratedSrcsInfo,
+        provide_cc_shared_library_hints = True,
+    )
+
+def _get_upb_minitable_proto_library_aspect_provides():
+    return [
+        UpbMinitableCcInfo,
+        _UpbWrappedGeneratedSrcsInfo,
+        CcSharedLibraryHintInfo,
+    ]
+
+upb_minitable_proto_library_aspect = aspect(
+    attrs = {
+        "_copts": attr.label(
+            default = "//upb:upb_proto_library_copts",
+        ),
+        "_upb_minitable_toolchain": attr.label(
+            default = Label("//upb_generator/minitable:toolchain"),
+        ),
+        "_cc_toolchain": attr.label(
+            default = "@bazel_tools//tools/cpp:current_cc_toolchain",
+        ),
+        "_fasttable_enabled": attr.label(default = "//upb:fasttable_enabled"),
+    },
+    implementation = _upb_minitable_proto_library_aspect_impl,
+    provides = _get_upb_minitable_proto_library_aspect_provides(),
+    attr_aspects = ["deps"],
+    fragments = ["cpp"],
+    toolchains = upb_use_cpp_toolchain(),
+    exec_groups = {
+        "proto_compiler": exec_group(),
+    },
+    required_providers = [ProtoInfo],
+)
+
+def _upb_minitable_proto_library_rule_impl(ctx):
+    return upb_proto_rule_impl(ctx, UpbMinitableCcInfo, _UpbWrappedGeneratedSrcsInfo)
+
+upb_minitable_proto_library = rule(
+    implementation = _upb_minitable_proto_library_rule_impl,
+    attrs = {
+        "deps": attr.label_list(
+            aspects = [upb_minitable_proto_library_aspect],
+            allow_rules = ["proto_library"],
+            providers = [ProtoInfo],
+        ),
+    },
+    provides = [CcInfo],
+)

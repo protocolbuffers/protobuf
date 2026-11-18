@@ -1,0 +1,129 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+#ifndef GOOGLE_PROTOBUF_FIELD_WITH_ARENA_H__
+#define GOOGLE_PROTOBUF_FIELD_WITH_ARENA_H__
+
+#include <cstddef>
+#include <type_traits>
+
+#include "absl/log/absl_check.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/internal_metadata_locator.h"
+#include "google/protobuf/internal_visibility.h"
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
+namespace google {
+namespace protobuf {
+namespace internal {
+
+// Checks whether `T` has a constructor that takes an internal metadata offset
+// and an arena pointer. Some constructors won't take the arena pointer if they
+// don't need it.
+//
+// We check for both `InternalVisibility` constructors and normal constructors,
+// as `std::is_constructible` can only see public constructors.
+template <typename T, typename... Args>
+inline constexpr bool kOffsetConstructorTakesArenaPointer =
+    std::is_constructible_v<T, InternalVisibility, InternalMetadataOffset,
+                            Arena*, Args...> ||
+    std::is_constructible_v<T, InternalMetadataOffset, Arena*, Args...>;
+
+// A container that holds a `T` and an arena pointer, where `T` has an
+// `InternalMetadataResolver` member. This is used for both directly
+// arena-allocated `T`'s and split `T`'s. Both cases need to return the correct
+// thing when a user calls `GetArena()` on `T`, or when internal code needs the
+// arena to do memory allocation.
+//
+// This class is used to store `InternalMetadata` alongside `T` with an
+// `InternalMetadataResolver`, since `InternalMetadataResolver`s can only point
+// to an existing arena pointer "nearby" in memory.
+//
+// Note that `FieldWithArena<T>` is destructor-skippable if and only if `T` is
+// destructor-skippable.
+template <typename T>
+class FieldWithArena : public ContainerDestructorSkippableBase<T> {
+ public:
+  using InternalArenaConstructable_ = void;
+
+  constexpr FieldWithArena() : field_(), arena_(nullptr) {}
+
+  template <typename... Args>
+  explicit FieldWithArena(Arena* arena, Args&&... args) : arena_(arena) {
+    StaticallyVerifyLayout();
+    // Construct `T` after setting `_internal_metadata_` so that `T` can safely
+    // call ResolveArena().
+    if constexpr (kOffsetConstructorTakesArenaPointer<T, Args...>) {
+      new (&field_) T(BuildOffset(), arena, std::forward<Args>(args)...);
+    } else {
+      new (&field_) T(BuildOffset(), std::forward<Args>(args)...);
+    }
+  }
+
+  ~FieldWithArena() {
+    // The destructor of `FieldWithArena` for destructor-skippable types must
+    // only be called if the field is not allocated on an arena.
+    if constexpr (Arena::is_destructor_skippable<T>::value) {
+      ABSL_DCHECK_EQ(GetArena(), nullptr);
+    }
+    field_.~T();
+  }
+
+  const T& field() const { return field_; }
+  T& field() { return field_; }
+
+  // Returns the arena that the field is allocated on. This is cheaper than
+  // calling `field().GetArena()`.
+  Arena* GetArena() const { return arena_; }
+
+ private:
+  friend InternalMetadataOffset;
+
+  static constexpr InternalMetadataOffset BuildOffset();
+
+  // A method to statically verify the offset of `field_storage_`. We need to
+  // define this in a member function out of line because `FieldWithArena` needs
+  // to be fully defined to call `offsetof`, but `field_storage_` is private.
+  static constexpr void StaticallyVerifyLayout();
+
+  // Generated code sometimes doesn't have a complete type for `T` (for example,
+  // split repeated message fields). When the constructor of `FieldWithArena` is
+  // invoked, both the constructor and destructor of all members are pulled in.
+  // By placing the field in a union, we manually invoke its destructor and can
+  // prevent it from being pulled in except in the `Destroy()` method.
+  union {
+    T field_;
+  };
+
+  Arena* const arena_;
+};
+
+template <typename T>
+constexpr InternalMetadataOffset FieldWithArena<T>::BuildOffset() {
+  return InternalMetadataOffset::BuildForFieldWithArena<FieldWithArena>();
+}
+
+template <typename Element>
+constexpr void FieldWithArena<Element>::StaticallyVerifyLayout() {
+  static_assert(
+      offsetof(FieldWithArena, field_) == 0,
+      "field_ must be at offset 0 in FieldWithArena. There are multiple places "
+      "throughout the code (e.g. reflection, VerifyHasBitConsistency) which "
+      "assume that you can find the wrapped field by interpreting a pointer as "
+      "the wrapped field type, and aren't aware of this wrapper class. By "
+      "placing `field_` at offset 0 in this struct, this assumption holds.");
+}
+
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google
+
+#include "google/protobuf/port_undef.inc"
+
+#endif  // GOOGLE_PROTOBUF_FIELD_WITH_ARENA_H__

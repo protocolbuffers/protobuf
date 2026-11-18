@@ -1,0 +1,218 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+#include "upb/message/array.h"
+
+#include <stdint.h>
+#include <string.h>
+
+#include "upb/base/descriptor_constants.h"
+#include "upb/base/internal/log2.h"
+#include "upb/mem/arena.h"
+#include "upb/message/internal/array.h"
+#include "upb/message/internal/types.h"
+#include "upb/message/message.h"
+#include "upb/mini_table/message.h"
+#include "upb/port/overflow.h"
+
+// Must be last.
+#include "upb/port/def.inc"
+
+upb_Array* upb_Array_New(upb_Arena* a, upb_CType type) {
+  const int lg2 = UPB_PRIVATE(_upb_CType_SizeLg2)(type);
+  return UPB_PRIVATE(_upb_Array_New)(a, _UPB_ARRAY_DEFAULT_INITIAL_SIZE, lg2);
+}
+
+upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i) {
+  UPB_ASSERT(i < upb_Array_Size(arr));
+  upb_MessageValue ret;
+  const char* data = upb_Array_DataPtr(arr);
+  const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(arr);
+  UPB_PRIVATE(_upb_Array_CopyElem)(&ret, data + (i << lg2), lg2);
+  return ret;
+}
+
+upb_Message* upb_Array_GetMutable(upb_Array* arr, size_t i) {
+  UPB_ASSERT(i < upb_Array_Size(arr));
+  size_t elem_size = sizeof(upb_Message*);
+  UPB_ASSERT(elem_size == (1 << UPB_PRIVATE(_upb_Array_ElemSizeLg2)(arr)));
+  char* data = upb_Array_MutableDataPtr(arr);
+  upb_Message* ret;
+  memcpy(&ret, data + (i * elem_size), elem_size);
+  UPB_ASSERT(!upb_Message_IsFrozen(ret));
+  return ret;
+}
+
+void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val) {
+  UPB_ASSERT(!upb_Array_IsFrozen(arr));
+  UPB_ASSERT(i < upb_Array_Size(arr));
+  char* data = upb_Array_MutableDataPtr(arr);
+  const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(arr);
+  UPB_PRIVATE(_upb_Array_CopyElem)(data + (i << lg2), &val, lg2);
+}
+
+bool upb_Array_Append(upb_Array* arr, upb_MessageValue val, upb_Arena* arena) {
+  UPB_ASSERT(!upb_Array_IsFrozen(arr));
+  UPB_ASSERT(arena);
+  if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
+          arr, arr->UPB_PRIVATE(size) + 1, arena)) {
+    return false;
+  }
+  upb_Array_Set(arr, arr->UPB_PRIVATE(size) - 1, val);
+  return true;
+}
+
+bool upb_Array_Copy(upb_Array* dst, const upb_Array* src, upb_Arena* arena) {
+  UPB_ASSERT(dst);
+  UPB_ASSERT(src);
+  UPB_ASSERT(!upb_Array_IsFrozen(dst));
+  if (dst == src) return true;
+  size_t len = upb_Array_Size(src);
+  if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(dst, len, arena)) {
+    return false;
+  }
+  if (len == 0) return true;
+  const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(dst);
+  const int src_lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(src);
+  UPB_ASSERT(lg2 == src_lg2);
+  char* dst_data = upb_Array_MutableDataPtr(dst);
+  const char* src_data = upb_Array_DataPtr(src);
+  memcpy(dst_data, src_data, len << lg2);
+  return true;
+}
+
+bool upb_Array_AppendAll(upb_Array* dst, const upb_Array* src,
+                         upb_Arena* arena) {
+  UPB_ASSERT(!upb_Array_IsFrozen(dst));
+  UPB_ASSERT(src);
+  size_t src_len = upb_Array_Size(src);
+  if (src_len == 0) return true;
+  size_t dst_len = upb_Array_Size(dst);
+  size_t len;
+  if (UPB_UNLIKELY(upb_AddOverflow(dst_len, src_len, &len))) return false;
+  if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(dst, len, arena)) {
+    return false;
+  }
+  const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(dst);
+  const int src_lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(src);
+  UPB_ASSERT(lg2 == src_lg2);
+  char* dst_data = upb_Array_MutableDataPtr(dst);
+  const char* src_data = upb_Array_DataPtr(src);
+  memcpy(dst_data + (dst_len << lg2), src_data, src_len << lg2);
+  return true;
+}
+
+void upb_Array_Move(upb_Array* arr, size_t dst_idx, size_t src_idx,
+                    size_t count) {
+  UPB_ASSERT(!upb_Array_IsFrozen(arr));
+  const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(arr);
+  char* data = upb_Array_MutableDataPtr(arr);
+  memmove(&data[dst_idx << lg2], &data[src_idx << lg2], count << lg2);
+}
+
+bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
+                      upb_Arena* arena) {
+  UPB_ASSERT(!upb_Array_IsFrozen(arr));
+  UPB_ASSERT(arena);
+  UPB_ASSERT(i <= arr->UPB_PRIVATE(size));
+  size_t new_size;
+  const bool ok = !upb_AddOverflow(arr->UPB_PRIVATE(size), count, &new_size);
+  UPB_ASSERT(ok);
+  if (UPB_UNLIKELY(!ok)) return false;
+  const size_t oldsize = arr->UPB_PRIVATE(size);
+  if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(arr, new_size, arena)) {
+    return false;
+  }
+  upb_Array_Move(arr, i + count, i, oldsize - i);
+  return true;
+}
+
+/*
+ *              i        end      arr->size
+ * |------------|XXXXXXXX|--------|
+ */
+void upb_Array_Delete(upb_Array* arr, size_t i, size_t count) {
+  UPB_ASSERT(!upb_Array_IsFrozen(arr));
+  size_t end;
+  const bool ok = !upb_AddOverflow(i, count, &end);
+  UPB_ASSERT(ok);
+  UPB_ASSERT(end <= arr->UPB_PRIVATE(size));
+  upb_Array_Move(arr, i, end, arr->UPB_PRIVATE(size) - end);
+  arr->UPB_PRIVATE(size) -= count;
+}
+
+bool upb_Array_Resize(upb_Array* arr, size_t size, upb_Arena* arena) {
+  UPB_ASSERT(!upb_Array_IsFrozen(arr));
+  const size_t oldsize = arr->UPB_PRIVATE(size);
+  if (UPB_UNLIKELY(
+          !UPB_PRIVATE(_upb_Array_ResizeUninitialized)(arr, size, arena))) {
+    return false;
+  }
+  const size_t newsize = arr->UPB_PRIVATE(size);
+  if (newsize > oldsize) {
+    const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(arr);
+    char* data = upb_Array_MutableDataPtr(arr);
+    memset(data + (oldsize << lg2), 0, (newsize - oldsize) << lg2);
+  }
+  return true;
+}
+
+bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_capacity,
+                                     upb_Arena* arena) {
+  size_t target_capacity = UPB_MAX(min_capacity, 4);
+  size_t new_capacity = upb_RoundUpToPowerOfTwo(target_capacity);
+  if (new_capacity == SIZE_MAX) return false;
+
+  const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(array);
+  size_t old_bytes = array->UPB_PRIVATE(capacity) << lg2;
+  void* ptr = upb_Array_MutableDataPtr(array);
+  UPB_ASSERT(ptr);
+
+  size_t new_bytes = new_capacity;
+  if (upb_ShlOverflow(&new_bytes, lg2)) {
+    return false;
+  }
+  if (upb_Arena_TryExtend(arena, ptr, old_bytes, new_bytes)) {
+    array->UPB_PRIVATE(capacity) = new_capacity;
+  } else {
+    size_t pool_bytes =
+        UPB_MAX(new_bytes, UPB_PRIVATE(kUpb_Arena_MinPoolBlockSize));
+
+    void* new_ptr = upb_Arena_AllocPool(arena, pool_bytes);
+    if (!new_ptr) return false;
+
+    if (old_bytes > 0) {
+      memcpy(new_ptr, ptr, old_bytes);
+    }
+
+    const size_t array_size =
+        UPB_ALIGN_UP(sizeof(struct upb_Array), UPB_MALLOC_ALIGN);
+    bool is_contiguous = (ptr == UPB_PTR_AT(array, array_size, void));
+    if (!is_contiguous) {
+      UPB_PRIVATE(_upb_Arena_Harvest)(arena, ptr, old_bytes);
+    }
+
+    ptr = new_ptr;
+    UPB_PRIVATE(_upb_Array_SetTaggedPtr)(array, ptr, lg2);
+    array->UPB_PRIVATE(capacity) = pool_bytes >> lg2;
+  }
+  return true;
+}
+
+void upb_Array_Freeze(upb_Array* arr, const upb_MiniTable* m) {
+  if (upb_Array_IsFrozen(arr)) return;
+  UPB_PRIVATE(_upb_Array_ShallowFreeze)(arr);
+
+  if (m) {
+    const size_t size = upb_Array_Size(arr);
+
+    for (size_t i = 0; i < size; i++) {
+      upb_MessageValue val = upb_Array_Get(arr, i);
+      upb_Message_Freeze((upb_Message*)val.msg_val, m);
+    }
+  }
+}

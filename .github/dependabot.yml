@@ -1,0 +1,8 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions" # Necessary to update action hashs
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # Don't allow non-security PRs to be opened.
+    open-pull-requests-limit: 0

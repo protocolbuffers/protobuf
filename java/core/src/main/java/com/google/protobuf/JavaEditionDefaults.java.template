@@ -1,0 +1,10 @@
+// This file contains the serialized FeatureSetDefaults object corresponding to
+// the Java runtime.  This is used for feature resolution under Editions.
+
+package com.google.protobuf;
+
+public final class JavaEditionDefaults {
+  public static final String PROTOBUF_INTERNAL_JAVA_EDITION_DEFAULTS = "DEFAULTS_VALUE";
+
+  private JavaEditionDefaults() {}
+}

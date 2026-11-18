@@ -1,0 +1,28 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Author: jasonh@google.com (Jason Hsueh)
+//
+// This file is used to test a corner case in the CPP implementation where the
+// generated C++ type is available for the extendee, but the extension is
+// defined in a file whose C++ type is not in the binary.
+
+syntax = "proto2";
+
+package google.protobuf.internal;
+
+import "google/protobuf/internal/more_extensions.proto";
+
+message DynamicMessageType {
+  optional int32 a = 1;
+}
+
+extend ExtendedMessage {
+  optional int32 dynamic_int32_extension = 100;
+  optional DynamicMessageType dynamic_message_extension = 101;
+  repeated DynamicMessageType repeated_dynamic_message_extension = 102;
+}

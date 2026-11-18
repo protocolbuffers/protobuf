@@ -1,0 +1,127 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// IWYU pragma: private, include "upb/reflection/def.h"
+
+#ifndef UPB_REFLECTION_DEF_POOL_H_
+#define UPB_REFLECTION_DEF_POOL_H_
+
+#include <stddef.h>
+#include <stdint.h>
+
+#include "upb/base/status.h"
+#include "upb/mini_table/extension.h"
+#include "upb/mini_table/extension_registry.h"
+#include "upb/reflection/common.h"
+
+// Must be last.
+#include "upb/port/def.inc"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_API void upb_DefPool_Free(upb_DefPool* s);
+
+UPB_NODISCARD UPB_API upb_DefPool* upb_DefPool_New(void);
+
+UPB_API const google_protobuf_FeatureSetDefaults* upb_DefPool_FeatureSetDefaults(
+    const upb_DefPool* s);
+
+UPB_NODISCARD UPB_API bool upb_DefPool_SetFeatureSetDefaults(
+    upb_DefPool* s, const char* serialized_defaults, size_t serialized_len,
+    upb_Status* status);
+
+UPB_API const upb_MessageDef* upb_DefPool_FindMessageByName(
+    const upb_DefPool* s, const char* sym);
+
+const upb_MessageDef* upb_DefPool_FindMessageByNameWithSize(
+    const upb_DefPool* s, const char* sym, size_t len);
+
+UPB_API const upb_EnumDef* upb_DefPool_FindEnumByName(const upb_DefPool* s,
+                                                      const char* sym);
+
+UPB_API const upb_EnumDef* upb_DefPool_FindEnumByNameWithSize(
+    const upb_DefPool* s, const char* sym, size_t len);
+
+UPB_API const upb_EnumValueDef* upb_DefPool_FindEnumValueByName(
+    const upb_DefPool* s, const char* sym);
+
+UPB_API const upb_EnumValueDef* upb_DefPool_FindEnumValueByNameWithSize(
+    const upb_DefPool* s, const char* sym, size_t len);
+
+UPB_API const upb_FileDef* upb_DefPool_FindFileByName(const upb_DefPool* s,
+                                                      const char* name);
+
+const upb_FileDef* upb_DefPool_FindFileByNameWithSize(const upb_DefPool* s,
+                                                      const char* name,
+                                                      size_t len);
+
+const upb_FieldDef* upb_DefPool_FindExtensionByMiniTable(
+    const upb_DefPool* s, const upb_MiniTableExtension* ext);
+
+UPB_API const upb_FieldDef* upb_DefPool_FindExtensionByName(
+    const upb_DefPool* s, const char* sym);
+
+const upb_FieldDef* upb_DefPool_FindExtensionByNameWithSize(
+    const upb_DefPool* s, const char* name, size_t size);
+
+const upb_FieldDef* upb_DefPool_FindExtensionByNumber(const upb_DefPool* s,
+                                                      const upb_MessageDef* m,
+                                                      int32_t fieldnum);
+
+UPB_API const upb_ServiceDef* upb_DefPool_FindServiceByName(
+    const upb_DefPool* s, const char* name);
+
+const upb_ServiceDef* upb_DefPool_FindServiceByNameWithSize(
+    const upb_DefPool* s, const char* name, size_t size);
+
+const upb_FileDef* upb_DefPool_FindFileContainingSymbol(const upb_DefPool* s,
+                                                        const char* name);
+
+UPB_NODISCARD UPB_API const upb_FileDef* upb_DefPool_AddFile(
+    upb_DefPool* s, const google_protobuf_FileDescriptorProto* file_proto,
+    upb_Status* status);
+
+UPB_API const upb_ExtensionRegistry* upb_DefPool_ExtensionRegistry(
+    const upb_DefPool* s);
+
+const upb_FieldDef** upb_DefPool_GetAllExtensions(const upb_DefPool* s,
+                                                  const upb_MessageDef* m,
+                                                  size_t* count);
+
+// If called, closed enums will be treated as open enums. This is non-standard
+// behavior and will cause conformance tests to fail, but it is more useful
+// behavior overall and can be used in situations where where the
+// non-conformance is acceptable.
+//
+// This function may only be called immediately after upb_DefPool_New().
+// It is an error to call it on an existing def pool or after defs have
+// already been added to the pool.
+//
+// Note: we still require that implicit presence fields have zero as their
+// default value.
+UPB_API void upb_DefPool_DisableClosedEnumChecking(upb_DefPool* s);
+bool upb_DefPool_ClosedEnumCheckingDisabled(const upb_DefPool* s);
+
+// If called, implicit field presence will be disabled.
+// This is non-standard behavior and will cause conformance tests to fail, but
+// it can be used in situations where where the non-conformance is acceptable.
+//
+// This function may only be called immediately after upb_DefPool_New().
+// It is an error to call it on an existing def pool or after defs have
+// already been added to the pool.
+UPB_API void upb_DefPool_DisableImplicitFieldPresence(upb_DefPool* s);
+bool upb_DefPool_ImplicitFieldPresenceDisabled(const upb_DefPool* s);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#include "upb/port/undef.inc"
+
+#endif /* UPB_REFLECTION_DEF_POOL_H_ */

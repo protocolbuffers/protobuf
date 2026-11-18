@@ -1,0 +1,27 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto3";
+
+option php_class_prefix = "Prefix";
+
+message TestPrefix {
+  int32 a = 1;
+  NestedMessage nested_message = 2;
+  NestedEnum nested_enum = 3;
+  message NestedMessage {
+    int32 a = 1;
+  }
+  enum NestedEnum {
+      ZERO = 0;
+  };
+}
+
+// Test prefix for reserved words.
+message Empty {
+  int32 a = 1;
+}

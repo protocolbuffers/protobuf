@@ -1,0 +1,41 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2007 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Author: kenton@google.com (Kenton Varda)
+//
+// DEPRECATED: DO NOT USE FOR NEW FIELDS.
+syntax = "proto2";
+
+package google.protobuf.bridge;
+
+option java_outer_classname = "MessageSetProtos";
+option java_multiple_files = true;
+option objc_class_prefix = "GPB";
+
+// This is proto2's version of MessageSet.
+//
+// DEPRECATED: DO NOT USE FOR NEW FIELDS.
+//
+// If you are using editions or proto2, please make your own extendable messages
+// for your use case.
+// If you are using proto3, please use `Any` instead.
+//
+// MessageSet was the implementation of extensions for proto1.
+// When proto2 was introduced, extensions were implemented as a first-class
+// feature.
+// This schema for MessageSet was meant to be a "bridge" solution to migrate
+// MessageSet-bearing messages from proto1 to google.protobuf.
+//
+// This schema has been open-sourced only to facilitate the migration of
+// Google products with MessageSet-bearing messages to open-source environments.
+message MessageSet {
+  option deprecated = true;
+  option message_set_wire_format = true;
+
+  extensions 4 to max
+  [verification = UNVERIFIED];
+}

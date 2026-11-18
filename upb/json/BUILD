@@ -1,0 +1,155 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# TODO: describe this package.
+
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//bazel:proto_library.bzl", "proto_library")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_FEATURES")
+load(
+    "//upb/bazel:upb_proto_library.bzl",
+    "upb_c_proto_library",
+    "upb_proto_reflection_library",
+)
+
+package(default_applicable_licenses = ["//:license"])
+
+cc_library(
+    name = "json",
+    srcs = [
+        "decode.c",
+        "encode.c",
+    ],
+    hdrs = [
+        "decode.h",
+        "encode.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//third_party/utf8_range",
+        "//upb/base",
+        "//upb/lex",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/mini_table",
+        "//upb/port",
+        "//upb/reflection",
+        "//upb/wire",
+    ],
+)
+
+cc_test(
+    name = "decode_test",
+    srcs = ["decode_test.cc"],
+    deps = [
+        ":json",
+        ":json_enumval_custom_string_upb_proto",
+        ":json_enumval_custom_string_upb_reflection_proto",
+        ":test_upb_proto",
+        ":test_upb_proto_reflection",
+        "//:any_upb_proto",
+        "//:field_mask_upb_proto",
+        "//:struct_upb_proto",
+        "//:timestamp_upb_proto",
+        "//:timestamp_upb_reflection_proto",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/reflection",
+        "//upb/reflection:internal_cc",
+        "//upb/reflection:reflection_cc",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "encode_test",
+    srcs = ["encode_test.cc"],
+    deps = [
+        ":json",
+        ":json_enumval_custom_string_upb_proto",
+        ":json_enumval_custom_string_upb_reflection_proto",
+        ":test_upb_proto",
+        ":test_upb_proto_reflection",
+        "//:any_upb_proto",
+        "//:field_mask_upb_proto",
+        "//:struct_upb_proto",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/reflection",
+        "//upb/reflection:internal_cc",
+        "//upb/reflection:reflection_cc",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+proto_library(
+    name = "test_proto",
+    testonly = 1,
+    srcs = ["test.proto"],
+    deps = [
+        "//:any_proto",
+        "//:field_mask_proto",
+        "//:struct_proto",
+    ],
+)
+
+upb_c_proto_library(
+    name = "test_upb_proto",
+    testonly = 1,
+    deps = [":test_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "test_upb_proto_reflection",
+    testonly = 1,
+    deps = [":test_proto"],
+)
+
+upb_c_proto_library(
+    name = "json_enumval_custom_string_upb_proto",
+    testonly = 1,
+    deps = ["//src/google/protobuf/json:json_enumval_custom_string_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "json_enumval_custom_string_upb_reflection_proto",
+    testonly = 1,
+    deps = ["//src/google/protobuf/json:json_enumval_custom_string_proto"],
+)
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob(
+        [
+            "**/*test.cc",
+        ],
+        exclude = ["fuzz_test.cc"],
+    ),
+    visibility = ["//upb:__pkg__"],
+)
+
+filegroup(
+    name = "test_protos",
+    testonly = 1,
+    srcs = glob(
+        [
+            "**/*test.proto",
+        ],
+    ) + [
+        "//src/google/protobuf:json_enumvalue_options.proto",
+        "//src/google/protobuf:json_options.proto",
+        "//src/google/protobuf/json:json_enumval_custom_string_proto_srcs",
+    ],
+    visibility = ["//upb:__pkg__"],
+)

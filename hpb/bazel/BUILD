@@ -1,0 +1,25 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2009 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
+package(default_applicable_licenses = ["//:license"])
+
+licenses(["notice"])
+
+bzl_library(
+    name = "hpb_proto_library_bzl",
+    srcs = ["hpb_proto_library.bzl"],
+    visibility = ["//hpb:hpb_users"],
+    deps = [
+        "//bazel/common:proto_common_bzl",
+        "//hpb:hpb_users_bzl",
+        "//upb/bazel:upb_proto_library_bzl",
+        "@bazel_skylib//lib:paths",
+        "@bazel_tools//tools/cpp:toolchain_utils.bzl",
+    ],
+)

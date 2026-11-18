@@ -1,0 +1,62 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// This file contains messages that extend MessageSet.
+
+syntax = "proto2";
+
+package google.protobuf.internal;
+
+// A message with message_set_wire_format.
+message TestMessageSet {
+  option message_set_wire_format = true;
+
+  extensions 4 to 529999999;
+
+  extensions 530000000 to max
+  [declaration = {
+    number: 2147483646,
+    full_name: ".google.protobuf.internal.max_number_extension",
+    type: ".google.protobuf.internal.TestExtension"
+  }];
+}
+
+message TestMessageSetExtension1 {
+  extend TestMessageSet {
+    optional TestExtension first_extension = 2534113;
+  }
+  extend TestMessageSet {
+    optional TestMessageSetExtension1 message_set_extension = 98418603;
+  }
+  optional int32 i = 15;
+  optional TestMessageSet sub_msg = 16;
+}
+
+message TestMessageSetExtension2 {
+  extend TestMessageSet {
+    optional TestMessageSetExtension2 message_set_extension = 98418634;
+  }
+  optional string str = 25;
+}
+
+message TestMessageSetExtension3 {
+  optional string text = 35;
+}
+
+message TestExtension {
+  optional string str = 1;
+}
+
+extend TestMessageSet {
+  optional TestMessageSetExtension3 message_set_extension3 = 98418655;
+}
+
+// MessageSet extension numbers can be larger than the normal maximum field
+// number (2^29 - 1): this is the largest one that `extensions 4 to max` allows.
+extend TestMessageSet {
+  optional TestExtension max_number_extension = 2147483646;
+}

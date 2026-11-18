@@ -1,0 +1,28 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package main;
+
+import "rust/test/imported_types.proto";
+
+message MsgWithFieldsWithImportedTypes {
+  optional imported_types.ImportedMessage imported_message_field = 1;
+  optional imported_types.ImportedEnum imported_enum_field = 2;
+
+  oneof imported_types_oneof {
+    imported_types.ImportedMessage imported_message_oneof = 3;
+    imported_types.ImportedEnum imported_enum_oneof = 4;
+  }
+}
+
+// This will produce a module called imported_types_proto. Let's verify that we
+// can do this without conflicting with the crate of the same name.
+message ImportedTypesProto {
+  message Nested {}
+}

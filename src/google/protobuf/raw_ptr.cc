@@ -1,0 +1,32 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+#include "google/protobuf/raw_ptr.h"
+
+#include <algorithm>
+
+#include "absl/base/optimization.h"
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
+namespace google {
+namespace protobuf {
+namespace internal {
+
+alignas(ABSL_CACHELINE_SIZE)
+#if defined(__cpp_constinit) && __cpp_constinit >= 201907L
+    constinit
+#endif
+    PROTOBUF_EXPORT const
+    char kZeroBuffer[std::max(ABSL_CACHELINE_SIZE, 64)] = {};
+
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google
+
+#include "google/protobuf/port_undef.inc"

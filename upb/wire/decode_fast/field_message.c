@@ -1,0 +1,108 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2025 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+#include <stddef.h>
+#include <stdint.h>
+
+#include "upb/message/internal/message.h"
+#include "upb/message/message.h"
+#include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/sub.h"
+#include "upb/mini_table/message.h"
+#include "upb/wire/decode.h"
+#include "upb/wire/decode_fast/cardinality.h"
+#include "upb/wire/decode_fast/combinations.h"
+#include "upb/wire/decode_fast/data.h"
+#include "upb/wire/decode_fast/dispatch.h"
+#include "upb/wire/decode_fast/field_parsers.h"
+#include "upb/wire/internal/decoder.h"
+
+// Must be last.
+#include "upb/port/def.inc"
+
+UPB_FORCEINLINE
+bool upb_DecodeFast_SingleMessage(upb_Decoder* d, const char** ptr, void* dst,
+                                  upb_DecodeFast_Type type,
+                                  upb_DecodeFastNext* next, void* ctx) {
+  upb_DecodeFast_MessageContext* c = ctx;
+  void** submsg_dst = dst;
+
+  if (c->is_repeated || UPB_LIKELY(*submsg_dst == NULL)) {
+    c->msg = *submsg_dst = _upb_Message_New(c->table, &d->arena);
+    if (c->msg == NULL) {
+      _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
+    }
+  } else {
+    c->msg = *submsg_dst;  // Reusing non-repeated message.
+  }
+
+  return upb_DecodeFast_Delimited(d, ptr, &upb_DecodeFast_MessageData, next, c);
+}
+
+UPB_FORCEINLINE
+void upb_DecodeFast_Message(upb_Decoder* d, const char** ptr, upb_Message* msg,
+                            const upb_MiniTable* table, uint64_t* hasbits,
+                            uint64_t* data, upb_DecodeFastNext* ret,
+                            upb_DecodeFast_Type type,
+                            upb_DecodeFast_Cardinality card,
+                            upb_DecodeFast_TagSize tagsize, uint64_t data2) {
+  uint32_t submsg_ofs = upb_DecodeFastData_GetSubofs(*data) * 8;
+
+  const upb_MiniTableSubInternal* sub = UPB_PTR_AT(
+      table->UPB_ONLYBITS(fields), submsg_ofs, upb_MiniTableSubInternal);
+  const upb_MiniTable* subtablep = sub->UPB_PRIVATE(submsg);
+
+  uint16_t expected = upb_DecodeFastData_GetExpectedTag(*data);
+  uint16_t actual = upb_DecodeFastData2_GetOriginalTag(data2);
+  if (UPB_UNLIKELY(!upb_DecodeFast_TagMatches(expected, actual, tagsize))) {
+    UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackMismatchedSlot, ret);
+    return;
+  }
+
+  upb_DecodeFast_MessageContext ctx = {subtablep,
+                                       card == kUpb_DecodeFast_Repeated};
+
+  if (subtablep == NULL) {
+    // Unlinked messages are treated as unknown fields.
+#ifndef NDEBUG
+    uint16_t case_offset = upb_DecodeFastData_GetCaseOffset(*data);
+    if (case_offset != 0) {
+      uint8_t field_number = upb_DecodeFastData_GetPresence(*data);
+      const upb_MiniTableField* field =
+          upb_MiniTable_FindFieldByNumber(table, field_number);
+      UPB_ASSERT(field);
+      _upb_Decoder_VerifyOneofUnlinked(table, field);
+    }
+#endif
+    UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_DecodeUnknown, ret);
+    return;
+  }
+
+  if (--d->depth < 0) {
+    _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_MaxDepthExceeded);
+  }
+
+  upb_DecodeFast_Unpacked(d, ptr, msg, data, hasbits, ret, type, card, tagsize,
+                          &upb_DecodeFast_SingleMessage, &ctx, data2);
+
+  d->depth++;
+}
+
+#define F(type, card, tagsize)                                             \
+  upb_FastDecoder_Return UPB_PRESERVE_NONE UPB_DECODEFAST_FUNCNAME(        \
+      type, card, tagsize)(UPB_PARSE_PARAMS) {                             \
+    upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;                \
+    upb_DecodeFast_Message(d, &ptr, msg, table, &hasbits, &data, &next,    \
+                           kUpb_DecodeFast_##type, kUpb_DecodeFast_##card, \
+                           kUpb_DecodeFast_##tagsize, data2);              \
+    UPB_DECODEFAST_NEXT(next);                                             \
+  }
+
+UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Message)
+
+#undef F
+#undef FASTDECODE_SUBMSG

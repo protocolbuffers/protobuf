@@ -1,0 +1,562 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+#include "upb/mini_descriptor/internal/encode.hpp"
+
+#include <stddef.h>
+#include <stdint.h>
+
+#include <string_view>
+#include <utility>
+#include <vector>
+
+#include <gtest/gtest.h>
+#include "absl/container/flat_hash_set.h"
+#include "google/protobuf/descriptor.h"
+#include "upb/base/descriptor_constants.h"
+#include "upb/base/status.hpp"
+#include "upb/mem/arena.hpp"
+#include "upb/mini_descriptor/decode.h"
+#include "upb/mini_descriptor/internal/base92.h"
+#include "upb/mini_descriptor/internal/modifiers.h"
+#include "upb/mini_descriptor/link.h"
+#include "upb/mini_table/enum.h"
+#include "upb/mini_table/extension.h"
+#include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/extension.h"
+#include "upb/mini_table/internal/field.h"
+#include "upb/mini_table/internal/message.h"
+#include "upb/mini_table/message.h"
+#include "upb/mini_table/sub.h"
+
+// Must be last.
+#include "upb/port/def.inc"
+
+namespace protobuf = ::google::protobuf;
+
+class MiniTableTest : public testing::TestWithParam<upb_MiniTablePlatform> {};
+
+TEST_P(MiniTableTest, Empty) {
+  upb::Arena arena;
+  upb::Status status;
+  upb_MiniTable* table =
+      _upb_MiniTable_Build(nullptr, 0, GetParam(), arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, table);
+  EXPECT_EQ(0, upb_MiniTable_FieldCount(table));
+  EXPECT_EQ(0, table->UPB_PRIVATE(required_count));
+}
+
+TEST_P(MiniTableTest, AllScalarTypes) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  uint32_t count = 0;
+  for (int i = kUpb_FieldType_Double; i < kUpb_FieldType_SInt64; i++) {
+    ASSERT_TRUE(e.PutField(static_cast<upb_FieldType>(i), i, 0));
+    count++;
+  }
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, table);
+  EXPECT_EQ(count, table->UPB_PRIVATE(field_count));
+  absl::flat_hash_set<size_t> offsets;
+  for (int i = 0; i < 16; i++) {
+    const upb_MiniTableField* f = &table->UPB_PRIVATE(fields)[i];
+    EXPECT_EQ(i + 1u, upb_MiniTableField_Number(f));
+    EXPECT_TRUE(upb_MiniTableField_IsScalar(f));
+    EXPECT_TRUE(offsets.insert(f->UPB_PRIVATE(offset)).second);
+    EXPECT_TRUE(f->UPB_PRIVATE(offset) < table->UPB_PRIVATE(size));
+  }
+  EXPECT_EQ(0, table->UPB_PRIVATE(required_count));
+}
+
+TEST_P(MiniTableTest, AllRepeatedTypes) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  uint32_t count = 0;
+  for (int i = kUpb_FieldType_Double; i < kUpb_FieldType_SInt64; i++) {
+    ASSERT_TRUE(e.PutField(static_cast<upb_FieldType>(i), i,
+                           kUpb_FieldModifier_IsRepeated));
+    count++;
+  }
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, table);
+  EXPECT_EQ(count, table->UPB_PRIVATE(field_count));
+  absl::flat_hash_set<size_t> offsets;
+  for (int i = 0; i < 16; i++) {
+    const upb_MiniTableField* f = &table->UPB_PRIVATE(fields)[i];
+    EXPECT_EQ(i + 1u, upb_MiniTableField_Number(f));
+    EXPECT_TRUE(upb_MiniTableField_IsArray(f));
+    EXPECT_TRUE(offsets.insert(f->UPB_PRIVATE(offset)).second);
+    EXPECT_TRUE(f->UPB_PRIVATE(offset) < table->UPB_PRIVATE(size));
+  }
+  EXPECT_EQ(0, table->UPB_PRIVATE(required_count));
+}
+
+TEST_P(MiniTableTest, Skips) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  uint32_t count = 0;
+  std::vector<uint32_t> field_numbers;
+  for (int i = 0; i < 25; i++) {
+    uint32_t field_number = 1u << i;
+    field_numbers.push_back(field_number);
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Float, field_number, 0));
+    count++;
+  }
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, table);
+  EXPECT_EQ(count, table->UPB_PRIVATE(field_count));
+  absl::flat_hash_set<size_t> offsets;
+  for (size_t i = 0; i < field_numbers.size(); i++) {
+    const upb_MiniTableField* f = &table->UPB_PRIVATE(fields)[i];
+    EXPECT_EQ(field_numbers[i], upb_MiniTableField_Number(f));
+    EXPECT_EQ(kUpb_FieldType_Float, upb_MiniTableField_Type(f));
+    EXPECT_TRUE(upb_MiniTableField_IsScalar(f));
+    EXPECT_TRUE(offsets.insert(f->UPB_PRIVATE(offset)).second);
+    EXPECT_TRUE(f->UPB_PRIVATE(offset) < table->UPB_PRIVATE(size));
+  }
+  EXPECT_EQ(0, table->UPB_PRIVATE(required_count));
+}
+
+TEST_P(MiniTableTest, AllScalarTypesOneof) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  uint32_t count = 0;
+  for (int i = kUpb_FieldType_Double; i < kUpb_FieldType_SInt64; i++) {
+    ASSERT_TRUE(e.PutField(static_cast<upb_FieldType>(i), i, 0));
+    count++;
+  }
+  ASSERT_TRUE(e.StartOneof());
+  for (int i = kUpb_FieldType_Double; i < kUpb_FieldType_SInt64; i++) {
+    ASSERT_TRUE(e.PutOneofField(i));
+  }
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, table) << status.error_message();
+  EXPECT_EQ(count, table->UPB_PRIVATE(field_count));
+  absl::flat_hash_set<size_t> offsets;
+  for (int i = 0; i < 16; i++) {
+    const upb_MiniTableField* f = &table->UPB_PRIVATE(fields)[i];
+    EXPECT_EQ(i + 1u, upb_MiniTableField_Number(f));
+    EXPECT_TRUE(upb_MiniTableField_IsScalar(f));
+    // For a oneof all fields have the same offset.
+    EXPECT_EQ(table->UPB_PRIVATE(fields)[0].UPB_PRIVATE(offset),
+              f->UPB_PRIVATE(offset));
+    // All presence fields should point to the same oneof case offset.
+    size_t case_ofs = UPB_PRIVATE(_upb_MiniTableField_OneofOffset)(f);
+    EXPECT_EQ(table->UPB_PRIVATE(fields)[0].presence, f->presence);
+    EXPECT_TRUE(f->UPB_PRIVATE(offset) < table->UPB_PRIVATE(size));
+    EXPECT_TRUE(case_ofs < table->UPB_PRIVATE(size));
+    EXPECT_TRUE(case_ofs != f->UPB_PRIVATE(offset));
+  }
+  EXPECT_EQ(0, table->UPB_PRIVATE(required_count));
+}
+
+// All fields share oneof storage so the field index boundary is independent
+// of the message size and presence bit limits.
+TEST_P(MiniTableTest, OneofFieldIndexLargestAccepted) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  constexpr uint32_t kFieldCount = UINT16_MAX - 3;
+  for (uint32_t i = 1; i <= kFieldCount; ++i) {
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Bool, i, 0));
+  }
+  ASSERT_TRUE(e.StartOneof());
+  for (uint32_t i = 1; i <= kFieldCount; ++i) {
+    ASSERT_TRUE(e.PutOneofField(i));
+  }
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, table) << status.error_message();
+  EXPECT_TRUE(status.ok());
+  EXPECT_EQ(static_cast<int>(kFieldCount), upb_MiniTable_FieldCount(table));
+  const upb_MiniTableField* first = upb_MiniTable_GetFieldByIndex(table, 0);
+  const upb_MiniTableField* last =
+      upb_MiniTable_GetFieldByIndex(table, kFieldCount - 1);
+  EXPECT_TRUE(upb_MiniTableField_IsInOneof(first));
+  EXPECT_TRUE(upb_MiniTableField_IsInOneof(last));
+  EXPECT_EQ(first->UPB_PRIVATE(offset), last->UPB_PRIVATE(offset));
+  EXPECT_EQ(first->presence, last->presence);
+}
+
+TEST_P(MiniTableTest, OneofFieldIndexOutOfRange) {
+  // A field index plus kOneofBase must remain below the uint16_t sentinel.
+  for (uint32_t field_count = UINT16_MAX - 2; field_count <= UINT16_MAX;
+       ++field_count) {
+    upb::Arena arena;
+    upb::MtDataEncoder e;
+    ASSERT_TRUE(e.StartMessage(0));
+    for (uint32_t i = 1; i <= field_count; ++i) {
+      ASSERT_TRUE(e.PutField(kUpb_FieldType_Bool, i, 0));
+    }
+    ASSERT_TRUE(e.StartOneof());
+    // Put this case's final index first to exercise each rejected value.
+    ASSERT_TRUE(e.PutOneofField(field_count));
+    for (uint32_t i = 1; i < field_count; ++i) {
+      ASSERT_TRUE(e.PutOneofField(i));
+    }
+    upb::Status status;
+    upb_MiniTable* table =
+        _upb_MiniTable_Build(e.data().data(), e.data().size(), GetParam(),
+                             arena.ptr(), status.ptr());
+    EXPECT_EQ(nullptr, table);
+    EXPECT_FALSE(status.ok());
+    EXPECT_NE(std::string_view::npos,
+              std::string_view(status.error_message())
+                  .find("Too many fields for oneof layout"));
+  }
+}
+
+TEST_P(MiniTableTest, FieldCountOverflow) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  for (uint32_t i = 1; i <= UINT16_MAX + 1; i++) {
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Bool, i, 0));
+  }
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  EXPECT_EQ(nullptr, table);
+}
+
+TEST_P(MiniTableTest, RepresentationSlotCountOverflow) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  // Keep the oneof members at low indices and use no-presence fields for
+  // the remaining entries, so this tests representation slot accounting.
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Int32, 1, 0));
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Int32, 2, 0));
+  for (uint32_t i = 3; i <= UINT16_MAX; ++i) {
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Int32, i,
+                          kUpb_FieldModifier_IsProto3Singular));
+  }
+  ASSERT_TRUE(e.StartOneof());
+  ASSERT_TRUE(e.PutOneofField(1));
+  ASSERT_TRUE(e.StartOneof());
+  ASSERT_TRUE(e.PutOneofField(2));
+  // Each oneof needs a data slot and a case slot: 65533 + 2 * 2 = 65537.
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  EXPECT_EQ(nullptr, table);
+  EXPECT_FALSE(status.ok());
+  EXPECT_NE(std::string_view(status.error_message()).find(
+                "Message size exceeded maximum size"),
+            std::string_view::npos);
+}
+
+TEST_P(MiniTableTest, SizeOverflow) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  // upb can only handle messages up to UINT16_MAX.
+  size_t max_double_fields = UINT16_MAX / (sizeof(double) + 1);
+
+  // A bit under max_double_fields is ok.
+  ASSERT_TRUE(e.StartMessage(0));
+  for (size_t i = 1; i < max_double_fields; i++) {
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Double, i, 0));
+  }
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, table) << status.error_message();
+
+  // A bit over max_double_fields fails.
+  ASSERT_TRUE(e.StartMessage(0));
+  for (size_t i = 1; i < max_double_fields + 2; i++) {
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Double, i, 0));
+  }
+  upb_MiniTable* table2 = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  ASSERT_EQ(nullptr, table2) << status.error_message();
+}
+
+TEST_P(MiniTableTest, PresenceOverflow) {
+  // Each hasbit field consumes one int16_t presence index. A message with more
+  // presence fields than fit in that index must be rejected instead of
+  // truncating the index, which would alias a scalar field onto a oneof.
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  // Far more presence fields than the int16_t index holds, but few enough bytes
+  // to stay under the message size limit.
+  for (uint32_t i = 1; i <= 40000; i++) {
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Bool, i, 0));
+  }
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  EXPECT_EQ(nullptr, table);
+}
+
+TEST_P(MiniTableTest, OneofCaseOverflow) {
+  // The oneof case offset is stored negated in the int16_t presence field, so a
+  // oneof whose case is placed beyond the positive int16_t range must be
+  // rejected instead of aliasing the oneof onto a hasbit field.
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  uint32_t field_num = 0;
+  // No-presence single-byte fields push the oneof case offset past INT16_MAX
+  // while keeping the message under the size limit.
+  for (uint32_t i = 0; i < 40000; i++) {
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Bool, ++field_num,
+                           kUpb_FieldModifier_IsProto3Singular));
+  }
+  uint32_t oneof_field = ++field_num;
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Bool, oneof_field, 0));
+  ASSERT_TRUE(e.StartOneof());
+  ASSERT_TRUE(e.PutOneofField(oneof_field));
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  EXPECT_EQ(nullptr, table);
+}
+
+TEST_P(MiniTableTest, SubmsgOffsetSentinelOverflow) {
+  // Construct a message where the first submessage field's u32_ofs lands
+  // exactly on UINT16_MAX (kUpb_NoSub = 65535):
+  // - 32-bit (ptr_size = 4): 21845 fields with submessage at index 0 ->
+  //   field_bytes = 21845 * 12 = 262140, u32_ofs = 262140 / 4 = 65535.
+  // - 64-bit (ptr_size = 8): 21846 fields with submessage at index 1 ->
+  //   field_bytes = 21846 * 12 = 262152, ofs = 262152 - 12 = 262140,
+  //   u32_ofs = 262140 / 4 = 65535.
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  const bool is_64bit = GetParam() == kUpb_MiniTablePlatform_64Bit;
+  const uint32_t total_fields = is_64bit ? 21846 : 21845;
+  const uint32_t submsg_index = is_64bit ? 1 : 0;
+  for (uint32_t i = 0; i < total_fields; i++) {
+    if (i == submsg_index) {
+      ASSERT_TRUE(e.PutField(kUpb_FieldType_Message, i + 1, 0));
+    } else {
+      ASSERT_TRUE(e.PutField(kUpb_FieldType_Bool, i + 1,
+                             kUpb_FieldModifier_IsProto3Singular));
+    }
+  }
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  EXPECT_EQ(nullptr, table);
+}
+
+INSTANTIATE_TEST_SUITE_P(Platforms, MiniTableTest,
+                         testing::Values(kUpb_MiniTablePlatform_32Bit,
+                                         kUpb_MiniTablePlatform_64Bit));
+
+TEST(MiniTablePlatformIndependentTest, Base92Roundtrip) {
+  for (char i = 0; i < 92; i++) {
+    EXPECT_EQ(i, _upb_FromBase92(_upb_ToBase92(i)));
+  }
+}
+
+TEST(MiniTablePlatformIndependentTest, IsTypePackable) {
+  for (int i = 1; i <= protobuf::FieldDescriptor::MAX_TYPE; i++) {
+    EXPECT_EQ(upb_FieldType_IsPackable(static_cast<upb_FieldType>(i)),
+              protobuf::FieldDescriptor::IsTypePackable(
+                  static_cast<protobuf::FieldDescriptor::Type>(i)));
+  }
+}
+
+TEST(MiniTableEnumTest, Enum) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+
+  ASSERT_TRUE(e.StartEnum());
+  absl::flat_hash_set<int32_t> values;
+  for (int i = 0; i < 256; i++) {
+    values.insert(i * 2);
+    e.PutEnumValue(i * 2);
+  }
+  e.EndEnum();
+
+  upb::Status status;
+  upb_MiniTableEnum* table = upb_MiniTableEnum_Build(
+      e.data().data(), e.data().size(), arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, table) << status.error_message();
+
+  for (int i = 0; i < UINT16_MAX; i++) {
+    EXPECT_EQ(values.contains(i), upb_MiniTableEnum_CheckValue(table, i)) << i;
+  }
+}
+
+TEST(MiniTableTest, SubsInitializedToNull) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  // Create mini table with 2 message fields.
+  ASSERT_TRUE(e.StartMessage(0));
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Message, 15, 0));
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Message, 16, 0));
+  upb::Status status;
+  upb_MiniTable* table = upb_MiniTable_Build(e.data().data(), e.data().size(),
+                                             arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, table);
+  EXPECT_EQ(upb_MiniTable_FieldCount(table), 2);
+  EXPECT_FALSE(
+      upb_MiniTable_FieldIsLinked(upb_MiniTable_GetFieldByIndex(table, 0)));
+  EXPECT_FALSE(
+      upb_MiniTable_FieldIsLinked(upb_MiniTable_GetFieldByIndex(table, 1)));
+}
+
+TEST(MiniTableTest, LinkShortSubTableArray) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  // Message with two message fields, so linking expects two sub-tables.
+  ASSERT_TRUE(e.StartMessage(0));
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Message, 1, 0));
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Message, 2, 0));
+  upb::Status status;
+  upb_MiniTable* table = upb_MiniTable_Build(e.data().data(), e.data().size(),
+                                             arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, table);
+  ASSERT_EQ(upb_MiniTable_FieldCount(table), 2);
+
+  // Passing an array shorter than the number of message fields must fail
+  // cleanly without reading past the end of the array.
+  const upb_MiniTable* subs[1] = {nullptr};
+  EXPECT_FALSE(upb_MiniTable_Link(table, subs, 1, nullptr, 0));
+}
+
+TEST(MiniTableEnumTest, PositiveAndNegative) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+
+  ASSERT_TRUE(e.StartEnum());
+  absl::flat_hash_set<int32_t> values;
+  for (int i = 0; i < 100; i++) {
+    values.insert(i);
+    e.PutEnumValue(i);
+  }
+  for (int i = 100; i > 0; i--) {
+    values.insert(-i);
+    e.PutEnumValue(-i);
+  }
+  e.EndEnum();
+
+  upb::Status status;
+  upb_MiniTableEnum* table = upb_MiniTableEnum_Build(
+      e.data().data(), e.data().size(), arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, table) << status.error_message();
+
+  for (int i = -UINT16_MAX; i < UINT16_MAX; i++) {
+    EXPECT_EQ(values.contains(i), upb_MiniTableEnum_CheckValue(table, i)) << i;
+  }
+}
+
+TEST_P(MiniTableTest, Extendible) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(kUpb_MessageModifier_IsExtendable));
+  for (int i = kUpb_FieldType_Double; i < kUpb_FieldType_SInt64; i++) {
+    ASSERT_TRUE(e.PutField(static_cast<upb_FieldType>(i), i, 0));
+  }
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, table);
+  EXPECT_EQ(kUpb_ExtMode_Extendable,
+            table->UPB_PRIVATE(ext) & kUpb_ExtMode_Extendable);
+}
+
+TEST(MiniTableTest, Build32BitMiniTableWithSubmessagesNoFastTableAssert) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+
+  ASSERT_TRUE(e.StartMessage(0));
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Message, 1, 0));
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Message, 2, 0));
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Message, 3, 0));
+
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(e.data().data(), e.data().size(),
+                                              kUpb_MiniTablePlatform_32Bit,
+                                              arena.ptr(), status.ptr());
+
+  ASSERT_NE(nullptr, table) << status.error_message();
+  EXPECT_EQ(3, upb_MiniTable_FieldCount(table));
+  EXPECT_EQ(0xff, table->UPB_PRIVATE(table_mask));
+}
+
+TEST(MiniTableTest, ExtensionSubOffsetIsPlatformSpecific) {
+  upb::Arena arena;
+  upb::Status status;
+  upb::MtDataEncoder msg_e;
+  ASSERT_TRUE(msg_e.StartMessage(kUpb_MessageModifier_IsExtendable));
+  upb_MiniTable* extendee = upb_MiniTable_Build(
+      msg_e.data().data(), msg_e.data().size(), arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, extendee) << status.error_message();
+
+  upb::MtDataEncoder ext_e;
+  ASSERT_TRUE(ext_e.EncodeExtension(kUpb_FieldType_Message, 100, 0));
+
+  // The sub follows the upb_MiniTableExtension, which is `field` (padded to
+  // pointer alignment) followed by the pointer-sized `extendee`. The generator
+  // emits this offset into generated code for both platforms, so it must be
+  // computed for the target platform rather than the host.
+  for (auto [platform, ptr_size] : {std::pair<upb_MiniTablePlatform, size_t>{
+                                        kUpb_MiniTablePlatform_32Bit, 4},
+                                    std::pair<upb_MiniTablePlatform, size_t>{
+                                        kUpb_MiniTablePlatform_64Bit, 8}}) {
+    upb_MiniTableExtension* ext = _upb_MiniTableExtension_Build(
+        ext_e.data().data(), ext_e.data().size(), extendee,
+        upb_MiniTableSub_FromMessage(nullptr), platform, arena.ptr(),
+        status.ptr());
+    ASSERT_NE(nullptr, ext) << status.error_message();
+    size_t expected =
+        UPB_ALIGN_UP(sizeof(upb_MiniTableField), ptr_size) + ptr_size;
+    size_t actual =
+        static_cast<size_t>(ext->UPB_PRIVATE(field).UPB_PRIVATE(submsg_ofs) *
+                            kUpb_SubmsgOffsetBytes);
+    EXPECT_EQ(actual, expected) << "ptr_size=" << ptr_size;
+  }
+
+  // For the native platform the offset must match the real layout, and the
+  // sub must be readable through it.
+  upb_MiniTableExtension* ext = upb_MiniTableExtension_BuildMessage(
+      ext_e.data().data(), ext_e.data().size(), extendee, extendee, arena.ptr(),
+      status.ptr());
+  ASSERT_NE(nullptr, ext) << status.error_message();
+  size_t actual = static_cast<size_t>(
+      ext->UPB_PRIVATE(field).UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes);
+  EXPECT_EQ(actual, sizeof(upb_MiniTableExtension));
+  EXPECT_EQ(upb_MiniTableExtension_GetSubMessage(ext), extendee);
+}
+
+// MiniDescriptors for an int32->int32 map entry, without and with the
+// extendable message modifier ('P'). The map encoder never emits a modifier,
+// but the map parser shares the message parser, which accepts one.
+constexpr std::string_view kMapEntry = "%((";
+constexpr std::string_view kExtendableMapEntry = "%P((";
+
+TEST(MiniTableTest, MapEntryCannotBeExtendable) {
+  upb::Arena arena;
+  upb::Status status;
+  EXPECT_NE(nullptr, upb_MiniTable_Build(kMapEntry.data(), kMapEntry.size(),
+                                         arena.ptr(), status.ptr()))
+      << status.error_message();
+
+  status.Clear();
+  EXPECT_EQ(nullptr, upb_MiniTable_Build(kExtendableMapEntry.data(),
+                                         kExtendableMapEntry.size(),
+                                         arena.ptr(), status.ptr()));
+  EXPECT_FALSE(status.ok());
+}

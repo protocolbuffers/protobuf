@@ -1,0 +1,531 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2022 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+//
+// This file defines the internal class SerialArena
+
+#ifndef GOOGLE_PROTOBUF_SERIAL_ARENA_H__
+#define GOOGLE_PROTOBUF_SERIAL_ARENA_H__
+
+#include <algorithm>
+#include <atomic>
+#include <cstddef>
+#include <cstdint>
+#include <string>
+#include <vector>
+
+#include "absl/base/attributes.h"
+#include "absl/base/optimization.h"
+#include "absl/base/prefetch.h"
+#include "absl/log/absl_check.h"
+#include "absl/numeric/bits.h"
+#include "google/protobuf/arena_allocation_policy.h"
+#include "google/protobuf/arena_cleanup.h"
+#include "google/protobuf/memory_align.h"
+#include "google/protobuf/port.h"
+#include "google/protobuf/string_block.h"
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
+namespace google {
+namespace protobuf {
+
+class Arena;
+
+namespace internal {
+
+// Arena blocks are variable length malloc-ed objects.  The following structure
+// describes the common header for all blocks.
+struct alignas(ArenaAlignDefault::kAlign) ArenaBlock {
+  // For the sentry block with zero-size where ptr_/limit_ both point to `this`.
+  constexpr ArenaBlock() : next(nullptr), size(0) {}
+
+  ArenaBlock(ArenaBlock* next, size_t size) : next(next), size(size) {
+    ABSL_DCHECK_GT(size, sizeof(ArenaBlock));
+  }
+
+  char* Pointer(size_t n) {
+    ABSL_DCHECK_LE(n, size);
+    return reinterpret_cast<char*>(this) + n;
+  }
+  char* Limit() { return Pointer(size & static_cast<size_t>(-8)); }
+
+  bool IsSentry() const { return size == 0; }
+
+  ArenaBlock* const next;
+  const size_t size;
+  // data follows
+};
+
+enum class AllocationClient { kDefault, kArray };
+
+class ThreadSafeArena;
+
+// Tag type used to invoke the constructor of the first SerialArena.
+struct FirstSerialArena {
+  explicit FirstSerialArena() = default;
+};
+
+// A simple arena allocator. Calls to allocate functions must be properly
+// serialized by the caller, hence this class cannot be used as a general
+// purpose allocator in a multi-threaded program. It serves as a building block
+// for ThreadSafeArena, which provides a thread-safe arena allocator.
+//
+// This class manages
+// 1) Arena bump allocation + owning memory blocks.
+// 2) Maintaining a cleanup list.
+// It delegates the actual memory allocation back to ThreadSafeArena, which
+// contains the information on block growth policy and backing memory allocation
+// used.
+class PROTOBUF_EXPORT SerialArena {
+ public:
+  static constexpr size_t kBlockHeaderSize =
+      ArenaAlignDefault{}.Ceil(sizeof(ArenaBlock));
+  static constexpr size_t kMinimumReturnedArraySize = 16;
+
+  void CleanupList() { cleanup_list_.Cleanup(*this); }
+  uint64_t SpaceAllocated() const {
+    return space_allocated_.load(std::memory_order_relaxed);
+  }
+  uint64_t SpaceUsed() const;
+
+  // See comments on `cached_blocks_` member for details.
+  PROTOBUF_ALWAYS_INLINE void* TryAllocateFromCachedBlock(size_t size) {
+    if (ABSL_PREDICT_FALSE(size < kMinimumReturnedArraySize)) return nullptr;
+    // We round up to the next larger block in case the memory doesn't match
+    // the pattern we are looking for.
+    const size_t index = absl::bit_width(size - 1) -
+                         absl::bit_width(kMinimumReturnedArraySize - 1);
+
+    if (ABSL_PREDICT_FALSE(index >= cached_block_length_)) return nullptr;
+    auto& cached_head = cached_blocks_[index];
+    if (cached_head == nullptr) return nullptr;
+
+    void* ret = cached_head;
+    internal::UnpoisonMemoryRegion(ret, size);
+    cached_head = cached_head->next;
+    return ret;
+  }
+
+  // In kArray mode we look through cached blocks.
+  // We do not do this by default because most non-array allocations will not
+  // have the right size and will fail to find an appropriate cached block.
+  //
+  // TODO: Evaluate if we should use cached blocks for message types of
+  // the right size. We can statically know if the allocation size can benefit
+  // from it.
+  template <AllocationClient alloc_client = AllocationClient::kDefault>
+  void* AllocateAligned(size_t n) {
+    ABSL_DCHECK(internal::ArenaAlignDefault{}.IsAligned(n));
+    ABSL_DCHECK_GE(limit_, ptr());
+
+    if (alloc_client == AllocationClient::kArray) {
+      if (void* res = TryAllocateFromCachedBlock(n)) {
+        return res;
+      }
+    }
+
+    return AllocateImpl<AllocationMode::kDefault>(n);
+  }
+
+  // See comments on `cached_blocks_` member for details.
+  void ReturnArrayMemory(void* p, size_t size) {
+    // We only need to check for 32-bit platforms.
+    // In 64-bit platforms the minimum allocation size from Repeated*Field will
+    // be 16 guaranteed.
+    if (sizeof(void*) < 8) {
+      if (ABSL_PREDICT_FALSE(size < kMinimumReturnedArraySize)) return;
+    } else {
+      PROTOBUF_ASSUME(size >= kMinimumReturnedArraySize);
+    }
+
+    // We round down to the next smaller block in case the memory doesn't match
+    // the pattern we are looking for. eg, someone might have called Reserve()
+    // on the repeated field.
+    const size_t index = absl::bit_width(size) - 5;
+
+    if (ABSL_PREDICT_FALSE(index >= cached_block_length_)) {
+      // We can't put this object on the freelist so make this object the
+      // freelist. It is guaranteed it is larger than the one we have, and
+      // large enough to hold another allocation of `size`.
+      CachedBlock** new_list = static_cast<CachedBlock**>(p);
+      size_t new_size = size / sizeof(CachedBlock*);
+
+      std::copy(cached_blocks_, cached_blocks_ + cached_block_length_,
+                new_list);
+
+      // We need to unpoison this memory before filling it in case it has been
+      // poisoned by another sanitizer client.
+      internal::UnpoisonMemoryRegion(
+          new_list + cached_block_length_,
+          (new_size - cached_block_length_) * sizeof(CachedBlock*));
+
+      std::fill(new_list + cached_block_length_, new_list + new_size, nullptr);
+
+      cached_blocks_ = new_list;
+      // Make the size fit in uint8_t. This is the power of two, so we don't
+      // need anything larger.
+      cached_block_length_ =
+          static_cast<uint8_t>(std::min(size_t{64}, new_size));
+
+      return;
+    }
+
+    auto& cached_head = cached_blocks_[index];
+    auto* new_node = static_cast<CachedBlock*>(p);
+    new_node->next = cached_head;
+    cached_head = new_node;
+    internal::PoisonMemoryRegion(p, size);
+  }
+
+  enum class AllocationMode {
+    // Attempt to allocate in the current block. If there is not enough space,
+    // call the out-of-line fallback allocator to allocate a new block. Always
+    // succeeds.
+    kDefault,
+    // Attempt to allocate in the current block. If there is not enough space,
+    // return `nullptr`.
+    kNoFallback,
+    // Allocate in the current block assuming there is enough space. Callers are
+    // responsible for ensuring there is enough space.
+    kUnchecked,
+  };
+
+  struct NoCleanup {
+    void AddCleanup(SerialArena& arena, void* elem) {}
+
+    static constexpr size_t MaxSize();
+  };
+
+  struct WithCleanup {
+    void (*destructor)(void*);
+
+    void AddCleanup(SerialArena& arena, void* elem) {
+      arena.AddCleanup(elem, destructor);
+    }
+
+    static constexpr size_t MaxSize();
+  };
+
+  // Core arena allocation function. Configurable based on overflow handling,
+  // alignment, and cleanup registration.
+  template <AllocationMode mode, typename Align = ArenaAlignDefault,
+            typename Cleanup = NoCleanup>
+  PROTOBUF_ALWAYS_INLINE void* AllocateImpl(size_t n, Align align = {},
+                                            Cleanup cleanup = {}) {
+    static_assert(std::is_same_v<Align, ArenaAlignDefault> ||
+                  std::is_same_v<Align, MemoryAlign>);
+    static_assert(std::is_same_v<Cleanup, NoCleanup> ||
+                  std::is_same_v<Cleanup, WithCleanup>);
+
+    ABSL_DCHECK_GE(limit_, ptr());
+    char* ret = ptr();
+
+    n = align.CeilDefaultAligned(n);
+
+    // Comparing `limit_` to aligned `ret` is precarious because aligning `ret`
+    // may overflow. Instead, we conservatively compare the total remaining
+    // space against `n` plus the maximum possible padding we might incur from
+    // aligning `ret`. Doing it this way is slightly faster than calculating how
+    // much alignment padding we need before doing the comparison.
+    const size_t max_alignment_padding =
+        align.align() - ArenaAlignDefault{}.align();
+    const bool enough_space =
+        n + max_alignment_padding <= static_cast<size_t>(limit_ - ret);
+    switch (mode) {
+      case AllocationMode::kDefault:
+        if (ABSL_PREDICT_FALSE(!enough_space)) {
+          PROTOBUF_MUSTTAIL return AllocateFallbackImpl(n, align, cleanup);
+        }
+        break;
+      case AllocationMode::kNoFallback:
+        if (ABSL_PREDICT_FALSE(!enough_space)) {
+          return nullptr;
+        }
+        break;
+      case AllocationMode::kUnchecked:
+        ABSL_DCHECK(enough_space);
+        break;
+    }
+
+    ret = align.CeilDefaultAligned(ret);
+
+    internal::UnpoisonMemoryRegion(ret, n);
+    char* next = ret + n;
+    set_ptr(next);
+    cleanup.AddCleanup(*this, ret);
+    MaybePrefetchData(next);
+    PROTOBUF_ASSUME(ret != nullptr);
+    return ret;
+  }
+
+  PROTOBUF_ALWAYS_INLINE
+  void AddCleanup(void* elem, void (*destructor)(void*)) {
+    cleanup_list_.Add(elem, destructor, *this);
+    MaybePrefetchCleanup();
+  }
+
+  ABSL_ATTRIBUTE_RETURNS_NONNULL void* AllocateFromStringBlock();
+
+  std::vector<void*> PeekCleanupListForTesting();
+
+  // Attempts to grow the most recent allocation in place by `desired_growth`
+  // bytes. Succeeds only if `alloc_end` matches the current tail pointer and
+  // the current arena block has enough remaining space. Returns true if the
+  // allocation was grown in place, false otherwise.
+  bool TryGrowTail(void* alloc_end, size_t desired_growth) {
+    char* tail = ptr();
+    if (static_cast<char*>(alloc_end) != tail) {
+      return false;
+    }
+    if (static_cast<size_t>(limit_ - tail) < desired_growth) {
+      return false;
+    }
+    internal::UnpoisonMemoryRegion(tail, desired_growth);
+    set_ptr(tail + desired_growth);
+    return true;
+  }
+
+  // Attempts to trim the most recent allocation in place down to `desired_end`.
+  // Succeeds only if `alloc_end` matches the current tail pointer. Returns true
+  // if the allocation was trimmed in place, false otherwise.
+  // REQUIRES: desired_end <= alloc_end
+  // REQUIRES: desired_end is an aligned pointer within a previous allocation.
+  bool TryTrimTail(void* alloc_end, void* desired_end) {
+    ABSL_DCHECK_LE(desired_end, alloc_end);
+    ABSL_DCHECK(ArenaAlignDefault{}.IsAligned(desired_end));
+
+    char* tail = ptr();
+    if (static_cast<char*>(alloc_end) != tail) {
+      return false;
+    }
+
+    ABSL_DCHECK_LE(static_cast<void*>(head()), desired_end);
+    char* desired = static_cast<char*>(desired_end);
+    internal::PoisonMemoryRegion(desired, tail - desired);
+    set_ptr(desired);
+    return true;
+  }
+
+  Arena* parent() const {
+    Arena* parent = reinterpret_cast<Arena*>(&parent_);
+    PROTOBUF_ASSUME(parent != nullptr);
+    return parent;
+  }
+
+ private:
+  friend class ThreadSafeArena;
+  friend class cleanup::ChunkList;
+
+  // See comments for cached_blocks_.
+  struct CachedBlock {
+    // Simple linked list.
+    CachedBlock* next;
+  };
+
+  static constexpr ptrdiff_t kPrefetchDataDegree = ABSL_CACHELINE_SIZE * 16;
+  static constexpr ptrdiff_t kPrefetchCleanupDegree = ABSL_CACHELINE_SIZE * 6;
+
+  // Constructor is private as only New() should be used.
+  inline SerialArena(ArenaBlock* b, ThreadSafeArena& parent);
+
+  inline SerialArena(FirstSerialArena, SizedPtr mem,
+                     const AllocationPolicy& policy, ThreadSafeArena& parent);
+
+  void* MaybeAllocateString();
+  ABSL_ATTRIBUTE_RETURNS_NONNULL void* AllocateFromStringBlockFallback();
+
+  // Prefetch the next prefetch_degree bytes after `prefetch_ptr` and
+  // up to `limit`, if `next` is within prefetch_degree bytes of `prefetch_ptr`.
+  PROTOBUF_ALWAYS_INLINE
+  static const char* MaybePrefetchImpl(const ptrdiff_t prefetch_degree,
+                                       const char* next, const char* limit,
+                                       const char* prefetch_ptr) {
+    if (ABSL_PREDICT_TRUE(prefetch_ptr - next > prefetch_degree))
+      return prefetch_ptr;
+    if (ABSL_PREDICT_TRUE(prefetch_ptr < limit)) {
+      prefetch_ptr = std::max(next, prefetch_ptr);
+      ABSL_DCHECK(prefetch_ptr != nullptr);
+      const char* end = std::min(limit, prefetch_ptr + prefetch_degree);
+      for (; prefetch_ptr < end; prefetch_ptr += ABSL_CACHELINE_SIZE) {
+        absl::PrefetchToLocalCacheForWrite(prefetch_ptr);
+      }
+    }
+    return prefetch_ptr;
+  }
+  PROTOBUF_ALWAYS_INLINE
+  void MaybePrefetchData(const char* next) {
+    ABSL_DCHECK(static_cast<const void*>(prefetch_ptr_) == ptr() ||
+                static_cast<const void*>(prefetch_ptr_) >= head());
+    prefetch_ptr_ =
+        MaybePrefetchImpl(kPrefetchDataDegree, next, limit_, prefetch_ptr_);
+  }
+  PROTOBUF_ALWAYS_INLINE
+  void MaybePrefetchCleanup() {
+    ABSL_DCHECK(static_cast<const void*>(cleanup_list_.prefetch_ptr_) ==
+                    nullptr ||
+                static_cast<const void*>(cleanup_list_.prefetch_ptr_) >=
+                    cleanup_list_.head_);
+    cleanup_list_.prefetch_ptr_ = MaybePrefetchImpl(
+        kPrefetchCleanupDegree, reinterpret_cast<char*>(cleanup_list_.next_),
+        reinterpret_cast<char*>(cleanup_list_.limit_),
+        cleanup_list_.prefetch_ptr_);
+  }
+
+  // Creates a new SerialArena inside mem using the remaining memory as for
+  // future allocations.
+  // The `parent` arena must outlive the serial arena, which is guaranteed
+  // because the parent manages the lifetime of the serial arenas.
+  static SerialArena* New(SizedPtr mem, ThreadSafeArena& parent);
+  // Free SerialArena returning the memory passed in to New.
+  template <typename Deallocator>
+  SizedPtr Free(Deallocator deallocator);
+
+  size_t FreeStringBlocks() {
+    // On the active block delete all strings skipping the unused instances.
+    size_t unused_bytes = string_block_unused_.load(std::memory_order_relaxed);
+    if (StringBlock* sb = string_block_.load(std::memory_order_relaxed)) {
+      return FreeStringBlocks(sb, unused_bytes);
+    }
+    return 0;
+  }
+  static size_t FreeStringBlocks(StringBlock* string_block, size_t unused);
+
+  // Adds 'used` to space_used_ in relaxed atomic order.
+  void AddSpaceUsed(size_t space_used) {
+    space_used_.store(space_used_.load(std::memory_order_relaxed) + space_used,
+                      std::memory_order_relaxed);
+  }
+
+  // Adds 'allocated` to space_allocated_ in relaxed atomic order.
+  void AddSpaceAllocated(size_t space_allocated) {
+    space_allocated_.store(
+        space_allocated_.load(std::memory_order_relaxed) + space_allocated,
+        std::memory_order_relaxed);
+  }
+
+  // Helper getters/setters to handle relaxed operations on atomic variables.
+  ArenaBlock* head() { return head_.load(std::memory_order_relaxed); }
+  const ArenaBlock* head() const {
+    return head_.load(std::memory_order_relaxed);
+  }
+
+  char* ptr() { return ptr_.load(std::memory_order_relaxed); }
+  const char* ptr() const { return ptr_.load(std::memory_order_relaxed); }
+  void set_ptr(char* ptr) { return ptr_.store(ptr, std::memory_order_relaxed); }
+  PROTOBUF_ALWAYS_INLINE void set_range(char* ptr, char* limit) {
+    set_ptr(ptr);
+    prefetch_ptr_ = ptr;
+    limit_ = limit;
+  }
+
+  template <typename Align, typename Cleanup>
+  void* AllocateFallbackImpl(size_t n, Align align, Cleanup cleanup);
+  inline void AllocateNewBlock(size_t n);
+  inline void Init(ArenaBlock* b, size_t offset);
+
+  // Members are declared here to track sizeof(SerialArena) and hotness
+  // centrally. They are (roughly) laid out in descending order of hotness.
+
+  // We initialize ptr/limit with an arbitrary valid pointer.
+  // This allows Allocate to always return non-null even when asking for zero
+  // bytes.
+  static char* ArbitraryInternalPointerForInit() {
+    // Use rodata to detect potential bugs. No one should be writing here.
+    alignas(8) static constexpr char dummy{};
+    return const_cast<char*>(&dummy);
+  }
+
+
+  // Repeated*Field/Map/etc and Arena play together to reduce memory consumption
+  // by reusing blocks. Currently, natural growth of the repeated field types
+  // makes them allocate blocks of size `8 + 2^N, N>=3`. When the repeated field
+  // grows returns the previous block and we put it in this free list.
+  // `cached_blocks_[i]` points to the free list for blocks of size `8+2^(i+3)`.
+  // The array of freelists is grown when needed in `ReturnArrayMemory()`.
+  // Note that this optimization somewhat conflicts with TryGrowTail because
+  // allocating from the free list means we won't be able to grow in the tail.
+  // On average, it works out because the free list tends to be mostly empty.
+  uint8_t cached_block_length_ = 0;
+
+  // Current prefetch positions. Data from `ptr_` up to but not including
+  // `prefetch_ptr_` is software prefetched.
+  const char* prefetch_ptr_ = ArbitraryInternalPointerForInit();
+
+  std::atomic<ArenaBlock*> head_{nullptr};  // Head of linked list of blocks.
+
+  // Next pointer to allocate from.  Always 8-byte aligned.  Points inside
+  // head_ (and head_->pos will always be non-canonical).  We keep these
+  // here to reduce indirection.
+  std::atomic<char*> ptr_{ArbitraryInternalPointerForInit()};
+
+  // Limiting address up to which memory can be allocated from the head block.
+  char* limit_ = ArbitraryInternalPointerForInit();
+
+  std::atomic<size_t> space_allocated_{0};
+
+  CachedBlock** cached_blocks_ = nullptr;
+
+  // The active string block.
+  std::atomic<StringBlock*> string_block_{nullptr};
+
+  ThreadSafeArena& parent_;
+  // The number of unused bytes in string_block_.
+  // We allocate from `effective_size()` down to 0 inside `string_block_`.
+  // `unused  == 0` means that `string_block_` is exhausted. (or null).
+  std::atomic<size_t> string_block_unused_{0};
+
+  // Chunked linked list for managing cleanup for arena elements.
+  cleanup::ChunkList cleanup_list_;
+
+  std::atomic<size_t> space_used_{0};  // Necessary for metrics.
+};
+
+PROTOBUF_ALWAYS_INLINE void* SerialArena::MaybeAllocateString() {
+  // Check how many unused instances are in the current block.
+  size_t unused_bytes = string_block_unused_.load(std::memory_order_relaxed);
+  if (ABSL_PREDICT_FALSE(unused_bytes == 0)) {
+    return nullptr;
+  }
+
+  unused_bytes -= sizeof(std::string);
+  string_block_unused_.store(unused_bytes, std::memory_order_relaxed);
+  void* p =
+      string_block_.load(std::memory_order_relaxed)->AtOffset(unused_bytes);
+  PROTOBUF_ASSUME(p != nullptr);
+  return p;
+}
+
+ABSL_ATTRIBUTE_RETURNS_NONNULL PROTOBUF_ALWAYS_INLINE void*
+SerialArena::AllocateFromStringBlock() {
+  if (void* p = MaybeAllocateString(); ABSL_PREDICT_TRUE(p != nullptr)) {
+    return p;
+  }
+  return AllocateFromStringBlockFallback();
+}
+
+inline Arena* ParentArena(SerialArena* arena) {
+  if (arena == nullptr) return nullptr;
+  return arena->parent();
+}
+
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE void*
+SerialArena::AllocateFallbackImpl(size_t, ArenaAlignDefault, NoCleanup);
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE void*
+SerialArena::AllocateFallbackImpl(size_t, MemoryAlign, NoCleanup);
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE void*
+SerialArena::AllocateFallbackImpl(size_t, ArenaAlignDefault, WithCleanup);
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE void*
+SerialArena::AllocateFallbackImpl(size_t, MemoryAlign, WithCleanup);
+
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google
+
+#include "google/protobuf/port_undef.inc"
+
+#endif  // GOOGLE_PROTOBUF_SERIAL_ARENA_H__

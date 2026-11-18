@@ -1,0 +1,73 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2016 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package objc.protobuf.tests.deprecated;
+option objc_class_prefix = "Dep";
+
+//
+// This file is like unittest_deprecated_file.proto, but uses message, enum,
+// enum value, and field level deprecation.
+//
+// The source generated from this file needs to be inspect to confirm it has
+// all of the expected annotations. It also will be compiled into the unittest
+// and that compile should be clean without errors.
+//
+
+// Mix of field types marked as deprecated.
+message Msg1 {
+  extensions 100 to max;
+
+  optional string string_field = 1 [deprecated=true];
+  required int32 int_field = 2 [deprecated=true];
+  repeated fixed32 fixed_field = 3 [deprecated=true];
+  optional Msg1 msg_field = 4 [deprecated=true];
+}
+
+// Mix of extension field types marked as deprecated.
+extend Msg1 {
+  optional string string_ext_field = 101 [deprecated=true];
+  optional int32 int_ext_field = 102 [deprecated=true];
+  repeated fixed32 fixed_ext_field = 103 [deprecated=true];
+  optional Msg1 msg_ext_field = 104 [deprecated=true];
+}
+
+// Mix of extension field types (scoped to a message) marked as deprecated.
+message Msg1A {
+  extend Msg1 {
+    optional string string_ext2_field = 201 [deprecated=true];
+    optional int32 int_ext2_field = 202 [deprecated=true];
+    repeated fixed32 fixed_ext2_field = 203 [deprecated=true];
+    optional Msg1 msg_ext2_field = 204 [deprecated=true];
+  }
+}
+
+// Enum value marked as deprecated.
+enum Enum1 {
+  ENUM1_ONE   = 1;
+  ENUM1_TWO   = 2;
+  ENUM1_THREE = 3 [deprecated=true];
+}
+
+// Message marked as deprecated.
+message Msg2 {
+  option deprecated = true;
+
+  optional string string_field = 1;
+  required int32 int_field = 2;
+  repeated fixed32 fixed_field = 3;
+}
+
+// Enum marked as deprecated.
+enum Enum2 {
+  option deprecated = true;
+
+  ENUM2_ONE   = 1;
+  ENUM2_TWO   = 2;
+  ENUM2_THREE = 3;
+}

@@ -1,0 +1,25 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto3";
+
+package google.protobuf;
+
+option java_package = "com.google.protobuf";
+option java_outer_classname = "SourceContextProto";
+option java_multiple_files = true;
+option objc_class_prefix = "GPB";
+option csharp_namespace = "Google.Protobuf.WellKnownTypes";
+option go_package = "google.golang.org/protobuf/types/known/sourcecontextpb";
+
+// `SourceContext` represents information about the source of a
+// protobuf element, like the file in which it is defined.
+message SourceContext {
+  // The path-qualified name of the .proto file that contained the associated
+  // protobuf element.  For example: `"google/protobuf/source_context.proto"`.
+  string file_name = 1;
+}

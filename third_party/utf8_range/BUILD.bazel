@@ -1,0 +1,76 @@
+# Copyright 2022 Google LLC
+#
+# Use of this source code is governed by an MIT-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/MIT.
+
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_license//rules:license.bzl", "license")
+
+package(
+    default_applicable_licenses = [":license"],
+    default_visibility = ["//visibility:public"],
+)
+
+license(
+    name = "license",
+    package_name = "utf8_range",
+)
+
+licenses(["notice"])
+
+exports_files([
+    "LICENSE",
+    "rules_fuzzing.patch",
+])
+
+# TODO Remove this once callers have been Bazelified.
+filegroup(
+    name = "utf8_range_srcs",
+    srcs = [
+        "utf8_range.c",
+        "utf8_range.h",
+        "utf8_range_neon.inc",
+        "utf8_range_sse.inc",
+    ],
+    visibility = ["//:__subpackages__"],
+)
+
+cc_library(
+    name = "utf8_range",
+    srcs = [
+        "utf8_range.c",
+    ],
+    hdrs = [
+        "utf8_range.h",
+        "utf8_range_neon.inc",
+        "utf8_range_sse.inc",
+    ],
+    strip_include_prefix = "/third_party/utf8_range",
+)
+
+cc_library(
+    name = "utf8_validity",
+    hdrs = ["utf8_validity.h"],
+    strip_include_prefix = "/third_party/utf8_range",
+    deps = [
+        ":utf8_range",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "utf8_validity_test",
+    srcs = [
+        "utf8_range.c",
+        "utf8_validity_test.cc",
+    ],
+    deps = [
+        ":utf8_range",
+        ":utf8_validity",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)

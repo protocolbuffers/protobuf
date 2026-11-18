@@ -1,0 +1,19 @@
+{
+    "main": {
+        "protoc_version": "38-dev",
+        "lts": false,
+        "date": "2026-10-14",
+        "languages": {
+            "cpp": "7.38-dev",
+            "csharp": "3.38-dev",
+            "java": "4.38-dev",
+            "javascript": "3.38-dev",
+            "objectivec": "5.38-dev",
+            "php": "5.38-dev",
+            "python": "7.38-dev",
+            "ruby": "4.38-dev",
+            "rust": "0.38-dev",
+            "legacy_rust": "4.38-dev"
+        }
+    }
+}

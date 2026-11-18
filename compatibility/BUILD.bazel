@@ -1,0 +1,24 @@
+load("@rules_java//java:java_library.bzl", "java_library")
+
+# Simple build tests for compatibility of gencode from previous major versions
+# with the current runtime.
+
+java_library(
+    name = "v25_test_protos_srcjar",
+    testonly = True,
+    srcs = glob([
+        "v3.25.0/*.srcjar",
+    ]),
+    visibility = ["//java/core:__pkg__"],
+    deps = ["//java/core"],
+)
+
+java_library(
+    name = "v25_test_protos_jar",
+    testonly = True,
+    srcs = glob([
+        "v3.25.0/*.srcjar",
+    ]),
+    visibility = ["//java/core:__pkg__"],
+    deps = ["@com_google_protobuf_v25//java/core"],
+)

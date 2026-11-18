@@ -1,0 +1,462 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+#include "upb/json/encode.h"
+
+#include <cstddef>
+#include <string>
+
+#include "google/protobuf/field_mask.upb.h"
+#include "google/protobuf/struct.upb.h"
+#include <gtest/gtest.h>
+#include "google/protobuf/json/json_enumval_custom_string.upb.h"
+#include "google/protobuf/json/json_enumval_custom_string.upbdefs.h"
+#include "upb/base/status.hpp"
+#include "upb/base/string_view.h"
+#include "upb/base/upcast.h"
+#include "upb/json/decode.h"
+#include "upb/json/test.upb.h"
+#include "upb/json/test.upbdefs.h"
+#include "upb/mem/arena.h"
+#include "upb/mem/arena.hpp"
+#include "upb/message/message.h"
+#include "upb/reflection/def.h"
+#include "upb/reflection/def.hpp"
+
+static std::string JsonEncodeGeneric(
+    const upb_Message* msg, const upb_MessageDef* (*getmsgdef)(upb_DefPool*),
+    int options) {
+  upb::Arena a;
+  upb::Status status;
+  upb::DefPool defpool;
+  const upb_MessageDef* m = getmsgdef(defpool.ptr());
+  EXPECT_TRUE(m != nullptr);
+
+  size_t json_size =
+      upb_JsonEncode(msg, m, defpool.ptr(), options, nullptr, 0, status.ptr());
+  char* json_buf = (char*)upb_Arena_Malloc(a.ptr(), json_size + 1);
+
+  size_t size = upb_JsonEncode(msg, m, defpool.ptr(), options, json_buf,
+                               json_size + 1, status.ptr());
+  EXPECT_EQ(size, json_size);
+  return std::string(json_buf, json_size);
+}
+
+static std::string JsonEncode(const upb_test_Box* msg, int options) {
+  return JsonEncodeGeneric(UPB_UPCAST(msg), upb_test_Box_getmsgdef, options);
+}
+
+static std::string JsonEncodeJsonNameEscape(const upb_test_JsonNameEscape* msg,
+                                            int options) {
+  return JsonEncodeGeneric(UPB_UPCAST(msg), upb_test_JsonNameEscape_getmsgdef,
+                           options);
+}
+
+static std::string JsonEncodeKnight(
+    const json_enumval_custom_string_Knight* msg, int options) {
+  return JsonEncodeGeneric(
+      UPB_UPCAST(msg), json_enumval_custom_string_Knight_getmsgdef, options);
+}
+
+// Encode a single optional enum.
+TEST(JsonTest, EncodeEnum) {
+  upb::Arena a;
+
+  upb_test_Box* foo = upb_test_Box_new(a.ptr());
+  upb_test_Box_set_first_tag(foo, upb_test_Z_BAR);
+
+  EXPECT_EQ(R"({"firstTag":"Z_BAR"})", JsonEncode(foo, 0));
+  EXPECT_EQ(R"({"firstTag":1})",
+            JsonEncode(foo, upb_JsonEncode_FormatEnumsAsIntegers));
+}
+
+// Encode a single optional negative enum.
+TEST(JsonTest, EncodeNegativeEnum) {
+  upb::Arena a;
+
+  upb_test_Box* foo = upb_test_Box_new(a.ptr());
+  upb_test_Box_set_last_tag(foo, upb_test_Z_BAZ);
+
+  EXPECT_EQ(R"({"lastTag":"Z_BAZ"})", JsonEncode(foo, 0));
+  EXPECT_EQ(R"({"lastTag":-2})",
+            JsonEncode(foo, upb_JsonEncode_FormatEnumsAsIntegers));
+}
+
+// Encode a single repeated enum.
+TEST(JsonTest, EncodeRepeatedEnum) {
+  upb::Arena a;
+
+  upb_test_Box* foo = upb_test_Box_new(a.ptr());
+  upb_test_Box_add_more_tags(foo, upb_test_Z_BAT, a.ptr());
+
+  EXPECT_EQ(R"({"moreTags":["Z_BAT"]})", JsonEncode(foo, 0));
+  EXPECT_EQ(R"({"moreTags":[13]})",
+            JsonEncode(foo, upb_JsonEncode_FormatEnumsAsIntegers));
+}
+
+// Special case: encode null enum.
+TEST(JsonTest, EncodeNullEnum) {
+  upb::Arena a;
+
+  upb_test_Box* foo = upb_test_Box_new(a.ptr());
+  google_protobuf_Value_set_null_value(upb_test_Box_mutable_val(foo, a.ptr()),
+                                       google_protobuf_NULL_VALUE);
+
+  EXPECT_EQ(R"({"val":null})", JsonEncode(foo, 0));
+  EXPECT_EQ(R"({"val":null})",
+            JsonEncode(foo, upb_JsonEncode_FormatEnumsAsIntegers));
+}
+
+TEST(JsonTest, EncodeConflictJsonName) {
+  upb::Arena a;
+  upb_test_Box* box = upb_test_Box_new(a.ptr());
+  upb_test_Box_set_value(box, 2);
+  EXPECT_EQ(R"({"old_value":2})", JsonEncode(box, 0));
+
+  upb_test_Box* new_box = upb_test_Box_new(a.ptr());
+  upb_test_Box_set_new_value(new_box, 2);
+  EXPECT_EQ(R"({"value":2})", JsonEncode(new_box, 0));
+}
+
+// Test encoding when the enum value has no custom string option set, verifying
+// it falls back to the default enum value name ("ARMOR_GORGET").
+TEST(JsonTest, EncodeEnumMissingCustomStringOption) {
+  upb::Arena a;
+  json_enumval_custom_string_Knight* knight =
+      json_enumval_custom_string_Knight_new(a.ptr());
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_GORGET);
+  EXPECT_EQ(R"({"armor":"ARMOR_GORGET"})", JsonEncodeKnight(knight, 0));
+}
+
+// Test encoding when a standard custom string option is defined ("gr8 helm").
+TEST(JsonTest, EncodeEnumWithCustomString) {
+  upb::Arena a;
+  json_enumval_custom_string_Knight* knight =
+      json_enumval_custom_string_Knight_new(a.ptr());
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_GREAT_HELM);
+  EXPECT_EQ(R"({"armor":"gr8 helm"})", JsonEncodeKnight(knight, 0));
+}
+
+// Test encoding when the custom string option contains double quotes requiring
+// escaping ("a\"b").
+TEST(JsonTest, EncodeEnumCustomStringWithEscapedQuotes) {
+  upb::Arena a;
+  json_enumval_custom_string_Knight* knight =
+      json_enumval_custom_string_Knight_new(a.ptr());
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_GAUNTLET);
+  EXPECT_EQ("{\"armor\":\"a\\\"b\"}", JsonEncodeKnight(knight, 0));
+}
+
+// Test encoding when the custom string option is enclosed within double quotes
+// ("\"plate\"").
+TEST(JsonTest, EncodeEnumCustomStringEnclosedInQuotes) {
+  upb::Arena a;
+  json_enumval_custom_string_Knight* knight =
+      json_enumval_custom_string_Knight_new(a.ptr());
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_PLATE);
+  EXPECT_EQ("{\"armor\":\"\\\"plate\\\"\"}", JsonEncodeKnight(knight, 0));
+}
+
+// Test encoding when the custom string option is an empty string ("").
+TEST(JsonTest, EncodeEnumEmptyCustomString) {
+  upb::Arena a;
+  json_enumval_custom_string_Knight* knight =
+      json_enumval_custom_string_Knight_new(a.ptr());
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_COIF);
+  EXPECT_EQ(R"({"armor":""})", JsonEncodeKnight(knight, 0));
+}
+
+// Test encoding when the custom string option contains control characters (tab
+// and newline) requiring escaping ("p\taul\ndron").
+TEST(JsonTest, EncodeEnumCustomStringWithEscapedControlChars) {
+  upb::Arena a;
+  json_enumval_custom_string_Knight* knight =
+      json_enumval_custom_string_Knight_new(a.ptr());
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_PAULDRON);
+  EXPECT_EQ(R"({"armor":"p\taul\ndron"})", JsonEncodeKnight(knight, 0));
+}
+
+// Test encoding an enum value that has aliased values sharing a custom string
+// option ("sabaton").
+TEST(JsonTest, EncodeEnumAliasedCustomString) {
+  upb::Arena a;
+  json_enumval_custom_string_Knight* knight =
+      json_enumval_custom_string_Knight_new(a.ptr());
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_SABATON);
+  EXPECT_EQ(R"({"armor":"sabaton"})", JsonEncodeKnight(knight, 0));
+}
+
+// Test encoding when the custom string option consists of numeric digits ("8").
+TEST(JsonTest, EncodeEnumNumericCustomString) {
+  upb::Arena a;
+  json_enumval_custom_string_Knight* knight =
+      json_enumval_custom_string_Knight_new(a.ptr());
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_HACHI_MAI_DO);
+  EXPECT_EQ(R"({"armor":"8"})", JsonEncodeKnight(knight, 0));
+}
+
+// Test encoding an enum value whose custom string option is identical to its
+// original enum value name.
+TEST(JsonTest, EncodeEnumCustomStringSameAsName) {
+  upb::Arena a;
+  json_enumval_custom_string_Knight* knight =
+      json_enumval_custom_string_Knight_new(a.ptr());
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_GREAVES);
+  EXPECT_EQ(R"({"armor":"ARMOR_GREAVES"})", JsonEncodeKnight(knight, 0));
+}
+
+// Test encoding when upb_JsonEncode_FormatEnumsAsIntegers is set, verifying
+// integer format option overrides the custom string option.
+TEST(JsonTest, EncodeEnumWithIntegerFormatOverride) {
+  upb::Arena a;
+  json_enumval_custom_string_Knight* knight =
+      json_enumval_custom_string_Knight_new(a.ptr());
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_GREAT_HELM);
+  EXPECT_EQ(R"({"armor":1})",
+            JsonEncodeKnight(knight, upb_JsonEncode_FormatEnumsAsIntegers));
+}
+
+// Test encoding when a FieldMask has paths containing characters that require
+// escaping.
+TEST(JsonTest, EncodeFieldMaskEscapedPaths) {
+  upb::Arena a;
+  upb_test_Box* foo = upb_test_Box_new(a.ptr());
+  google_protobuf_FieldMask* mask = upb_test_Box_mutable_mask_val(foo, a.ptr());
+  google_protobuf_FieldMask_add_paths(
+      mask, upb_StringView_FromString("foo_bar"), a.ptr());
+  google_protobuf_FieldMask_add_paths(mask, upb_StringView_FromString("path\n"),
+                                      a.ptr());
+  google_protobuf_FieldMask_add_paths(mask, upb_StringView_FromString("path\t"),
+                                      a.ptr());
+  google_protobuf_FieldMask_add_paths(
+      mask, upb_StringView_FromString("path_a\n"), a.ptr());
+  google_protobuf_FieldMask_add_paths(
+      mask, upb_StringView_FromString("path\"quote"), a.ptr());
+
+  // "foo_bar" -> "fooBar"
+  // "path\n" -> "path\n"
+  // "path\t" -> "path\t"
+  // "path_a\n" -> "pathA\n"
+  // "path\"quote" -> "path\"quote"
+  const std::string expected =
+      R"({"maskVal":"fooBar,path\n,path\t,pathA\n,path\"quote"})";
+  EXPECT_EQ(expected, JsonEncode(foo, 0));
+}
+
+// A field whose json_name needs no escaping encodes as it always has, both with
+// json_name and with the proto field name.
+TEST(JsonTest, EncodeJsonNamePositiveControl) {
+  upb::Arena a;
+  upb_test_JsonNameEscape* msg = upb_test_JsonNameEscape_new(a.ptr());
+  upb_test_JsonNameEscape_set_plain(msg, 3);
+
+  EXPECT_EQ(R"({"plain":3})", JsonEncodeJsonNameEscape(msg, 0));
+  EXPECT_EQ(R"({"plain":3})",
+            JsonEncodeJsonNameEscape(msg, upb_JsonEncode_UseProtoNames));
+}
+
+// json_name is copied from the descriptor as-is. A quote or a backslash in it
+// must not end the object key early.
+TEST(JsonTest, EncodeJsonNameWithQuotesAndBackslashesIsEscaped) {
+  upb::Arena a;
+  upb_test_JsonNameEscape* msg = upb_test_JsonNameEscape_new(a.ptr());
+  upb_test_JsonNameEscape_set_quoted(msg, 1);
+
+  const std::string json = JsonEncodeJsonNameEscape(msg, 0);
+  EXPECT_EQ("{\"a\\\":1,\\\"b\":1}", json);
+
+  // The output is a single-key object that decodes back to the same message.
+  upb::DefPool defpool;
+  upb::Status status;
+  const upb_MessageDef* m = upb_test_JsonNameEscape_getmsgdef(defpool.ptr());
+  upb_test_JsonNameEscape* decoded = upb_test_JsonNameEscape_new(a.ptr());
+  ASSERT_TRUE(upb_JsonDecode(json.data(), json.size(), UPB_UPCAST(decoded), m,
+                             defpool.ptr(), 0, a.ptr(), status.ptr()))
+      << status.error_message();
+  EXPECT_TRUE(upb_test_JsonNameEscape_has_quoted(decoded));
+  EXPECT_EQ(1, upb_test_JsonNameEscape_quoted(decoded));
+  EXPECT_FALSE(upb_test_JsonNameEscape_has_control(decoded));
+  EXPECT_FALSE(upb_test_JsonNameEscape_has_plain(decoded));
+}
+
+TEST(JsonTest, EncodeJsonNameWithControlCharactersIsEscaped) {
+  upb::Arena a;
+  upb_test_JsonNameEscape* msg = upb_test_JsonNameEscape_new(a.ptr());
+  upb_test_JsonNameEscape_set_control(msg, 2);
+
+  EXPECT_EQ(R"({"x\ny\\z\tq":2})", JsonEncodeJsonNameEscape(msg, 0));
+}
+
+static upb_test_Box* NewBoxWithData(upb_Arena* arena, const char* data,
+                                    size_t size) {
+  upb_test_Box* box = upb_test_Box_new(arena);
+  upb_test_Box_set_data(box, upb_StringView_FromDataAndSize(data, size));
+  return box;
+}
+
+TEST(JsonTest, EncodeBytesUsesStandardBase64ByDefault) {
+  // Each encoding uses alphabet index 62 and/or 63, the only entries that
+  // differ between the standard ('+', '/') and web-safe ('-', '_') alphabets.
+  // Input lengths 3, 2 and 1 cover no padding, "=" and "==".
+  upb::Arena a;
+  EXPECT_EQ(R"({"data":"+/+/"})",
+            JsonEncode(NewBoxWithData(a.ptr(), "\xfb\xff\xbf", 3), 0));
+  EXPECT_EQ(R"({"data":"+/8="})",
+            JsonEncode(NewBoxWithData(a.ptr(), "\xfb\xff", 2), 0));
+  EXPECT_EQ(R"({"data":"/w=="})",
+            JsonEncode(NewBoxWithData(a.ptr(), "\xff", 1), 0));
+}
+
+TEST(JsonTest, EncodeBytesWebSafeBase64) {
+  // Same inputs as EncodeBytesUsesStandardBase64ByDefault.
+  upb::Arena a;
+  EXPECT_EQ(R"({"data":"-_-_"})",
+            JsonEncode(NewBoxWithData(a.ptr(), "\xfb\xff\xbf", 3),
+                       upb_JsonEncode_WebSafeBase64));
+  EXPECT_EQ(R"({"data":"-_8="})",
+            JsonEncode(NewBoxWithData(a.ptr(), "\xfb\xff", 2),
+                       upb_JsonEncode_WebSafeBase64));
+  EXPECT_EQ(R"({"data":"_w=="})", JsonEncode(NewBoxWithData(a.ptr(), "\xff", 1),
+                                             upb_JsonEncode_WebSafeBase64));
+}
+
+TEST(JsonTest, EncodeBytesWebSafeBase64RoundTripsThroughDecoder) {
+  upb::Arena a;
+  const char kData[] = "\x00\xfb\xff\xbf\x10";
+  const size_t kSize = sizeof(kData) - 1;
+  const std::string json = JsonEncode(NewBoxWithData(a.ptr(), kData, kSize),
+                                      upb_JsonEncode_WebSafeBase64);
+  EXPECT_EQ(R"({"data":"APv_vxA="})", json);
+
+  upb::DefPool defpool;
+  upb::Status status;
+  const upb_MessageDef* m = upb_test_Box_getmsgdef(defpool.ptr());
+  upb_test_Box* decoded = upb_test_Box_new(a.ptr());
+  ASSERT_TRUE(upb_JsonDecode(json.data(), json.size(), UPB_UPCAST(decoded), m,
+                             defpool.ptr(), 0, a.ptr(), status.ptr()))
+      << status.error_message();
+  const upb_StringView data = upb_test_Box_data(decoded);
+  EXPECT_EQ(std::string(kData, kSize), std::string(data.data, data.size));
+}
+
+TEST(JsonTest, EncodeAnyPreservesExtensions) {
+  upb::Arena a;
+  upb::DefPool defpool;
+  upb::Status status;
+  const upb_MessageDef* m = upb_test_Box_getmsgdef(defpool.ptr());
+  ASSERT_NE(m, nullptr);
+
+  const std::string json_in =
+      R"({"anyVal":{"@type":"type.googleapis.com/upb_test.Box","[upb_test.ext_tag]":42}})";
+  upb_test_Box* decoded = upb_test_Box_new(a.ptr());
+  ASSERT_TRUE(upb_JsonDecode(json_in.data(), json_in.size(),
+                             UPB_UPCAST(decoded), m, defpool.ptr(), 0, a.ptr(),
+                             status.ptr()))
+      << status.error_message();
+
+  EXPECT_EQ(json_in, JsonEncode(decoded, 0));
+}
+
+TEST(JsonTest, EncodeMaxDepthExceeded) {
+  upb::Arena a;
+  upb::DefPool defpool;
+  const upb_MessageDef* m = upb_test_Box_getmsgdef(defpool.ptr());
+  ASSERT_NE(m, nullptr);
+
+  // Depth 3: root -> child -> grandchild.
+  upb_test_Box* root = upb_test_Box_new(a.ptr());
+  upb_test_Box* child = upb_test_Box_mutable_sub(root, a.ptr());
+  upb_test_Box* grandchild = upb_test_Box_mutable_sub(child, a.ptr());
+  upb_test_Box_set_first_tag(grandchild, upb_test_Z_BAR);
+
+  EXPECT_EQ(R"({"sub":{"sub":{"firstTag":"Z_BAR"}}})",
+            JsonEncode(root, upb_JsonEncodeOptions_MaxDepth(3)));
+
+  {
+    upb::Status status;
+    EXPECT_EQ(static_cast<size_t>(-1),
+              upb_JsonEncode(UPB_UPCAST(root), m, defpool.ptr(),
+                             upb_JsonEncode_LimitDepth(0, 2), nullptr, 0,
+                             status.ptr()));
+    EXPECT_FALSE(status.ok());
+  }
+
+  // Cycle: root -> sub = root.
+  upb_test_Box_set_sub(root, root);
+  {
+    upb::Status status;
+    EXPECT_EQ(static_cast<size_t>(-1),
+              upb_JsonEncode(UPB_UPCAST(root), m, defpool.ptr(), 0, nullptr, 0,
+                             status.ptr()));
+    EXPECT_FALSE(status.ok());
+  }
+}
+
+TEST(JsonTest, EncodeAnyMaxDepthExceeded) {
+  upb::Arena a;
+  upb::DefPool defpool;
+  upb::Status status;
+  const upb_MessageDef* m = upb_test_Box_getmsgdef(defpool.ptr());
+  ASSERT_NE(m, nullptr);
+
+  // Depth 3 via Any: Box -> Any(Box) -> Any(Box).
+  const std::string json_in =
+      R"({"anyVal":{"@type":"type.googleapis.com/upb_test.Box","anyVal":{"@type":"type.googleapis.com/upb_test.Box","firstTag":"Z_BAR"}}})";
+  upb_test_Box* decoded = upb_test_Box_new(a.ptr());
+  ASSERT_TRUE(upb_JsonDecode(json_in.data(), json_in.size(),
+                             UPB_UPCAST(decoded), m, defpool.ptr(), 0, a.ptr(),
+                             status.ptr()))
+      << status.error_message();
+
+  EXPECT_EQ(json_in, JsonEncode(decoded, upb_JsonEncodeOptions_MaxDepth(3)));
+
+  for (int limit : {1, 2}) {
+    upb::Status err_status;
+    EXPECT_EQ(static_cast<size_t>(-1),
+              upb_JsonEncode(UPB_UPCAST(decoded), m, defpool.ptr(),
+                             upb_JsonEncodeOptions_MaxDepth(limit), nullptr, 0,
+                             err_status.ptr()));
+    EXPECT_FALSE(err_status.ok());
+  }
+}
+
+TEST(JsonTest, EncodeStructAndListValueMaxDepthExceeded) {
+  upb::Arena a;
+  upb::DefPool defpool;
+  upb::Status status;
+  const upb_MessageDef* m = upb_test_Box_getmsgdef(defpool.ptr());
+  ASSERT_NE(m, nullptr);
+
+  // Depth 3 via Struct/ListValue: Box -> Struct -> ListValue.
+  const std::string json_in = R"({"val":{"a":[1]}})";
+  upb_test_Box* decoded = upb_test_Box_new(a.ptr());
+  ASSERT_TRUE(upb_JsonDecode(json_in.data(), json_in.size(),
+                             UPB_UPCAST(decoded), m, defpool.ptr(), 0, a.ptr(),
+                             status.ptr()))
+      << status.error_message();
+
+  EXPECT_EQ(json_in, JsonEncode(decoded, upb_JsonEncodeOptions_MaxDepth(3)));
+
+  {
+    upb::Status err_status;
+    EXPECT_EQ(static_cast<size_t>(-1),
+              upb_JsonEncode(UPB_UPCAST(decoded), m, defpool.ptr(),
+                             upb_JsonEncodeOptions_MaxDepth(2), nullptr, 0,
+                             err_status.ptr()));
+    EXPECT_FALSE(err_status.ok());
+  }
+}

@@ -1,0 +1,31 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+"""ProtoLangToolchainInfo"""
+
+ProtoLangToolchainInfo = provider(
+    doc = """Specifies how to generate language-specific code from .proto files.
+            Used by LANG_proto_library rules.""",
+    fields = dict(
+        out_replacement_format_flag = """(str) Format string used when passing output to the plugin
+          used by proto compiler.""",
+        output_files = """("single","multiple","legacy") Format out_replacement_format_flag with
+          a path to single file or a directory in case of multiple files.""",
+        plugin_format_flag = "(str) Format string used when passing plugin to proto compiler.",
+        plugin = "(FilesToRunProvider) Proto compiler plugin.",
+        runtime = "(Target) Runtime.",
+        provided_proto_sources = "(list[File]) Proto sources provided by the toolchain.",
+        proto_compiler = "(FilesToRunProvider) Proto compiler.",
+        protoc_opts = "(list[str]) Options to pass to proto compiler.",
+        progress_message = "(str) Progress message to set on the proto compiler action.",
+        mnemonic = "(str) Mnemonic to set on the proto compiler action.",
+        allowlist_different_package = """(Target) Allowlist to create lang_proto_library in a
+          different package than proto_library""",
+        toolchain_type = """(Label) Toolchain type that was used to obtain this info""",
+        host_path_separator = "(char/str) host_path_separator from ctx.configuration used in descriptor lists.",
+    ),
+)

@@ -1,0 +1,5 @@
+edition = "2023";
+
+package google.protobuf;
+
+option java_package = "com.google.protobuf";

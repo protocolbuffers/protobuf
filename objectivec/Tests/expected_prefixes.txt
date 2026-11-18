@@ -1,0 +1,12 @@
+objc.protobuf.tests = ""  # Explicit empty prefix
+objc.protobuf.tests.any = Any
+objc.protobuf.tests.chain = Chain
+objc.protobuf.tests.cycle = Cycle
+objc.protobuf.tests.deprecated = Dep
+objc.protobuf.tests.deprecated_file = FileDep
+objc.protobuf.tests.import = Import
+objc.protobuf.tests.mset = MSet
+objc.protobuf.tests.options = GPBTEST
+objc.protobuf.tests.proto3_preserve_unknown_enum = UnknownEnums
+objc.protobuf.tests.public_import = PublicImport
+objc.protobuf.tests.startup = TestObjCStartup
