@@ -25,6 +25,7 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/test_zero_copy_stream.h"
