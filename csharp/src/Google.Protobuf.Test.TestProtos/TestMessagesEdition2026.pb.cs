@@ -27,7 +27,7 @@ namespace ProtobufTestMessages.Editions {
             "Cjdjb25mb3JtYW5jZS90ZXN0X3Byb3Rvcy90ZXN0X21lc3NhZ2VzX2VkaXRp",
             "b24yMDI2LnByb3RvEh9wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLmVkaXRpb25z",
             "Gixnb29nbGUvcHJvdG9idWYvanNvbl9lbnVtdmFsdWVfb3B0aW9ucy5wcm90",
-            "byLoBAoXVGVzdEFsbFR5cGVzRWRpdGlvbjIwMjYSFgoOb3B0aW9uYWxfaW50",
+            "byLOBgoXVGVzdEFsbFR5cGVzRWRpdGlvbjIwMjYSFgoOb3B0aW9uYWxfaW50",
             "MzIYASABKAUSVgoVb3B0aW9uYWxfZm9yZWlnbl9lbnVtGAIgASgOMjcucHJv",
             "dG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0aW9ucy5Gb3JlaWduRW51bUVkaXRp",
             "b24yMDI2ElYKFXJlcGVhdGVkX2ZvcmVpZ25fZW51bRgDIAMoDjI3LnByb3Rv",
@@ -36,26 +36,47 @@ namespace ProtobufTestMessages.Editions {
             "YnVmX3Rlc3RfbWVzc2FnZXMuZWRpdGlvbnMuVGVzdEFsbFR5cGVzRWRpdGlv",
             "bjIwMjYuTWFwU3RyaW5nRm9yZWlnbkVudW1FbnRyeRJkCg9tYXBfaW50MzJf",
             "aW50MzIYBSADKAsySy5wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLmVkaXRpb25z",
-            "LlRlc3RBbGxUeXBlc0VkaXRpb24yMDI2Lk1hcEludDMySW50MzJFbnRyeRp0",
-            "ChlNYXBTdHJpbmdGb3JlaWduRW51bUVudHJ5EgsKA2tleRgBIAEoCRJGCgV2",
-            "YWx1ZRgCIAEoDjI3LnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMuZWRpdGlvbnMu",
-            "Rm9yZWlnbkVudW1FZGl0aW9uMjAyNjoCOAEaNAoSTWFwSW50MzJJbnQzMkVu",
-            "dHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoBToCOAEqoQMKFkZvcmVp",
-            "Z25FbnVtRWRpdGlvbjIwMjYSIAocRk9SRUlHTl9FTlVNX0VESVRJT04yMDI2",
-            "X0ZPTxAAEjAKHEZPUkVJR05fRU5VTV9FRElUSU9OMjAyNl9CQVIQARoOsj4L",
-            "CgljdXN0b21CYXISMAocRk9SRUlHTl9FTlVNX0VESVRJT04yMDI2X0JBWhAC",
-            "Gg6yPgsKCWN1c3RvbUJhehIpCh5GT1JFSUdOX0VOVU1fRURJVElPTjIwMjZf",
-            "RU1QVFkQAxoFsj4CCgASNAogRk9SRUlHTl9FTlVNX0VESVRJT04yMDI2X0VT",
-            "Q0FQRVMQBBoOsj4LCgllInNjCWFwCmUSNAoeRk9SRUlHTl9FTlVNX0VESVRJ",
-            "T04yMDI2X0FMSUFTEAUaELI+DQoLY3VzdG9tQWxpYXMSOAoiRk9SRUlHTl9F",
-            "TlVNX0VESVRJT04yMDI2X0FMSUFTX1RPTxAFGhCyPg0KC2N1c3RvbUFsaWFz",
-            "EiwKIEZPUkVJR05fRU5VTV9FRElUSU9OMjAyNl9OVU1FUklDEAYaBrI+AwoB",
-            "NhoCEAFCNwoqY29tLmdvb2dsZS5wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLmVk",
-            "aXRpb25zogIIRWRpdGlvbnNiCGVkaXRpb25zcOoH"));
+            "LlRlc3RBbGxUeXBlc0VkaXRpb24yMDI2Lk1hcEludDMySW50MzJFbnRyeRJj",
+            "ChpvcHRpb25hbF9lbXB0eV9vcHRpb25fZW51bRgGIAEoDjI/LnByb3RvYnVm",
+            "X3Rlc3RfbWVzc2FnZXMuZWRpdGlvbnMuRW51bU9ubHlFbXB0eU9wdGlvbkVk",
+            "aXRpb24yMDI2En8KKW9wdGlvbmFsX2VtcHR5X29wdGlvbl9iZWZvcmVfZW1w",
+            "dHlfc3RyaW5nGAcgASgOMkwucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0",
+            "aW9ucy5FbnVtRW1wdHlPcHRpb25CZWZvcmVFbXB0eVN0cmluZ0VkaXRpb24y",
+            "MDI2GnQKGU1hcFN0cmluZ0ZvcmVpZ25FbnVtRW50cnkSCwoDa2V5GAEgASgJ",
+            "EkYKBXZhbHVlGAIgASgOMjcucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0",
+            "aW9ucy5Gb3JlaWduRW51bUVkaXRpb24yMDI2OgI4ARo0ChJNYXBJbnQzMklu",
+            "dDMyRW50cnkSCwoDa2V5GAEgASgFEg0KBXZhbHVlGAIgASgFOgI4ASrWBQoW",
+            "Rm9yZWlnbkVudW1FZGl0aW9uMjAyNhIgChxGT1JFSUdOX0VOVU1fRURJVElP",
+            "TjIwMjZfRk9PEAASMAocRk9SRUlHTl9FTlVNX0VESVRJT04yMDI2X0JBUhAB",
+            "Gg6yPgsKCWN1c3RvbUJhchIwChxGT1JFSUdOX0VOVU1fRURJVElPTjIwMjZf",
+            "QkFaEAIaDrI+CwoJY3VzdG9tQmF6EikKHkZPUkVJR05fRU5VTV9FRElUSU9O",
+            "MjAyNl9FTVBUWRADGgWyPgIKABI0CiBGT1JFSUdOX0VOVU1fRURJVElPTjIw",
+            "MjZfRVNDQVBFUxAEGg6yPgsKCWUic2MJYXAKZRI0Ch5GT1JFSUdOX0VOVU1f",
+            "RURJVElPTjIwMjZfQUxJQVMQBRoQsj4NCgtjdXN0b21BbGlhcxI4CiJGT1JF",
+            "SUdOX0VOVU1fRURJVElPTjIwMjZfQUxJQVNfVE9PEAUaELI+DQoLY3VzdG9t",
+            "QWxpYXMSLAogRk9SRUlHTl9FTlVNX0VESVRJT04yMDI2X05VTUVSSUMQBhoG",
+            "sj4DCgE2Ei4KJUZPUkVJR05fRU5VTV9FRElUSU9OMjAyNl9FTVBUWV9PUFRJ",
+            "T04QBxoDsj4AEjIKKUZPUkVJR05fRU5VTV9FRElUSU9OMjAyNl9FTVBUWV9P",
+            "UFRJT05fVFdPEAgaA7I+ABI0CitGT1JFSUdOX0VOVU1fRURJVElPTjIwMjZf",
+            "QUxJQVNfRU1QVFlfT1BUSU9OEAkaA7I+ABIqCiZGT1JFSUdOX0VOVU1fRURJ",
+            "VElPTjIwMjZfQUxJQVNfT01JVFRFRBAJEjAKLEZPUkVJR05fRU5VTV9FRElU",
+            "SU9OMjAyNl9BTElBU19PTUlUVEVEX0ZJUlNUEAoSOwoyRk9SRUlHTl9FTlVN",
+            "X0VESVRJT04yMDI2X0FMSUFTX0VNUFRZX09QVElPTl9TRUNPTkQQChoDsj4A",
+            "GgIQASqKAQoeRW51bU9ubHlFbXB0eU9wdGlvbkVkaXRpb24yMDI2EjcKLkVO",
+            "VU1fT05MWV9FTVBUWV9PUFRJT05fRURJVElPTjIwMjZfVU5TUEVDSUZJRUQQ",
+            "ABoDsj4AEi8KJkVOVU1fT05MWV9FTVBUWV9PUFRJT05fRURJVElPTjIwMjZf",
+            "Rk9PEAEaA7I+ACqRAgorRW51bUVtcHR5T3B0aW9uQmVmb3JlRW1wdHlTdHJp",
+            "bmdFZGl0aW9uMjAyNhJBCj1FTlVNX0VNUFRZX09QVElPTl9CRUZPUkVfRU1Q",
+            "VFlfU1RSSU5HX0VESVRJT04yMDI2X1VOU1BFQ0lGSUVEEAASTQpERU5VTV9F",
+            "TVBUWV9PUFRJT05fQkVGT1JFX0VNUFRZX1NUUklOR19FRElUSU9OMjAyNl9F",
+            "TVBUWV9PUFRJT05fRklSU1QQARoDsj4AElAKRUVOVU1fRU1QVFlfT1BUSU9O",
+            "X0JFRk9SRV9FTVBUWV9TVFJJTkdfRURJVElPTjIwMjZfRU1QVFlfU1RSSU5H",
+            "X1NFQ09ORBACGgWyPgIKAEI3Cipjb20uZ29vZ2xlLnByb3RvYnVmX3Rlc3Rf",
+            "bWVzc2FnZXMuZWRpdGlvbnOiAghFZGl0aW9uc2IIZWRpdGlvbnNw6gc="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Pb.Enumvalue.JsonEnumvalueOptionsReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ProtobufTestMessages.Editions.ForeignEnumEdition2026), }, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Editions.TestAllTypesEdition2026), global::ProtobufTestMessages.Editions.TestAllTypesEdition2026.Parser, new[]{ "OptionalInt32", "OptionalForeignEnum", "RepeatedForeignEnum", "MapStringForeignEnum", "MapInt32Int32" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, })
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ProtobufTestMessages.Editions.ForeignEnumEdition2026), typeof(global::ProtobufTestMessages.Editions.EnumOnlyEmptyOptionEdition2026), typeof(global::ProtobufTestMessages.Editions.EnumEmptyOptionBeforeEmptyStringEdition2026), }, null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Editions.TestAllTypesEdition2026), global::ProtobufTestMessages.Editions.TestAllTypesEdition2026.Parser, new[]{ "OptionalInt32", "OptionalForeignEnum", "RepeatedForeignEnum", "MapStringForeignEnum", "MapInt32Int32", "OptionalEmptyOptionEnum", "OptionalEmptyOptionBeforeEmptyString" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, })
           }));
     }
     #endregion
@@ -77,6 +98,23 @@ namespace ProtobufTestMessages.Editions {
     [pbr::OriginalName("FOREIGN_ENUM_EDITION2026_ALIAS")] Alias = 5,
     [pbr::OriginalName("FOREIGN_ENUM_EDITION2026_ALIAS_TOO", PreferredAlias = false)] AliasToo = 5,
     [pbr::OriginalName("FOREIGN_ENUM_EDITION2026_NUMERIC")] Numeric = 6,
+    [pbr::OriginalName("FOREIGN_ENUM_EDITION2026_EMPTY_OPTION")] EmptyOption = 7,
+    [pbr::OriginalName("FOREIGN_ENUM_EDITION2026_EMPTY_OPTION_TWO")] EmptyOptionTwo = 8,
+    [pbr::OriginalName("FOREIGN_ENUM_EDITION2026_ALIAS_EMPTY_OPTION")] AliasEmptyOption = 9,
+    [pbr::OriginalName("FOREIGN_ENUM_EDITION2026_ALIAS_OMITTED", PreferredAlias = false)] AliasOmitted = 9,
+    [pbr::OriginalName("FOREIGN_ENUM_EDITION2026_ALIAS_OMITTED_FIRST")] AliasOmittedFirst = 10,
+    [pbr::OriginalName("FOREIGN_ENUM_EDITION2026_ALIAS_EMPTY_OPTION_SECOND", PreferredAlias = false)] AliasEmptyOptionSecond = 10,
+  }
+
+  public enum EnumOnlyEmptyOptionEdition2026 {
+    [pbr::OriginalName("ENUM_ONLY_EMPTY_OPTION_EDITION2026_UNSPECIFIED")] Unspecified = 0,
+    [pbr::OriginalName("ENUM_ONLY_EMPTY_OPTION_EDITION2026_FOO")] Foo = 1,
+  }
+
+  public enum EnumEmptyOptionBeforeEmptyStringEdition2026 {
+    [pbr::OriginalName("ENUM_EMPTY_OPTION_BEFORE_EMPTY_STRING_EDITION2026_UNSPECIFIED")] Unspecified = 0,
+    [pbr::OriginalName("ENUM_EMPTY_OPTION_BEFORE_EMPTY_STRING_EDITION2026_EMPTY_OPTION_FIRST")] EmptyOptionFirst = 1,
+    [pbr::OriginalName("ENUM_EMPTY_OPTION_BEFORE_EMPTY_STRING_EDITION2026_EMPTY_STRING_SECOND")] EmptyStringSecond = 2,
   }
 
   #endregion
@@ -124,6 +162,8 @@ namespace ProtobufTestMessages.Editions {
       repeatedForeignEnum_ = other.repeatedForeignEnum_.Clone();
       mapStringForeignEnum_ = other.mapStringForeignEnum_.Clone();
       mapInt32Int32_ = other.mapInt32Int32_.Clone();
+      optionalEmptyOptionEnum_ = other.optionalEmptyOptionEnum_;
+      optionalEmptyOptionBeforeEmptyString_ = other.optionalEmptyOptionBeforeEmptyString_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -220,6 +260,60 @@ namespace ProtobufTestMessages.Editions {
       get { return mapInt32Int32_; }
     }
 
+    /// <summary>Field number for the "optional_empty_option_enum" field.</summary>
+    public const int OptionalEmptyOptionEnumFieldNumber = 6;
+    private readonly static global::ProtobufTestMessages.Editions.EnumOnlyEmptyOptionEdition2026 OptionalEmptyOptionEnumDefaultValue = global::ProtobufTestMessages.Editions.EnumOnlyEmptyOptionEdition2026.Unspecified;
+
+    private global::ProtobufTestMessages.Editions.EnumOnlyEmptyOptionEdition2026 optionalEmptyOptionEnum_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::ProtobufTestMessages.Editions.EnumOnlyEmptyOptionEdition2026 OptionalEmptyOptionEnum {
+      get { if ((_hasBits0 & 4) != 0) { return optionalEmptyOptionEnum_; } else { return OptionalEmptyOptionEnumDefaultValue; } }
+      set {
+        _hasBits0 |= 4;
+        optionalEmptyOptionEnum_ = value;
+      }
+    }
+    /// <summary>Gets whether the "optional_empty_option_enum" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasOptionalEmptyOptionEnum {
+      get { return (_hasBits0 & 4) != 0; }
+    }
+    /// <summary>Clears the value of the "optional_empty_option_enum" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearOptionalEmptyOptionEnum() {
+      _hasBits0 &= ~4;
+    }
+
+    /// <summary>Field number for the "optional_empty_option_before_empty_string" field.</summary>
+    public const int OptionalEmptyOptionBeforeEmptyStringFieldNumber = 7;
+    private readonly static global::ProtobufTestMessages.Editions.EnumEmptyOptionBeforeEmptyStringEdition2026 OptionalEmptyOptionBeforeEmptyStringDefaultValue = global::ProtobufTestMessages.Editions.EnumEmptyOptionBeforeEmptyStringEdition2026.Unspecified;
+
+    private global::ProtobufTestMessages.Editions.EnumEmptyOptionBeforeEmptyStringEdition2026 optionalEmptyOptionBeforeEmptyString_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::ProtobufTestMessages.Editions.EnumEmptyOptionBeforeEmptyStringEdition2026 OptionalEmptyOptionBeforeEmptyString {
+      get { if ((_hasBits0 & 8) != 0) { return optionalEmptyOptionBeforeEmptyString_; } else { return OptionalEmptyOptionBeforeEmptyStringDefaultValue; } }
+      set {
+        _hasBits0 |= 8;
+        optionalEmptyOptionBeforeEmptyString_ = value;
+      }
+    }
+    /// <summary>Gets whether the "optional_empty_option_before_empty_string" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasOptionalEmptyOptionBeforeEmptyString {
+      get { return (_hasBits0 & 8) != 0; }
+    }
+    /// <summary>Clears the value of the "optional_empty_option_before_empty_string" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearOptionalEmptyOptionBeforeEmptyString() {
+      _hasBits0 &= ~8;
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -240,6 +334,8 @@ namespace ProtobufTestMessages.Editions {
       if(!repeatedForeignEnum_.Equals(other.repeatedForeignEnum_)) return false;
       if (!MapStringForeignEnum.Equals(other.MapStringForeignEnum)) return false;
       if (!MapInt32Int32.Equals(other.MapInt32Int32)) return false;
+      if (OptionalEmptyOptionEnum != other.OptionalEmptyOptionEnum) return false;
+      if (OptionalEmptyOptionBeforeEmptyString != other.OptionalEmptyOptionBeforeEmptyString) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -252,6 +348,8 @@ namespace ProtobufTestMessages.Editions {
       hash ^= repeatedForeignEnum_.GetHashCode();
       hash ^= MapStringForeignEnum.GetHashCode();
       hash ^= MapInt32Int32.GetHashCode();
+      if (HasOptionalEmptyOptionEnum) hash ^= OptionalEmptyOptionEnum.GetHashCode();
+      if (HasOptionalEmptyOptionBeforeEmptyString) hash ^= OptionalEmptyOptionBeforeEmptyString.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -281,6 +379,14 @@ namespace ProtobufTestMessages.Editions {
       repeatedForeignEnum_.WriteTo(output, _repeated_repeatedForeignEnum_codec);
       mapStringForeignEnum_.WriteTo(output, _map_mapStringForeignEnum_codec);
       mapInt32Int32_.WriteTo(output, _map_mapInt32Int32_codec);
+      if (HasOptionalEmptyOptionEnum) {
+        output.WriteRawTag(48);
+        output.WriteEnum((int) OptionalEmptyOptionEnum);
+      }
+      if (HasOptionalEmptyOptionBeforeEmptyString) {
+        output.WriteRawTag(56);
+        output.WriteEnum((int) OptionalEmptyOptionBeforeEmptyString);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -302,6 +408,14 @@ namespace ProtobufTestMessages.Editions {
       repeatedForeignEnum_.WriteTo(ref output, _repeated_repeatedForeignEnum_codec);
       mapStringForeignEnum_.WriteTo(ref output, _map_mapStringForeignEnum_codec);
       mapInt32Int32_.WriteTo(ref output, _map_mapInt32Int32_codec);
+      if (HasOptionalEmptyOptionEnum) {
+        output.WriteRawTag(48);
+        output.WriteEnum((int) OptionalEmptyOptionEnum);
+      }
+      if (HasOptionalEmptyOptionBeforeEmptyString) {
+        output.WriteRawTag(56);
+        output.WriteEnum((int) OptionalEmptyOptionBeforeEmptyString);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -321,6 +435,12 @@ namespace ProtobufTestMessages.Editions {
       size += repeatedForeignEnum_.CalculateSize(_repeated_repeatedForeignEnum_codec);
       size += mapStringForeignEnum_.CalculateSize(_map_mapStringForeignEnum_codec);
       size += mapInt32Int32_.CalculateSize(_map_mapInt32Int32_codec);
+      if (HasOptionalEmptyOptionEnum) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) OptionalEmptyOptionEnum);
+      }
+      if (HasOptionalEmptyOptionBeforeEmptyString) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) OptionalEmptyOptionBeforeEmptyString);
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -342,6 +462,12 @@ namespace ProtobufTestMessages.Editions {
       repeatedForeignEnum_.Add(other.repeatedForeignEnum_);
       mapStringForeignEnum_.MergeFrom(other.mapStringForeignEnum_);
       mapInt32Int32_.MergeFrom(other.mapInt32Int32_);
+      if (other.HasOptionalEmptyOptionEnum) {
+        OptionalEmptyOptionEnum = other.OptionalEmptyOptionEnum;
+      }
+      if (other.HasOptionalEmptyOptionBeforeEmptyString) {
+        OptionalEmptyOptionBeforeEmptyString = other.OptionalEmptyOptionBeforeEmptyString;
+      }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -382,6 +508,14 @@ namespace ProtobufTestMessages.Editions {
             mapInt32Int32_.AddEntriesFrom(input, _map_mapInt32Int32_codec);
             break;
           }
+          case 48: {
+            OptionalEmptyOptionEnum = (global::ProtobufTestMessages.Editions.EnumOnlyEmptyOptionEdition2026) input.ReadEnum();
+            break;
+          }
+          case 56: {
+            OptionalEmptyOptionBeforeEmptyString = (global::ProtobufTestMessages.Editions.EnumEmptyOptionBeforeEmptyStringEdition2026) input.ReadEnum();
+            break;
+          }
         }
       }
     #endif
@@ -420,6 +554,14 @@ namespace ProtobufTestMessages.Editions {
           }
           case 42: {
             mapInt32Int32_.AddEntriesFrom(ref input, _map_mapInt32Int32_codec);
+            break;
+          }
+          case 48: {
+            OptionalEmptyOptionEnum = (global::ProtobufTestMessages.Editions.EnumOnlyEmptyOptionEdition2026) input.ReadEnum();
+            break;
+          }
+          case 56: {
+            OptionalEmptyOptionBeforeEmptyString = (global::ProtobufTestMessages.Editions.EnumEmptyOptionBeforeEmptyStringEdition2026) input.ReadEnum();
             break;
           }
         }
