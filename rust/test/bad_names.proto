@@ -65,3 +65,17 @@ enum SomeMsgView {
 
 message MangleViewTest {}
 message MangleViewTestView {}
+
+message MsgWithDefaultField {
+  optional int32 default = 1 [default = 42];
+}
+
+message ParentOfMsgWithDefaultField {
+  optional MsgWithDefaultField child = 1;
+  optional MsgWithDefaultField default = 2;
+  repeated MsgWithDefaultField repeated_child = 3;
+  map<int32, MsgWithDefaultField> map_child = 4;
+  oneof choice {
+    MsgWithDefaultField oneof_child = 5;
+  }
+}
