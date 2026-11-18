@@ -68,16 +68,22 @@ static upb_UnknownToMessageRet upb_MiniTable_ParseUnknownMessage(
     const upb_AuxField* ext = (const upb_AuxField*)unknown->value.aux_field;
     const upb_MiniTableField* f = upb_Extension_MiniTableField(ext);
     // Extension promotion `upb_Message_GetOrPromoteExtension` currently only
-    // supports Message types. If we find a primitive type, fail gracefully to
-    // avoid invalid access/crashes.
-    if (upb_MiniTableField_CType(f) != kUpb_CType_Message) {
+    // supports scalar Message types. If we find a non-scalar or primitive type,
+    // fail gracefully to avoid invalid access/crashes.
+    if (!upb_MiniTableField_IsScalar(f) ||
+        upb_MiniTableField_CType(f) != kUpb_CType_Message) {
+      ret.status = kUpb_UnknownToMessage_ParseError;
+      return ret;
+    }
+    const upb_Message* sub_msg = upb_Extension_GetMessage(ext);
+    const upb_MiniTable* sub_mt = upb_MiniTable_SubMessage(f);
+    if (!sub_msg || !sub_mt) {
       ret.status = kUpb_UnknownToMessage_ParseError;
       return ret;
     }
     char* buf;
     upb_EncodeStatus enc_status =
-        upb_Encode(upb_Extension_GetMessage(ext), upb_MiniTable_SubMessage(f),
-                   /* options= */ 0, arena, &buf, &size);
+        upb_Encode(sub_msg, sub_mt, /* options= */ 0, arena, &buf, &size);
     if (enc_status != kUpb_EncodeStatus_Ok) {
       ret.status = enc_status == kUpb_EncodeStatus_OutOfMemory
                        ? kUpb_UnknownToMessage_OutOfMemory
@@ -299,6 +305,9 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
             ret.status = kUpb_UnknownToMessage_OutOfMemory;
             return ret;
           }
+        } else {
+          ret.message = NULL;
+          return ret;
         }
       } break;
       case kUpb_FindUnknown_ParseError:

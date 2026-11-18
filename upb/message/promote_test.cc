@@ -29,7 +29,9 @@
 #include "upb/mem/arena.hpp"
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
+#include "upb/message/convert.h"
 #include "upb/message/internal/accessors.h"
+#include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
@@ -760,5 +762,209 @@ TEST(GeneratedCode, PromoteNonCanonicalExtensionWithDifferentMinitable) {
   upb_FindUnknownRet found = upb_Message_FindUnknown(UPB_UPCAST(msg), 1547, 0);
   UPB_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, found.status);
+}
+
+void AttachRepeatedMessageAuxField(upb_Message* dst, uint32_t field_number,
+                                   const upb_MiniTable* sub_mt,
+                                   upb_Message* elem, upb_Arena* arena) {
+  upb_Status status;
+  upb_Status_Clear(&status);
+
+  upb::MtDataEncoder extendee_encoder;
+  extendee_encoder.StartMessage(kUpb_MessageModifier_IsExtendable);
+  upb_MiniTable* extendee_mt =
+      upb_MiniTable_Build(extendee_encoder.data().data(),
+                          extendee_encoder.data().size(), arena, &status);
+  ASSERT_TRUE(status.ok);
+  ASSERT_NE(extendee_mt, nullptr);
+
+  upb::MtDataEncoder ext_encoder;
+  ext_encoder.EncodeExtension(kUpb_FieldType_Message, field_number,
+                              kUpb_FieldModifier_IsRepeated);
+  upb_MiniTableExtension* repeated_ext = upb_MiniTableExtension_BuildMessage(
+      ext_encoder.data().data(), ext_encoder.data().size(), extendee_mt, sub_mt,
+      arena, &status);
+  ASSERT_TRUE(status.ok);
+  ASSERT_NE(repeated_ext, nullptr);
+
+  upb_Array* arr = upb_Array_New(arena, kUpb_CType_Message);
+  upb_MessageValue elem_val;
+  elem_val.msg_val = elem;
+  ASSERT_TRUE(upb_Array_Append(arr, elem_val, arena));
+
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      dst, repeated_ext, &arr, arena));
+}
+
+TEST(GeneratedCode, RejectsRepeatedMessageAuxFieldOnGetOrPromoteExtension) {
+  upb::Arena arena;
+  upb_Status status;
+  upb_Status_Clear(&status);
+
+  // Build a repeated message extension sharing field number 1547 with
+  // upb_test_ModelExtension1_model_ext_ext.
+  upb::MtDataEncoder ext_encoder;
+  ext_encoder.EncodeExtension(kUpb_FieldType_Message, 1547,
+                              kUpb_FieldModifier_IsRepeated);
+  upb_MiniTableExtension* repeated_ext = upb_MiniTableExtension_BuildMessage(
+      ext_encoder.data().data(), ext_encoder.data().size(),
+      &upb_0test__ModelWithExtensions_msg_init,
+      &upb_0test__ModelExtension1_msg_init, arena.ptr(), &status);
+  ASSERT_TRUE(status.ok);
+  ASSERT_NE(repeated_ext, nullptr);
+
+  upb_test_ModelWithExtensions* src =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+  upb_test_ModelExtension1* elem = upb_test_ModelExtension1_new(arena.ptr());
+  upb_test_ModelExtension1_set_str(elem, upb_StringView_FromString("World"));
+
+  upb_Array* arr = upb_Array_New(arena.ptr(), kUpb_CType_Message);
+  ASSERT_TRUE(upb_Array_Resize(arr, 1, arena.ptr()));
+  upb_MessageValue elem_val;
+  elem_val.msg_val = UPB_UPCAST(elem);
+  upb_Array_Set(arr, 0, elem_val);
+
+  upb_MessageValue ext_val;
+  ext_val.array_val = arr;
+  ASSERT_TRUE(upb_Message_SetExtension(UPB_UPCAST(src), repeated_ext, &ext_val,
+                                       arena.ptr()));
+
+  // Convert into EmptyMessageWithExtensions without registering repeated_ext so
+  // it is preserved as a repeated kUpb_MessageUnknownType_AuxField entry.
+  const upb_Message* converted = upb_Message_Convert(
+      UPB_UPCAST(src), &upb_0test__ModelWithExtensions_msg_init,
+      &upb_0test__EmptyMessageWithExtensions_msg_init, /*extreg=*/nullptr, 0, 0,
+      arena.ptr());
+  ASSERT_NE(converted, nullptr);
+
+  upb_FindUnknownRet2 found = upb_Message_FindUnknown2(converted, 1547, 0);
+  ASSERT_EQ(found.status, kUpb_FindUnknown_Ok);
+  ASSERT_EQ(found.unknown.type, kUpb_MessageUnknownType_AuxField);
+
+  upb_MessageValue promoted;
+  upb_GetExtension_Status promote_status = upb_Message_GetOrPromoteExtension(
+      const_cast<upb_Message*>(converted),
+      upb_test_ModelExtension1_model_ext_ext, 0, arena.ptr(), &promoted);
+  EXPECT_EQ(promote_status, kUpb_GetExtension_ParseError);
+  EXPECT_EQ(upb_Message_ExtensionCount(converted), 0);
+}
+
+TEST(GeneratedCode, RejectsRepeatedMessageAuxFieldOnPromoteUnknownToMessage) {
+  upb::Arena arena;
+  upb_MiniTable* dst_mt = CreateMiniTableWithEmptySubTablesOld(arena.ptr());
+  upb_MiniTableField* dst_field =
+      const_cast<upb_MiniTableField*>(upb_MiniTable_GetFieldByIndex(dst_mt, 1));
+  ASSERT_TRUE(upb_MiniTable_SetSubMessage(
+      dst_mt, dst_field, &upb_0test__ModelWithExtensions_msg_init));
+
+  upb_Message* dst = _upb_Message_New(dst_mt, arena.ptr());
+  upb_test_ModelWithExtensions* item =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+  upb_test_ModelWithExtensions_set_random_int32(item, 42);
+  AttachRepeatedMessageAuxField(dst, 5,
+                                &upb_0test__ModelWithExtensions_msg_init,
+                                UPB_UPCAST(item), arena.ptr());
+
+  upb_UnknownToMessageRet promote_result =
+      upb_MiniTable_PromoteUnknownToMessage(
+          dst, dst_mt, dst_field, &upb_0test__ModelWithExtensions_msg_init, 0,
+          arena.ptr());
+  EXPECT_EQ(promote_result.status, kUpb_UnknownToMessage_ParseError);
+  EXPECT_EQ(promote_result.message, nullptr);
+  EXPECT_EQ(upb_Message_GetMessage(dst, dst_field), nullptr);
+}
+
+TEST(GeneratedCode,
+     RejectsRepeatedMessageAuxFieldOnPromoteUnknownToMessageArray) {
+  upb::Arena arena;
+  upb_MiniTable* dst_mt = CreateMiniTableWithEmptySubTablesOld(arena.ptr());
+  upb_MiniTableField* dst_field =
+      const_cast<upb_MiniTableField*>(upb_MiniTable_GetFieldByIndex(dst_mt, 2));
+  ASSERT_TRUE(upb_MiniTable_SetSubMessage(
+      dst_mt, dst_field, &upb_0test__ModelWithExtensions_msg_init));
+
+  upb_Message* dst = _upb_Message_New(dst_mt, arena.ptr());
+  upb_test_ModelWithExtensions* item =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+  upb_test_ModelWithExtensions_set_random_int32(item, 42);
+  AttachRepeatedMessageAuxField(dst, 6,
+                                &upb_0test__ModelWithExtensions_msg_init,
+                                UPB_UPCAST(item), arena.ptr());
+
+  upb_UnknownToMessage_Status promote_result =
+      upb_MiniTable_PromoteUnknownToMessageArray(
+          dst, dst_field, &upb_0test__ModelWithExtensions_msg_init, 0,
+          arena.ptr());
+  EXPECT_EQ(promote_result, kUpb_UnknownToMessage_ParseError);
+}
+
+TEST(GeneratedCode, RejectsRepeatedMessageAuxFieldOnPromoteUnknownToMap) {
+  upb::Arena arena;
+  upb_MiniTable* dst_mt =
+      CreateMiniTableWithEmptySubTablesForMapsOld(arena.ptr());
+  upb_MiniTable* map_entry_mt = CreateMapEntryMiniTableOld(arena.ptr());
+  upb_MiniTableField* dst_field =
+      const_cast<upb_MiniTableField*>(upb_MiniTable_GetFieldByIndex(dst_mt, 1));
+  ASSERT_TRUE(upb_MiniTable_SetSubMessage(dst_mt, dst_field, map_entry_mt));
+
+  upb_Message* dst = _upb_Message_New(dst_mt, arena.ptr());
+  upb_Message* entry = _upb_Message_New(map_entry_mt, arena.ptr());
+  AttachRepeatedMessageAuxField(dst, 3, map_entry_mt, entry, arena.ptr());
+
+  upb_UnknownToMessage_Status promote_result =
+      upb_MiniTable_PromoteUnknownToMap(dst, dst_mt, dst_field, 0, arena.ptr());
+  EXPECT_EQ(promote_result, kUpb_UnknownToMessage_ParseError);
+}
+
+TEST(GeneratedCode, RejectsNullMessageAuxFieldOnGetOrPromoteExtension) {
+  upb::Arena arena;
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+
+  upb_Message* null_sub = nullptr;
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext, &null_sub,
+      arena.ptr()));
+
+  upb_MessageValue val;
+  upb_GetExtension_Status promote_status = upb_Message_GetOrPromoteExtension(
+      UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext, 0, arena.ptr(),
+      &val);
+  EXPECT_EQ(promote_status, kUpb_GetExtension_ParseError);
+  EXPECT_EQ(upb_Message_ExtensionCount(UPB_UPCAST(msg)), 0);
+}
+
+TEST(GeneratedCode, RejectsUnlinkedMessageAuxFieldOnGetOrPromoteExtension) {
+  upb::Arena arena;
+  upb_Status status;
+  upb_Status_Clear(&status);
+
+  upb::MtDataEncoder e;
+  e.StartMessage(0);
+  e.PutField(kUpb_FieldType_Message, 1547, 0);
+  upb_MiniTable* unlinked_mt = upb_MiniTable_Build(
+      e.data().data(), e.data().size(), arena.ptr(), &status);
+  ASSERT_TRUE(status.ok);
+  const upb_MiniTableField* unlinked_field =
+      upb_MiniTable_GetFieldByIndex(unlinked_mt, 0);
+  ASSERT_EQ(upb_MiniTable_SubMessage(unlinked_field), nullptr);
+  const upb_MiniTableField* aux_field =
+      upb_MiniTableField_ConvertToAuxField(unlinked_field, arena.ptr());
+  ASSERT_NE(aux_field, nullptr);
+
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+  upb_test_ModelExtension1* sub = upb_test_ModelExtension1_new(arena.ptr());
+  upb_AuxField* aux = UPB_PRIVATE(_upb_Message_CreateUnknownField)(
+      UPB_UPCAST(msg), aux_field, arena.ptr());
+  ASSERT_NE(aux, nullptr);
+  upb_Extension_SetMessage(aux, UPB_UPCAST(sub));
+
+  upb_MessageValue val;
+  upb_GetExtension_Status promote_status = upb_Message_GetOrPromoteExtension(
+      UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext, 0, arena.ptr(),
+      &val);
+  EXPECT_EQ(promote_status, kUpb_GetExtension_ParseError);
+  EXPECT_EQ(upb_Message_ExtensionCount(UPB_UPCAST(msg)), 0);
 }
 }  // namespace

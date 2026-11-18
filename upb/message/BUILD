@@ -515,6 +515,7 @@ cc_test(
     name = "promote_test",
     srcs = ["promote_test.cc"],
     deps = [
+        ":convert",
         ":copy",
         ":internal",
         ":message",
