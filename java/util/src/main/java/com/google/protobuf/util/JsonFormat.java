@@ -1344,7 +1344,9 @@ public class JsonFormat {
 
     private void printField(FieldDescriptor field, Object value) throws IOException {
       if (field.isExtension() && printingFullyQualifiedExtensionNames) {
-        generator.print("\"[" + field.getFullName() + "]\":" + blankOrSpace);
+        generator.print("\"[");
+        printStringEscaped(field.getFullName());
+        generator.print("]\"");
       } else {
         if (field.isExtension()) {
           logger.warning(
@@ -1354,12 +1356,11 @@ public class JsonFormat {
                   + "In a future breaking change, JsonFormat will default to printing fully"
                   + " qualified extension names.");
         }
-        if (preservingProtoFieldNames) {
-          generator.print("\"" + field.getName() + "\":" + blankOrSpace);
-        } else {
-          generator.print("\"" + field.getJsonName() + "\":" + blankOrSpace);
-        }
+        printStringEscapedAndQuoted(
+            preservingProtoFieldNames ? field.getName() : field.getJsonName());
       }
+      generator.print(":");
+      generator.print(blankOrSpace);
       if (field.isMapField()) {
         printMapFieldValue(field, value);
       } else if (field.isRepeated()) {
@@ -1559,11 +1560,7 @@ public class JsonFormat {
               EnumValueDescriptor enumValue = (EnumValueDescriptor) value;
               JsonEnumValueOptions ext =
                   enumValue.getOptions().getExtension(JsonEnumvalueOptionsProto.json);
-              if (ext.hasString()) {
-                printStringEscapedAndQuoted(ext.getString());
-              } else {
-                generator.print("\"" + enumValue.getName() + "\"");
-              }
+              printStringEscapedAndQuoted(ext.hasString() ? ext.getString() : enumValue.getName());
             }
           }
           break;
@@ -1628,6 +1625,12 @@ public class JsonFormat {
      */
     private void printStringEscapedAndQuoted(final CharSequence value) throws IOException {
       generator.print("\"");
+      printStringEscaped(value);
+      generator.print("\"");
+    }
+
+    /** Prints a string value, escaping any illegal or dangerous characters for JSON safety. */
+    private void printStringEscaped(final CharSequence value) throws IOException {
       int len = value.length();
       int last = 0;
       for (int i = 0; i < len; i++) {
@@ -1646,7 +1649,6 @@ public class JsonFormat {
       }
 
       generator.printSubsequence(value, last, len);
-      generator.print("\"");
     }
   }
 

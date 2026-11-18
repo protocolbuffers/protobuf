@@ -19,8 +19,12 @@ import com.google.protobuf.Any;
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.BytesValue;
+import com.google.protobuf.DescriptorProtos.DescriptorProto;
+import com.google.protobuf.DescriptorProtos.FieldDescriptorProto;
+import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.DoubleValue;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.ExtensionRegistry;
@@ -2061,6 +2065,78 @@ public class JsonFormatTest {
     assertThat(JsonFormat.printer().print(message))
         .isEqualTo("{\n" + "  \"@value\": 12345\n" + "}");
     assertRoundTripEquals(message);
+  }
+
+  @Test
+  public void testCustomJsonNameIsEscaped() throws Exception {
+    FileDescriptorProto fileProto =
+        FileDescriptorProto.newBuilder()
+            .setName("evil_json_name.proto")
+            .setSyntax("proto3")
+            .addMessageType(
+                DescriptorProto.newBuilder()
+                    .setName("EvilJsonName")
+                    .addField(
+                        FieldDescriptorProto.newBuilder()
+                            .setName("value")
+                            .setNumber(1)
+                            .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                            .setType(FieldDescriptorProto.Type.TYPE_INT32)
+                            .setJsonName("a\":0,\"b\\\n</script>")))
+            .build();
+    Descriptor descriptor =
+        FileDescriptor.buildFrom(fileProto, new FileDescriptor[0])
+            .findMessageTypeByName("EvilJsonName");
+    DynamicMessage message =
+        DynamicMessage.newBuilder(descriptor)
+            .setField(descriptor.findFieldByName("value"), 1)
+            .build();
+
+    String json = JsonFormat.printer().omittingInsignificantWhitespace().print(message);
+
+    assertThat(json).isEqualTo("{\"a\\\":0,\\\"b\\\\\\n\\u003c/script\\u003e\":1}");
+    DynamicMessage.Builder builder = DynamicMessage.newBuilder(descriptor);
+    JsonFormat.parser().merge(json, builder);
+    assertThat(builder.build()).isEqualTo(message);
+  }
+
+  @Test
+  public void testFullyQualifiedExtensionNameIsEscaped() throws Exception {
+    // Package names are not validated when building descriptors dynamically.
+    FileDescriptorProto fileProto =
+        FileDescriptorProto.newBuilder()
+            .setName("evil_package.proto")
+            .setPackage("p\"]:0,\"<q")
+            .addMessageType(
+                DescriptorProto.newBuilder()
+                    .setName("Extendee")
+                    .addExtensionRange(
+                        DescriptorProto.ExtensionRange.newBuilder().setStart(1).setEnd(2)))
+            .addExtension(
+                FieldDescriptorProto.newBuilder()
+                    .setName("ext")
+                    .setNumber(1)
+                    .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                    .setType(FieldDescriptorProto.Type.TYPE_INT32)
+                    .setExtendee(".p\"]:0,\"<q.Extendee"))
+            .build();
+    FileDescriptor file = FileDescriptor.buildFrom(fileProto, new FileDescriptor[0]);
+    Descriptor descriptor = file.findMessageTypeByName("Extendee");
+    FieldDescriptor extension = file.findExtensionByName("ext");
+    DynamicMessage message = DynamicMessage.newBuilder(descriptor).setField(extension, 1).build();
+
+    String json =
+        JsonFormat.printer()
+            .omittingInsignificantWhitespace()
+            .printingFullyQualifiedExtensionNames()
+            .print(message);
+
+    assertThat(json).isEqualTo("{\"[p\\\"]:0,\\\"\\u003cq.ext]\":1}");
+    ExtensionRegistry extensionRegistry = ExtensionRegistry.newInstance();
+    extensionRegistry.add(extension);
+    DynamicMessage.Builder builder = DynamicMessage.newBuilder(descriptor);
+    JsonFormat.parser().usingExtensionRegistry(extensionRegistry).merge(json, builder);
+    assertThat(builder.build()).isEqualTo(message);
   }
 
   // Regression test for b/73832901. Make sure html tags are escaped.
