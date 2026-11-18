@@ -15,6 +15,7 @@ import com.google.protobuf.DescriptorProtos.DescriptorProto;
 import com.google.protobuf.DescriptorProtos.DescriptorProto.ExtensionRange;
 import com.google.protobuf.DescriptorProtos.Edition;
 import com.google.protobuf.DescriptorProtos.EnumDescriptorProto;
+import com.google.protobuf.DescriptorProtos.EnumOptions;
 import com.google.protobuf.DescriptorProtos.EnumValueDescriptorProto;
 import com.google.protobuf.DescriptorProtos.FeatureSetDefaults;
 import com.google.protobuf.DescriptorProtos.FeatureSetDefaults.FeatureSetEditionDefault;
@@ -31,7 +32,9 @@ import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
+import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
+import com.google.protobuf.Descriptors.ServiceDescriptor;
 import com.google.protobuf.test.UnittestImport;
 import com.google.protobuf.test.UnittestImport.ImportEnum;
 import com.google.protobuf.test.UnittestImport.ImportEnumForMap;
@@ -53,6 +56,9 @@ import proto2_unittest.UnittestProto.TestReservedEnumFields;
 import proto2_unittest.UnittestProto.TestReservedFields;
 import proto2_unittest.UnittestRetention;
 import protobuf_unittest.UnittestProto3Extensions.Proto3FileExtensions;
+import com.google.testing.junit.testparameterinjector.TestParameter;
+import com.google.testing.junit.testparameterinjector.TestParameterInjector;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
@@ -68,6 +74,7 @@ import proto2_unittest.NonNestedExtension;
 @RunWith(Enclosed.class)
 public class DescriptorsTest {
 
+  @RunWith(TestParameterInjector.class)
   public static class GeneralDescriptorsTest {
     // Regression test for bug where referencing a FieldDescriptor.Type value
     // before a FieldDescriptorProto.Type value would yield a
@@ -1566,6 +1573,405 @@ public class DescriptorsTest {
     public void testProto3ExtensionHasPresence() {
       assertThat(Proto3FileExtensions.singularInt.getDescriptor().hasPresence()).isTrue();
       assertThat(Proto3FileExtensions.repeatedInt.getDescriptor().hasPresence()).isFalse();
+    }
+
+    private static final ExtensionRange EXT_RANGE =
+        ExtensionRange.newBuilder().setStart(10).setEnd(200).build();
+    private static final MethodDescriptorProto RPC =
+        MethodDescriptorProto.newBuilder()
+            .setName("Rpc")
+            .setInputType(".pkg.Req")
+            .setOutputType(".pkg.Req")
+            .build();
+
+    private static FileDescriptorProto.Builder pkg() {
+      return FileDescriptorProto.newBuilder().setName("test.proto").setPackage("pkg");
+    }
+
+    private static DescriptorProto.Builder msg(String name) {
+      return DescriptorProto.newBuilder().setName(name);
+    }
+
+    private static FieldDescriptorProto.Builder intField(String name, int number) {
+      return FieldDescriptorProto.newBuilder()
+          .setName(name)
+          .setNumber(number)
+          .setType(FieldDescriptorProto.Type.TYPE_INT32)
+          .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL);
+    }
+
+    private static FieldDescriptorProto.Builder intExtension(
+        String name, int number, String extendee) {
+      return intField(name, number).setExtendee(extendee);
+    }
+
+    private static EnumValueDescriptorProto enumValue(String name, int number) {
+      return EnumValueDescriptorProto.newBuilder().setName(name).setNumber(number).build();
+    }
+
+    private static MethodDescriptorProto rpc(String name) {
+      return MethodDescriptorProto.newBuilder()
+          .setName(name)
+          .setInputType(".pkg.Req")
+          .setOutputType(".pkg.Req")
+          .build();
+    }
+
+    private static DescriptorProto.Builder largeMsg(String name, int fieldCount) {
+      DescriptorProto.Builder builder = msg(name);
+      for (int i = 0; i < fieldCount; i++) {
+        builder.addField(intField("f" + i, i + 1));
+      }
+      return builder;
+    }
+
+    private static EnumDescriptorProto.Builder largeEnum(String name, int valueCount) {
+      EnumDescriptorProto.Builder builder = EnumDescriptorProto.newBuilder().setName(name);
+      for (int i = 0; i < valueCount; i++) {
+        builder.addValue(enumValue("V" + i, i));
+      }
+      return builder;
+    }
+
+    private static ServiceDescriptorProto.Builder largeService(String name, int methodCount) {
+      ServiceDescriptorProto.Builder builder = ServiceDescriptorProto.newBuilder().setName(name);
+      for (int i = 0; i < methodCount; i++) {
+        builder.addMethod(rpc("Rpc" + i));
+      }
+      return builder;
+    }
+
+    private static Object getFieldValue(Object instance, String fieldName) throws Exception {
+      Field field = instance.getClass().getDeclaredField(fieldName);
+      field.setAccessible(true);
+      return field.get(instance);
+    }
+
+    private enum SymbolCollisionCase {
+      DUPLICATE_FIELD(
+          pkg().addMessageType(msg("Msg").addField(intField("f", 1)).addField(intField("f", 2))),
+          "pkg.Msg.f",
+          "pkg.Msg.f: \"f\" is already defined in \"pkg.Msg\"."),
+      DUPLICATE_ONEOF(
+          pkg()
+              .addMessageType(
+                  msg("Msg")
+                      .addOneofDecl(OneofDescriptorProto.newBuilder().setName("dup"))
+                      .addOneofDecl(OneofDescriptorProto.newBuilder().setName("dup"))),
+          "pkg.Msg.dup",
+          "pkg.Msg.dup: \"dup\" is already defined in \"pkg.Msg\"."),
+      DUPLICATE_ENUM_VALUE(
+          pkg()
+              .addEnumType(
+                  EnumDescriptorProto.newBuilder()
+                      .setName("MyEnum")
+                      .addValue(enumValue("FOO", 0))
+                      .addValue(enumValue("FOO", 1))),
+          "pkg.MyEnum.FOO",
+          "pkg.MyEnum.FOO: \"FOO\" is already defined in \"pkg.MyEnum\"."),
+      DUPLICATE_METHOD(
+          pkg()
+              .addMessageType(msg("Req"))
+              .addService(
+                  ServiceDescriptorProto.newBuilder().setName("Svc").addMethod(RPC).addMethod(RPC)),
+          "pkg.Svc.Rpc",
+          "pkg.Svc.Rpc: \"Rpc\" is already defined in \"pkg.Svc\"."),
+      FIELD_VS_NESTED_TYPE(
+          pkg().addMessageType(msg("Msg").addNestedType(msg("Dup")).addField(intField("Dup", 1))),
+          "pkg.Msg.Dup",
+          "pkg.Msg.Dup: \"Dup\" is already defined in \"pkg.Msg\"."),
+      FIELD_VS_NESTED_ENUM(
+          pkg()
+              .addMessageType(
+                  msg("Msg")
+                      .addEnumType(
+                          EnumDescriptorProto.newBuilder()
+                              .setName("Dup")
+                              .addValue(enumValue("ZERO", 0)))
+                      .addField(intField("Dup", 1))),
+          "pkg.Msg.Dup",
+          "pkg.Msg.Dup: \"Dup\" is already defined in \"pkg.Msg\"."),
+      NESTED_TYPE_VS_ONEOF(
+          pkg()
+              .addMessageType(
+                  msg("Msg")
+                      .addOneofDecl(OneofDescriptorProto.newBuilder().setName("Dup"))
+                      .addNestedType(msg("Dup"))),
+          "pkg.Msg.Dup",
+          "pkg.Msg.Dup: \"Dup\" is already defined in \"pkg.Msg\"."),
+      MESSAGE_EXTENSION_VS_FIELD(
+          pkg()
+              .addMessageType(
+                  msg("Msg")
+                      .addExtensionRange(EXT_RANGE)
+                      .addField(intField("dup", 1))
+                      .addExtension(intExtension("dup", 10, ".pkg.Msg"))),
+          "pkg.Msg.dup",
+          "pkg.Msg.dup: \"dup\" is already defined in \"pkg.Msg\"."),
+      DUPLICATE_MESSAGE_EXTENSION(
+          pkg()
+              .addMessageType(
+                  msg("Msg")
+                      .addExtensionRange(EXT_RANGE)
+                      .addExtension(intExtension("dup", 10, ".pkg.Msg"))
+                      .addExtension(intExtension("dup", 11, ".pkg.Msg"))),
+          "pkg.Msg.dup",
+          "pkg.Msg.dup: \"dup\" is already defined in \"pkg.Msg\"."),
+      SAME_NAMED_MESSAGES_WITH_SAME_FIELD(
+          pkg()
+              .addMessageType(msg("Outer").addNestedType(msg("Inner").addField(intField("f", 1))))
+              .addMessageType(msg("Outer").addNestedType(msg("Inner").addField(intField("f", 1)))),
+          "pkg.Outer.Inner.f",
+          "pkg.Outer.Inner.f: \"f\" is already defined in \"pkg.Outer.Inner\"."),
+      LARGE_MESSAGE_FIELD_VS_ONEOF(
+          pkg()
+              .addMessageType(
+                  largeMsg("Msg", 35)
+                      .addOneofDecl(OneofDescriptorProto.newBuilder().setName("Dup"))
+                      .addField(intField("Dup", 100))),
+          "pkg.Msg.Dup",
+          "pkg.Msg.Dup: \"Dup\" is already defined in \"pkg.Msg\"."),
+      LARGE_ENUM_DUPLICATE_VALUE(
+          pkg().addEnumType(largeEnum("MyEnum", 35).addValue(enumValue("V0", 100))),
+          "pkg.MyEnum.V0",
+          "pkg.MyEnum.V0: \"V0\" is already defined in \"pkg.MyEnum\"."),
+      LARGE_SERVICE_DUPLICATE_METHOD(
+          pkg()
+              .addMessageType(msg("Req"))
+              .addService(largeService("Svc", 35).addMethod(rpc("Rpc0"))),
+          "pkg.Svc.Rpc0",
+          "pkg.Svc.Rpc0: \"Rpc0\" is already defined in \"pkg.Svc\"."),
+      SAME_NAMED_LARGE_MESSAGES_WITH_SAME_FIELD(
+          pkg()
+              .addMessageType(largeMsg("Outer", 35))
+              .addMessageType(
+                  msg("Outer").addField(intField("unique", 1)).addField(intField("f34", 2))),
+          "pkg.Outer.f34",
+          "pkg.Outer.f34: \"f34\" is already defined in \"pkg.Outer\"."),
+      DEPENDENCY_PACKAGE_VS_FIELD(
+          FileDescriptorProto.newBuilder()
+              .setName("main.proto")
+              .setPackage("a")
+              .addDependency("dep.proto")
+              .addMessageType(msg("b").addField(intField("c", 1)))
+              .build(),
+          FileDescriptorProto.newBuilder().setName("dep.proto").setPackage("a.b.c").build(),
+          "a.b.c",
+          "a.b.c: \"a.b.c\" is already defined in file \"dep.proto\".");
+
+      final FileDescriptorProto fileProto;
+      final FileDescriptorProto depProto;
+      final String problemSymbol;
+      final String errorMessage;
+
+      SymbolCollisionCase(
+          FileDescriptorProto.Builder fileProto, String problemSymbol, String errorMessage) {
+        this(fileProto.build(), null, problemSymbol, errorMessage);
+      }
+
+      SymbolCollisionCase(
+          FileDescriptorProto fileProto,
+          FileDescriptorProto depProto,
+          String problemSymbol,
+          String errorMessage) {
+        this.fileProto = fileProto;
+        this.depProto = depProto;
+        this.problemSymbol = problemSymbol;
+        this.errorMessage = errorMessage;
+      }
+    }
+
+    @Test
+    public void testSymbolCollisions(@TestParameter SymbolCollisionCase c) throws Exception {
+      FileDescriptor[] deps =
+          c.depProto == null
+              ? new FileDescriptor[0]
+              : new FileDescriptor[] {FileDescriptor.buildFrom(c.depProto, new FileDescriptor[0])};
+      DescriptorValidationException e =
+          assertThrows(
+              DescriptorValidationException.class,
+              () -> FileDescriptor.buildFrom(c.fileProto, deps));
+      assertThat(e.getProblemSymbolName()).isEqualTo(c.problemSymbol);
+      assertThat(e).hasMessageThat().isEqualTo(c.errorMessage);
+    }
+
+    @Test
+    public void testFindFieldByNameScopedLookups() throws Exception {
+      DescriptorProto.Builder nestedProto =
+          msg("Nested")
+              .addField(intField("field", 1))
+              .addNestedType(msg("Deep").addField(intField("leaf", 1)));
+      FileDescriptor file =
+          FileDescriptor.buildFrom(
+              pkg()
+                  .addMessageType(
+                      msg("Outer")
+                          .addExtensionRange(EXT_RANGE)
+                          .addField(intField("direct", 1))
+                          .addNestedType(nestedProto)
+                          .addExtension(intExtension("scoped_ext", 100, ".pkg.Outer")))
+                  .build(),
+              new FileDescriptor[0]);
+
+      Descriptor outer = file.findMessageTypeByName("Outer");
+      Descriptor nested = outer.findNestedTypeByName("Nested");
+      Descriptor deep = nested.findNestedTypeByName("Deep");
+      assertThat(outer.findFieldByName("direct")).isSameInstanceAs(outer.getField(0));
+      assertThat(outer.findFieldByName("scoped_ext")).isSameInstanceAs(outer.getExtension(0));
+      assertThat(outer.findFieldByName("Nested.field")).isSameInstanceAs(nested.getField(0));
+      assertThat(outer.findFieldByName("Nested.Deep.leaf")).isSameInstanceAs(deep.getField(0));
+      assertThat(outer.findFieldByName(".direct")).isNull();
+      assertThat(outer.findFieldByName("Nested.")).isNull();
+      assertThat(outer.findFieldByName("Nested..field")).isNull();
+      assertThat(outer.findFieldByName("Nested.missing")).isNull();
+      assertThat(outer.findFieldByName("UnknownPrefix.field")).isNull();
+      assertThat(outer.findFieldByName("missing")).isNull();
+      assertThat(outer.findFieldByName(null)).isNull();
+    }
+
+    @Test
+    public void testLargeScopesClearTransientSymbolTables() throws Exception {
+      FileDescriptor file =
+          FileDescriptor.buildFrom(
+              pkg()
+                  .addMessageType(msg("Req"))
+                  .addMessageType(
+                      largeMsg("LargeMsg", 40)
+                          .addExtensionRange(EXT_RANGE)
+                          .addOneofDecl(OneofDescriptorProto.newBuilder().setName("choice"))
+                          .addNestedType(msg("Nested"))
+                          .addEnumType(
+                              EnumDescriptorProto.newBuilder()
+                                  .setName("NestedEnum")
+                                  .addValue(enumValue("ZERO", 0)))
+                          .addExtension(intExtension("scoped_ext", 100, ".pkg.LargeMsg")))
+                  .addEnumType(largeEnum("LargeEnum", 40))
+                  .addService(largeService("LargeSvc", 40))
+                  .build(),
+              new FileDescriptor[0]);
+
+      Descriptor largeMsg = file.findMessageTypeByName("LargeMsg");
+      assertThat(largeMsg.findFieldByName("f0")).isSameInstanceAs(largeMsg.getField(0));
+      assertThat(largeMsg.findFieldByName("f39")).isSameInstanceAs(largeMsg.getField(39));
+      assertThat(largeMsg.findFieldByName("missing")).isNull();
+      assertThat(largeMsg.findOneofByName("choice")).isSameInstanceAs(largeMsg.getOneof(0));
+      assertThat(largeMsg.findNestedTypeByName("Nested"))
+          .isSameInstanceAs(largeMsg.getNestedType(0));
+      assertThat(largeMsg.findEnumTypeByName("NestedEnum"))
+          .isSameInstanceAs(largeMsg.getEnumType(0));
+      assertThat(largeMsg.findFieldByName("scoped_ext")).isSameInstanceAs(largeMsg.getExtension(0));
+
+      EnumDescriptor largeEnum = file.findEnumTypeByName("LargeEnum");
+      assertThat(largeEnum.findValueByName("V0")).isSameInstanceAs(largeEnum.getValue(0));
+      assertThat(largeEnum.findValueByName("V39")).isSameInstanceAs(largeEnum.getValue(39));
+      assertThat(largeEnum.findValueByNumber(39)).isSameInstanceAs(largeEnum.getValue(39));
+      assertThat(getFieldValue(largeEnum, "valuesSortedByNumber"))
+          .isSameInstanceAs(getFieldValue(largeEnum, "values"));
+
+      ServiceDescriptor largeSvc = file.findServiceByName("LargeSvc");
+      MethodDescriptor rpc39 = largeSvc.findMethodByName("Rpc39");
+      assertThat(largeSvc.findMethodByName("Rpc0")).isSameInstanceAs(largeSvc.getMethod(0));
+      assertThat(rpc39).isSameInstanceAs(largeSvc.getMethod(39));
+      assertThat(largeSvc.findMethodByName("Missing")).isNull();
+
+      Object tables = getFieldValue(file, "tables");
+      assertThat(getFieldValue(tables, "largeScopeMembers")).isNull();
+    }
+
+    @Test
+    public void testEnumDescriptorSortedAndUnsortedValues() throws Exception {
+      EnumOptions allowAlias = EnumOptions.newBuilder().setAllowAlias(true).build();
+      FileDescriptor file =
+          FileDescriptor.buildFrom(
+              pkg()
+                  .addEnumType(
+                      EnumDescriptorProto.newBuilder()
+                          .setName("SortedEnum")
+                          .addValue(enumValue("ZERO", 0))
+                          .addValue(enumValue("TWO", 2))
+                          .addValue(enumValue("FIVE", 5)))
+                  .addEnumType(
+                      EnumDescriptorProto.newBuilder()
+                          .setName("UnsortedDistinctEnum")
+                          .addValue(enumValue("TEN", 10))
+                          .addValue(enumValue("TWO", 2)))
+                  .addEnumType(
+                      EnumDescriptorProto.newBuilder()
+                          .setName("UnsortedAliasedEnum")
+                          .setOptions(allowAlias)
+                          .addValue(enumValue("TEN", 10))
+                          .addValue(enumValue("A", 1))
+                          .addValue(enumValue("B", 1))
+                          .addValue(enumValue("NEG", -2)))
+                  .addEnumType(
+                      EnumDescriptorProto.newBuilder()
+                          .setName("AscendingAliasedEnum")
+                          .setOptions(allowAlias)
+                          .addValue(enumValue("TWO_A", 2))
+                          .addValue(enumValue("TWO_B", 2))
+                          .addValue(enumValue("THREE", 3)))
+                  .build(),
+              new FileDescriptor[0]);
+
+      EnumDescriptor sorted = file.findEnumTypeByName("SortedEnum");
+      assertThat(getFieldValue(sorted, "valuesSortedByNumber"))
+          .isSameInstanceAs(getFieldValue(sorted, "values"));
+      assertThat(sorted.getValues())
+          .containsExactly(sorted.getValue(0), sorted.getValue(1), sorted.getValue(2))
+          .inOrder();
+      assertThat(sorted.findValueByName("ZERO")).isSameInstanceAs(sorted.getValue(0));
+      assertThat(sorted.findValueByName("TWO")).isSameInstanceAs(sorted.getValue(1));
+      assertThat(sorted.findValueByName("FIVE")).isSameInstanceAs(sorted.getValue(2));
+      assertThat(sorted.findValueByName("MISSING")).isNull();
+      assertThat(sorted.findValueByName(null)).isNull();
+      assertThat(sorted.findValueByNumber(0)).isSameInstanceAs(sorted.getValue(0));
+      assertThat(sorted.findValueByNumber(2)).isSameInstanceAs(sorted.getValue(1));
+      assertThat(sorted.findValueByNumber(5)).isSameInstanceAs(sorted.getValue(2));
+      assertThat(sorted.findValueByNumber(1)).isNull();
+      assertThat(sorted.findValueByNumber(-1)).isNull();
+      assertThat(sorted.findValueByNumber(6)).isNull();
+
+      EnumDescriptor unsortedDistinct = file.findEnumTypeByName("UnsortedDistinctEnum");
+      assertThat(getFieldValue(unsortedDistinct, "valuesSortedByNumber"))
+          .isNotSameInstanceAs(getFieldValue(unsortedDistinct, "values"));
+      assertThat(unsortedDistinct.findValueByNumber(10))
+          .isSameInstanceAs(unsortedDistinct.getValue(0));
+      assertThat(unsortedDistinct.findValueByNumber(2))
+          .isSameInstanceAs(unsortedDistinct.getValue(1));
+      assertThat(unsortedDistinct.findValueByNumber(5)).isNull();
+
+      EnumDescriptor unsorted = file.findEnumTypeByName("UnsortedAliasedEnum");
+      assertThat(getFieldValue(unsorted, "valuesSortedByNumber"))
+          .isNotSameInstanceAs(getFieldValue(unsorted, "values"));
+      assertThat(unsorted.getValues())
+          .containsExactly(
+              unsorted.getValue(0),
+              unsorted.getValue(1),
+              unsorted.getValue(2),
+              unsorted.getValue(3))
+          .inOrder();
+      assertThat(unsorted.findValueByName("TEN")).isSameInstanceAs(unsorted.getValue(0));
+      assertThat(unsorted.findValueByName("A")).isSameInstanceAs(unsorted.getValue(1));
+      assertThat(unsorted.findValueByName("B")).isSameInstanceAs(unsorted.getValue(2));
+      assertThat(unsorted.findValueByName("NEG")).isSameInstanceAs(unsorted.getValue(3));
+      assertThat(unsorted.findValueByName("MISSING")).isNull();
+      assertThat(unsorted.findValueByNumber(10)).isSameInstanceAs(unsorted.getValue(0));
+      assertThat(unsorted.findValueByNumber(1)).isSameInstanceAs(unsorted.getValue(1));
+      assertThat(unsorted.findValueByNumber(-2)).isSameInstanceAs(unsorted.getValue(3));
+      assertThat(unsorted.findValueByNumber(0)).isNull();
+
+      EnumDescriptor aliased = file.findEnumTypeByName("AscendingAliasedEnum");
+      assertThat(getFieldValue(aliased, "valuesSortedByNumber"))
+          .isNotSameInstanceAs(getFieldValue(aliased, "values"));
+      assertThat(aliased.getValues())
+          .containsExactly(aliased.getValue(0), aliased.getValue(1), aliased.getValue(2))
+          .inOrder();
+      assertThat(aliased.findValueByName("TWO_A")).isSameInstanceAs(aliased.getValue(0));
+      assertThat(aliased.findValueByName("TWO_B")).isSameInstanceAs(aliased.getValue(1));
+      assertThat(aliased.findValueByName("THREE")).isSameInstanceAs(aliased.getValue(2));
+      assertThat(aliased.findValueByNumber(2)).isSameInstanceAs(aliased.getValue(0));
+      assertThat(aliased.findValueByNumber(3)).isSameInstanceAs(aliased.getValue(2));
+      assertThat(aliased.findValueByNumber(1)).isNull();
     }
   }
 
