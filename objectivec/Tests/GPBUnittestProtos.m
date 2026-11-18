@@ -17,6 +17,7 @@
 #import "objectivec/Tests/UnittestDeprecatedFile.pbobjc.m"
 #import "objectivec/Tests/UnittestImport.pbobjc.m"
 #import "objectivec/Tests/UnittestImportPublic.pbobjc.m"
+#import "objectivec/Tests/UnittestMapAllTypes.pbobjc.m"
 #import "objectivec/Tests/UnittestMset.pbobjc.m"
 #import "objectivec/Tests/UnittestObjc.pbobjc.m"
 #import "objectivec/Tests/UnittestObjcOptions.pbobjc.m"

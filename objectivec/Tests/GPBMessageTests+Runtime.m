@@ -7,11 +7,18 @@
 
 #import <objc/runtime.h>
 
+#import "GPBArray.h"
+#import "GPBArray_PackagePrivate.h"
+#import "GPBDescriptor_PackagePrivate.h"
+#import "GPBDictionary.h"
+#import "GPBDictionary_PackagePrivate.h"
 #import "GPBMessage.h"
 #import "GPBTestUtilities.h"
+#import "GPBUtilities.h"
 #import "objectivec/Tests/MapUnittest.pbobjc.h"
 #import "objectivec/Tests/Unittest.pbobjc.h"
 #import "objectivec/Tests/UnittestCycle.pbobjc.h"
+#import "objectivec/Tests/UnittestMapAllTypes.pbobjc.h"
 #import "objectivec/Tests/UnittestObjcStartup.pbobjc.h"
 #import "objectivec/Tests/UnittestRuntimeProto2.pbobjc.h"
 #import "objectivec/Tests/UnittestRuntimeProto3.pbobjc.h"
@@ -2590,6 +2597,61 @@
   XCTAssertTrue(fieldArray == message.repeatedStringArray);  // Same pointer
 }
 
+- (void)test_GPBGetMessageRepeatedField_AllTypes {
+  GPBDescriptor *descriptor = [Message2 descriptor];
+  struct {
+    uint32_t fieldNumber;
+    Class expectedClass;  // Nil means NSMutableArray / GPBAutocreatedArray.
+  } const kCases[] = {
+      {Message2_FieldNumber_RepeatedInt32Array, [GPBInt32Array class]},
+      {Message2_FieldNumber_RepeatedInt64Array, [GPBInt64Array class]},
+      {Message2_FieldNumber_RepeatedUint32Array, [GPBUInt32Array class]},
+      {Message2_FieldNumber_RepeatedUint64Array, [GPBUInt64Array class]},
+      {Message2_FieldNumber_RepeatedSint32Array, [GPBInt32Array class]},
+      {Message2_FieldNumber_RepeatedSint64Array, [GPBInt64Array class]},
+      {Message2_FieldNumber_RepeatedFixed32Array, [GPBUInt32Array class]},
+      {Message2_FieldNumber_RepeatedFixed64Array, [GPBUInt64Array class]},
+      {Message2_FieldNumber_RepeatedSfixed32Array, [GPBInt32Array class]},
+      {Message2_FieldNumber_RepeatedSfixed64Array, [GPBInt64Array class]},
+      {Message2_FieldNumber_RepeatedFloatArray, [GPBFloatArray class]},
+      {Message2_FieldNumber_RepeatedDoubleArray, [GPBDoubleArray class]},
+      {Message2_FieldNumber_RepeatedBoolArray, [GPBBoolArray class]},
+      {Message2_FieldNumber_RepeatedStringArray, Nil},
+      {Message2_FieldNumber_RepeatedBytesArray, Nil},
+      {Message2_FieldNumber_RepeatedGroupArray, Nil},
+      {Message2_FieldNumber_RepeatedMessageArray, Nil},
+      {Message2_FieldNumber_RepeatedEnumArray, [GPBEnumArray class]},
+  };
+  for (size_t i = 0; i < GPBARRAYSIZE(kCases); ++i) {
+    GPBFieldDescriptor *field = [descriptor fieldWithNumber:kCases[i].fieldNumber];
+    XCTAssertNotNil(field);
+
+    Message2 *msg = [[Message2 alloc] init];
+    id directArray = GPBGetMessageRepeatedField(msg, field);
+    XCTAssertNotNil(directArray);
+
+    Message2 *autoMsg = [[Message2 alloc] init];
+    id autoArray = [autoMsg valueForKey:field.name];
+    XCTAssertNotNil(autoArray);
+
+    if (kCases[i].expectedClass == Nil) {
+      XCTAssertTrue([directArray isKindOfClass:[NSMutableArray class]]);
+      XCTAssertFalse([directArray isKindOfClass:[GPBAutocreatedArray class]]);
+      XCTAssertEqual([autoArray class], [GPBAutocreatedArray class]);
+    } else {
+      XCTAssertEqual([directArray class], kCases[i].expectedClass);
+      XCTAssertEqual([autoArray class], kCases[i].expectedClass);
+      if (kCases[i].expectedClass == [GPBEnumArray class]) {
+        // Pointer comparison
+        XCTAssertTrue(((GPBEnumArray *)directArray).validationFunc == Message2_Enum_IsValidValue);
+      }
+    }
+
+    [msg release];
+    [autoMsg release];
+  }
+}
+
 - (void)test_GPBSetMessageRepeatedField {
   TestAllTypes *message = [TestAllTypes message];
   GPBFieldDescriptor *fieldDescriptor = [[message descriptor] fieldWithName:@"repeatedStringArray"];
@@ -2608,6 +2670,82 @@
   NSMutableDictionary *fieldMap = GPBGetMessageMapField(message, fieldDescriptor);
   XCTAssertNotNil(fieldMap);                           // Should have autocreated.
   XCTAssertTrue(fieldMap == message.mapStringString);  // Same pointer
+}
+
+- (void)test_GPBGetMessageMapField_AllKeyAndValueTypes {
+  struct {
+    GPBDataType expectedKeyType;
+    NSString *classPrefix;
+  } const kKeys[] = {
+      {GPBDataTypeInt32, @"Int32"},    {GPBDataTypeInt64, @"Int64"},
+      {GPBDataTypeUInt32, @"UInt32"},  {GPBDataTypeUInt64, @"UInt64"},
+      {GPBDataTypeSInt32, @"Int32"},   {GPBDataTypeSInt64, @"Int64"},
+      {GPBDataTypeFixed32, @"UInt32"}, {GPBDataTypeFixed64, @"UInt64"},
+      {GPBDataTypeSFixed32, @"Int32"}, {GPBDataTypeSFixed64, @"Int64"},
+      {GPBDataTypeBool, @"Bool"},      {GPBDataTypeString, @"String"},
+  };
+  struct {
+    GPBDataType type;
+    NSString *classSuffix;
+  } const kVals[] = {
+      {GPBDataTypeBool, @"Bool"},      {GPBDataTypeFixed32, @"UInt32"},
+      {GPBDataTypeSFixed32, @"Int32"}, {GPBDataTypeFloat, @"Float"},
+      {GPBDataTypeFixed64, @"UInt64"}, {GPBDataTypeSFixed64, @"Int64"},
+      {GPBDataTypeDouble, @"Double"},  {GPBDataTypeInt32, @"Int32"},
+      {GPBDataTypeInt64, @"Int64"},    {GPBDataTypeSInt32, @"Int32"},
+      {GPBDataTypeSInt64, @"Int64"},   {GPBDataTypeUInt32, @"UInt32"},
+      {GPBDataTypeUInt64, @"UInt64"},  {GPBDataTypeBytes, @"Object"},
+      {GPBDataTypeString, @"Object"},  {GPBDataTypeMessage, @"Object"},
+      {GPBDataTypeEnum, @"Enum"},
+  };
+
+  GPBDescriptor *descriptor = [TestMapAllTypes descriptor];
+  XCTAssertEqual(descriptor.fields.count, (NSUInteger)(GPBARRAYSIZE(kKeys) * GPBARRAYSIZE(kVals)));
+
+  for (size_t k = 0; k < GPBARRAYSIZE(kKeys); ++k) {
+    for (size_t v = 0; v < GPBARRAYSIZE(kVals); ++v) {
+      uint32_t fieldNumber = (uint32_t)(k * GPBARRAYSIZE(kVals) + v + 1);
+      GPBFieldDescriptor *field = [descriptor fieldWithNumber:fieldNumber];
+      XCTAssertNotNil(field);
+      XCTAssertEqual(field.fieldType, GPBFieldTypeMap);
+      XCTAssertEqual(field.mapKeyDataType, kKeys[k].expectedKeyType);
+      XCTAssertEqual(field.dataType, kVals[v].type);
+
+      TestMapAllTypes *msg = [[TestMapAllTypes alloc] init];
+      id directMap = GPBGetMessageMapField(msg, field);
+      XCTAssertNotNil(directMap);
+
+      TestMapAllTypes *autoMsg = [[TestMapAllTypes alloc] init];
+      id autoMap = [autoMsg valueForKey:field.name];
+      XCTAssertNotNil(autoMap);
+
+      BOOL isStrObj = (kKeys[k].expectedKeyType == GPBDataTypeString) &&
+                      (kVals[v].type == GPBDataTypeBytes || kVals[v].type == GPBDataTypeString ||
+                       kVals[v].type == GPBDataTypeMessage);
+      if (isStrObj) {
+        XCTAssertTrue([directMap isKindOfClass:[NSMutableDictionary class]]);
+        XCTAssertFalse([directMap isKindOfClass:[GPBAutocreatedDictionary class]]);
+        XCTAssertEqual([autoMap class], [GPBAutocreatedDictionary class]);
+      } else {
+        NSString *clsName = [NSString
+            stringWithFormat:@"GPB%@%@Dictionary", kKeys[k].classPrefix, kVals[v].classSuffix];
+        Class expectedClass = NSClassFromString(clsName);
+        XCTAssertNotNil(expectedClass, @"%@", clsName);
+        XCTAssertEqual([directMap class], expectedClass);
+        XCTAssertEqual([autoMap class], expectedClass);
+        if (kVals[v].type == GPBDataTypeEnum) {
+          // Pointer comparison
+          XCTAssertTrue([(GPBInt32EnumDictionary *)directMap validationFunc] ==
+                        TestMapAllTypes_NestedEnum_IsValidValue);
+          XCTAssertTrue([(GPBInt32EnumDictionary *)autoMap validationFunc] ==
+                        TestMapAllTypes_NestedEnum_IsValidValue);
+        }
+      }
+
+      [msg release];
+      [autoMsg release];
+    }
+  }
 }
 
 - (void)test_GPBSetMessageMapField {

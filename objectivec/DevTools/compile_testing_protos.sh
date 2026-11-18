@@ -44,6 +44,7 @@ OBJC_TEST_PROTO_FILES=(
   objectivec/Tests/unittest_extension_chain_g.proto
   objectivec/Tests/unittest_import_public.proto
   objectivec/Tests/unittest_import.proto
+  objectivec/Tests/unittest_map_all_types.proto
   objectivec/Tests/unittest_mset.proto
   objectivec/Tests/unittest_objc_options.proto
   objectivec/Tests/unittest_objc_startup.proto

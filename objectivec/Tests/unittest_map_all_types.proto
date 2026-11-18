@@ -1,0 +1,242 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto3";
+
+package objc.protobuf.tests;
+
+// Explicit empty prefix, matching map_unittest.proto / unittest_runtime_proto3.proto.
+option objc_class_prefix = "";
+
+// Exercises all 12 map key types x 17 map value types (204 combinations).
+message TestMapAllTypes {
+  enum NestedEnum {
+    FOO = 0;
+    BAR = 1;
+    BAZ = 2;
+  }
+
+  message NestedMessage {
+    int32 a = 1;
+  }
+
+  map<int32, bool> map_int32_bool = 1;
+  map<int32, fixed32> map_int32_fixed32 = 2;
+  map<int32, sfixed32> map_int32_sfixed32 = 3;
+  map<int32, float> map_int32_float = 4;
+  map<int32, fixed64> map_int32_fixed64 = 5;
+  map<int32, sfixed64> map_int32_sfixed64 = 6;
+  map<int32, double> map_int32_double = 7;
+  map<int32, int32> map_int32_int32 = 8;
+  map<int32, int64> map_int32_int64 = 9;
+  map<int32, sint32> map_int32_sint32 = 10;
+  map<int32, sint64> map_int32_sint64 = 11;
+  map<int32, uint32> map_int32_uint32 = 12;
+  map<int32, uint64> map_int32_uint64 = 13;
+  map<int32, bytes> map_int32_bytes = 14;
+  map<int32, string> map_int32_string = 15;
+  map<int32, NestedMessage> map_int32_message = 16;
+  map<int32, NestedEnum> map_int32_enum = 17;
+
+  map<int64, bool> map_int64_bool = 18;
+  map<int64, fixed32> map_int64_fixed32 = 19;
+  map<int64, sfixed32> map_int64_sfixed32 = 20;
+  map<int64, float> map_int64_float = 21;
+  map<int64, fixed64> map_int64_fixed64 = 22;
+  map<int64, sfixed64> map_int64_sfixed64 = 23;
+  map<int64, double> map_int64_double = 24;
+  map<int64, int32> map_int64_int32 = 25;
+  map<int64, int64> map_int64_int64 = 26;
+  map<int64, sint32> map_int64_sint32 = 27;
+  map<int64, sint64> map_int64_sint64 = 28;
+  map<int64, uint32> map_int64_uint32 = 29;
+  map<int64, uint64> map_int64_uint64 = 30;
+  map<int64, bytes> map_int64_bytes = 31;
+  map<int64, string> map_int64_string = 32;
+  map<int64, NestedMessage> map_int64_message = 33;
+  map<int64, NestedEnum> map_int64_enum = 34;
+
+  map<uint32, bool> map_uint32_bool = 35;
+  map<uint32, fixed32> map_uint32_fixed32 = 36;
+  map<uint32, sfixed32> map_uint32_sfixed32 = 37;
+  map<uint32, float> map_uint32_float = 38;
+  map<uint32, fixed64> map_uint32_fixed64 = 39;
+  map<uint32, sfixed64> map_uint32_sfixed64 = 40;
+  map<uint32, double> map_uint32_double = 41;
+  map<uint32, int32> map_uint32_int32 = 42;
+  map<uint32, int64> map_uint32_int64 = 43;
+  map<uint32, sint32> map_uint32_sint32 = 44;
+  map<uint32, sint64> map_uint32_sint64 = 45;
+  map<uint32, uint32> map_uint32_uint32 = 46;
+  map<uint32, uint64> map_uint32_uint64 = 47;
+  map<uint32, bytes> map_uint32_bytes = 48;
+  map<uint32, string> map_uint32_string = 49;
+  map<uint32, NestedMessage> map_uint32_message = 50;
+  map<uint32, NestedEnum> map_uint32_enum = 51;
+
+  map<uint64, bool> map_uint64_bool = 52;
+  map<uint64, fixed32> map_uint64_fixed32 = 53;
+  map<uint64, sfixed32> map_uint64_sfixed32 = 54;
+  map<uint64, float> map_uint64_float = 55;
+  map<uint64, fixed64> map_uint64_fixed64 = 56;
+  map<uint64, sfixed64> map_uint64_sfixed64 = 57;
+  map<uint64, double> map_uint64_double = 58;
+  map<uint64, int32> map_uint64_int32 = 59;
+  map<uint64, int64> map_uint64_int64 = 60;
+  map<uint64, sint32> map_uint64_sint32 = 61;
+  map<uint64, sint64> map_uint64_sint64 = 62;
+  map<uint64, uint32> map_uint64_uint32 = 63;
+  map<uint64, uint64> map_uint64_uint64 = 64;
+  map<uint64, bytes> map_uint64_bytes = 65;
+  map<uint64, string> map_uint64_string = 66;
+  map<uint64, NestedMessage> map_uint64_message = 67;
+  map<uint64, NestedEnum> map_uint64_enum = 68;
+
+  map<sint32, bool> map_sint32_bool = 69;
+  map<sint32, fixed32> map_sint32_fixed32 = 70;
+  map<sint32, sfixed32> map_sint32_sfixed32 = 71;
+  map<sint32, float> map_sint32_float = 72;
+  map<sint32, fixed64> map_sint32_fixed64 = 73;
+  map<sint32, sfixed64> map_sint32_sfixed64 = 74;
+  map<sint32, double> map_sint32_double = 75;
+  map<sint32, int32> map_sint32_int32 = 76;
+  map<sint32, int64> map_sint32_int64 = 77;
+  map<sint32, sint32> map_sint32_sint32 = 78;
+  map<sint32, sint64> map_sint32_sint64 = 79;
+  map<sint32, uint32> map_sint32_uint32 = 80;
+  map<sint32, uint64> map_sint32_uint64 = 81;
+  map<sint32, bytes> map_sint32_bytes = 82;
+  map<sint32, string> map_sint32_string = 83;
+  map<sint32, NestedMessage> map_sint32_message = 84;
+  map<sint32, NestedEnum> map_sint32_enum = 85;
+
+  map<sint64, bool> map_sint64_bool = 86;
+  map<sint64, fixed32> map_sint64_fixed32 = 87;
+  map<sint64, sfixed32> map_sint64_sfixed32 = 88;
+  map<sint64, float> map_sint64_float = 89;
+  map<sint64, fixed64> map_sint64_fixed64 = 90;
+  map<sint64, sfixed64> map_sint64_sfixed64 = 91;
+  map<sint64, double> map_sint64_double = 92;
+  map<sint64, int32> map_sint64_int32 = 93;
+  map<sint64, int64> map_sint64_int64 = 94;
+  map<sint64, sint32> map_sint64_sint32 = 95;
+  map<sint64, sint64> map_sint64_sint64 = 96;
+  map<sint64, uint32> map_sint64_uint32 = 97;
+  map<sint64, uint64> map_sint64_uint64 = 98;
+  map<sint64, bytes> map_sint64_bytes = 99;
+  map<sint64, string> map_sint64_string = 100;
+  map<sint64, NestedMessage> map_sint64_message = 101;
+  map<sint64, NestedEnum> map_sint64_enum = 102;
+
+  map<fixed32, bool> map_fixed32_bool = 103;
+  map<fixed32, fixed32> map_fixed32_fixed32 = 104;
+  map<fixed32, sfixed32> map_fixed32_sfixed32 = 105;
+  map<fixed32, float> map_fixed32_float = 106;
+  map<fixed32, fixed64> map_fixed32_fixed64 = 107;
+  map<fixed32, sfixed64> map_fixed32_sfixed64 = 108;
+  map<fixed32, double> map_fixed32_double = 109;
+  map<fixed32, int32> map_fixed32_int32 = 110;
+  map<fixed32, int64> map_fixed32_int64 = 111;
+  map<fixed32, sint32> map_fixed32_sint32 = 112;
+  map<fixed32, sint64> map_fixed32_sint64 = 113;
+  map<fixed32, uint32> map_fixed32_uint32 = 114;
+  map<fixed32, uint64> map_fixed32_uint64 = 115;
+  map<fixed32, bytes> map_fixed32_bytes = 116;
+  map<fixed32, string> map_fixed32_string = 117;
+  map<fixed32, NestedMessage> map_fixed32_message = 118;
+  map<fixed32, NestedEnum> map_fixed32_enum = 119;
+
+  map<fixed64, bool> map_fixed64_bool = 120;
+  map<fixed64, fixed32> map_fixed64_fixed32 = 121;
+  map<fixed64, sfixed32> map_fixed64_sfixed32 = 122;
+  map<fixed64, float> map_fixed64_float = 123;
+  map<fixed64, fixed64> map_fixed64_fixed64 = 124;
+  map<fixed64, sfixed64> map_fixed64_sfixed64 = 125;
+  map<fixed64, double> map_fixed64_double = 126;
+  map<fixed64, int32> map_fixed64_int32 = 127;
+  map<fixed64, int64> map_fixed64_int64 = 128;
+  map<fixed64, sint32> map_fixed64_sint32 = 129;
+  map<fixed64, sint64> map_fixed64_sint64 = 130;
+  map<fixed64, uint32> map_fixed64_uint32 = 131;
+  map<fixed64, uint64> map_fixed64_uint64 = 132;
+  map<fixed64, bytes> map_fixed64_bytes = 133;
+  map<fixed64, string> map_fixed64_string = 134;
+  map<fixed64, NestedMessage> map_fixed64_message = 135;
+  map<fixed64, NestedEnum> map_fixed64_enum = 136;
+
+  map<sfixed32, bool> map_sfixed32_bool = 137;
+  map<sfixed32, fixed32> map_sfixed32_fixed32 = 138;
+  map<sfixed32, sfixed32> map_sfixed32_sfixed32 = 139;
+  map<sfixed32, float> map_sfixed32_float = 140;
+  map<sfixed32, fixed64> map_sfixed32_fixed64 = 141;
+  map<sfixed32, sfixed64> map_sfixed32_sfixed64 = 142;
+  map<sfixed32, double> map_sfixed32_double = 143;
+  map<sfixed32, int32> map_sfixed32_int32 = 144;
+  map<sfixed32, int64> map_sfixed32_int64 = 145;
+  map<sfixed32, sint32> map_sfixed32_sint32 = 146;
+  map<sfixed32, sint64> map_sfixed32_sint64 = 147;
+  map<sfixed32, uint32> map_sfixed32_uint32 = 148;
+  map<sfixed32, uint64> map_sfixed32_uint64 = 149;
+  map<sfixed32, bytes> map_sfixed32_bytes = 150;
+  map<sfixed32, string> map_sfixed32_string = 151;
+  map<sfixed32, NestedMessage> map_sfixed32_message = 152;
+  map<sfixed32, NestedEnum> map_sfixed32_enum = 153;
+
+  map<sfixed64, bool> map_sfixed64_bool = 154;
+  map<sfixed64, fixed32> map_sfixed64_fixed32 = 155;
+  map<sfixed64, sfixed32> map_sfixed64_sfixed32 = 156;
+  map<sfixed64, float> map_sfixed64_float = 157;
+  map<sfixed64, fixed64> map_sfixed64_fixed64 = 158;
+  map<sfixed64, sfixed64> map_sfixed64_sfixed64 = 159;
+  map<sfixed64, double> map_sfixed64_double = 160;
+  map<sfixed64, int32> map_sfixed64_int32 = 161;
+  map<sfixed64, int64> map_sfixed64_int64 = 162;
+  map<sfixed64, sint32> map_sfixed64_sint32 = 163;
+  map<sfixed64, sint64> map_sfixed64_sint64 = 164;
+  map<sfixed64, uint32> map_sfixed64_uint32 = 165;
+  map<sfixed64, uint64> map_sfixed64_uint64 = 166;
+  map<sfixed64, bytes> map_sfixed64_bytes = 167;
+  map<sfixed64, string> map_sfixed64_string = 168;
+  map<sfixed64, NestedMessage> map_sfixed64_message = 169;
+  map<sfixed64, NestedEnum> map_sfixed64_enum = 170;
+
+  map<bool, bool> map_bool_bool = 171;
+  map<bool, fixed32> map_bool_fixed32 = 172;
+  map<bool, sfixed32> map_bool_sfixed32 = 173;
+  map<bool, float> map_bool_float = 174;
+  map<bool, fixed64> map_bool_fixed64 = 175;
+  map<bool, sfixed64> map_bool_sfixed64 = 176;
+  map<bool, double> map_bool_double = 177;
+  map<bool, int32> map_bool_int32 = 178;
+  map<bool, int64> map_bool_int64 = 179;
+  map<bool, sint32> map_bool_sint32 = 180;
+  map<bool, sint64> map_bool_sint64 = 181;
+  map<bool, uint32> map_bool_uint32 = 182;
+  map<bool, uint64> map_bool_uint64 = 183;
+  map<bool, bytes> map_bool_bytes = 184;
+  map<bool, string> map_bool_string = 185;
+  map<bool, NestedMessage> map_bool_message = 186;
+  map<bool, NestedEnum> map_bool_enum = 187;
+
+  map<string, bool> map_string_bool = 188;
+  map<string, fixed32> map_string_fixed32 = 189;
+  map<string, sfixed32> map_string_sfixed32 = 190;
+  map<string, float> map_string_float = 191;
+  map<string, fixed64> map_string_fixed64 = 192;
+  map<string, sfixed64> map_string_sfixed64 = 193;
+  map<string, double> map_string_double = 194;
+  map<string, int32> map_string_int32 = 195;
+  map<string, int64> map_string_int64 = 196;
+  map<string, sint32> map_string_sint32 = 197;
+  map<string, sint64> map_string_sint64 = 198;
+  map<string, uint32> map_string_uint32 = 199;
+  map<string, uint64> map_string_uint64 = 200;
+  map<string, bytes> map_string_bytes = 201;
+  map<string, string> map_string_string = 202;
+  map<string, NestedMessage> map_string_message = 203;
+  map<string, NestedEnum> map_string_enum = 204;
+}

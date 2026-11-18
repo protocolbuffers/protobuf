@@ -484,4 +484,39 @@ GPBInternalCompileAssert(offsetof(GPBFilePackageAndPrefix, prefix) ==
                              offsetof(GPBFileDescription, prefix),
                          FileDescription_prefix_offsets_dont_match);
 
+// Lookup tables in GPBMessage.m index directly by
+// (flags & GPBFieldMapKeyMask) >> 8 and GPBDataType.
+GPBInternalCompileAssert(GPBFieldMapKeyMask == (0xF << 8), map_key_mask_changed);
+GPBInternalCompileAssert((GPBFieldMapKeyInt32 >> 8) == 1, map_key_int32_changed);
+GPBInternalCompileAssert((GPBFieldMapKeyInt64 >> 8) == 2, map_key_int64_changed);
+GPBInternalCompileAssert((GPBFieldMapKeyUInt32 >> 8) == 3, map_key_uint32_changed);
+GPBInternalCompileAssert((GPBFieldMapKeyUInt64 >> 8) == 4, map_key_uint64_changed);
+GPBInternalCompileAssert((GPBFieldMapKeySInt32 >> 8) == 5, map_key_sint32_changed);
+GPBInternalCompileAssert((GPBFieldMapKeySInt64 >> 8) == 6, map_key_sint64_changed);
+GPBInternalCompileAssert((GPBFieldMapKeyFixed32 >> 8) == 7, map_key_fixed32_changed);
+GPBInternalCompileAssert((GPBFieldMapKeyFixed64 >> 8) == 8, map_key_fixed64_changed);
+GPBInternalCompileAssert((GPBFieldMapKeySFixed32 >> 8) == 9, map_key_sfixed32_changed);
+GPBInternalCompileAssert((GPBFieldMapKeySFixed64 >> 8) == 10, map_key_sfixed64_changed);
+GPBInternalCompileAssert((GPBFieldMapKeyBool >> 8) == 11, map_key_bool_changed);
+GPBInternalCompileAssert((GPBFieldMapKeyString >> 8) == 12, map_key_string_changed);
+
+GPBInternalCompileAssert(GPBDataTypeBool == 0, data_type_bool_changed);
+GPBInternalCompileAssert(GPBDataTypeFixed32 == 1, data_type_fixed32_changed);
+GPBInternalCompileAssert(GPBDataTypeSFixed32 == 2, data_type_sfixed32_changed);
+GPBInternalCompileAssert(GPBDataTypeFloat == 3, data_type_float_changed);
+GPBInternalCompileAssert(GPBDataTypeFixed64 == 4, data_type_fixed64_changed);
+GPBInternalCompileAssert(GPBDataTypeSFixed64 == 5, data_type_sfixed64_changed);
+GPBInternalCompileAssert(GPBDataTypeDouble == 6, data_type_double_changed);
+GPBInternalCompileAssert(GPBDataTypeInt32 == 7, data_type_int32_changed);
+GPBInternalCompileAssert(GPBDataTypeInt64 == 8, data_type_int64_changed);
+GPBInternalCompileAssert(GPBDataTypeSInt32 == 9, data_type_sint32_changed);
+GPBInternalCompileAssert(GPBDataTypeSInt64 == 10, data_type_sint64_changed);
+GPBInternalCompileAssert(GPBDataTypeUInt32 == 11, data_type_uint32_changed);
+GPBInternalCompileAssert(GPBDataTypeUInt64 == 12, data_type_uint64_changed);
+GPBInternalCompileAssert(GPBDataTypeBytes == 13, data_type_bytes_changed);
+GPBInternalCompileAssert(GPBDataTypeString == 14, data_type_string_changed);
+GPBInternalCompileAssert(GPBDataTypeMessage == 15, data_type_message_changed);
+GPBInternalCompileAssert(GPBDataTypeGroup == 16, data_type_group_changed);
+GPBInternalCompileAssert(GPBDataTypeEnum == 17, data_type_enum_changed);
+
 CF_EXTERN_C_END

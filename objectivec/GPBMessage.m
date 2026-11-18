@@ -397,363 +397,241 @@ GPB_INLINE BOOL FieldMapKeyIsString(GPBFieldDescriptor *field) {
   return (field->description_->flags & GPBFieldMapKeyMask) == GPBFieldMapKeyString;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdollar-in-identifier-extension"
+
+GPBObjCClassDeclaration(GPBBoolArray);
+GPBObjCClassDeclaration(GPBUInt32Array);
+GPBObjCClassDeclaration(GPBInt32Array);
+GPBObjCClassDeclaration(GPBUInt64Array);
+GPBObjCClassDeclaration(GPBInt64Array);
+GPBObjCClassDeclaration(GPBFloatArray);
+GPBObjCClassDeclaration(GPBDoubleArray);
+
+#define GPB_DECLARE_MAP_CLASSES(KEY_NAME)                   \
+  GPBObjCClassDeclaration(GPB##KEY_NAME##BoolDictionary);   \
+  GPBObjCClassDeclaration(GPB##KEY_NAME##UInt32Dictionary); \
+  GPBObjCClassDeclaration(GPB##KEY_NAME##Int32Dictionary);  \
+  GPBObjCClassDeclaration(GPB##KEY_NAME##UInt64Dictionary); \
+  GPBObjCClassDeclaration(GPB##KEY_NAME##Int64Dictionary);  \
+  GPBObjCClassDeclaration(GPB##KEY_NAME##FloatDictionary);  \
+  GPBObjCClassDeclaration(GPB##KEY_NAME##DoubleDictionary); \
+  GPBObjCClassDeclaration(GPB##KEY_NAME##EnumDictionary)
+
+GPB_DECLARE_MAP_CLASSES(Bool);
+GPBObjCClassDeclaration(GPBBoolObjectDictionary);
+GPB_DECLARE_MAP_CLASSES(UInt32);
+GPBObjCClassDeclaration(GPBUInt32ObjectDictionary);
+GPB_DECLARE_MAP_CLASSES(Int32);
+GPBObjCClassDeclaration(GPBInt32ObjectDictionary);
+GPB_DECLARE_MAP_CLASSES(UInt64);
+GPBObjCClassDeclaration(GPBUInt64ObjectDictionary);
+GPB_DECLARE_MAP_CLASSES(Int64);
+GPBObjCClassDeclaration(GPBInt64ObjectDictionary);
+GPB_DECLARE_MAP_CLASSES(String);
+#undef GPB_DECLARE_MAP_CLASSES
+
+typedef NS_ENUM(uint8_t, CreateArrayKind) {
+  // 0..6 index kPODArrayClasses in order.
+  CreateArrayKindBool = 0,
+  CreateArrayKindUInt32 = 1,
+  CreateArrayKindInt32 = 2,
+  CreateArrayKindUInt64 = 3,
+  CreateArrayKindInt64 = 4,
+  CreateArrayKindFloat = 5,
+  CreateArrayKindDouble = 6,
+  CreateArrayKindEnum = 7,
+  CreateArrayKindObject = 8,  // Bytes, String, Message, Group
+  CreateArrayKindInvalid = 0xFF,
+};
+
 static id CreateArrayForField(GPBFieldDescriptor *field, GPBMessage *autocreator) {
-  id result;
+  // GPBDataType layout (0..17) is compile-asserted in GPBDescriptor_PackagePrivate.h.
+  static const Class kPODArrayClasses[7] = {
+      GPBObjCClass(GPBBoolArray),    // CreateArrayKindBool
+      GPBObjCClass(GPBUInt32Array),  // CreateArrayKindUInt32: Fixed32, UInt32
+      GPBObjCClass(GPBInt32Array),   // CreateArrayKindInt32: SFixed32, Int32, SInt32
+      GPBObjCClass(GPBUInt64Array),  // CreateArrayKindUInt64: Fixed64, UInt64
+      GPBObjCClass(GPBInt64Array),   // CreateArrayKindInt64: SFixed64, Int64, SInt64
+      GPBObjCClass(GPBFloatArray),   // CreateArrayKindFloat
+      GPBObjCClass(GPBDoubleArray),  // CreateArrayKindDouble
+  };
+  static const CreateArrayKind kArrayKind[18] = {
+      CreateArrayKindBool,    // GPBDataTypeBool
+      CreateArrayKindUInt32,  // GPBDataTypeFixed32
+      CreateArrayKindInt32,   // GPBDataTypeSFixed32
+      CreateArrayKindFloat,   // GPBDataTypeFloat
+      CreateArrayKindUInt64,  // GPBDataTypeFixed64
+      CreateArrayKindInt64,   // GPBDataTypeSFixed64
+      CreateArrayKindDouble,  // GPBDataTypeDouble
+      CreateArrayKindInt32,   // GPBDataTypeInt32
+      CreateArrayKindInt64,   // GPBDataTypeInt64
+      CreateArrayKindInt32,   // GPBDataTypeSInt32
+      CreateArrayKindInt64,   // GPBDataTypeSInt64
+      CreateArrayKindUInt32,  // GPBDataTypeUInt32
+      CreateArrayKindUInt64,  // GPBDataTypeUInt64
+      CreateArrayKindObject,  // GPBDataTypeBytes
+      CreateArrayKindObject,  // GPBDataTypeString
+      CreateArrayKindObject,  // GPBDataTypeMessage
+      CreateArrayKindObject,  // GPBDataTypeGroup
+      CreateArrayKindEnum,    // GPBDataTypeEnum
+  };
+
   GPBDataType fieldDataType = GPBGetFieldDataType(field);
-  switch (fieldDataType) {
-    case GPBDataTypeBool:
-      result = [[GPBBoolArray alloc] init];
-      break;
-    case GPBDataTypeFixed32:
-    case GPBDataTypeUInt32:
-      result = [[GPBUInt32Array alloc] init];
-      break;
-    case GPBDataTypeInt32:
-    case GPBDataTypeSFixed32:
-    case GPBDataTypeSInt32:
-      result = [[GPBInt32Array alloc] init];
-      break;
-    case GPBDataTypeFixed64:
-    case GPBDataTypeUInt64:
-      result = [[GPBUInt64Array alloc] init];
-      break;
-    case GPBDataTypeInt64:
-    case GPBDataTypeSFixed64:
-    case GPBDataTypeSInt64:
-      result = [[GPBInt64Array alloc] init];
-      break;
-    case GPBDataTypeFloat:
-      result = [[GPBFloatArray alloc] init];
-      break;
-    case GPBDataTypeDouble:
-      result = [[GPBDoubleArray alloc] init];
-      break;
-
-    case GPBDataTypeEnum:
-      result = [[GPBEnumArray alloc] initWithValidationFunction:field.enumDescriptor.enumVerifier];
-      break;
-
-    case GPBDataTypeBytes:
-    case GPBDataTypeGroup:
-    case GPBDataTypeMessage:
-    case GPBDataTypeString:
-      if (autocreator) {
-        result = [[GPBAutocreatedArray alloc] init];
-      } else {
-        result = [[NSMutableArray alloc] init];
-      }
-      break;
-  }
-
-  if (autocreator) {
-    if (GPBDataTypeIsObject(fieldDataType)) {
-      GPBAutocreatedArray *autoArray = result;
+  CreateArrayKind kind =
+      ((uint32_t)fieldDataType < 18) ? kArrayKind[fieldDataType] : CreateArrayKindInvalid;
+  if (kind == CreateArrayKindObject) {
+    if (autocreator) {
+      GPBAutocreatedArray *autoArray = [[GPBAutocreatedArray alloc] init];
       autoArray->_autocreator = autocreator;
-    } else {
-      GPBInt32Array *gpbArray = result;
-      gpbArray->_autocreator = autocreator;
+      return autoArray;
     }
+    return [[NSMutableArray alloc] init];
   }
 
+  id result;
+  if (kind == CreateArrayKindEnum) {
+    result = [[GPBEnumArray alloc] initWithValidationFunction:field.enumDescriptor.enumVerifier];
+  } else if (kind <= CreateArrayKindDouble) {
+    result = [[kPODArrayClasses[kind] alloc] init];
+  } else {
+#if defined(DEBUG) && DEBUG
+    NSCAssert(NO, @"shouldn't happen");
+#endif
+    return nil;
+  }
+  if (autocreator) {
+    GPBInt32Array *gpbArray = result;
+    gpbArray->_autocreator = autocreator;
+  }
   return result;
 }
+
+typedef NS_ENUM(uint8_t, CreateMapKeyGroup) {
+  // 0..5 index the first dimension of kMapClasses in order.
+  CreateMapKeyGroupBool = 0,
+  CreateMapKeyGroupUInt32 = 1,
+  CreateMapKeyGroupInt32 = 2,
+  CreateMapKeyGroupUInt64 = 3,
+  CreateMapKeyGroupInt64 = 4,
+  CreateMapKeyGroupString = 5,
+  CreateMapKeyGroupInvalid = 0xFF,
+};
+
+typedef NS_ENUM(uint8_t, CreateMapValueGroup) {
+  // 0..8 index the second dimension of kMapClasses in order.
+  CreateMapValueGroupBool = 0,
+  CreateMapValueGroupUInt32 = 1,
+  CreateMapValueGroupInt32 = 2,
+  CreateMapValueGroupUInt64 = 3,
+  CreateMapValueGroupInt64 = 4,
+  CreateMapValueGroupFloat = 5,
+  CreateMapValueGroupDouble = 6,
+  CreateMapValueGroupEnum = 7,
+  CreateMapValueGroupObject = 8,  // Bytes, String, Message
+  CreateMapValueGroupInvalid = 0xFF,
+};
 
 static id CreateMapForField(GPBFieldDescriptor *field, GPBMessage *autocreator) {
-  id result;
-  GPBDataType keyDataType = field.mapKeyDataType;
+  // GPBFieldMapKey* and GPBDataType layouts are compile-asserted in
+  // GPBDescriptor_PackagePrivate.h.
+  // Indexed by (flags & GPBFieldMapKeyMask) >> 8:
+  static const CreateMapKeyGroup kKeyGroup[16] = {
+      CreateMapKeyGroupInvalid,  // 0: not a map
+      CreateMapKeyGroupInt32,    // 1: GPBFieldMapKeyInt32
+      CreateMapKeyGroupInt64,    // 2: GPBFieldMapKeyInt64
+      CreateMapKeyGroupUInt32,   // 3: GPBFieldMapKeyUInt32
+      CreateMapKeyGroupUInt64,   // 4: GPBFieldMapKeyUInt64
+      CreateMapKeyGroupInt32,    // 5: GPBFieldMapKeySInt32
+      CreateMapKeyGroupInt64,    // 6: GPBFieldMapKeySInt64
+      CreateMapKeyGroupUInt32,   // 7: GPBFieldMapKeyFixed32
+      CreateMapKeyGroupUInt64,   // 8: GPBFieldMapKeyFixed64
+      CreateMapKeyGroupInt32,    // 9: GPBFieldMapKeySFixed32
+      CreateMapKeyGroupInt64,    // 10: GPBFieldMapKeySFixed64
+      CreateMapKeyGroupBool,     // 11: GPBFieldMapKeyBool
+      CreateMapKeyGroupString,   // 12: GPBFieldMapKeyString
+      CreateMapKeyGroupInvalid,  // 13
+      CreateMapKeyGroupInvalid,  // 14
+      CreateMapKeyGroupInvalid,  // 15
+  };
+  // Indexed by GPBDataType (0..17):
+  static const CreateMapValueGroup kValueGroup[18] = {
+      CreateMapValueGroupBool,     // GPBDataTypeBool
+      CreateMapValueGroupUInt32,   // GPBDataTypeFixed32
+      CreateMapValueGroupInt32,    // GPBDataTypeSFixed32
+      CreateMapValueGroupFloat,    // GPBDataTypeFloat
+      CreateMapValueGroupUInt64,   // GPBDataTypeFixed64
+      CreateMapValueGroupInt64,    // GPBDataTypeSFixed64
+      CreateMapValueGroupDouble,   // GPBDataTypeDouble
+      CreateMapValueGroupInt32,    // GPBDataTypeInt32
+      CreateMapValueGroupInt64,    // GPBDataTypeInt64
+      CreateMapValueGroupInt32,    // GPBDataTypeSInt32
+      CreateMapValueGroupInt64,    // GPBDataTypeSInt64
+      CreateMapValueGroupUInt32,   // GPBDataTypeUInt32
+      CreateMapValueGroupUInt64,   // GPBDataTypeUInt64
+      CreateMapValueGroupObject,   // GPBDataTypeBytes
+      CreateMapValueGroupObject,   // GPBDataTypeString
+      CreateMapValueGroupObject,   // GPBDataTypeMessage
+      CreateMapValueGroupInvalid,  // GPBDataTypeGroup (invalid map value)
+      CreateMapValueGroupEnum,     // GPBDataTypeEnum
+  };
+#define GPB_MAP_ROW(KEY_NAME, OBJ_CLS)                                                          \
+  {                                                                                             \
+    GPBObjCClass(GPB##KEY_NAME##BoolDictionary), GPBObjCClass(GPB##KEY_NAME##UInt32Dictionary), \
+        GPBObjCClass(GPB##KEY_NAME##Int32Dictionary),                                           \
+        GPBObjCClass(GPB##KEY_NAME##UInt64Dictionary),                                          \
+        GPBObjCClass(GPB##KEY_NAME##Int64Dictionary),                                           \
+        GPBObjCClass(GPB##KEY_NAME##FloatDictionary),                                           \
+        GPBObjCClass(GPB##KEY_NAME##DoubleDictionary),                                          \
+        GPBObjCClass(GPB##KEY_NAME##EnumDictionary), OBJ_CLS,                                   \
+  }
+  static const Class kMapClasses[6][9] = {
+      GPB_MAP_ROW(Bool, GPBObjCClass(GPBBoolObjectDictionary)),
+      GPB_MAP_ROW(UInt32, GPBObjCClass(GPBUInt32ObjectDictionary)),
+      GPB_MAP_ROW(Int32, GPBObjCClass(GPBInt32ObjectDictionary)),
+      GPB_MAP_ROW(UInt64, GPBObjCClass(GPBUInt64ObjectDictionary)),
+      GPB_MAP_ROW(Int64, GPBObjCClass(GPBInt64ObjectDictionary)),
+      GPB_MAP_ROW(String, Nil),
+  };
+#undef GPB_MAP_ROW
+
+  CreateMapKeyGroup keyGroup = kKeyGroup[(field->description_->flags & GPBFieldMapKeyMask) >> 8];
   GPBDataType valueDataType = GPBGetFieldDataType(field);
-  switch (keyDataType) {
-    case GPBDataTypeBool:
-      switch (valueDataType) {
-        case GPBDataTypeBool:
-          result = [[GPBBoolBoolDictionary alloc] init];
-          break;
-        case GPBDataTypeFixed32:
-        case GPBDataTypeUInt32:
-          result = [[GPBBoolUInt32Dictionary alloc] init];
-          break;
-        case GPBDataTypeInt32:
-        case GPBDataTypeSFixed32:
-        case GPBDataTypeSInt32:
-          result = [[GPBBoolInt32Dictionary alloc] init];
-          break;
-        case GPBDataTypeFixed64:
-        case GPBDataTypeUInt64:
-          result = [[GPBBoolUInt64Dictionary alloc] init];
-          break;
-        case GPBDataTypeInt64:
-        case GPBDataTypeSFixed64:
-        case GPBDataTypeSInt64:
-          result = [[GPBBoolInt64Dictionary alloc] init];
-          break;
-        case GPBDataTypeFloat:
-          result = [[GPBBoolFloatDictionary alloc] init];
-          break;
-        case GPBDataTypeDouble:
-          result = [[GPBBoolDoubleDictionary alloc] init];
-          break;
-        case GPBDataTypeEnum:
-          result = [[GPBBoolEnumDictionary alloc]
-              initWithValidationFunction:field.enumDescriptor.enumVerifier];
-          break;
-        case GPBDataTypeBytes:
-        case GPBDataTypeMessage:
-        case GPBDataTypeString:
-          result = [[GPBBoolObjectDictionary alloc] init];
-          break;
-        case GPBDataTypeGroup:
-          NSCAssert(NO, @"shouldn't happen");
-          return nil;
-      }
-      break;
-    case GPBDataTypeFixed32:
-    case GPBDataTypeUInt32:
-      switch (valueDataType) {
-        case GPBDataTypeBool:
-          result = [[GPBUInt32BoolDictionary alloc] init];
-          break;
-        case GPBDataTypeFixed32:
-        case GPBDataTypeUInt32:
-          result = [[GPBUInt32UInt32Dictionary alloc] init];
-          break;
-        case GPBDataTypeInt32:
-        case GPBDataTypeSFixed32:
-        case GPBDataTypeSInt32:
-          result = [[GPBUInt32Int32Dictionary alloc] init];
-          break;
-        case GPBDataTypeFixed64:
-        case GPBDataTypeUInt64:
-          result = [[GPBUInt32UInt64Dictionary alloc] init];
-          break;
-        case GPBDataTypeInt64:
-        case GPBDataTypeSFixed64:
-        case GPBDataTypeSInt64:
-          result = [[GPBUInt32Int64Dictionary alloc] init];
-          break;
-        case GPBDataTypeFloat:
-          result = [[GPBUInt32FloatDictionary alloc] init];
-          break;
-        case GPBDataTypeDouble:
-          result = [[GPBUInt32DoubleDictionary alloc] init];
-          break;
-        case GPBDataTypeEnum:
-          result = [[GPBUInt32EnumDictionary alloc]
-              initWithValidationFunction:field.enumDescriptor.enumVerifier];
-          break;
-        case GPBDataTypeBytes:
-        case GPBDataTypeMessage:
-        case GPBDataTypeString:
-          result = [[GPBUInt32ObjectDictionary alloc] init];
-          break;
-        case GPBDataTypeGroup:
-          NSCAssert(NO, @"shouldn't happen");
-          return nil;
-      }
-      break;
-    case GPBDataTypeInt32:
-    case GPBDataTypeSFixed32:
-    case GPBDataTypeSInt32:
-      switch (valueDataType) {
-        case GPBDataTypeBool:
-          result = [[GPBInt32BoolDictionary alloc] init];
-          break;
-        case GPBDataTypeFixed32:
-        case GPBDataTypeUInt32:
-          result = [[GPBInt32UInt32Dictionary alloc] init];
-          break;
-        case GPBDataTypeInt32:
-        case GPBDataTypeSFixed32:
-        case GPBDataTypeSInt32:
-          result = [[GPBInt32Int32Dictionary alloc] init];
-          break;
-        case GPBDataTypeFixed64:
-        case GPBDataTypeUInt64:
-          result = [[GPBInt32UInt64Dictionary alloc] init];
-          break;
-        case GPBDataTypeInt64:
-        case GPBDataTypeSFixed64:
-        case GPBDataTypeSInt64:
-          result = [[GPBInt32Int64Dictionary alloc] init];
-          break;
-        case GPBDataTypeFloat:
-          result = [[GPBInt32FloatDictionary alloc] init];
-          break;
-        case GPBDataTypeDouble:
-          result = [[GPBInt32DoubleDictionary alloc] init];
-          break;
-        case GPBDataTypeEnum:
-          result = [[GPBInt32EnumDictionary alloc]
-              initWithValidationFunction:field.enumDescriptor.enumVerifier];
-          break;
-        case GPBDataTypeBytes:
-        case GPBDataTypeMessage:
-        case GPBDataTypeString:
-          result = [[GPBInt32ObjectDictionary alloc] init];
-          break;
-        case GPBDataTypeGroup:
-          NSCAssert(NO, @"shouldn't happen");
-          return nil;
-      }
-      break;
-    case GPBDataTypeFixed64:
-    case GPBDataTypeUInt64:
-      switch (valueDataType) {
-        case GPBDataTypeBool:
-          result = [[GPBUInt64BoolDictionary alloc] init];
-          break;
-        case GPBDataTypeFixed32:
-        case GPBDataTypeUInt32:
-          result = [[GPBUInt64UInt32Dictionary alloc] init];
-          break;
-        case GPBDataTypeInt32:
-        case GPBDataTypeSFixed32:
-        case GPBDataTypeSInt32:
-          result = [[GPBUInt64Int32Dictionary alloc] init];
-          break;
-        case GPBDataTypeFixed64:
-        case GPBDataTypeUInt64:
-          result = [[GPBUInt64UInt64Dictionary alloc] init];
-          break;
-        case GPBDataTypeInt64:
-        case GPBDataTypeSFixed64:
-        case GPBDataTypeSInt64:
-          result = [[GPBUInt64Int64Dictionary alloc] init];
-          break;
-        case GPBDataTypeFloat:
-          result = [[GPBUInt64FloatDictionary alloc] init];
-          break;
-        case GPBDataTypeDouble:
-          result = [[GPBUInt64DoubleDictionary alloc] init];
-          break;
-        case GPBDataTypeEnum:
-          result = [[GPBUInt64EnumDictionary alloc]
-              initWithValidationFunction:field.enumDescriptor.enumVerifier];
-          break;
-        case GPBDataTypeBytes:
-        case GPBDataTypeMessage:
-        case GPBDataTypeString:
-          result = [[GPBUInt64ObjectDictionary alloc] init];
-          break;
-        case GPBDataTypeGroup:
-          NSCAssert(NO, @"shouldn't happen");
-          return nil;
-      }
-      break;
-    case GPBDataTypeInt64:
-    case GPBDataTypeSFixed64:
-    case GPBDataTypeSInt64:
-      switch (valueDataType) {
-        case GPBDataTypeBool:
-          result = [[GPBInt64BoolDictionary alloc] init];
-          break;
-        case GPBDataTypeFixed32:
-        case GPBDataTypeUInt32:
-          result = [[GPBInt64UInt32Dictionary alloc] init];
-          break;
-        case GPBDataTypeInt32:
-        case GPBDataTypeSFixed32:
-        case GPBDataTypeSInt32:
-          result = [[GPBInt64Int32Dictionary alloc] init];
-          break;
-        case GPBDataTypeFixed64:
-        case GPBDataTypeUInt64:
-          result = [[GPBInt64UInt64Dictionary alloc] init];
-          break;
-        case GPBDataTypeInt64:
-        case GPBDataTypeSFixed64:
-        case GPBDataTypeSInt64:
-          result = [[GPBInt64Int64Dictionary alloc] init];
-          break;
-        case GPBDataTypeFloat:
-          result = [[GPBInt64FloatDictionary alloc] init];
-          break;
-        case GPBDataTypeDouble:
-          result = [[GPBInt64DoubleDictionary alloc] init];
-          break;
-        case GPBDataTypeEnum:
-          result = [[GPBInt64EnumDictionary alloc]
-              initWithValidationFunction:field.enumDescriptor.enumVerifier];
-          break;
-        case GPBDataTypeBytes:
-        case GPBDataTypeMessage:
-        case GPBDataTypeString:
-          result = [[GPBInt64ObjectDictionary alloc] init];
-          break;
-        case GPBDataTypeGroup:
-          NSCAssert(NO, @"shouldn't happen");
-          return nil;
-      }
-      break;
-    case GPBDataTypeString:
-      switch (valueDataType) {
-        case GPBDataTypeBool:
-          result = [[GPBStringBoolDictionary alloc] init];
-          break;
-        case GPBDataTypeFixed32:
-        case GPBDataTypeUInt32:
-          result = [[GPBStringUInt32Dictionary alloc] init];
-          break;
-        case GPBDataTypeInt32:
-        case GPBDataTypeSFixed32:
-        case GPBDataTypeSInt32:
-          result = [[GPBStringInt32Dictionary alloc] init];
-          break;
-        case GPBDataTypeFixed64:
-        case GPBDataTypeUInt64:
-          result = [[GPBStringUInt64Dictionary alloc] init];
-          break;
-        case GPBDataTypeInt64:
-        case GPBDataTypeSFixed64:
-        case GPBDataTypeSInt64:
-          result = [[GPBStringInt64Dictionary alloc] init];
-          break;
-        case GPBDataTypeFloat:
-          result = [[GPBStringFloatDictionary alloc] init];
-          break;
-        case GPBDataTypeDouble:
-          result = [[GPBStringDoubleDictionary alloc] init];
-          break;
-        case GPBDataTypeEnum:
-          result = [[GPBStringEnumDictionary alloc]
-              initWithValidationFunction:field.enumDescriptor.enumVerifier];
-          break;
-        case GPBDataTypeBytes:
-        case GPBDataTypeMessage:
-        case GPBDataTypeString:
-          if (autocreator) {
-            result = [[GPBAutocreatedDictionary alloc] init];
-          } else {
-            result = [[NSMutableDictionary alloc] init];
-          }
-          break;
-        case GPBDataTypeGroup:
-          NSCAssert(NO, @"shouldn't happen");
-          return nil;
-      }
-      break;
-
-    case GPBDataTypeFloat:
-    case GPBDataTypeDouble:
-    case GPBDataTypeEnum:
-    case GPBDataTypeBytes:
-    case GPBDataTypeGroup:
-    case GPBDataTypeMessage:
-      NSCAssert(NO, @"shouldn't happen");
-      return nil;
+  CreateMapValueGroup valueGroup =
+      ((uint32_t)valueDataType < 18) ? kValueGroup[valueDataType] : CreateMapValueGroupInvalid;
+  if (keyGroup == CreateMapKeyGroupInvalid || valueGroup == CreateMapValueGroupInvalid) {
+#if defined(DEBUG) && DEBUG
+    NSCAssert(NO, @"shouldn't happen");
+#endif
+    return nil;
   }
 
-  if (autocreator) {
-    if ((keyDataType == GPBDataTypeString) && GPBDataTypeIsObject(valueDataType)) {
-      GPBAutocreatedDictionary *autoDict = result;
+  Class dictClass = kMapClasses[keyGroup][valueGroup];
+  if (dictClass == Nil) {
+    // Only String -> Object maps use NSMutableDictionary / GPBAutocreatedDictionary.
+    if (autocreator) {
+      GPBAutocreatedDictionary *autoDict = [[GPBAutocreatedDictionary alloc] init];
       autoDict->_autocreator = autocreator;
-    } else {
-      GPBInt32Int32Dictionary *gpbDict = result;
-      gpbDict->_autocreator = autocreator;
+      return autoDict;
     }
+    return [[NSMutableDictionary alloc] init];
   }
 
+  id result;
+  if (valueGroup == CreateMapValueGroupEnum) {
+    result = [(GPBInt32EnumDictionary *)[dictClass alloc]
+        initWithValidationFunction:field.enumDescriptor.enumVerifier];
+  } else {
+    result = [[dictClass alloc] init];
+  }
+  if (autocreator) {
+    GPBInt32Int32Dictionary *gpbDict = result;
+    gpbDict->_autocreator = autocreator;
+  }
   return result;
 }
+
+#pragma clang diagnostic pop
 
 static id GetOrCreateArrayIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
   id array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);

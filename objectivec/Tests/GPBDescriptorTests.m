@@ -119,6 +119,33 @@
   XCTAssertNil([descriptor fieldWithNumber:9876543]);
 }
 
+- (void)testFieldDescriptorMapKeyDataType {
+  GPBDescriptor *descriptor = [TestMap descriptor];
+  struct {
+    uint32_t fieldNumber;
+    GPBDataType expectedKeyType;
+  } const kCases[] = {
+      {TestMap_FieldNumber_MapInt32Int32, GPBDataTypeInt32},
+      {TestMap_FieldNumber_MapInt64Int64, GPBDataTypeInt64},
+      {TestMap_FieldNumber_MapUint32Uint32, GPBDataTypeUInt32},
+      {TestMap_FieldNumber_MapUint64Uint64, GPBDataTypeUInt64},
+      {TestMap_FieldNumber_MapSint32Sint32, GPBDataTypeSInt32},
+      {TestMap_FieldNumber_MapSint64Sint64, GPBDataTypeSInt64},
+      {TestMap_FieldNumber_MapFixed32Fixed32, GPBDataTypeFixed32},
+      {TestMap_FieldNumber_MapFixed64Fixed64, GPBDataTypeFixed64},
+      {TestMap_FieldNumber_MapSfixed32Sfixed32, GPBDataTypeSFixed32},
+      {TestMap_FieldNumber_MapSfixed64Sfixed64, GPBDataTypeSFixed64},
+      {TestMap_FieldNumber_MapBoolBool, GPBDataTypeBool},
+      {TestMap_FieldNumber_MapStringString, GPBDataTypeString},
+  };
+  for (size_t i = 0; i < GPBARRAYSIZE(kCases); ++i) {
+    GPBFieldDescriptor *field = [descriptor fieldWithNumber:kCases[i].fieldNumber];
+    XCTAssertNotNil(field);
+    XCTAssertEqual(field.fieldType, GPBFieldTypeMap);
+    XCTAssertEqual(field.mapKeyDataType, kCases[i].expectedKeyType);
+  }
+}
+
 - (void)testEnumDescriptor {
   GPBEnumDescriptor *descriptor = TestAllTypes_NestedEnum_EnumDescriptor();
 
