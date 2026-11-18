@@ -152,10 +152,7 @@ cc_library(
     hdrs = ["combinations.h"],
     copts = FASTTABLE_COPTS,
     features = UPB_DEFAULT_FEATURES,
-    visibility = [
-        "//upb:__pkg__",
-        "//upb/wire:__subpackages__",
-    ],
+    visibility = ["//upb/wire:__subpackages__"],
     deps = [
         "//upb/base:internal",
         "//upb/port",
@@ -169,7 +166,6 @@ cc_library(
     copts = FASTTABLE_COPTS,
     features = UPB_DEFAULT_FEATURES,
     visibility = [
-        "//upb:__pkg__",
         "//upb/mini_descriptor:__pkg__",
         "//upb/wire:__subpackages__",
     ],
@@ -184,10 +180,7 @@ cc_library(
     hdrs = ["function_array.h"],
     copts = FASTTABLE_COPTS,
     features = UPB_DEFAULT_FEATURES,
-    visibility = [
-        "//upb:__pkg__",
-        "//upb/mini_descriptor:__pkg__",
-    ],
+    visibility = ["//upb/mini_descriptor:__pkg__"],
     deps = [
         ":combinations",
         ":field_parsers",
