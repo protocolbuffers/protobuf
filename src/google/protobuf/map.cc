@@ -83,9 +83,7 @@ void UntypedMapBase::UntypedMergeFrom(Arena* arena,
       nodes = nodes->next;
       const Key& in = *other.GetKey<Key>(it.node_);
       Key* out = GetKey<Key>(node);
-      if (!internal::InitializeMapKey(out, in, arena)) {
-        Arena::CreateInArenaStorage(out, arena, in);
-      }
+      InitializeKey(out, in, arena);
 
       static_cast<KeyMapBase<Key>*>(this)->InsertOrReplaceNode(
           arena, static_cast<typename KeyMapBase<Key>::KeyNode*>(node));

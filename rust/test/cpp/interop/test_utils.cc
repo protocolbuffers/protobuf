@@ -10,6 +10,7 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "rust/cpp_kernel/serialized_data.h"
 #include "rust/cpp_kernel/strings.h"
@@ -68,4 +69,22 @@ extern "C" const void* GetConstStaticInteropTestMessage() {
 
 extern "C" bool IsExpectedDescriptor(const google::protobuf::Descriptor* descriptor) {
   return descriptor == InteropTestMessage::GetDescriptor();
+}
+
+extern "C" void* NewArenaInteropTestMessage(google::protobuf::Arena** out_arena) {
+  *out_arena = new google::protobuf::Arena();
+  return google::protobuf::Arena::Create<InteropTestMessage>(*out_arena);
+}
+
+extern "C" void VerifyAndDeleteArena(google::protobuf::Arena* arena,
+                                     InteropTestMessage* msg) {
+  const InteropTestMessage& sub =
+      msg->map_string_msg().at("non_sso_map_key_exceeding_32_bytes_1");
+  ABSL_CHECK_EQ(sub.GetArena(), arena);
+  ABSL_CHECK_EQ(sub.bytes(), "non_sso_submessage_bytes_exceeding_32_bytes");
+  ABSL_CHECK_EQ(msg->map_string_bytes().size(), 1u);
+  ABSL_CHECK_EQ(
+      msg->map_string_bytes().at("non_sso_map_key_exceeding_32_bytes_2"),
+      "non_sso_bytes_value_exceeding_32_bytes");
+  delete arena;
 }

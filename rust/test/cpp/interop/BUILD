@@ -25,6 +25,7 @@ cc_library(
         ":interop_test_cc_proto",
         "//rust:cpp_api",
         "//src/google/protobuf",
+        "//src/google/protobuf:arena",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
     ],

@@ -18,8 +18,10 @@
 #include "absl/functional/overload.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "rust/cpp_kernel/strings.h"
 
 namespace google {
@@ -68,32 +70,30 @@ absl::string_view AsViewType(PtrAndLen key) { return key.AsStringView(); }
 constexpr bool kHasFullRuntime = true;
 
 void InitializeMessageValue(void* raw_ptr,
-                            std::unique_ptr<MessageLite> prototype) {
+                            std::unique_ptr<MessageLite> prototype,
+                            Arena* arena) {
   MessageLite* new_msg =
-      internal::RustMapHelper::PlacementNew(prototype.get(), raw_ptr);
-  // If we are working with a full (non-lite) proto, we reflectively swap the
-  // value into place. Otherwise, we have to perform a copy.
+      internal::GetClassData(*prototype)->PlacementNew(raw_ptr, arena);
+  // If we are working with a full (non-lite) heap-allocated proto, we
+  // reflectively swap the value into place. Otherwise, we perform a copy.
   if constexpr (kHasFullRuntime) {
-    auto* full_msg = DynamicCastMessage<Message>(new_msg);
-    if (full_msg != nullptr) {
-      full_msg->GetReflection()->Swap(
-          full_msg, DynamicCastMessage<Message>(prototype.get()));
-    } else {
-      new_msg->CheckTypeAndMergeFrom(*prototype);
+    if (arena == nullptr) {
+      if (auto* full_msg = DynamicCastMessage<Message>(new_msg)) {
+        full_msg->GetReflection()->Swap(
+            full_msg, DynamicCastMessage<Message>(prototype.get()));
+        return;
+      }
     }
-  } else {
-    new_msg->CheckTypeAndMergeFrom(*prototype);
   }
+  new_msg->CheckTypeAndMergeFrom(*prototype);
 }
 
 template <typename Key>
 bool Insert(internal::UntypedMapBase* m, Key key, FfiMapValue value) {
-  internal::NodeBase* node = internal::RustMapHelper::AllocNode(m);
-  if constexpr (std::is_same_v<Key, PtrAndLen>) {
-    key.PlacementNewString(node->GetVoidKey());
-  } else {
-    *static_cast<Key*>(node->GetVoidKey()) = key;
-  }
+  Arena* arena = m->arena();
+  auto* map_base = static_cast<KeyMap<Key>*>(m);
+  internal::NodeBase* node =
+      internal::RustMapHelper::AllocNode(map_base, AsViewType(key));
 
   m->VisitValue(node, absl::Overload{
                           [&](bool* v) { *v = value.b; },
@@ -103,16 +103,16 @@ bool Insert(internal::UntypedMapBase* m, Key key, FfiMapValue value) {
                           [&](double* v) { *v = value.f64; },
                           [&](std::string* str) {
                             new (str) std::string(std::move(*value.s));
+                            if (arena != nullptr) arena->OwnDestructor(str);
                             delete value.s;
                           },
                           [&](MessageLite* msg) {
                             InitializeMessageValue(
-                                msg, absl::WrapUnique(value.message));
+                                msg, absl::WrapUnique(value.message), arena);
                           },
                       });
 
-  return internal::RustMapHelper::InsertOrReplaceNode(
-      static_cast<KeyMap<Key>*>(m), node);
+  return internal::RustMapHelper::InsertOrReplaceNode(map_base, node);
 }
 
 void PopulateMapValue(const internal::UntypedMapBase& map,

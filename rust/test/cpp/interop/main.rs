@@ -44,6 +44,9 @@ unsafe extern "C" {
     fn GetConstStaticInteropTestMessage() -> *const c_void;
 
     fn IsExpectedDescriptor(provided: *const c_void) -> bool;
+
+    fn NewArenaInteropTestMessage(out_arena: *mut *mut c_void) -> *mut c_void;
+    fn VerifyAndDeleteArena(arena: *mut c_void, msg: *mut c_void);
 }
 
 #[gtest]
@@ -165,4 +168,22 @@ fn descriptor_interop() {
     let descriptor = InteropTestMessage::__unstable_get_descriptor();
     let result = unsafe { IsExpectedDescriptor(descriptor) };
     assert!(result);
+}
+
+#[gtest]
+fn arena_backed_map_insert() {
+    let mut arena = std::ptr::null_mut();
+    let mut raw_msg = unsafe { NewArenaInteropTestMessage(&mut arena) };
+    let mut msg = unsafe { InteropTestMessageMut::__unstable_wrap_raw_message_mut(&mut raw_msg) };
+
+    let mut sub = InteropTestMessage::new();
+    sub.set_bytes(b"non_sso_submessage_bytes_exceeding_32_bytes");
+    msg.map_string_msg_mut().insert("non_sso_map_key_exceeding_32_bytes_1", sub);
+    let mut m = msg.map_string_bytes_mut();
+    m.insert("non_sso_map_key_exceeding_32_bytes_2", b"initial_non_sso_value_exceeding_32_bytes");
+    m.insert("non_sso_map_key_exceeding_32_bytes_2", b"non_sso_bytes_value_exceeding_32_bytes");
+    m.insert("non_sso_map_key_exceeding_32_bytes_3", b"transient_non_sso_bytes_exceeding_32_bytes");
+    assert!(m.remove("non_sso_map_key_exceeding_32_bytes_3"));
+
+    unsafe { VerifyAndDeleteArena(arena, raw_msg) };
 }

@@ -486,6 +486,9 @@ class PROTOBUF_EXPORT UntypedMapBase {
                                       : arena->AllocateAligned(node_size));
   }
 
+  template <typename Key, typename K>
+  static void InitializeKey(Key* ptr, K&& k, Arena* arena);
+
   void DeallocNode(NodeBase* node) { DeallocNode(node, type_info_.node_size); }
 
   void DeallocNode(NodeBase* node, size_t node_size) {
@@ -1226,6 +1229,19 @@ bool InitializeMapKey(T*, K&&, Arena*) {
 }
 
 
+template <typename Key, typename K>
+PROTOBUF_ALWAYS_INLINE void UntypedMapBase::InitializeKey(Key* ptr, K&& k,
+                                                          Arena* arena) {
+  // If K is not Key, make the conversion to Key explicit.
+  using TypeToInit =
+      std::conditional_t<std::is_same_v<std::decay_t<K>, Key>, K&&, Key>;
+  // Note: This only works if `Key` is not arena constructible.
+  if (!internal::InitializeMapKey(ptr, std::forward<K>(k), arena)) {
+    Arena::CreateInArenaStorage(ptr, arena,
+                                static_cast<TypeToInit>(std::forward<K>(k)));
+  }
+}
+
 // The purpose of this class is to give the Rust implementation visibility into
 // some of the internals of C++ proto maps. We need access to these internals
 // to be able to implement Rust map operations without duplicating the same
@@ -1234,8 +1250,13 @@ class RustMapHelper {
  public:
   using NodeAndBucket = UntypedMapBase::NodeAndBucket;
 
-  static NodeBase* AllocNode(UntypedMapBase* m) {
-    return m->AllocNode(m->arena());
+  template <typename Map, typename Key>
+  static NodeBase* AllocNode(Map* m, Key&& key) {
+    Arena* arena = m->arena();
+    NodeBase* node = m->AllocNode(arena);
+    UntypedMapBase::InitializeKey(m->GetKey(node), std::forward<Key>(key),
+                                  arena);
+    return node;
   }
 
   static void DeleteNode(UntypedMapBase* m, NodeBase* node) {
@@ -1256,11 +1277,6 @@ class RustMapHelper {
   template <typename Map, typename Key>
   static bool EraseImpl(Map* m, const Key& key) {
     return m->EraseImpl(m->arena(), key);
-  }
-
-  static google::protobuf::MessageLite* PlacementNew(const MessageLite* prototype,
-                                           void* mem) {
-    return prototype->GetClassData()->PlacementNew(mem, /* arena = */ nullptr);
   }
 
   template <typename Map>
@@ -1797,22 +1813,14 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
 
   template <typename K, typename... Args>
   PROTOBUF_ALWAYS_INLINE Node* CreateNode(Arena* arena, K&& k, Args&&... args) {
-    // If K is not key_type, make the conversion to key_type explicit.
-    using TypeToInit =
-        std::conditional_t<std::is_same_v<std::decay_t<K>, key_type>, K&&,
-                           key_type>;
     ABSL_DCHECK_EQ(arena, this->arena());
     Node* node = static_cast<Node*>(this->AllocNode(arena, sizeof(Node)));
 
     // Even when arena is nullptr, CreateInArenaStorage is still used to
     // ensure the arena of submessage will be consistent. Otherwise,
     // submessage may have its own arena when message-owned arena is enabled.
-    // Note: This only works if `Key` is not arena constructible.
-    if (!internal::InitializeMapKey(const_cast<Key*>(&node->kv.first),
-                                    std::forward<K>(k), arena)) {
-      Arena::CreateInArenaStorage(const_cast<Key*>(&node->kv.first), arena,
-                                  static_cast<TypeToInit>(std::forward<K>(k)));
-    }
+    this->InitializeKey(const_cast<Key*>(&node->kv.first), std::forward<K>(k),
+                        arena);
     // Note: if `T` is arena constructible, `Args` needs to be empty.
     Arena::CreateInArenaStorage(&node->kv.second, arena,
                                 std::forward<Args>(args)...);
