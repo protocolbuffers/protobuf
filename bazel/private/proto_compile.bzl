@@ -287,6 +287,16 @@ def _compile_internal(
         resource_set = resource_set,
         exec_group = experimental_exec_group,
         toolchain = _toolchain_type(proto_lang_toolchain_info),
+        # Exclude "legacy" output_files (where callers pass pre-formatted
+        # ctx.bin_dir.path strings via plugin_output that path mapping cannot
+        # rewrite).
+        # TODO: Remove the is_directory guard once Blaze path
+        # mapping supports TreeArtifact directory outputs.
+        execution_requirements = {"supports-path-mapping": "1"} if (
+            proto_lang_toolchain_info.mnemonic == "GenProto" and
+            output_files != "legacy" and
+            not any([f.is_directory for f in generated_files])
+        ) else None,
     )
 
 def _compile_from_transitive_sources(*args, **kwargs):

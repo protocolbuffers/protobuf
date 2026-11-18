@@ -41,6 +41,7 @@ bzl_library(
     srcs = ["proto_bzl_test_suite.bzl"],
     visibility = ["//visibility:private"],
     deps = [
+        "@proto_bazel_features//:features",
         "@rules_testing//lib:analysis_test_bzl",
         "@rules_testing//lib:util_bzl",
     ],

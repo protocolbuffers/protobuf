@@ -10,11 +10,12 @@
 load("@rules_testing//lib:truth.bzl", "matching")
 
 def _test_output_directory_for_proto_compile_action(env, target):
-    action = env.expect.that_target(target).action_generating("{package}/bar.pb.h")
+    target_subject = env.expect.that_target(target)
+    action = target_subject.action_generating("{package}/bar.pb.h")
     action.argv().contains_predicate(
         matching.any(
-            matching.str_matches("--cpp_out=" + env.ctx.bin_dir.path),
-            matching.str_matches("--cpp_out=*:" + env.ctx.bin_dir.path),
+            matching.str_matches(target_subject.meta.format_str("--cpp_out={bindir}")),
+            matching.str_matches(target_subject.meta.format_str("--cpp_out=*:{bindir}")),
         ),
     )
 

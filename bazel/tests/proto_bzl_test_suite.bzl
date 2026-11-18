@@ -7,6 +7,7 @@
 
 """Defines a test suite for bzl analysis tests."""
 
+load("@proto_bazel_features//:features.bzl", "bazel_features")
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:util.bzl", "testing_aspect")
 
@@ -31,6 +32,8 @@ def bzl_test_suite(
       **kwargs: Additional keyword arguments passed through to the underlying analysis tests.
     """
     actual_config_settings = dict(config_settings)
+    if bazel_features.rules.analysis_tests_can_transition_on_experimental_incompatible_flags:
+        actual_config_settings.setdefault("//command_line_option:experimental_output_paths", "off")
 
     test_names = []
     for target, impl_list in tests.items():
