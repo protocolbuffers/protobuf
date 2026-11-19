@@ -240,11 +240,14 @@ module Google
           return false unless other.length == length
           return true if length == 0
           return false if type != other.send(:type) or descriptor != other.send(:descriptor)
+          status = Google::Protobuf::FFI::Status.new
           each_msg_val_with_index do |msg_val, i|
             other_msg_val = Google::Protobuf::FFI.get_msgval_at(other.send(:array), i)
-            unless Google::Protobuf::FFI.message_value_equal(msg_val, other_msg_val, type, descriptor)
-              return false
+            is_equal = Google::Protobuf::FFI.message_value_equal(msg_val, other_msg_val, type, descriptor, status)
+            unless status[:ok]
+              raise RuntimeError.new Google::Protobuf::FFI.error_message(status)
             end
+            return false unless is_equal
           end
           return true
         elsif other.is_a? Enumerable
@@ -269,8 +272,12 @@ module Google
 
       def hash
         return_value = 0
+        status = Google::Protobuf::FFI::Status.new
         each_msg_val do |msg_val|
-          return_value = Google::Protobuf::FFI.message_value_hash(msg_val, type, descriptor, return_value)
+          return_value = Google::Protobuf::FFI.message_value_hash(msg_val, type, descriptor, return_value, status)
+          unless status[:ok]
+            raise RuntimeError.new Google::Protobuf::FFI.error_message(status)
+          end
         end
         return_value
       end

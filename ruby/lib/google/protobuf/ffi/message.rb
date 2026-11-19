@@ -29,8 +29,8 @@ module Google
       attach_function :message_shallow_copy,    :upb_Message_ShallowCopy,     [:Message, :Message, MiniTable.by_ref, Internal::Arena], :bool
 
       # MessageValue
-      attach_function :message_value_equal,     :shared_Msgval_IsEqual,       [MessageValue.by_value, MessageValue.by_value, CType, Descriptor], :bool
-      attach_function :message_value_hash,      :shared_Msgval_GetHash,       [MessageValue.by_value, CType, Descriptor, :uint64_t], :uint64_t
+      attach_function :message_value_equal,     :shared_Msgval_IsEqual,       [MessageValue.by_value, MessageValue.by_value, CType, Descriptor, Status.by_ref], :bool
+      attach_function :message_value_hash,      :shared_Msgval_GetHash,       [MessageValue.by_value, CType, Descriptor, :uint64_t, Status.by_ref], :uint64_t
     end
 
     class Descriptor

@@ -1032,6 +1032,32 @@ module CommonTests
     end
   end
 
+  def test_rptfield_hash_deep_recursion
+    omit "Native JRuby hashes without upb encode depth limit" if defined?(JRUBY_VERSION) && Google::Protobuf::IMPLEMENTATION == :NATIVE
+    deep = proto_module::Recursive1.new
+    60.times do
+      deep = proto_module::Recursive1.new(:foo => proto_module::Recursive2.new(:foo => deep))
+    end
+    rf = Google::Protobuf::RepeatedField.new(:message, proto_module::Recursive1, [deep])
+    err = assert_raises RuntimeError do
+      rf.hash
+    end
+    assert_match(/Error calculating hash/, err.message)
+  end
+
+  def test_map_hash_deep_recursion
+    omit "Native JRuby hashes without upb encode depth limit" if defined?(JRUBY_VERSION) && Google::Protobuf::IMPLEMENTATION == :NATIVE
+    deep = proto_module::Recursive1.new
+    60.times do
+      deep = proto_module::Recursive1.new(:foo => proto_module::Recursive2.new(:foo => deep))
+    end
+    m = Google::Protobuf::Map.new(:string, :message, proto_module::Recursive1, {"k" => deep})
+    err = assert_raises RuntimeError do
+      m.hash
+    end
+    assert_match(/Error calculating hash/, err.message)
+  end
+
   def test_bad_field_names
     m = proto_module::BadFieldNames.new(:dup => 1, :class => 2)
     m2 = m.dup

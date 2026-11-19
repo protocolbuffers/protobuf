@@ -220,19 +220,31 @@ module Google
         return true if object_id == other.object_id
         return false if key_type != other.send(:key_type) or value_type != other.send(:value_type) or descriptor != other.send(:descriptor) or length != other.length
         other_map_ptr = other.send(:map_ptr)
+        status = Google::Protobuf::FFI::Status.new
         each_msg_val do |key_message_value, value_message_value|
           other_value = Google::Protobuf::FFI::MessageValue.new
           return false unless Google::Protobuf::FFI.map_get(other_map_ptr, key_message_value, other_value)
-          return false unless Google::Protobuf::FFI.message_value_equal(value_message_value, other_value, value_type, descriptor)
+          is_equal = Google::Protobuf::FFI.message_value_equal(value_message_value, other_value, value_type, descriptor, status)
+          unless status[:ok]
+            raise RuntimeError.new Google::Protobuf::FFI.error_message(status)
+          end
+          return false unless is_equal
         end
         true
       end
 
       def hash
         return_value = 0
+        status = Google::Protobuf::FFI::Status.new
         each_msg_val do |key_message_value, value_message_value|
-          return_value += Google::Protobuf::FFI.message_value_hash(key_message_value, key_type, nil, 0)
-          return_value += Google::Protobuf::FFI.message_value_hash(value_message_value, value_type, descriptor, 0)
+          return_value += Google::Protobuf::FFI.message_value_hash(key_message_value, key_type, nil, 0, status)
+          unless status[:ok]
+            raise RuntimeError.new Google::Protobuf::FFI.error_message(status)
+          end
+          return_value += Google::Protobuf::FFI.message_value_hash(value_message_value, value_type, descriptor, 0, status)
+          unless status[:ok]
+            raise RuntimeError.new Google::Protobuf::FFI.error_message(status)
+          end
         end
         return_value
       end
