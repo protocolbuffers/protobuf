@@ -12,6 +12,10 @@ from google.protobuf import json_format
 from google.protobuf.descriptor_pool import DescriptorPool
 from google.protobuf.message import Message
 
+# pylint: disable=protected-access
+_DEFAULT_MAX_RECURSION_DEPTH = json_format._DEFAULT_MAX_RECURSION_DEPTH
+# pylint: enable=protected-access
+
 
 def serialize(
     message: Message,
@@ -19,6 +23,7 @@ def serialize(
     preserving_proto_field_name: bool = False,
     use_integers_for_enums: bool = False,
     descriptor_pool: Optional[DescriptorPool] = None,
+    max_recursion_depth: Optional[int] = _DEFAULT_MAX_RECURSION_DEPTH,
 ) -> dict:
   """Converts protobuf message to a dictionary.
 
@@ -36,6 +41,9 @@ def serialize(
     use_integers_for_enums: If true, print integers instead of enum names.
     descriptor_pool: A Descriptor Pool for resolving types. If None use the
       default.
+    max_recursion_depth: max recursion depth of JSON message to be serialized.
+      JSON messages over this depth will fail to be serialized. If None, the
+      depth limit is disabled. Default value is 100.
 
   Returns:
     A dict representation of the protocol buffer message.
@@ -45,6 +53,7 @@ def serialize(
       always_print_fields_with_no_presence=always_print_fields_with_no_presence,
       preserving_proto_field_name=preserving_proto_field_name,
       use_integers_for_enums=use_integers_for_enums,
+      max_recursion_depth=max_recursion_depth,
   )
 
 
@@ -53,7 +62,7 @@ def parse(
     js_dict: dict,
     ignore_unknown_fields: bool = False,
     descriptor_pool: Optional[DescriptorPool] = None,
-    max_recursion_depth: int = 100,
+    max_recursion_depth: int = _DEFAULT_MAX_RECURSION_DEPTH,
 ) -> Message:
   """Parses a JSON dictionary representation into a message.
 

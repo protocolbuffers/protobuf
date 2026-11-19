@@ -1886,6 +1886,84 @@ class JsonFormatTest(JsonFormatBase):
         max_recursion_depth=5,
     )
 
+  def testSerializeAnyRecursionDepthLimit(self):
+    def _MakeNestedAny(levels):
+      msg = any_pb2.Any()
+      for _ in range(levels - 1):
+        outer = any_pb2.Any()
+        outer.Pack(msg)
+        msg = outer
+      return msg
+
+    # Depth 5 succeeds with max_recursion_depth=5; depth 6 fails.
+    json_format.MessageToDict(_MakeNestedAny(5), max_recursion_depth=5)
+    self.assertRaisesRegex(
+        json_format.SerializeToJsonError,
+        'Message too deep. Max recursion depth is 5',
+        json_format.MessageToJson,
+        _MakeNestedAny(6),
+        max_recursion_depth=5,
+    )
+    # Default max_recursion_depth=100 rejects >100 nested Any messages.
+    self.assertRaisesRegex(
+        json_format.SerializeToJsonError,
+        'Message too deep. Max recursion depth is 100',
+        json_format.MessageToJson,
+        _MakeNestedAny(101),
+    )
+    # None disables the recursion depth limit.
+    json_format.MessageToJson(_MakeNestedAny(101), max_recursion_depth=None)
+
+  def testSerializeWktRecursionDepthLimit(self):
+    # Struct -> Value -> Struct -> Value -> Struct reaches depth 5.
+    shallow_struct = json_format.ParseDict(
+        {'a': {'b': {}}}, struct_pb2.Struct()
+    )
+    self.assertEqual(
+        {'a': {'b': {}}},
+        json_format.MessageToDict(shallow_struct, max_recursion_depth=5),
+    )
+    deep_struct = json_format.ParseDict(
+        {'a': {'b': {'c': {}}}}, struct_pb2.Struct()
+    )
+    self.assertRaisesRegex(
+        json_format.SerializeToJsonError,
+        'Message too deep. Max recursion depth is 5',
+        json_format.MessageToJson,
+        deep_struct,
+        max_recursion_depth=5,
+    )
+
+    # ListValue -> Value -> ListValue -> Value -> ListValue reaches depth 5.
+    shallow_list = json_format.ParseDict([[[]]], struct_pb2.ListValue())
+    self.assertEqual(
+        [[[]]],
+        json_format.MessageToDict(shallow_list, max_recursion_depth=5),
+    )
+    deep_list = json_format.ParseDict([[[[]]]], struct_pb2.ListValue())
+    self.assertRaisesRegex(
+        json_format.SerializeToJsonError,
+        'Message too deep. Max recursion depth is 5',
+        json_format.MessageToJson,
+        deep_list,
+        max_recursion_depth=5,
+    )
+
+    # Value -> ListValue -> Value -> ListValue reaches depth 4.
+    shallow_value = json_format.ParseDict([[]], struct_pb2.Value())
+    self.assertEqual(
+        [[]],
+        json_format.MessageToDict(shallow_value, max_recursion_depth=4),
+    )
+    deep_value = json_format.ParseDict([[[]]], struct_pb2.Value())
+    self.assertRaisesRegex(
+        json_format.SerializeToJsonError,
+        'Message too deep. Max recursion depth is 4',
+        json_format.MessageToJson,
+        deep_value,
+        max_recursion_depth=4,
+    )
+
   def testJsonNameConflictSerilize(self):
     message = more_messages_pb2.ConflictJsonName(value=2)
     self.assertEqual(

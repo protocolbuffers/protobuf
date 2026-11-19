@@ -55,6 +55,8 @@ _UNPAIRED_SURROGATE_PATTERN = re.compile(
 
 _VALID_EXTENSION_NAME = re.compile(r'\[[a-zA-Z0-9\._]*\]$')
 
+_DEFAULT_MAX_RECURSION_DEPTH = 100
+
 
 class Error(Exception):
   """Top-level module error for json_format."""
@@ -86,6 +88,7 @@ def MessageToJson(
     always_print_fields_with_no_presence=False,
     *,
     unquote_int64_if_possible=False,
+    max_recursion_depth=_DEFAULT_MAX_RECURSION_DEPTH,
 ):
   """Converts protobuf message to JSON format.
 
@@ -110,6 +113,9 @@ def MessageToJson(
     unquote_int64_if_possible: If True, unquote int64 fields for values that are
       safe to emit as numbers (all values smaller than 2^53 and a sparse set of
       values that are larger).
+    max_recursion_depth: max recursion depth of JSON message to be serialized.
+      JSON messages over this depth will fail to be serialized. If None, the
+      depth limit is disabled. Default value is 100.
 
   Returns:
     A string containing the JSON formatted protocol buffer message.
@@ -120,6 +126,7 @@ def MessageToJson(
       descriptor_pool,
       always_print_fields_with_no_presence,
       unquote_int64_if_possible=unquote_int64_if_possible,
+      max_recursion_depth=max_recursion_depth,
   )
   return printer.ToJsonString(message, indent, sort_keys, ensure_ascii)
 
@@ -132,6 +139,7 @@ def MessageToDict(
     descriptor_pool=None,
     *,
     unquote_int64_if_possible=False,
+    max_recursion_depth=_DEFAULT_MAX_RECURSION_DEPTH,
 ):
   """Converts protobuf message to a dictionary.
 
@@ -152,6 +160,9 @@ def MessageToDict(
     unquote_int64_if_possible: If True, unquote int64 fields for values that are
       safe to emit as numbers (all values smaller than 2^53 and a sparse set of
       values that are larger).
+    max_recursion_depth: max recursion depth of JSON message to be serialized.
+      JSON messages over this depth will fail to be serialized. If None, the
+      depth limit is disabled. Default value is 100.
 
   Returns:
     A dict representation of the protocol buffer message.
@@ -162,6 +173,7 @@ def MessageToDict(
       descriptor_pool,
       always_print_fields_with_no_presence,
       unquote_int64_if_possible=unquote_int64_if_possible,
+      max_recursion_depth=max_recursion_depth,
   )
   # pylint: disable=protected-access
   return printer._MessageToJsonObject(message)
@@ -186,6 +198,7 @@ class _Printer(object):
       always_print_fields_with_no_presence=False,
       *,
       unquote_int64_if_possible=False,
+      max_recursion_depth=_DEFAULT_MAX_RECURSION_DEPTH,
   ):
     self.always_print_fields_with_no_presence = (
         always_print_fields_with_no_presence
@@ -194,6 +207,8 @@ class _Printer(object):
     self.use_integers_for_enums = use_integers_for_enums
     self.descriptor_pool = descriptor_pool
     self.unquote_int64_if_possible = unquote_int64_if_possible
+    self.max_recursion_depth = max_recursion_depth
+    self.recursion_depth = 0
     self._enumvalue_json_extension = None
 
   def _GetEnumValueJsonExtension(self):
@@ -229,14 +244,27 @@ class _Printer(object):
 
   def _MessageToJsonObject(self, message):
     """Converts message to an object according to ProtoJSON Specification."""
-    message_descriptor = message.DESCRIPTOR
-    full_name = message_descriptor.full_name
-    if _IsWrapperMessage(message_descriptor):
-      return self._WrapperMessageToJsonObject(message)
-    if full_name in _WKTJSONMETHODS:
-      return methodcaller(_WKTJSONMETHODS[full_name][0], message)(self)
-    js = {}
-    return self._RegularMessageToJsonObject(message, js)
+    self.recursion_depth += 1
+    try:
+      if (
+          self.max_recursion_depth is not None
+          and self.recursion_depth > self.max_recursion_depth
+      ):
+        raise SerializeToJsonError(
+            'Message too deep. Max recursion depth is {0}'.format(
+                self.max_recursion_depth
+            )
+        )
+      message_descriptor = message.DESCRIPTOR
+      full_name = message_descriptor.full_name
+      if _IsWrapperMessage(message_descriptor):
+        return self._WrapperMessageToJsonObject(message)
+      if full_name in _WKTJSONMETHODS:
+        return methodcaller(_WKTJSONMETHODS[full_name][0], message)(self)
+      js = {}
+      return self._RegularMessageToJsonObject(message, js)
+    finally:
+      self.recursion_depth -= 1
 
   def _RegularMessageToJsonObject(self, message, js):
     """Converts normal message according to ProtoJSON Specification."""
@@ -369,9 +397,9 @@ class _Printer(object):
       js['value'] = self._WrapperMessageToJsonObject(sub_message)
       return js
     if full_name in _WKTJSONMETHODS:
-      js['value'] = methodcaller(_WKTJSONMETHODS[full_name][0], sub_message)(
-          self
-      )
+      # For well-known types (including nested Any), use _MessageToJsonObject
+      # to ensure recursion depth is properly tracked.
+      js['value'] = self._MessageToJsonObject(sub_message)
       return js
     return self._RegularMessageToJsonObject(sub_message, js)
 
@@ -389,7 +417,7 @@ class _Printer(object):
     if which is None or which == 'null_value':
       return None
     if which == 'list_value':
-      return self._ListValueMessageToJsonObject(message.list_value)
+      return self._MessageToJsonObject(message.list_value)
     if which == 'number_value':
       value = message.number_value
       if math.isinf(value):
@@ -409,14 +437,14 @@ class _Printer(object):
 
   def _ListValueMessageToJsonObject(self, message):
     """Converts ListValue message according to ProtoJSON Specification."""
-    return [self._ValueMessageToJsonObject(value) for value in message.values]
+    return [self._MessageToJsonObject(value) for value in message.values]
 
   def _StructMessageToJsonObject(self, message):
     """Converts Struct message according to ProtoJSON Specification."""
     fields = message.fields
     ret = {}
     for key in fields:
-      ret[key] = self._ValueMessageToJsonObject(fields[key])
+      ret[key] = self._MessageToJsonObject(fields[key])
     return ret
 
   def _WrapperMessageToJsonObject(self, message):
@@ -458,7 +486,7 @@ def Parse(
     message,
     ignore_unknown_fields=False,
     descriptor_pool=None,
-    max_recursion_depth=100,
+    max_recursion_depth=_DEFAULT_MAX_RECURSION_DEPTH,
 ):
   """Parses a JSON representation of a protocol message into a message.
 
@@ -503,7 +531,7 @@ def ParseDict(
     message,
     ignore_unknown_fields=False,
     descriptor_pool=None,
-    max_recursion_depth=100,
+    max_recursion_depth=_DEFAULT_MAX_RECURSION_DEPTH,
 ):
   """Parses a JSON dictionary representation into a message.
 
