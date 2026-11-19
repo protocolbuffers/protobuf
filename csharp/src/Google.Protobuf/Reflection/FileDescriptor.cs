@@ -80,6 +80,19 @@ namespace Google.Protobuf.Reflection
             extensionCachingEnabled = false;
         }
 
+        /// <summary>
+        /// Gets or sets whether descriptor pool package limit checks (maximum length and period count)
+        /// are disabled. Defaults to <c>false</c>. Enable only when loading existing descriptors that
+        /// exceed the default limits. Disabling these limit checks may expose the process to
+        /// denial-of-service risks, and this setting should not be enabled if untrusted descriptors
+        /// are in use.
+        /// </summary>
+        public static bool UnsafeDisableLimitChecks
+        {
+            get => DescriptorPool.UnsafeDisableLimitChecks;
+            set => DescriptorPool.UnsafeDisableLimitChecks = value;
+        }
+
 #if WITH_BENCHMARKING
 
         /// <summary>

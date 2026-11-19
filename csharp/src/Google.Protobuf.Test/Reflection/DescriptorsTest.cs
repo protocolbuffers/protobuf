@@ -391,6 +391,74 @@ namespace Google.Protobuf.Reflection
         }
 
         [Test]
+        [NonParallelizable]
+        public void FileDescriptor_BuildFromByteStrings_PackageLimits()
+        {
+            static IReadOnlyList<FileDescriptor> BuildWithPackage(string package) =>
+                FileDescriptor.BuildFromByteStrings(new[]
+                {
+                    new FileDescriptorProto
+                    {
+                        Name = "package_limits.proto",
+                        Package = package,
+                        Syntax = "proto3",
+                        MessageType = { new DescriptorProto { Name = "M" } }
+                    }.ToByteString()
+                });
+
+            // Boundary values at the defaults succeed.
+            string maxLengthPkg = new string('a', DescriptorPool.MaxPackageLength);
+            string maxPeriodsPkg = string.Join(".", Enumerable.Repeat("a", DescriptorPool.MaxPackagePeriods + 1));
+            Assert.AreEqual(maxLengthPkg, BuildWithPackage(maxLengthPkg)[0].Package);
+            Assert.AreEqual(maxPeriodsPkg, BuildWithPackage(maxPeriodsPkg)[0].Package);
+
+            // Values exceeding either limit are rejected by default.
+            string tooLongPkg = new string('a', DescriptorPool.MaxPackageLength + 1);
+            string tooManyPeriodsPkg = string.Join(".", Enumerable.Repeat("a", DescriptorPool.MaxPackagePeriods + 2));
+            var tooLongEx = Assert.Throws<DescriptorValidationException>(() => BuildWithPackage(tooLongPkg));
+            StringAssert.Contains("maximum length", tooLongEx.Description);
+            var tooManyEx = Assert.Throws<DescriptorValidationException>(() => BuildWithPackage(tooManyPeriodsPkg));
+            StringAssert.Contains("maximum depth", tooManyEx.Description);
+
+            // Opting out allows packages exceeding either limit without overflowing the stack.
+            bool originalFlag = FileDescriptor.UnsafeDisableLimitChecks;
+            try
+            {
+                FileDescriptor.UnsafeDisableLimitChecks = true;
+                Assert.AreEqual(tooLongPkg, BuildWithPackage(tooLongPkg)[0].Package);
+
+                string deepPackage = string.Join(".", Enumerable.Repeat("a", 8000));
+                IReadOnlyList<FileDescriptor> descriptors = null;
+                Exception threadException = null;
+                var thread = new Thread(() =>
+                {
+                    try
+                    {
+                        descriptors = BuildWithPackage(deepPackage);
+                    }
+                    catch (Exception ex)
+                    {
+                        threadException = ex;
+                    }
+                }, 512 * 1024);
+                thread.Start();
+                thread.Join();
+
+                if (threadException != null)
+                {
+                    ExceptionDispatchInfo.Capture(threadException).Throw();
+                }
+
+                Assert.AreEqual(deepPackage, descriptors[0].Package);
+                Assert.AreEqual(deepPackage + ".M", descriptors[0].FindTypeByName<MessageDescriptor>("M").FullName);
+            }
+            finally
+            {
+                FileDescriptor.UnsafeDisableLimitChecks = originalFlag;
+            }
+        }
+
+        [Test]
         public void MessageDescriptorFromGeneratedCodeFileDescriptor()
         {
             var file = UnittestProto3Reflection.Descriptor;

@@ -18,6 +18,17 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     internal sealed class DescriptorPool
     {
+        internal const int MaxPackageLength = 511;
+        internal const int MaxPackagePeriods = 64;
+
+        private static volatile bool unsafeDisableLimitChecks;
+
+        internal static bool UnsafeDisableLimitChecks
+        {
+            get => unsafeDisableLimitChecks;
+            set => unsafeDisableLimitChecks = value;
+        }
+
         private readonly IDictionary<string, IDescriptor> descriptorsByName =
             new Dictionary<string, IDescriptor>();
 
@@ -108,29 +119,62 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         internal void AddPackage(string fullName, FileDescriptor file)
         {
-            int dotpos = fullName.LastIndexOf('.');
-            String name;
-            if (dotpos != -1)
+            if (!unsafeDisableLimitChecks)
             {
-                AddPackage(fullName.Substring(0, dotpos), file);
-                name = fullName.Substring(dotpos + 1);
-            }
-            else
-            {
-                name = fullName;
-            }
-
-            if (descriptorsByName.TryGetValue(fullName, out IDescriptor old))
-            {
-                if (old is not PackageDescriptor)
+                if (fullName.Length > MaxPackageLength)
                 {
-                    throw new DescriptorValidationException(file,
-                                                            "\"" + name +
-                                                            "\" is already defined (as something other than a " +
-                                                            "package) in file \"" + old.File.Name + "\".");
+                    throw new DescriptorValidationException(
+                        file,
+                        $"Package name exceeds maximum length of {MaxPackageLength} characters.");
+                }
+
+                int periodCount = 0;
+                for (int i = 0; i < fullName.Length; i++)
+                {
+                    if (fullName[i] == '.' && ++periodCount > MaxPackagePeriods)
+                    {
+                        throw new DescriptorValidationException(
+                            file,
+                            $"Package name exceeds maximum depth of {MaxPackagePeriods} periods.");
+                    }
                 }
             }
-            descriptorsByName[fullName] = new PackageDescriptor(name, fullName, file);
+
+            int start = 0;
+            while (true)
+            {
+                int dotpos = fullName.IndexOf('.', start);
+                string prefix;
+                string name;
+                if (dotpos == -1)
+                {
+                    prefix = fullName;
+                    name = start == 0 ? fullName : fullName.Substring(start);
+                }
+                else
+                {
+                    prefix = fullName.Substring(0, dotpos);
+                    name = start == 0 ? prefix : fullName.Substring(start, dotpos - start);
+                }
+
+                if (descriptorsByName.TryGetValue(prefix, out IDescriptor old))
+                {
+                    if (old is not PackageDescriptor)
+                    {
+                        throw new DescriptorValidationException(file,
+                                                                "\"" + name +
+                                                                "\" is already defined (as something other than a " +
+                                                                "package) in file \"" + old.File.Name + "\".");
+                    }
+                }
+                descriptorsByName[prefix] = new PackageDescriptor(name, prefix, file);
+
+                if (dotpos == -1)
+                {
+                    break;
+                }
+                start = dotpos + 1;
+            }
         }
 
         /// <summary>
