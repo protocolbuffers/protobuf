@@ -221,11 +221,10 @@ class PROTOBUF_EXPORT SerialArena {
                   std::is_same_v<Align, MemoryAlign>);
     static_assert(std::is_same_v<Cleanup, NoCleanup> ||
                   std::is_same_v<Cleanup, WithCleanup>);
-
+    ABSL_DCHECK(align.IsAligned(n));
     ABSL_DCHECK_GE(limit_, ptr());
-    char* ret = ptr();
 
-    n = align.CeilDefaultAligned(n);
+    char* ret = ptr();
 
     // Comparing `limit_` to aligned `ret` is precarious because aligning `ret`
     // may overflow. Instead, we conservatively compare the total remaining

@@ -418,11 +418,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   // Allocates memory with the specific size and alignment.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD void* PROTOBUF_NONNULL
   AllocateAligned(size_t size, size_t align = 8) {
-    size = internal::ArenaAlignDefault{}.Ceil(size);
     if (align <= internal::ArenaAlignDefault{}.align()) {
-      return AllocateDefaultAligned(size);
+      return AllocateDefaultAligned(internal::ArenaAlignDefault{}.Ceil(size));
     } else {
-      return AllocateOverAligned(size, align);
+      return AllocateOverAligned(internal::ArenaAlignAs(align).Ceil(size),
+                                 align);
     }
   }
 
@@ -757,8 +757,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     if constexpr (is_destructor_skippable<T>::value) {
       return AllocateAligned(sizeof(T), alignof(T));
     } else {
+      constexpr size_t align =
+          std::max(alignof(T), internal::ArenaAlignDefault{}.align());
+      constexpr size_t size = internal::ArenaAlignAs(align).Ceil(sizeof(T));
       return AllocateAlignedWithCleanup(
-          sizeof(T), alignof(T), &internal::cleanup::arena_destruct_object<T>);
+          size, align, &internal::cleanup::arena_destruct_object<T>);
     }
   }
 

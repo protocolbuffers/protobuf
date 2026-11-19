@@ -840,11 +840,8 @@ uint64_t ThreadSafeArena::Reset() {
 
 void* ThreadSafeArena::AllocateAlignedWithCleanup(size_t n, size_t align,
                                                   void (*destructor)(void*)) {
-  // We only require `n` to be aligned to `ArenaAlignDefault{}.align()` before
-  // being passed to `SerialArena::AllocateImpl`.
-  n = ArenaAlignDefault{}.Ceil(n);
-  // We also require `align` to be at least `ArenaAlignDefault{}.align()`.
-  align = std::max(align, ArenaAlignDefault{}.align());
+  ABSL_DCHECK_GE(align, internal::ArenaAlignDefault{}.align());
+  ABSL_DCHECK(internal::ArenaAlignAs(align).IsAligned(n));
 
   SerialArena* arena;
   if (ABSL_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
@@ -1027,6 +1024,7 @@ void* PROTOBUF_NONNULL Arena::AllocateDefaultAligned(size_t n) {
 }
 
 void* PROTOBUF_NONNULL Arena::AllocateOverAligned(size_t n, size_t align) {
+  ABSL_DCHECK(internal::ArenaAlignAs(align).IsAligned(n));
   return impl_.AllocateOverAligned(n, align);
 }
 
