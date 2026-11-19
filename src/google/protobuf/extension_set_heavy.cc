@@ -378,7 +378,13 @@ size_t ExtensionSet::SpaceUsedExcludingSelfLong() const {
 
 inline size_t ExtensionSet::RepeatedMessage_SpaceUsedExcludingSelfLong(
     RepeatedPtrFieldBase* field) {
-  return field->SpaceUsedExcludingSelfLong<GenericTypeHandler<Message>>();
+  struct Handler {
+    using Type = MessageLite;
+    static size_t SpaceUsedLong(const Type& value) {
+      return internal::SpaceUsedLong(value);
+    }
+  };
+  return field->SpaceUsedExcludingSelfLong<Handler>();
 }
 
 size_t ExtensionSet::Extension::SpaceUsedExcludingSelfLong() const {
@@ -422,8 +428,7 @@ size_t ExtensionSet::Extension::SpaceUsedExcludingSelfLong() const {
         break;
       case FieldDescriptor::CPPTYPE_MESSAGE:
         ABSL_DCHECK(!is_lazy);
-        total_size +=
-            DownCastMessage<Message>(ptr.message_value)->SpaceUsedLong();
+        total_size += internal::SpaceUsedLong(*ptr.message_value);
         break;
       default:
         // No extra storage costs for primitive types.

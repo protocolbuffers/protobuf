@@ -469,6 +469,15 @@ void CreateSplitMessageGeneric(Arena* arena, void** split, size_t size);
 class RepeatedFieldAccessor;
 
 extern PROTOBUF_EXPORT const DescriptorMethods kDescriptorMethods;
+
+// Returns the estimated memory usage of `msg`.
+inline size_t SpaceUsedLong(const MessageLite& msg) {
+  const ClassData* class_data = GetClassData(msg);
+  if (class_data->is_lite) {
+    return class_data->allocation_size();
+  }
+  return class_data->descriptor_methods()->space_used_long(msg);
+}
 }  // namespace internal
 
 // This interface contains methods that can be used to dynamically access
