@@ -1372,7 +1372,8 @@ class MessageReflection {
 
       } else if (tag == WireFormat.MESSAGE_SET_MESSAGE_TAG) {
         if (typeId != 0) {
-          if (extension != null && ExtensionRegistryLite.isEagerlyParseMessageSets()) {
+          boolean eagerlyParse = ExtensionRegistryLite.isEagerlyParseMessageSets();
+          if (extension != null && eagerlyParse) {
             // We already know the type, so we can parse directly from the
             // input with no copying.  Hooray!
             eagerlyMergeMessageSetExtension(input, extension, extensionRegistry, target);
@@ -1419,7 +1420,8 @@ class MessageReflection {
 
     // TODO: b/535485217 - Consider letting InternalLazyField to concat the bytes to avoid parsing
     // if the existing field is a lazy field with lazy bytes.
-    if (hasOriginalValue || ExtensionRegistryLite.isEagerlyParseMessageSets()) {
+    boolean eagerlyParse = hasOriginalValue || ExtensionRegistryLite.isEagerlyParseMessageSets();
+    if (eagerlyParse) {
       // If the field already exists, we just parse the field.
       int remainingInputRecursionLimit = input.getRemainingRecursionDepth();
       if (--remainingInputRecursionLimit < 0) {
