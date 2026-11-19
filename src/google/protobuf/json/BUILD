@@ -340,7 +340,7 @@ cc_proto_library(
 py_proto_library(
     name = "json_enumval_custom_string_py_proto",
     testonly = True,
-    visibility = ["//third_party/py/google/protobuf/internal:__pkg__"],
+    visibility = ["//python/google/protobuf/internal:__pkg__"],
     deps = [":json_enumval_custom_string_proto"],
 )
 

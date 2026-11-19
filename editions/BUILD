@@ -231,8 +231,6 @@ proto_library(
     srcs = ["golden/test_messages_proto2_editions.proto"],
     visibility = [
         "//conformance/test_protos:__pkg__",
-        "//learning/brain/research/grmf/tools/protolean/conformance:__pkg__",
-        "//net/proto2/util/converter/internal/conformance:__pkg__",
     ],
 )
 
@@ -290,8 +288,6 @@ proto_library(
     srcs = ["golden/test_messages_proto3_editions.proto"],
     visibility = [
         "//conformance/test_protos:__pkg__",
-        "//learning/brain/research/grmf/tools/protolean/conformance:__pkg__",
-        "//net/proto2/util/converter/internal/conformance:__pkg__",
     ],
     deps = [
         "//:any_proto",

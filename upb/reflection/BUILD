@@ -31,7 +31,6 @@ bootstrap_upb_proto_library(
     proto_lib_deps = ["//:descriptor_proto"],
     src_files = ["google/protobuf/descriptor.proto"],
     src_rules = ["//:descriptor_proto_srcs"],
-    strip_prefix = "third_party/protobuf/github/bootstrap/src",
 )
 
 bootstrap_upb_proto_library(
@@ -43,7 +42,6 @@ bootstrap_upb_proto_library(
         "//:descriptor_proto_srcs",
         "//:json_enumvalue_options_proto_srcs",
     ],
-    strip_prefix = "third_party/protobuf/github/bootstrap/src",
     deps = [":descriptor_upb_proto"],
 )
 

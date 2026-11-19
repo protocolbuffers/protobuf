@@ -95,7 +95,7 @@ def _test_proto_library_compiler_deps(env, target):
     # Should depend on compiler.
     env.expect.that_target(target).action_named("GenProto").inputs().contains_predicate(
         matching.any(
-            matching.file_path_matches("*/net/proto2/compiler/public/protocol_compiler"),
+            matching.file_path_matches("*/protocol_compiler"),
             matching.file_path_matches("*/protoc_minimal"),
             matching.file_path_matches("*/protoc"),
             matching.file_path_matches("*/protoc.exe"),
