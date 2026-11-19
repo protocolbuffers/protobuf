@@ -10,6 +10,7 @@ require 'generated_code_proto2_pb'
 GC.stress = old_gc
 
 require 'test/unit'
+require 'google/protobuf/descriptor_pb'
 
 class GCTest < Test::Unit::TestCase
   def get_msg_proto3
@@ -167,5 +168,126 @@ class GCTest < Test::Unit::TestCase
     GC.start(full_mark: true, immediate_sweep: true)
 
     assert(descriptors.all? { |d| d.instance_of?(Google::Protobuf::FieldDescriptor) })
+  end
+
+  class InspectBoomError < StandardError; end
+
+  def with_failing_float_inspect(sentinel)
+    orig_inspect = Float.instance_method(:inspect)
+    prev_verbose = $VERBOSE
+    begin
+      $VERBOSE = nil
+      Float.define_method(:inspect) do
+        raise InspectBoomError, 'boom' if self == sentinel
+        orig_inspect.bind_call(self)
+      end
+    ensure
+      $VERBOSE = prev_verbose
+    end
+    yield
+  ensure
+    if orig_inspect
+      prev_verbose = $VERBOSE
+      begin
+        $VERBOSE = nil
+        Float.define_method(:inspect, orig_inspect)
+      ensure
+        $VERBOSE = prev_verbose
+      end
+    end
+  end
+
+  # Regression test: Message#inspect / #to_s and Map#inspect use xmalloc/xrealloc
+  # inside rb_ensure, so GC may run during buffer growth. Verify that temporary
+  # Ruby Strings (float/double inspect results, anonymous class names) and the
+  # receiver remain safely rooted across xrealloc and exception unwinding.
+  def test_inspect_under_gc_stress
+    if defined?(JRUBY_VERSION) || Google::Protobuf::IMPLEMENTATION != :NATIVE
+      omit 'StringBuilder GC stress test applies only to the CRuby native extension'
+    end
+
+    large_str = 'x' * 8192
+    sentinel = 12345.5
+
+    pool = Google::Protobuf::DescriptorPool.new
+    pool.add_serialized_file(
+      Google::Protobuf::FileDescriptorProto.encode(
+        A::B::C::TestMessage.descriptor.file_descriptor.to_proto
+      )
+    )
+    anon_cls = pool.lookup('a.b.c.TestMessage').msgclass
+
+    msg = get_msg_proto3
+    msg.optional_string = large_str
+    msg.repeated_double.concat(Array.new(16) { |i| i + 0.5 })
+    msg.repeated_float.concat(Array.new(16) { |i| i + 0.25 })
+
+    anon_msg = anon_cls.new(
+      optional_string: large_str,
+      optional_double: 1.5,
+      optional_float: 2.5,
+      repeated_msg: Array.new(6) { anon_cls.new(optional_double: 3.5) }
+    )
+
+    map = Google::Protobuf::Map.new(:string, :double)
+    map[large_str] = 1.5
+
+    boom_msg = A::B::C::TestMessage.new(
+      optional_string: large_str,
+      repeated_double: [sentinel]
+    )
+    boom_map = Google::Protobuf::Map.new(:string, :double)
+    boom_map[large_str] = sentinel
+
+    old_gc = GC.stress
+    GC.stress = true
+    begin
+      inspected = msg.inspect
+      assert_include inspected, large_str
+      assert_include inspected, '15.5'
+      assert_include inspected, '15.25'
+      assert_equal inspected, msg.to_s
+
+      anon_inspected = anon_msg.inspect
+      assert_include anon_inspected, large_str
+      assert_include anon_inspected, 'optional_double: 1.5'
+      assert_include anon_inspected, 'optional_double: 3.5'
+
+      map_inspected = map.inspect
+      assert_include map_inspected, large_str
+      assert_include map_inspected, '=>1.5}'
+
+      # Exercise ephemeral receivers with no Ruby local reference so RB_GC_GUARD(_self)
+      # is relied upon across StringBuilder xrealloc growth.
+      ephemeral_msg_out = anon_cls.new(
+        optional_string: large_str,
+        optional_double: 4.5
+      ).inspect
+      assert_include ephemeral_msg_out, large_str
+      assert_include ephemeral_msg_out, 'optional_double: 4.5'
+
+      ephemeral_map_out = Google::Protobuf::Map.new(
+        :string, :double, { large_str => 5.5 }
+      ).inspect
+      assert_include ephemeral_map_out, large_str
+      assert_include ephemeral_map_out, '=>5.5}'
+    ensure
+      GC.stress = old_gc
+    end
+
+    with_failing_float_inspect(sentinel) do
+      old_gc = GC.stress
+      GC.stress = true
+      begin
+        assert_raise(InspectBoomError) { boom_msg.inspect }
+        assert_raise(InspectBoomError) { boom_msg.to_s }
+        assert_raise(InspectBoomError) { boom_map.inspect }
+      ensure
+        GC.stress = old_gc
+      end
+    end
+
+    assert_include boom_msg.inspect, '12345.5'
+    assert_include boom_map.inspect, '=>12345.5}'
   end
 end

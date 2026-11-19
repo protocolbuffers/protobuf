@@ -723,6 +723,12 @@ VALUE Map_to_h(VALUE _self) {
                         false);
 }
 
+// StringBuilder_Callback for Map_inspect(); |arg| is a Map*.
+static void Map_inspect_cb(StringBuilder* builder, void* arg) {
+  Map* self = (Map*)arg;
+  Map_Inspect(builder, self->map, self->key_type, self->value_type_info);
+}
+
 /*
  * ruby-doc: Map#inspect
  *
@@ -734,11 +740,8 @@ VALUE Map_to_h(VALUE _self) {
  */
 VALUE Map_inspect(VALUE _self) {
   Map* self = ruby_to_Map(_self);
-
-  StringBuilder* builder = StringBuilder_New();
-  Map_Inspect(builder, self->map, self->key_type, self->value_type_info);
-  VALUE ret = StringBuilder_ToRubyString(builder);
-  StringBuilder_Free(builder);
+  VALUE ret = StringBuilder_BuildRubyString(Map_inspect_cb, self);
+  RB_GC_GUARD(_self);
   return ret;
 }
 

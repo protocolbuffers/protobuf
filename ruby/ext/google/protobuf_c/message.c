@@ -126,7 +126,16 @@ void Message_PrintMessage(StringBuilder* b, const upb_Message* msg,
   bool first = true;
   int n = upb_MessageDef_FieldCount(m);
   VALUE klass = Descriptor_DefToClass(m);
-  StringBuilder_Printf(b, "<%s: ", rb_class2name(klass));
+  // rb_mod_name returns nil if the class is not a module e.g. if it's a
+  // singleton or anonymous class, but doesn't allocate a new string.
+  // rb_class_name allocates a new string in all cases, but handles the cases
+  // where rb_mod_name returns nil.
+  VALUE klass_name = rb_mod_name(klass);
+  if (NIL_P(klass_name)) {
+    klass_name = rb_class_name(klass);
+  }
+  StringBuilder_Printf(b, "<%s: ", RSTRING_PTR(klass_name));
+  RB_GC_GUARD(klass_name);
 
   for (int i = 0; i < n; i++) {
     const upb_FieldDef* field = upb_MessageDef_Field(m, i);
@@ -779,6 +788,12 @@ static VALUE Message_hash(VALUE _self) {
   return INT2FIX(hash_value & RUBY_FIXNUM_MAX);
 }
 
+// StringBuilder_Callback for Message_inspect(); |arg| is a Message*.
+static void Message_inspect_cb(StringBuilder* builder, void* arg) {
+  Message* self = (Message*)arg;
+  Message_PrintMessage(builder, self->msg, self->msgdef);
+}
+
 /*
  * ruby-doc: AbstractMessage#inspect
  *
@@ -790,11 +805,8 @@ static VALUE Message_hash(VALUE _self) {
  */
 static VALUE Message_inspect(VALUE _self) {
   Message* self = ruby_to_Message(_self);
-
-  StringBuilder* builder = StringBuilder_New();
-  Message_PrintMessage(builder, self->msg, self->msgdef);
-  VALUE ret = StringBuilder_ToRubyString(builder);
-  StringBuilder_Free(builder);
+  VALUE ret = StringBuilder_BuildRubyString(Message_inspect_cb, self);
+  RB_GC_GUARD(_self);
   return ret;
 }
 

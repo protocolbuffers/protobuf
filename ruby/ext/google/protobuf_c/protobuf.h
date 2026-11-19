@@ -74,10 +74,10 @@ VALUE ObjectCache_Get(const void* key);
 struct StringBuilder;
 typedef struct StringBuilder StringBuilder;
 
-StringBuilder* StringBuilder_New();
-void StringBuilder_Free(StringBuilder* b);
+typedef void (*StringBuilder_Callback)(StringBuilder* b, void* arg);
+
+VALUE StringBuilder_BuildRubyString(StringBuilder_Callback cb, void* arg);
 void StringBuilder_Printf(StringBuilder* b, const char* fmt, ...);
-VALUE StringBuilder_ToRubyString(StringBuilder* b);
 
 void StringBuilder_PrintMsgval(StringBuilder* b, upb_MessageValue val,
                                TypeInfo info);

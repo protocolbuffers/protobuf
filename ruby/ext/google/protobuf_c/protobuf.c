@@ -7,6 +7,9 @@
 
 #include "protobuf.h"
 
+#include <limits.h>
+#include <stdarg.h>
+
 #include "defs.h"
 #include "map.h"
 #include "message.h"
@@ -35,54 +38,86 @@ struct StringBuilder {
   char* data;
 };
 
-typedef struct StringBuilder StringBuilder;
-
-static size_t StringBuilder_SizeOf(size_t cap) {
-  return sizeof(StringBuilder) + cap;
+static VALUE StringBuilder_ToRubyString(const StringBuilder* b) {
+  VALUE ret = rb_str_new(b->data, (long)b->size);
+  rb_enc_associate(ret, rb_utf8_encoding());
+  return ret;
 }
 
-StringBuilder* StringBuilder_New() {
-  const size_t cap = 128;
-  StringBuilder* builder = malloc(sizeof(*builder));
-  builder->size = 0;
-  builder->cap = cap;
-  builder->data = malloc(builder->cap);
-  return builder;
+typedef struct {
+  StringBuilder builder;
+  StringBuilder_Callback cb;
+  void* arg;
+} StringBuilder_EnsureArgs;
+
+static VALUE StringBuilder_EnsureBody(VALUE arg) {
+  StringBuilder_EnsureArgs* args = (StringBuilder_EnsureArgs*)arg;
+  const size_t initial_cap = 128;
+  args->builder.data = (char*)xmalloc(initial_cap);
+  args->builder.cap = initial_cap;
+  args->cb(&args->builder, args->arg);
+  return StringBuilder_ToRubyString(&args->builder);
 }
 
-void StringBuilder_Free(StringBuilder* b) {
-  free(b->data);
-  free(b);
+static VALUE StringBuilder_EnsureCleanup(VALUE arg) {
+  StringBuilder_EnsureArgs* args = (StringBuilder_EnsureArgs*)arg;
+  xfree(args->builder.data);
+  args->builder.data = NULL;
+  args->builder.size = 0;
+  args->builder.cap = 0;
+  return Qnil;
+}
+
+VALUE StringBuilder_BuildRubyString(StringBuilder_Callback cb, void* arg) {
+  StringBuilder_EnsureArgs args = {{0, 0, NULL}, cb, arg};
+  return rb_ensure(StringBuilder_EnsureBody, (VALUE)&args,
+                   StringBuilder_EnsureCleanup, (VALUE)&args);
 }
 
 void StringBuilder_Printf(StringBuilder* b, const char* fmt, ...) {
+  PBRUBY_ASSERT(b->cap > b->size);
   size_t have = b->cap - b->size;
-  size_t n;
   va_list args;
 
   va_start(args, fmt);
-  n = vsnprintf(&b->data[b->size], have, fmt, args);
+  int ret = vsnprintf(&b->data[b->size], have, fmt, args);
   va_end(args);
 
-  if (have <= n) {
-    while (have <= n) {
-      b->cap *= 2;
-      have = b->cap - b->size;
+  if (ret < 0) {
+    rb_raise(rb_eRuntimeError, "StringBuilder_Printf: vsnprintf failed");
+  }
+
+  size_t n = (size_t)ret;
+  if (n >= have) {
+    if (n >= (size_t)LONG_MAX - b->size) {
+      rb_raise(rb_eNoMemError, "StringBuilder buffer size overflow");
     }
-    b->data = realloc(b->data, StringBuilder_SizeOf(b->cap));
+    size_t needed = b->size + n + 1;
+    size_t new_cap = b->cap;
+    while (new_cap < needed) {
+      if (new_cap > (size_t)LONG_MAX / 2) {
+        new_cap = needed;
+        break;
+      }
+      new_cap *= 2;
+    }
+    char* new_data = (char*)xrealloc(b->data, new_cap);
+    b->data = new_data;
+    b->cap = new_cap;
+    have = b->cap - b->size;
+
     va_start(args, fmt);
-    n = vsnprintf(&b->data[b->size], have, fmt, args);
+    ret = vsnprintf(&b->data[b->size], have, fmt, args);
     va_end(args);
+
+    if (ret < 0) {
+      rb_raise(rb_eRuntimeError, "StringBuilder_Printf: vsnprintf failed");
+    }
+    n = (size_t)ret;
     PBRUBY_ASSERT(n < have);
   }
 
   b->size += n;
-}
-
-VALUE StringBuilder_ToRubyString(StringBuilder* b) {
-  VALUE ret = rb_str_new(b->data, b->size);
-  rb_enc_associate(ret, rb_utf8_encoding());
-  return ret;
 }
 
 static void StringBuilder_PrintEnum(StringBuilder* b, int32_t val,
@@ -104,11 +139,13 @@ void StringBuilder_PrintMsgval(StringBuilder* b, upb_MessageValue val,
     case kUpb_CType_Float: {
       VALUE str = rb_inspect(DBL2NUM(val.float_val));
       StringBuilder_Printf(b, "%s", RSTRING_PTR(str));
+      RB_GC_GUARD(str);
       break;
     }
     case kUpb_CType_Double: {
       VALUE str = rb_inspect(DBL2NUM(val.double_val));
       StringBuilder_Printf(b, "%s", RSTRING_PTR(str));
+      RB_GC_GUARD(str);
       break;
     }
     case kUpb_CType_Int32:
