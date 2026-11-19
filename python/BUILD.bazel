@@ -128,7 +128,7 @@ py_extension_with_bundled_deps(
     srcs = [":message_srcs"],
     copts = UPB_DEFAULT_COPTS + select(LIMITED_API_FLAG_SELECT),
     features = UPB_DEFAULT_FEATURES,
-    # copybara:uncomment py_limited_api = "3.10",
+    py_limited_api = "3.11",
     visibility = [
         ":__subpackages__",
         "//conformance:__pkg__",
