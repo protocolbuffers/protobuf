@@ -414,6 +414,8 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
 
   class ReflectionPayload {
    public:
+    using InternalArenaConstructable_ = void;
+
     explicit ReflectionPayload(Arena* arena, const Message* prototype)
         : repeated_field_(Arena::Create<RepeatedPtrField<Message>>(arena)),
           prototype_(prototype) {}
