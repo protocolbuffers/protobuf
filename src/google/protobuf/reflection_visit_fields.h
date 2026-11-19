@@ -17,6 +17,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/cord.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_lite.h"
@@ -96,6 +97,16 @@ class ReflectionVisit final {
 inline bool ShouldVisit(FieldMask mask, FieldDescriptor::CppType cpptype) {
   if (ABSL_PREDICT_TRUE(mask == FieldMask::kAll)) return true;
   return (static_cast<uint32_t>(mask) & (1 << cpptype)) != 0;
+}
+
+template <typename ExtensionT>
+inline bool IsLiteMessageExtension(const ExtensionT& ext) {
+  if (ext.is_repeated) {
+    return ext.GetSize() > 0 &&
+           GetClassData(ext.ptr.repeated_message_value->Get(0))->is_lite;
+  }
+  return !ext.is_cleared && !ext.is_lazy &&
+         GetClassData(*ext.ptr.message_value)->is_lite;
 }
 
 template <typename MessageT, typename CallbackFn>
@@ -309,16 +320,22 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
 
   auto& set = ExtensionSet(reflection, message);
   auto* extendee = reflection->descriptor_;
-  auto* pool = reflection->descriptor_pool_;
 
   set.ForEach(
       [&](int number, auto& ext) {
         ABSL_DCHECK_GT(ext.type, 0);
         ABSL_DCHECK_LE(ext.type, FieldDescriptor::MAX_TYPE);
 
-        if (!ShouldVisit(mask,
-                         FieldDescriptor::TypeToCppType(
-                             static_cast<FieldDescriptor::Type>(ext.type)))) {
+        const FieldDescriptor::CppType cpp_type =
+            FieldDescriptor::TypeToCppType(
+                static_cast<FieldDescriptor::Type>(ext.type));
+        if (!ShouldVisit(mask, cpp_type)) {
+          return;
+        }
+        // Message extension visitors expose Message&, whereas forced-lite
+        // extensions on full messages store MessageLite values.
+        if (cpp_type == FieldDescriptor::CPPTYPE_MESSAGE &&
+            IsLiteMessageExtension(ext)) {
           return;
         }
 
@@ -384,13 +401,7 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
 
             PROTOBUF_HANDLE_CASE(GROUP, Group);
             case FieldDescriptor::TYPE_MESSAGE: {
-              const FieldDescriptor* field =
-                  ext.descriptor != nullptr
-                      ? ext.descriptor
-                      : pool->FindExtensionByNumber(extendee, number);
-              ABSL_DCHECK_EQ(field->number(), number);
-              bool is_mset =
-                  field->containing_type()->options().message_set_wire_format();
+              bool is_mset = extendee->options().message_set_wire_format();
               func(internal::MessageDynamicExtensionInfo<decltype(ext)>{
                   ext, number, is_mset});
               break;
@@ -474,7 +485,9 @@ void ReflectionVisit::VisitMessageFields(Message& message, CallbackFn&& func) {
 }
 
 // Visits present fields of "message" and calls the callback function "func".
-// Skips fields whose ctypes are missing in "mask".
+// Skips fields whose ctypes are missing in "mask", as well as lite message and
+// group extensions (and lazy extensions whose Message prototype cannot be
+// found).
 template <typename MessageT, typename CallbackFn>
 void VisitFields(MessageT& message, CallbackFn&& func, FieldMask mask) {
   ReflectionVisit::VisitFields(message, std::forward<CallbackFn>(func), mask);
@@ -487,6 +500,8 @@ void VisitFields(MessageT& message, CallbackFn&& func, FieldMask mask) {
 // --Each of M elements of a map field whose value type is message are visited
 //   (total M).
 // --A map field whose value type is not message is ignored.
+// --Lite message and group extensions (and lazy extensions whose Message
+//   prototype cannot be found) are skipped.
 //
 // This is a helper API built on top of VisitFields to hide specifics about
 // extensions, repeated fields, etc.
