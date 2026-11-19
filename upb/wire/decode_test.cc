@@ -470,9 +470,111 @@ TEST(RepeatedFieldTest, LongRepeatedField) {
       trace_buf->data(), trace_buf->size());
   ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
   EXPECT_EQ(GetRepeatedField<Value>(msg, field), expected);
+  EXPECT_EQ(FilteredTrace(trace_buf->data()),
+            ExpectedRepeatedFieldTrace(mt, field, 256));
+}
 
-  // We can't easily check the trace here because the large array size will
-  // force reallocations that cause fallbacks to the MiniTable decoder.
+TEST(RepeatedFieldTest, UnpackedRepeatedGrowsInFastTable) {
+  char trace_buf[512];
+  Arena mt_arena;
+  Arena msg_arena;
+
+  // Fixed32 (contiguous TryExtend path) across 4 -> 8 -> 16 -> 32.
+  {
+    auto [mt, field] =
+        test::MiniTable::MakeSingleFieldTable<test::field_types::Fixed32>(
+            1, kUpb_DecodeFast_Repeated, mt_arena.ptr());
+    upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+    wire_types::WireMessage wire_msg;
+    std::vector<uint32_t> expected;
+    for (uint32_t i = 0; i < 25; ++i) {
+      wire_msg.push_back({1, wire_types::Fixed32{i + 100}});
+      expected.push_back(i + 100);
+    }
+    std::string payload = ToBinaryPayload(wire_msg);
+    upb_DecodeStatus result =
+        upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
+                            msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+    ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+    EXPECT_EQ(GetRepeatedField<uint32_t>(msg, field), expected);
+    EXPECT_EQ(FilteredTrace(trace_buf),
+              ExpectedRepeatedFieldTrace(mt, field, 25));
+  }
+
+  // Repeated Message (interleaved submessage allocations forcing AllocPool +
+  // Harvest instead of TryExtend) across 4 -> 8 -> 16 -> 32.
+  {
+    auto [sub_mt, sub_field] =
+        test::MiniTable::MakeSingleFieldTable<test::field_types::Int32>(
+            1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+    auto [mt, field] =
+        test::MiniTable::MakeSingleFieldTable<test::field_types::Message>(
+            1, kUpb_DecodeFast_Repeated, mt_arena.ptr());
+    const upb_MiniTable* subs[1] = {sub_mt};
+    ASSERT_TRUE(upb_MiniTable_Link(const_cast<upb_MiniTable*>(mt), subs, 1,
+                                   nullptr, 0));
+
+    upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+    wire_types::WireMessage wire_msg;
+    for (int32_t i = 0; i < 25; ++i) {
+      std::string sub_wire = ToBinaryPayload(wire_types::WireMessage{
+          {1, wire_types::Varint{static_cast<uint64_t>(i + 1)}}});
+      wire_msg.push_back({1, wire_types::Delimited{sub_wire}});
+    }
+    std::string payload = ToBinaryPayload(wire_msg);
+    upb_DecodeStatus result =
+        upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
+                            msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+    ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+    const upb_Array* arr = upb_Message_GetArray(msg, field);
+    ASSERT_NE(arr, nullptr);
+    ASSERT_EQ(upb_Array_Size(arr), 25u);
+    for (size_t i = 0; i < 25; ++i) {
+      const upb_Message* child = upb_Array_Get(arr, i).msg_val;
+      ASSERT_NE(child, nullptr);
+      EXPECT_EQ(upb_Message_GetInt32(child, sub_field, 0),
+                static_cast<int32_t>(i + 1));
+    }
+#if !defined(NDEBUG) && UPB_FASTTABLE
+    std::string expected_trace = "D";
+    for (int i = 0; i < 25; ++i) expected_trace += "DFF";
+    EXPECT_EQ(FilteredTrace(trace_buf), expected_trace);
+#endif
+  }
+}
+
+TEST(RepeatedFieldTest, UnpackedRepeatedGrowOutOfMemory) {
+  Arena mt_arena;
+  auto [f32_mt, f32_field] =
+      test::MiniTable::MakeSingleFieldTable<test::field_types::Fixed32>(
+          1, kUpb_DecodeFast_Repeated, mt_arena.ptr());
+  auto [ce_mt, ce_field] =
+      test::MiniTable::MakeSingleFieldTable<test::field_types::ClosedEnum>(
+          1, kUpb_DecodeFast_Repeated, mt_arena.ptr());
+
+  wire_types::WireMessage f32_wire;
+  wire_types::WireMessage ce_wire;
+  for (uint32_t i = 0; i < 64; ++i) {
+    f32_wire.push_back({1, wire_types::Fixed32{i}});
+    ce_wire.push_back({1, wire_types::Varint{1}});
+  }
+  std::string f32_payload = ToBinaryPayload(f32_wire);
+  std::string ce_payload = ToBinaryPayload(ce_wire);
+
+  for (const auto& [mt, payload] : std::initializer_list<
+           std::pair<const upb_MiniTable*, absl::string_view>>{
+           {f32_mt, f32_payload}, {ce_mt, ce_payload}}) {
+    alignas(16) char buf[256];
+    upb_Arena* arena = upb_Arena_Init(buf, sizeof(buf), nullptr);
+    ASSERT_NE(arena, nullptr);
+    upb_Message* msg = upb_Message_New(mt, arena);
+    ASSERT_NE(msg, nullptr);
+    upb_DecodeStatus status =
+        upb_Decode(payload.data(), payload.size(), msg, mt, nullptr, 0, arena);
+    EXPECT_EQ(status, kUpb_DecodeStatus_OutOfMemory)
+        << upb_DecodeStatus_String(status);
+    upb_Arena_Free(arena);
+  }
 }
 
 TYPED_TEST(PackedTest, DecodeTruncatedPackedFieldMaxLen) {

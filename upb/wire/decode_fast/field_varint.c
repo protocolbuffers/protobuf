@@ -242,7 +242,7 @@ void upb_DecodeFast_ClosedEnum(upb_Decoder* d, const char** ptr,
       }
       next_tag_matches =
           upb_DecodeFast_TryMatchTag(d, p, arr.expected_tag, ret, tagsize);
-    } while (upb_DecodeFast_NextRepeated(d, &p, ret, &arr, next_tag_matches,
+    } while (upb_DecodeFast_NextRepeated(d, &p, &arr, next_tag_matches,
                                          kUpb_DecodeFast_ClosedEnum, tagsize));
     upb_DecodeFastField_SetArraySize(&arr, kUpb_DecodeFast_ClosedEnum);
     *ptr = p;

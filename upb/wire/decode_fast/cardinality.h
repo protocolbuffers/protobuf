@@ -200,10 +200,11 @@ typedef struct {
 UPB_FORCEINLINE
 void upb_DecodeFastField_SetArraySize(upb_DecodeFastArray* field,
                                       upb_DecodeFast_Type type) {
-  field->arr->UPB_PRIVATE(size) =
-      ((uintptr_t)field->dst -
-       (uintptr_t)upb_Array_MutableDataPtr(field->arr)) /
-      upb_DecodeFast_ValueBytes(type);
+  const char* start = upb_Array_MutableDataPtr(field->arr);
+  UPB_ASSERT(start != NULL && field->dst != NULL &&
+             (const char*)field->dst >= start);
+  field->arr->UPB_PRIVATE(size) = (size_t)((const char*)field->dst - start) /
+                                  upb_DecodeFast_ValueBytes(type);
 }
 
 // Tells the compiler that the array being appended to (both the upb_Array and
@@ -307,23 +308,37 @@ bool upb_DecodeFast_TryMatchTag(upb_Decoder* d, const char* ptr,
   return upb_DecodeFast_TagMatches(expected, tag, tagsize);
 }
 
+typedef struct {
+  void* dst;
+  void* end;
+} upb_DecodeFast_GrowResult;
+
+// Takes `(arr, dst)` and returns `{dst, end}` by value instead of mutating
+// `upb_DecodeFastArray*` in place. All other helpers taking `&arr` in
+// `upb_DecodeFast_Unpacked` are `UPB_FORCEINLINE`; passing `&arr` to an
+// out-of-line function escapes the struct's address and prevents SROA from
+// keeping `dst`, `end`, and `expected_tag` in registers across the hot loop.
+// Workaround for b/177688959. Never goes through PLT; same cc_library only.
+UPB_HIDDEN UPB_PRESERVE_MOST upb_DecodeFast_GrowResult upb_DecodeFast_GrowArray(
+    upb_Decoder* d, upb_Array* arr, void* dst, upb_DecodeFast_Type type);
+
 UPB_FORCEINLINE
 bool upb_DecodeFast_NextRepeated(upb_Decoder* d, const char** ptr,
-                                 upb_DecodeFastNext* next,
                                  upb_DecodeFastArray* field, bool has_next,
                                  upb_DecodeFast_Type type,
                                  upb_DecodeFast_TagSize tagsize) {
   field->dst = UPB_PTR_AT(field->dst, upb_DecodeFast_ValueBytes(type), char);
 
-  if (has_next && field->dst == field->end) {
-    // Out of arena memory; fall back to MiniTable decoder which will realloc.
-    UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, next);
-    has_next = false;
-  }
-
   if (!has_next) {
     upb_DecodeFastField_SetArraySize(field, type);
     return false;
+  }
+
+  if (UPB_UNLIKELY(field->dst == field->end)) {
+    upb_DecodeFast_GrowResult grown =
+        upb_DecodeFast_GrowArray(d, field->arr, field->dst, type);
+    field->dst = grown.dst;
+    field->end = grown.end;
   }
 
   // Parse another instance of the repeated field.
@@ -468,7 +483,7 @@ bool upb_DecodeFast_Unpacked(upb_Decoder* d, const char** ptr, upb_Message* msg,
     _upb_Decoder_Trace(d, 'F');
     next_tag_matches =
         upb_DecodeFast_TryMatchTag(d, p, arr.expected_tag, ret, tagsize);
-  } while (upb_DecodeFast_NextRepeated(d, &p, ret, &arr, next_tag_matches, type,
+  } while (upb_DecodeFast_NextRepeated(d, &p, &arr, next_tag_matches, type,
                                        tagsize));
 
   return true;
