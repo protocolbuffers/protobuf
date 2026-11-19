@@ -358,19 +358,23 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     ABSL_DCHECK_EQ(GetArena(), nullptr);
 
     using H = CommonHandler<TypeHandler>;
-    int n = allocated_size();
-    ABSL_DCHECK_LE(n, Capacity());
-    void** elems = elements();
-    for (int i = 0; i < n; i++) {
-      if (i + 5 < n) {
-        absl::PrefetchToLocalCacheNta(elems[i + 5]);
-      }
+    if (using_sso()) {
+      Delete<H>(tagged_rep_or_elem_);
+      return;
+    }
+    Rep* r = rep();
+    int n = r->allocated_size;
+    ABSL_DCHECK_LE(n, r->capacity);
+    void** elems = r->elements;
+    int i = 0;
+    for (; i < n - 5; i++) {
+      absl::PrefetchToLocalCacheNta(elems[i + 5]);
       Delete<H>(elems[i]);
     }
-    if (!using_sso()) {
-      internal::SizedDelete(rep(),
-                            Capacity() * sizeof(elems[0]) + kRepHeaderSize);
+    for (; i < n; i++) {
+      Delete<H>(elems[i]);
     }
+    internal::SizedDelete(r, r->capacity * sizeof(elems[0]) + kRepHeaderSize);
   }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
