@@ -7380,6 +7380,14 @@ void internal::DescriptorBuilder::CrossLinkField(
                    field->type_ == FieldDescriptor::TYPE_GROUP ||
                    field->type_ == FieldDescriptor::TYPE_ENUM)
             << proto;
+        // A malformed name can never be resolved, and InternalTypeOnceInit()
+        // relies on it being valid to create a placeholder.
+        if (!ValidateQualifiedName(proto.type_name())) {
+          AddNotDefinedError(field->full_name(), proto,
+                             DescriptorPool::ErrorCollector::TYPE,
+                             proto.type_name());
+          return;
+        }
         // Save the symbol names for later for lookup, and allocate the once
         // object needed for the accessors.
         const std::string& name = proto.type_name();
@@ -7908,7 +7916,10 @@ void internal::DescriptorBuilder::MaybeAddError(
 
 void internal::DescriptorBuilder::ValidateOptions(
     const FieldDescriptor* field, const FieldDescriptorProto& proto) {
-  if (pool_->lazily_build_dependencies_ && (!field || !field->message_type())) {
+  // Only defer the checks for fields whose type will be resolved lazily, since
+  // they depend on the type, and calling message_type() or enum_type() here
+  // would try to resolve it before the file has finished building.
+  if (pool_->lazily_build_dependencies_ && field->type_once_ != nullptr) {
     return;
   }
   if (pool_->enforce_feature_support_validation_) {
@@ -8906,15 +8917,31 @@ void FieldDescriptor::InternalTypeOnceInit() const {
   const char* lazy_type_name = reinterpret_cast<const char*>(type_once_ + 1);
   const char* lazy_default_value_enum_name =
       lazy_type_name + strlen(lazy_type_name) + 1;
-  Symbol result = file()->pool()->CrossLinkOnDemandHelper(
-      lazy_type_name, type_ == FieldDescriptor::TYPE_ENUM);
-  if (result.type() == Symbol::MESSAGE) {
-    ABSL_CHECK(type_ == FieldDescriptor::TYPE_MESSAGE ||
-               type_ == FieldDescriptor::TYPE_GROUP);
-    type_descriptor_.message_type = result.descriptor();
-  } else if (result.type() == Symbol::ENUM) {
-    ABSL_CHECK(type_ == FieldDescriptor::TYPE_ENUM);
+  const bool is_enum = type_ == FieldDescriptor::TYPE_ENUM;
+  Symbol result =
+      file()->pool()->CrossLinkOnDemandHelper(lazy_type_name, is_enum);
+  // Lazily built files skip the cross-link checks. Similarly, a map entry is
+  // always nested in the same file as the map field, so it is resolved eagerly
+  // and can never be the target of a lazily resolved field.
+  //
+  // Fall back to a placeholder in all of these cases. Note that placeholders
+  // have no options.
+  const bool is_valid_type =
+      is_enum ? result.type() == Symbol::ENUM
+              : result.type() == Symbol::MESSAGE &&
+                    (result.descriptor()->is_placeholder() ||
+                     !result.descriptor()->options().map_entry());
+  if (!is_valid_type) {
+    result = file()->pool()->NewPlaceholder(
+        lazy_type_name, is_enum ? DescriptorPool::PLACEHOLDER_ENUM
+                                : DescriptorPool::PLACEHOLDER_MESSAGE);
+    // The type name was validated when the field was cross-linked.
+    ABSL_CHECK(!result.IsNull()) << lazy_type_name;
+  }
+  if (is_enum) {
     enum_type = type_descriptor_.enum_type = result.enum_descriptor();
+  } else {
+    type_descriptor_.message_type = result.descriptor();
   }
 
   if (enum_type) {
@@ -8932,6 +8959,12 @@ void FieldDescriptor::InternalTypeOnceInit() const {
       }
       Symbol result_enum = file()->pool()->CrossLinkOnDemandHelper(name, true);
       default_value_enum_ = result_enum.enum_value_descriptor();
+      // Enum values are siblings of their type, so the name may resolve to a
+      // value of a different enum in the same scope.
+      if (default_value_enum_ != nullptr &&
+          default_value_enum_->type() != enum_type) {
+        default_value_enum_ = nullptr;
+      }
     } else {
       default_value_enum_ = nullptr;
     }
