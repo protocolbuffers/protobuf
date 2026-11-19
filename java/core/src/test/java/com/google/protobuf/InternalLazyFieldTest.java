@@ -185,7 +185,7 @@ public final class InternalLazyFieldTest {
     MessageLite message = TestUtil.getAllSet();
     InternalLazyField lazyField = createLazyFieldWithBytesFromMessage(message);
     assertThat(message.hashCode()).isEqualTo(lazyField.hashCode());
-    MessageLite unused = lazyField.getValue();
+    var _ = lazyField.getValue();
     assertThat(message.hashCode()).isEqualTo(lazyField.hashCode());
   }
 
@@ -194,7 +194,7 @@ public final class InternalLazyFieldTest {
     TestAllExtensions message = TestUtil.getAllExtensionsSet();
     InternalLazyField lazyField = createLazyFieldWithBytesFromMessage(message);
     assertThat(message.hashCode()).isEqualTo(lazyField.hashCode());
-    MessageLite unused = lazyField.getValue();
+    var _ = lazyField.getValue();
     assertThat(message.hashCode()).isEqualTo(lazyField.hashCode());
   }
 
