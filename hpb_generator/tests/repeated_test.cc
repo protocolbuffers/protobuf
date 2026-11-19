@@ -6,6 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include <iterator>
+#include <utility>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -327,5 +328,18 @@ TEST(CppGeneratedCode, RepeatedStrings) {
   EXPECT_EQ("Test", test_model.repeated_string(2));
 }
 
+TEST(CppGeneratedCode, RepeatedFieldProxyPushBackMoveInitialBlockArena) {
+  char initial_block[1024];
+  ::hpb::Arena arena(initial_block, sizeof(initial_block));
+  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
+  ChildModel1 child;
+  child.set_child_str1(kTestStr1);
+  test_model.mutable_child_models()->push_back(std::move(child));
+
+  ASSERT_EQ(test_model.child_models().size(), 1);
+  EXPECT_EQ(test_model.child_models()[0].child_str1(), kTestStr1);
+  (*test_model.mutable_child_models())[0].set_child_str1(kTestStr2);
+  EXPECT_EQ(test_model.child_models()[0].child_str1(), kTestStr2);
+}
 
 }  // namespace

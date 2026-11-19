@@ -250,9 +250,7 @@ void WriteModelPublicDeclaration(
       )cc");
   ctx.Emit("\n");
   WriteConstFieldNumbers(ctx, descriptor);
-  ctx.Emit({{"class_name", ClassName(descriptor)},
-            {"c_api_msg_type",
-             upb::generator::CApiMessageType(descriptor->full_name())}},
+  ctx.Emit({{"class_name", ClassName(descriptor)}},
            R"cc(
              private:
              const upb_Message* msg() const { return UPB_UPCAST(msg_); }
@@ -260,12 +258,7 @@ void WriteModelPublicDeclaration(
 
              upb_Arena* arena() const { return arena_; }
 
-             $class_name$(upb_Message* msg, upb_Arena* arena) : $class_name$Access() {
-               msg_ = ($c_api_msg_type$*)msg;
-               arena_ = ::hpb::interop::upb::UnwrapArena(owned_arena_);
-               bool fused = upb_Arena_Fuse(arena_, arena);
-               ABSL_DCHECK(fused);
-             }
+             $class_name$(upb_Message* msg, upb_Arena* arena);
              ::hpb::Arena owned_arena_;
              friend struct ::hpb::internal::PrivateAccess;
              friend Proxy;
@@ -454,6 +447,16 @@ void WriteMessageImplementation(
           }
           $class_name$::$class_name$(const Proxy& from)
               : $class_name$(static_cast<const CProxy&>(from)) {}
+          $class_name$::$class_name$(upb_Message* msg, upb_Arena* arena)
+              : $class_name$Access() {
+            arena_ = ::hpb::interop::upb::UnwrapArena(owned_arena_);
+            if (upb_Arena_Fuse(arena_, arena)) {
+              msg_ = ($c_api_msg_type$*)msg;
+            } else {
+              msg_ = ($c_api_msg_type$*)::hpb::internal::DeepClone(
+                  msg, &$minitable_var$, arena_);
+            }
+          }
           internal::$class_name$CProxy::$class_name$CProxy($class_name$Proxy m)
               : $class_name$Access() {
             arena_ = m.arena_;

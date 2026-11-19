@@ -130,8 +130,13 @@ class RepeatedFieldProxy
             typename = std::enable_if_t<b>>
   void push_back(T&& msg) {
     upb_MessageValue message_value;
-    message_value.msg_val = PrivateAccess::GetInternalMsg(&msg);
-    upb_Arena_Fuse(interop::upb::GetArena(&msg), this->arena_);
+    if (upb_Arena_Fuse(interop::upb::GetArena(&msg), this->arena_)) {
+      message_value.msg_val = PrivateAccess::GetInternalMsg(&msg);
+    } else {
+      message_value.msg_val = upb_Message_DeepClone(
+          PrivateAccess::GetInternalMsg(&msg),
+          hpb::interop::upb::GetMiniTable(&msg), this->arena_);
+    }
     bool append_ok = upb_Array_Append(this->arr_, message_value, this->arena_);
     // TODO: Change to absl::ThrowStdBadAlloc once our min absl version is
     // above 202603

@@ -7,10 +7,13 @@
 
 #include "hpb/backend/upb/interop.h"
 
+#include <string>
+
 #include <gtest/gtest.h>
 #include "hpb_generator/tests/test_model.hpb.h"
 #include "hpb_generator/tests/test_model.upb.h"
 #include "hpb_generator/tests/test_model.upb_minitable.h"
+#include "upb/mem/alloc.h"
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"
 
@@ -30,7 +33,35 @@ TEST(CppGeneratedCode, InteropMoveMessage) {
       (upb_Message*)message, source_arena);
   // Now that we have moved ownership, free original arena.
   upb_Arena_Free(source_arena);
+  EXPECT_EQ(hpb::interop::upb::GetMessage(&model), (upb_Message*)message);
   EXPECT_EQ(model.int_value_with_default(), 123);
+}
+
+TEST(CppGeneratedCode, InteropMoveMessageInitialBlockArena) {
+  const std::string large_str(4096, 'x');
+  upb_Message* original_message = nullptr;
+  TestModel model;
+  {
+    char initial_block[1024];
+    upb_Arena* source_arena =
+        upb_Arena_Init(initial_block, sizeof(initial_block), &upb_alloc_global);
+    ASSERT_NE(source_arena, nullptr);
+    hpb_unittest_TestModel* message = hpb_unittest_TestModel_new(source_arena);
+    ASSERT_NE(message, nullptr);
+    hpb_unittest_TestModel_set_int_value_with_default(message, 123);
+    hpb_unittest_TestModel_set_str1(
+        message,
+        hpb::interop::upb::CopyToUpbStringView(large_str, source_arena));
+    original_message = reinterpret_cast<upb_Message*>(message);
+
+    model = hpb::interop::upb::MoveMessage<TestModel>(original_message,
+                                                      source_arena);
+    upb_Arena_Free(source_arena);
+  }
+
+  EXPECT_NE(hpb::interop::upb::GetMessage(&model), original_message);
+  EXPECT_EQ(model.int_value_with_default(), 123);
+  EXPECT_EQ(model.str1(), large_str);
 }
 
 TEST(CppGeneratedCode, CanCreateCProxyWithoutCasting) {
