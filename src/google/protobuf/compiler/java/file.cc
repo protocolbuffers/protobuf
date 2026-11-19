@@ -604,16 +604,19 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
     for (const FieldDescriptor* field : optional_extensions) {
       std::unique_ptr<ExtensionGenerator> generator(
           generator_factory_->NewExtensionGenerator(field));
+      // Class.forName() needs "Outer$Nested".
       printer->Emit({{"scope", field->extension_scope() != nullptr
-                                   ? name_resolver_->GetImmutableClassName(
+                                   ? name_resolver_->GetJavaImmutableClassName(
                                          field->extension_scope())
                                    : name_resolver_->GetImmutableClassName(
                                          field->file())},
-                     {"name", UnderscoresToCamelCaseCheckReserved(field)}},
+                     {"name", UnderscoresToCamelCaseCheckReserved(field)},
+                     {"classname", classname_}},
                     R"java(
-                      addOptionalExtension(registry, "$scope$", "$name$");
+                      addOptionalExtension(
+                          registry, "$scope$", "$name$", $classname$.class);
                     )java");
-      bytecode_estimate += 8;
+      bytecode_estimate += 10;
       MaybeRestartJavaMethod(
           printer, &bytecode_estimate, method_name, &method_num,
           "$method_name$_$method_num$(registry);\n",

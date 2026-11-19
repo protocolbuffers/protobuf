@@ -22,13 +22,31 @@ public abstract class GeneratedFile {
 
   protected GeneratedFile() {}
 
-  /** Add an optional extension from a file that may or may not be in the classpath. */
+  /**
+   * Add an optional extension from a file that may or may not be in the classpath. Resolves {@code
+   * className} with this class's loader; kept for gencode predating the {@code loadingClass}
+   * overload.
+   */
   protected static void addOptionalExtension(
       ExtensionRegistry registry, final String className, final String fieldName) {
+    addOptionalExtension(registry, className, fieldName, GeneratedFile.class);
+  }
+
+  /**
+   * Add an optional extension from a file that may or may not be in the classpath, resolving {@code
+   * className} with the class loader of {@code loadingClass} (the calling generated outer class).
+   */
+  protected static void addOptionalExtension(
+      ExtensionRegistry registry,
+      final String className,
+      final String fieldName,
+      final Class<?> loadingClass) {
     try {
       GeneratedMessage.GeneratedExtension<?, ?> ext =
           (GeneratedMessage.GeneratedExtension<?, ?>)
-              Class.forName(className).getField(fieldName).get(null);
+              Class.forName(className, /* initialize= */ true, loadingClass.getClassLoader())
+                  .getField(fieldName)
+                  .get(null);
       registry.add(ext);
     } catch (ClassNotFoundException e) {
       // ignore missing class if it's not in the classpath.
