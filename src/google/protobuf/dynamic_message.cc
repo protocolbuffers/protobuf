@@ -178,7 +178,6 @@ bool IsMapEntryField(const FieldDescriptor* field) {
           field->containing_type()->options().map_entry());
 }
 
-
 inline bool InRealOneof(const FieldDescriptor* field) {
   return field->real_containing_oneof() != nullptr;
 }
