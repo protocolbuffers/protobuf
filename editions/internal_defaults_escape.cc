@@ -26,11 +26,9 @@
 #include "absl/strings/string_view.h"
 
 #if defined(_WIN32)
-#include "google/protobuf/io/io_win32.h"
-
 // DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and
-// import them like we do below.
-using google::protobuf::io::win32::setmode;
+// use them like we do below.
+#include "google/protobuf/io/io_win32.h"
 #endif
 
 ABSL_FLAG(std::string, encoding, "octal",
@@ -144,7 +142,7 @@ int write(const std::string& path, const std::string& content) {
 int main(int argc, char* argv[]) {
   absl::ParseCommandLine(argc, argv);
 #ifdef _WIN32
-  setmode(STDOUT_FILENO, _O_BINARY);
+  google::protobuf::io::win32::setmode(STDOUT_FILENO, _O_BINARY);
 #endif
   std::string encoding = absl::GetFlag(FLAGS_encoding);
   std::string defaults_path = absl::GetFlag(FLAGS_defaults_path);
