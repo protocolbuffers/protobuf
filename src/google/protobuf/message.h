@@ -1651,7 +1651,8 @@ class PROTOBUF_EXPORT MessageFactory {
 
  private:
   friend class DynamicMessageFactory;
-  static const Message* TryGetGeneratedPrototype(const Descriptor* type);
+  static const Message* TryGetGeneratedPrototype(
+      const Descriptor* type, const DynamicMessageFactory* caller);
 };
 
 #define DECLARE_GET_REPEATED_FIELD(TYPE)                    \
