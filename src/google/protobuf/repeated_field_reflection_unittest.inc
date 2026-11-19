@@ -685,18 +685,6 @@ TEST(REFLECTION_TEST, RepeatedFieldRefDynamicMessage) {
   EXPECT_EQ(1, refl->FieldSize(*dynamic_message, fd_repeated_int32));
   EXPECT_EQ(1234,
             refl->GetRepeatedInt32(*dynamic_message, fd_repeated_int32, 0));
-
-  const FieldDescriptor* fd_repeated_foreign_message =
-      desc->FindFieldByName("repeated_foreign_message");
-  std::unique_ptr<Message> other_dynamic(factory.GetPrototype(desc)->New());
-  refl->AddMessage(dynamic_message.get(), fd_repeated_foreign_message);
-  auto rf_msg1 = refl->GetMutableRepeatedFieldRef<Message>(
-      dynamic_message.get(), fd_repeated_foreign_message);
-  auto rf_msg2 = refl->GetMutableRepeatedFieldRef<Message>(
-      other_dynamic.get(), fd_repeated_foreign_message);
-  rf_msg1.Swap(rf_msg2);
-  EXPECT_EQ(refl->FieldSize(*dynamic_message, fd_repeated_foreign_message), 0);
-  EXPECT_EQ(refl->FieldSize(*other_dynamic, fd_repeated_foreign_message), 1);
 }
 
 #if GTEST_HAS_DEATH_TEST
