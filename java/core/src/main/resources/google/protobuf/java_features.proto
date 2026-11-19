@@ -16,14 +16,20 @@ option java_package = "com.google.protobuf";
 option java_outer_classname = "JavaFeaturesProto";
 
 extend google.protobuf.FeatureSet {
+  // Java-specific Protobuf Editions features.
+  // See https://protobuf.dev/editions/features/#lang-specific
   optional JavaFeatures java = 1001;
 }
 
+// Java-specific features that configure Java code generation and runtime
+// behavior in Protobuf Editions.
+// See https://protobuf.dev/editions/features/#lang-specific
 message JavaFeatures {
   // Whether or not to treat an enum field as closed.  This option is only
   // applicable to enum fields, and will be removed in the future.  It is
   // consistent with the legacy behavior of using proto3 enum types for proto2
   // fields.
+  // See https://protobuf.dev/editions/features/#legacy_closed_enum
   optional bool legacy_closed_enum = 1 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
@@ -41,6 +47,7 @@ message JavaFeatures {
   ];
 
   // The UTF8 validation strategy to use.
+  // See https://protobuf.dev/editions/features/#java-utf8_validation
   enum Utf8Validation {
     // Invalid default, which should never be used.
     UTF8_VALIDATION_UNKNOWN = 0;
@@ -51,6 +58,9 @@ message JavaFeatures {
     // feature. This represents the legacy java_string_check_utf8 option.
     VERIFY = 2;
   }
+  // Controls Java-specific UTF-8 validation on string fields, overriding the
+  // cross-language `features.utf8_validation` setting when set to `VERIFY`.
+  // See https://protobuf.dev/editions/features/#java-utf8_validation
   optional Utf8Validation utf8_validation = 2 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
@@ -69,6 +79,7 @@ message JavaFeatures {
 
   // Allows creation of large Java enums, extending beyond the standard
   // constant limits imposed by the Java language.
+  // See https://protobuf.dev/editions/features/#java-large_enum
   optional bool large_enum = 3 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_ENUM,
@@ -96,7 +107,11 @@ message JavaFeatures {
     edition_defaults = { edition: EDITION_2024, value: "false" }
   ];
 
+  // Container message for scoping `NestInFileClass` enum values.
+  // See https://protobuf.dev/editions/features/#java-nest_in_file
   message NestInFileClassFeature {
+    // Possible class-nesting behaviors for generated Java types.
+    // See https://protobuf.dev/editions/features/#java-nest_in_file
     enum NestInFileClass {
       // Invalid default, which should never be used.
       NEST_IN_FILE_CLASS_UNKNOWN = 0;
@@ -116,6 +131,7 @@ message JavaFeatures {
 
   // Whether to nest the generated class in the generated file class. This is
   // only applicable to *top-level* messages, enums, and services.
+  // See https://protobuf.dev/editions/features/#java-nest_in_file
   optional NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_MESSAGE,

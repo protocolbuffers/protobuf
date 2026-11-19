@@ -204,6 +204,7 @@ message ExtensionRangeOptions {
   repeated Declaration declaration = 2 [retention = RETENTION_SOURCE];
 
   // Any features defined in the specific edition.
+  // See https://protobuf.dev/editions/features/
   optional FeatureSet features = 50;
 
   // The verification state of the extension range.
@@ -566,6 +567,8 @@ message FileOptions {
   optional string ruby_package = 45;
 
   // Any features defined in the specific edition.
+  // See https://protobuf.dev/editions/features/
+  //
   // WARNING: This field should only be used by protobuf plugins or special
   // cases like the proto compiler. Other uses are discouraged and
   // developers should rely on the protoreflect APIs for their client language.
@@ -663,6 +666,8 @@ message MessageOptions {
   optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];
 
   // Any features defined in the specific edition.
+  // See https://protobuf.dev/editions/features/
+  //
   // WARNING: This field should only be used by protobuf plugins or special
   // cases like the proto compiler. Other uses are discouraged and
   // developers should rely on the protoreflect APIs for their client language.
@@ -811,6 +816,8 @@ message FieldOptions {
   repeated EditionDefault edition_defaults = 20;
 
   // Any features defined in the specific edition.
+  // See https://protobuf.dev/editions/features/
+  //
   // WARNING: This field should only be used by protobuf plugins or special
   // cases like the proto compiler. Other uses are discouraged and
   // developers should rely on the protoreflect APIs for their client language.
@@ -858,6 +865,8 @@ message FieldOptions {
 
 message OneofOptions {
   // Any features defined in the specific edition.
+  // See https://protobuf.dev/editions/features/
+  //
   // WARNING: This field should only be used by protobuf plugins or special
   // cases like the proto compiler. Other uses are discouraged and
   // developers should rely on the protoreflect APIs for their client language.
@@ -897,6 +906,8 @@ message EnumOptions {
   optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];
 
   // Any features defined in the specific edition.
+  // See https://protobuf.dev/editions/features/
+  //
   // WARNING: This field should only be used by protobuf plugins or special
   // cases like the proto compiler. Other uses are discouraged and
   // developers should rely on the protoreflect APIs for their client language.
@@ -921,6 +932,8 @@ message EnumValueOptions {
   optional bool deprecated = 1 [default = false];
 
   // Any features defined in the specific edition.
+  // See https://protobuf.dev/editions/features/
+  //
   // WARNING: This field should only be used by protobuf plugins or special
   // cases like the proto compiler. Other uses are discouraged and
   // developers should rely on the protoreflect APIs for their client language.
@@ -952,6 +965,8 @@ message EnumValueOptions {
 message ServiceOptions {
 
   // Any features defined in the specific edition.
+  // See https://protobuf.dev/editions/features/
+  //
   // WARNING: This field should only be used by protobuf plugins or special
   // cases like the proto compiler. Other uses are discouraged and
   // developers should rely on the protoreflect APIs for their client language.
@@ -1004,6 +1019,8 @@ message MethodOptions {
       [default = IDEMPOTENCY_UNKNOWN];
 
   // Any features defined in the specific edition.
+  // See https://protobuf.dev/editions/features/
+  //
   // WARNING: This field should only be used by protobuf plugins or special
   // cases like the proto compiler. Other uses are discouraged and
   // developers should rely on the protoreflect APIs for their client language.
@@ -1051,6 +1068,11 @@ message UninterpretedOption {
 // ===================================================================
 // Features
 
+// Represents the set of Protobuf Editions features that configure schema
+// validation, wire encoding, and code generation behavior across files and
+// individual descriptors.
+// See https://protobuf.dev/editions/features/
+//
 // TODO Enums in C++ gencode (and potentially other languages) are
 // not well scoped.  This means that each of the feature enums below can clash
 // with each other.  The short names we've chosen maximize call-site
@@ -1058,12 +1080,31 @@ message UninterpretedOption {
 // be designed and implemented to handle this, hopefully before we ever hit a
 // conflict here.
 message FeatureSet {
+  // Possible field presence behaviors for singular fields in Editions.
+  // See https://protobuf.dev/editions/features/#field_presence
   enum FieldPresence {
+    // Unknown or unspecified field presence; do not use explicitly.
     FIELD_PRESENCE_UNKNOWN = 0;
+
+    // Explicit presence tracking: any explicitly set value is serialized onto
+    // the wire (even if equal to the default value), and singular non-message
+    // fields generate `has_*` accessors (matching `optional` in proto2/proto3).
     EXPLICIT = 1;
+
+    // Implicit presence: default values are not serialized onto the wire (even
+    // if explicitly set), and singular non-message fields do not generate
+    // `has_*` accessors (matching singular scalar fields without `optional` in
+    // proto3).
     IMPLICIT = 2;
+
+    // Legacy required presence: the field is required for parsing and
+    // serialization, and any explicitly set value is serialized onto the wire
+    // (matching `required` in proto2).
     LEGACY_REQUIRED = 3;
   }
+  // Controls how field presence is tracked for singular fields, replacing the
+  // `optional` and `required` labels from proto2 and proto3.
+  // See https://protobuf.dev/editions/features/#field_presence
   optional FieldPresence field_presence = 1 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
@@ -1076,11 +1117,23 @@ message FeatureSet {
     edition_defaults = { edition: EDITION_2023, value: "EXPLICIT" }
   ];
 
+  // Possible behaviors for handling unrecognized enum values.
+  // See https://protobuf.dev/editions/features/#enum_type
   enum EnumType {
+    // Unknown or unspecified enum type; do not use explicitly.
     ENUM_TYPE_UNKNOWN = 0;
+
+    // Open enums parse unrecognized out-of-range values directly into the enum
+    // field (matching proto3 enum behavior).
     OPEN = 1;
+
+    // Closed enums store unrecognized out-of-range values in the message's
+    // unknown field set (matching proto2 enum behavior).
     CLOSED = 2;
   }
+  // Controls how enum values outside the defined set are handled during
+  // parsing and code generation.
+  // See https://protobuf.dev/editions/features/#enum_type
   optional EnumType enum_type = 2 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_ENUM,
@@ -1092,11 +1145,23 @@ message FeatureSet {
     edition_defaults = { edition: EDITION_PROTO3, value: "OPEN" }
   ];
 
+  // Possible wire encodings for repeated primitive fields.
+  // See https://protobuf.dev/editions/features/#repeated_field_encoding
   enum RepeatedFieldEncoding {
+    // Unknown or unspecified encoding; do not use explicitly.
     REPEATED_FIELD_ENCODING_UNKNOWN = 0;
+
+    // Encodes repeated primitive fields as a single length-delimited record
+    // containing concatenated elements (matching default proto3 behavior).
     PACKED = 1;
+
+    // Encodes each element of a repeated field individually with its own field
+    // number tag (matching default proto2 behavior).
     EXPANDED = 2;
   }
+  // Controls wire encoding for repeated primitive fields, replacing the
+  // `packed` field option from proto2 and proto3.
+  // See https://protobuf.dev/editions/features/#repeated_field_encoding
   optional RepeatedFieldEncoding repeated_field_encoding = 3 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
@@ -1108,12 +1173,22 @@ message FeatureSet {
     edition_defaults = { edition: EDITION_PROTO3, value: "PACKED" }
   ];
 
+  // Possible UTF-8 validation behaviors for string fields.
+  // See https://protobuf.dev/editions/features/#utf8_validation
   enum Utf8Validation {
+    // Unknown or unspecified UTF-8 validation; do not use explicitly.
     UTF8_VALIDATION_UNKNOWN = 0;
+    // Verifies that string fields contain valid UTF-8 on the wire (matching
+    // default proto3 behavior).
     VERIFY = 2;
+    // Disables wire-level UTF-8 verification so string fields behave like
+    // unverified `bytes` on the wire (matching default proto2 behavior).
     NONE = 3;
     reserved 1;
   }
+  // Controls whether string fields are validated for UTF-8 conformance during
+  // wire parsing, unless overridden by a language-specific feature.
+  // See https://protobuf.dev/editions/features/#utf8_validation
   optional Utf8Validation utf8_validation = 4 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
@@ -1125,11 +1200,22 @@ message FeatureSet {
     edition_defaults = { edition: EDITION_PROTO3, value: "VERIFY" }
   ];
 
+  // Possible wire encodings for message-typed fields.
+  // See https://protobuf.dev/editions/features/#message_encoding
   enum MessageEncoding {
+    // Unknown or unspecified message encoding; do not use explicitly.
     MESSAGE_ENCODING_UNKNOWN = 0;
+
+    // Encodes message fields using the standard length-delimited wire type.
     LENGTH_PREFIXED = 1;
+
+    // Encodes message fields using start/end group tags instead of a length
+    // prefix, providing wire compatibility with legacy proto2 `group` fields.
     DELIMITED = 2;
   }
+  // Controls whether message-typed fields are serialized as length-prefixed
+  // records or tag-delimited groups.
+  // See https://protobuf.dev/editions/features/#message_encoding
   optional MessageEncoding message_encoding = 5 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
@@ -1140,11 +1226,23 @@ message FeatureSet {
     edition_defaults = { edition: EDITION_LEGACY, value: "LENGTH_PREFIXED" }
   ];
 
+  // Possible JSON support and schema-validation modes.
+  // See https://protobuf.dev/editions/features/#json_format
   enum JsonFormat {
+    // Unknown or unspecified JSON format mode; do not use explicitly.
     JSON_FORMAT_UNKNOWN = 0;
+
+    // Requires runtimes to support JSON parsing and serialization and enforces
+    // compile-time checks for a well-defined JSON mapping (matching proto3).
     ALLOW = 1;
+
+    // Performs best-effort JSON parsing and serialization without strict
+    // compile-time JSON mapping checks (matching proto2).
     LEGACY_BEST_EFFORT = 2;
   }
+  // Controls JSON parsing, serialization, and schema-level JSON mapping
+  // validation.
+  // See https://protobuf.dev/editions/features/#json_format
   optional JsonFormat json_format = 6 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_MESSAGE,
@@ -1157,12 +1255,29 @@ message FeatureSet {
     edition_defaults = { edition: EDITION_PROTO3, value: "ALLOW" }
   ];
 
+  // Possible style-enforcement levels for `.proto` identifier names.
+  // See https://protobuf.dev/editions/features/#enforce_naming
   enum EnforceNamingStyle {
+    // Unknown or unspecified naming style; do not use explicitly.
     ENFORCE_NAMING_STYLE_UNKNOWN = 0;
+
+    // Enforces strict adherence to the Edition 2024 Protobuf naming style
+    // guide (`TitleCase` messages/enums/services, `lower_snake_case` fields,
+    // `UPPER_SNAKE_CASE` enum values).
     STYLE2024 = 1;
+
+    // Applies legacy pre-Edition 2024 naming enforcement, allowing
+    // non-conformant identifier names.
     STYLE_LEGACY = 2;
+
+    // Enforces the Edition 2026 naming style guide, adding checks that
+    // discourage common generated-accessor field-name collisions (e.g. `x` and
+    // `has_x`).
     STYLE2026 = 3;
   }
+  // Controls compile-time enforcement of Protobuf naming conventions across
+  // schema declarations.
+  // See https://protobuf.dev/editions/features/#enforce_naming
   optional EnforceNamingStyle enforce_naming_style = 7 [
     retention = RETENTION_SOURCE,
     targets = TARGET_TYPE_FILE,
@@ -1182,8 +1297,13 @@ message FeatureSet {
     edition_defaults = { edition: EDITION_2026, value: "STYLE2026" }
   ];
 
+  // Container message for scoping `DefaultSymbolVisibility` enum values.
+  // See https://protobuf.dev/editions/features/#symbol-vis
   message VisibilityFeature {
+    // Possible default import-visibility modes for messages and enums.
+    // See https://protobuf.dev/editions/features/#symbol-vis
     enum DefaultSymbolVisibility {
+      // Unknown or unspecified visibility; do not use explicitly.
       DEFAULT_SYMBOL_VISIBILITY_UNKNOWN = 0;
 
       // Default pre-EDITION_2024, all UNSET visibility are export.
@@ -1202,6 +1322,10 @@ message FeatureSet {
     }
     reserved 1 to max;
   }
+  // Controls default symbol import visibility (`export` vs `local`) for
+  // messages and enums when imported by other `.proto` files. Does not affect
+  // generated code visibility.
+  // See https://protobuf.dev/editions/features/#symbol-vis
   optional VisibilityFeature.DefaultSymbolVisibility default_symbol_visibility =
       8 [
         retention = RETENTION_SOURCE,
@@ -1214,8 +1338,13 @@ message FeatureSet {
         edition_defaults = { edition: EDITION_2026, value: "STRICT" }
       ];
 
+  // Container message for scoping `EnforceProtoLimits` enum values.
+  // See https://protobuf.dev/editions/features/#enforce_proto_limits
   message ProtoLimitsFeature {
+    // Possible structure-size limit enforcement modes in `protoc`.
+    // See https://protobuf.dev/editions/features/#enforce_proto_limits
     enum EnforceProtoLimits {
+      // Unknown or unspecified limit mode; do not use explicitly.
       PROTO_LIMITS_UNKNOWN = 0;
 
       // Default pre-EDITION_2026: there are no limit enforcement at the protoc
@@ -1224,11 +1353,16 @@ message FeatureSet {
       // or toolchain specific.
       LEGACY_NO_EXPLICIT_LIMITS = 1;
 
-      // A set of limits enforced by Edition 2026 by default. For a detailed
-      // list of all the limits please consult the Edition 2026 documentation.
+      // A set of limits enforced by Edition 2026 by default (up to 1500 fields
+      // and 1000 oneofs per message, 1200 fields per oneof, and 1700 values
+      // per enum). For a detailed list of all the limits please consult the
+      // Edition 2026 documentation.
       PROTO_LIMITS2026 = 2;
     }
   }
+  // Controls compile-time enforcement of maximum field, oneof, and enum-value
+  // counts to prevent oversized message and enum definitions.
+  // See https://protobuf.dev/editions/features/#enforce_proto_limits
   optional ProtoLimitsFeature.EnforceProtoLimits enforce_proto_limits = 9 [
     retention = RETENTION_SOURCE,
     targets = TARGET_TYPE_ENUM,

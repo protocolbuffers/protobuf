@@ -16,9 +16,13 @@ option java_outer_classname = "CSharpFeaturesOuterClass";
 import "google/protobuf/descriptor.proto";
 
 extend google.protobuf.FeatureSet {
+  // C#-specific Protobuf Editions features.
+  // See https://protobuf.dev/editions/features/#lang-specific
   optional CSharpFeatures csharp = 1004;
 }
 
+// C#-specific features that configure C# code generation in Protobuf Editions.
+// See https://protobuf.dev/editions/features/#lang-specific
 message CSharpFeatures {
   // Whether the generated files should have nullable reference type annotations.
   // When enabled, the generated C# code includes `#nullable enable annotations`

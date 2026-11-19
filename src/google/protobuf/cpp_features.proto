@@ -12,14 +12,20 @@ package pb;
 import "google/protobuf/descriptor.proto";
 
 extend google.protobuf.FeatureSet {
+  // C++-specific Protobuf Editions features.
+  // See https://protobuf.dev/editions/features/#lang-specific
   optional CppFeatures cpp = 1000;
 }
 
+// C++-specific features that configure C++ code generation and runtime
+// behavior in Protobuf Editions.
+// See https://protobuf.dev/editions/features/#lang-specific
 message CppFeatures {
   // Whether or not to treat an enum field as closed.  This option is only
   // applicable to enum fields, and will be removed in the future.  It is
   // consistent with the legacy behavior of using proto3 enum types for proto2
   // fields.
+  // See https://protobuf.dev/editions/features/#legacy_closed_enum
   optional bool legacy_closed_enum = 1 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
@@ -36,13 +42,24 @@ message CppFeatures {
     edition_defaults = { edition: EDITION_PROTO3, value: "false" }
   ];
 
+  // Possible C++ representations and accessor types for `string` and `bytes`
+  // fields.
+  // See https://protobuf.dev/editions/features/#string_type
   enum StringType {
+    // Unknown or unspecified string type; do not use explicitly.
     STRING_TYPE_UNKNOWN = 0;
+    // Generates `absl::string_view` getter accessors for the field.
     VIEW = 1;
+    // Stores the field in an `absl::Cord` and generates `Cord` accessors (not
+    // supported on extension fields).
     CORD = 2;
+    // Generates `std::string` accessors for the field.
     STRING = 3;
   }
 
+  // Controls the C++ representation and generated accessor types for `string`
+  // and `bytes` fields, replacing the legacy `ctype` field option.
+  // See https://protobuf.dev/editions/features/#string_type
   optional StringType string_type = 2 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
@@ -54,6 +71,9 @@ message CppFeatures {
     edition_defaults = { edition: EDITION_2024, value: "VIEW" }
   ];
 
+  // Controls whether generated C++ `<Enum>_Name()` helpers return
+  // `absl::string_view` (`true`) instead of `const std::string&` (`false`).
+  // See https://protobuf.dev/editions/features/#enum-name-string-view
   optional bool enum_name_uses_string_view = 3 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_ENUM,
@@ -65,7 +85,10 @@ message CppFeatures {
     edition_defaults = { edition: EDITION_2024, value: "true" }
   ];
 
+  // Possible C++ backing and accessor representations for repeated fields.
+  // See https://protobuf.dev/editions/features/#cpp-repeated_type
   enum RepeatedType {
+    // Unknown or unspecified repeated type; do not use explicitly.
     REPEATED_TYPE_UNKNOWN = 0;
     // The repeated field will be backed by google::protobuf::Repeated(Ptr)Field, and
     // accessors will return a reference/pointer to this type.
@@ -75,6 +98,10 @@ message CppFeatures {
     PROXY = 2;
   }
 
+  // Controls whether C++ repeated field accessors return `RepeatedFieldProxy`
+  // (`PROXY`) or legacy `RepeatedField` / `RepeatedPtrField` references and
+  // pointers (`LEGACY`).
+  // See https://protobuf.dev/editions/features/#cpp-repeated_type
   optional RepeatedType repeated_type = 4 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
