@@ -12,6 +12,39 @@ load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 
+_CC_RUNTIMES_TOOLCHAIN_TYPE = Label("@bazel_tools//tools/cpp:cc_runtimes_toolchain_type")
+
+def use_cc_runtimes_toolchain():
+    """Returns the toolchains to request for the C++ runtime libraries.
+
+    rules_cc adds these libraries to the dependencies of every C++ target.
+
+    Returns:
+      A list that can be added to the toolchains of a rule or aspect.
+    """
+    if not bazel_features.cc.cc_runtimes_toolchain_type:
+        return []
+    return [config_common.toolchain_type(_CC_RUNTIMES_TOOLCHAIN_TYPE, mandatory = False)]
+
+def get_cc_runtimes(ctx):
+    """Returns the C++ runtime libraries and their compiler flags.
+
+    The rule or aspect must request the toolchains returned by
+    use_cc_runtimes_toolchain().
+
+    Args:
+        ctx: (RuleCtx) rule context.
+    Returns:
+      (list[Target], list[str]) The runtime libraries and their compiler flags.
+    """
+    if not bazel_features.cc.cc_runtimes_toolchain_type:
+        return [], []
+    cc_runtimes_toolchain = ctx.toolchains[_CC_RUNTIMES_TOOLCHAIN_TYPE]
+    if not cc_runtimes_toolchain:
+        return [], []
+    cc_runtimes_info = cc_runtimes_toolchain.cc_runtimes_info
+    return cc_runtimes_info.runtimes, cc_runtimes_info.copts
+
 def get_feature_configuration(ctx, has_sources, extra_requested_features = []):
     """Returns C++ feature configuration for compiling and linking generated C++ files.
 

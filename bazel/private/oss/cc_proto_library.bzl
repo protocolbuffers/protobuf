@@ -12,7 +12,7 @@ load("@rules_cc//cc:find_cc_toolchain.bzl", "use_cc_toolchain")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
-load("//bazel/private:cc_proto_support.bzl", "cc_proto_compile_and_link")
+load("//bazel/private:cc_proto_support.bzl", "cc_proto_compile_and_link", "get_cc_runtimes", "use_cc_runtimes_toolchain")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
 _CC_PROTO_TOOLCHAIN = Label("//bazel/private:cc_toolchain_type")
@@ -92,6 +92,10 @@ def _aspect_impl(target, ctx):
         deps = [proto_toolchain.runtime]
     deps.extend(getattr(ctx.rule.attr, "deps", []))
 
+    # Like rules_cc's own rules, depend on the C++ runtime libraries directly.
+    cc_runtimes, cc_runtimes_copts = get_cc_runtimes(ctx)
+    deps.extend(cc_runtimes)
+
     cc_info, libraries, temps = cc_proto_compile_and_link(
         ctx = ctx,
         deps = deps,
@@ -99,6 +103,7 @@ def _aspect_impl(target, ctx):
         headers = headers,
         textual_hdrs = textual_hdrs,
         strip_include_prefix = _get_strip_include_prefix(ctx, proto_info),
+        user_compile_flags = cc_runtimes_copts,
     )
 
     return [
@@ -124,7 +129,7 @@ cc_proto_aspect = aspect(
                     default = Label("//bazel/flags/cc:proto_toolchain_for_cc"),
                 ),
             }),
-    toolchains = use_cc_toolchain() + toolchains.use_toolchain(_CC_PROTO_TOOLCHAIN),
+    toolchains = use_cc_toolchain() + toolchains.use_toolchain(_CC_PROTO_TOOLCHAIN) + use_cc_runtimes_toolchain(),
 )
 
 def _cc_proto_library_impl(ctx):
