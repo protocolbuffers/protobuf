@@ -1405,6 +1405,13 @@ class PROTOBUF_EXPORT Reflection final {
   const internal::ClassData* GetMessageClassData(
       const FieldDescriptor* field) const;
 
+  // Debug-checks that `sub_message`, which is about to be stored in `field` of
+  // `message`, has the class that the field expects.
+  inline void DebugCheckSubmessageClass(const Message& message,
+                                        const FieldDescriptor* field,
+                                        const Message* sub_message,
+                                        absl::string_view method) const;
+
   const uint32_t* GetHasBits(const Message& message) const;
   inline uint32_t* MutableHasBits(Message* message) const;
   uint32_t GetOneofCase(const Message& message,

@@ -68,6 +68,7 @@
 #include "google/protobuf/reflection_visit_fields.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
+#include "google/protobuf/type_id.h"
 #include "google/protobuf/unknown_field_set.h"
 
 
@@ -533,6 +534,15 @@ static void ReportReflectionUsageOneofError(
   USAGE_CHECK_MESSAGE_TYPE(METHOD);                     \
   USAGE_CHECK_##LABEL(METHOD);                          \
   USAGE_CHECK_TYPE(METHOD, CPPTYPE)
+
+// Checks that `SUB_MESSAGE` has the class expected by `field`; see
+// Reflection::DebugCheckSubmessageClass().
+#ifdef NDEBUG
+#define USAGE_CHECK_SUBMESSAGE_CLASS(METHOD, SUB_MESSAGE)
+#else
+#define USAGE_CHECK_SUBMESSAGE_CLASS(METHOD, SUB_MESSAGE) \
+  DebugCheckSubmessageClass(*message, field, SUB_MESSAGE, #METHOD)
+#endif
 
 #define USAGE_CHECK_EXPOSE_LEGACY_REPEATED_FIELD(intent, METHOD)         \
   do {                                                                   \
@@ -2711,6 +2721,35 @@ const internal::ClassData* Reflection::GetMessageClassData(
       *message_factory_->GetPrototype(field->message_type()));
 }
 
+// Storing a message of any class other than the one `field` expects (e.g. one
+// created by a different MessageFactory) is unsupported. For map fields, the
+// expected class is that of the map's entry prototype; otherwise, it is the
+// field's message class. Extensions and lazy fields are exempt, since they may
+// hold messages created by arbitrary factories.
+inline void Reflection::DebugCheckSubmessageClass(
+    const Message& message, const FieldDescriptor* field,
+    const Message* sub_message, absl::string_view method) const {
+  if (sub_message == nullptr || field->is_extension() || IsLazyField(field)) {
+    return;
+  }
+  const internal::ClassData* expected =
+      IsMapFieldInApi(field)
+          ? internal::GetClassData(
+                *GetRaw<MapFieldBase>(message, field).GetPrototype())
+          : GetMessageClassData(field);
+  ABSL_DCHECK_EQ(internal::GetClassData(*sub_message), expected)
+      << ReflectionUsageError(
+             descriptor_, field, method,
+             absl::StrCat(
+                 "Message does not have the class expected by the field: ",
+                 internal::TypeIdFromClassData(expected).name(), " vs ",
+                 internal::TypeIdFromClassData(
+                     internal::GetClassData(*sub_message))
+                     .name(),
+                 " (if these have the same name, they came from different "
+                 "factories)"));
+}
+
 const Message& Reflection::GetMessage(const Message& message,
                                       const FieldDescriptor* field,
                                       MessageFactory* factory) const {
@@ -2775,6 +2814,7 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
     Message* message, Message* sub_message,
     const FieldDescriptor* field) const {
   USAGE_MUTABLE_CHECK_ALL(SetAllocatedMessage, SINGULAR, MESSAGE);
+  USAGE_CHECK_SUBMESSAGE_CLASS(SetAllocatedMessage, sub_message);
 
   if (field->is_extension()) {
     MutableExtensionSet(message)->UnsafeArenaSetAllocatedMessage(
@@ -2975,6 +3015,7 @@ void Reflection::AddAllocatedMessage(Message* message,
                                      const FieldDescriptor* field,
                                      Message* new_entry) const {
   USAGE_MUTABLE_CHECK_ALL(AddAllocatedMessage, REPEATED, MESSAGE);
+  USAGE_CHECK_SUBMESSAGE_CLASS(AddAllocatedMessage, new_entry);
 
   Arena* arena = message->GetArena();
   if (field->is_extension()) {
@@ -2996,6 +3037,7 @@ void Reflection::UnsafeArenaAddAllocatedMessage(Message* message,
                                                 const FieldDescriptor* field,
                                                 Message* new_entry) const {
   USAGE_MUTABLE_CHECK_ALL(UnsafeArenaAddAllocatedMessage, REPEATED, MESSAGE);
+  USAGE_CHECK_SUBMESSAGE_CLASS(UnsafeArenaAddAllocatedMessage, new_entry);
 
   Arena* arena = message->GetArena();
   if (field->is_extension()) {
