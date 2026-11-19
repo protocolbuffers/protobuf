@@ -268,10 +268,10 @@ static bool streql_view(upb_StringView view, const char* b) {
   return view.size == strlen(b) && memcmp(view.data, b, view.size) == 0;
 }
 
-static int count_exts_in_msg(const google_protobuf_DescriptorProto* msg_proto) {
+static size_t count_exts_in_msg(const google_protobuf_DescriptorProto* msg_proto) {
   size_t n;
   google_protobuf_DescriptorProto_extension(msg_proto, &n);
-  int ext_count = n;
+  size_t ext_count = n;
 
   const google_protobuf_DescriptorProto* const* nested_msgs =
       google_protobuf_DescriptorProto_nested_type(msg_proto, &n);
@@ -360,12 +360,17 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
 
   // Count all extensions in the file, to build a flat array of layouts.
   google_protobuf_FileDescriptorProto_extension(file_proto, &n);
-  int ext_count = n;
+  size_t ext_count = n;
   msgs = google_protobuf_FileDescriptorProto_message_type(file_proto, &n);
   for (size_t i = 0; i < n; i++) {
     ext_count += count_exts_in_msg(msgs[i]);
   }
-  file->ext_count = ext_count;
+  // upb_FieldDef stores layout_index and index_ as uint16_t.
+  if (ext_count > (size_t)UINT16_MAX) {
+    _upb_DefBuilder_Errf(ctx, "Extensions in file exceed the limit of %u",
+                         (unsigned)UINT16_MAX);
+  }
+  file->ext_count = (int)ext_count;
 
   if (ctx->layout) {
     // We are using the ext layouts that were passed in.

@@ -6,6 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include <array>
+#include <cstdint>
 #include <cstring>
 #include <string>
 #include <string_view>
@@ -18,6 +19,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "google/protobuf/unittest.upbdefs.h"
@@ -952,6 +954,55 @@ TEST(ReflectionTest, ValidateMapEntry) {
     absl::Status status = LoadMapEntry(test_case.entry_body);
     EXPECT_FALSE(status.ok());
     EXPECT_THAT(status.message(), HasSubstr(test_case.expected_error));
+  }
+}
+
+TEST(ReflectionTest, TooManyExtensionsFailGracefully) {
+  const auto make_file = [](int top_level_exts, int nested_exts) {
+    google::protobuf::FileDescriptorProto file;
+    file.set_name("F");
+    file.set_syntax("proto2");
+    google::protobuf::DescriptorProto* msg = file.add_message_type();
+    msg->set_name("M");
+    google::protobuf::DescriptorProto::ExtensionRange* range = msg->add_extension_range();
+    range->set_start(1);
+    range->set_end(kUpb_MaxFieldNumber + 1);
+
+    int num = 1;
+    const auto add_ext = [&](google::protobuf::FieldDescriptorProto* ext) {
+      ext->set_name(absl::StrCat("e", num));
+      ext->set_extendee(".M");
+      ext->set_number(num++);
+      ext->set_label(google::protobuf::FieldDescriptorProto::LABEL_OPTIONAL);
+      ext->set_type(google::protobuf::FieldDescriptorProto::TYPE_INT32);
+    };
+    file.mutable_extension()->Reserve(top_level_exts);
+    for (int i = 0; i < top_level_exts; ++i) add_ext(file.add_extension());
+    msg->mutable_extension()->Reserve(nested_exts);
+    for (int i = 0; i < nested_exts; ++i) add_ext(msg->add_extension());
+    return file;
+  };
+
+  // UINT16_MAX extensions is ok.
+  {
+    upb::Arena arena;
+    upb::DefPool pool;
+    upb::Status status;
+    ASSERT_TRUE(pool.AddFile(
+        ToUpbDescriptorSet(make_file(UINT16_MAX - 1, 1), arena), &status))
+        << status.error_message();
+    EXPECT_TRUE(pool.FindExtensionByName("M.e65535"));
+  }
+
+  // Exceeding UINT16_MAX extensions is rejected.
+  for (int extra = 1; extra <= 2; ++extra) {
+    upb::Arena arena;
+    upb::DefPool pool;
+    upb::Status status;
+    EXPECT_FALSE(pool.AddFile(
+        ToUpbDescriptorSet(make_file(UINT16_MAX, extra), arena), &status));
+    EXPECT_THAT(status.error_message(),
+                HasSubstr("Extensions in file exceed the limit of 65535"));
   }
 }
 
