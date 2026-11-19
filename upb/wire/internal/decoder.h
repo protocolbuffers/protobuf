@@ -56,6 +56,16 @@ typedef struct upb_Decoder {
   uint16_t options;
   bool missing_required;
   bool message_is_done;
+  // The innermost repeated message field whose elements are currently being
+  // decoded by the fast decoder (a upb_DecodeFast_RepeatedMessageRun*). Only
+  // read when data2 has kUpb_DecodeFastData2_InRepeatedMessageRun set.
+  void* fast_repeated_message_run;
+  // The function that upb_DecodeFast_MessageIsDoneFallback() tail calls when an
+  // element of fast_repeated_message_run is done
+  // (upb_DecodeFast_RepeatedMessageNext). Stored here rather than in the run
+  // so the end of each element needs only a single load. Set by the fast
+  // decoder before starting a run, since the field parser is not visible here.
+  void* fast_repeated_message_next;
   union {
     upb_Arena arena;
     void* foo[UPB_ARENA_SIZE_HACK / sizeof(void*)];
@@ -233,6 +243,16 @@ UPB_PRESERVE_NONE
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,
                                        const upb_MiniTable* mt);
+
+#if UPB_FASTTABLE
+// Finishes decoding a message whose field at `ptr` could not be parsed by the
+// fast decoder. Unlike _upb_Decoder_DecodeMessage(), this skips the checks for
+// empty messages and fasttable availability, and starts with the MiniTable
+// decoder; the caller must have already established that `mt` can be decoded
+// with fasttable.
+UPB_PRESERVE_NONE const char* _upb_Decoder_FinishMessage(
+    upb_Decoder* d, const char* ptr, upb_Message* msg, const upb_MiniTable* mt);
+#endif
 
 UPB_INLINE bool _upb_Decoder_FieldRequiresUtf8Validation(
     const upb_Decoder* d, const upb_MiniTableField* field) {
