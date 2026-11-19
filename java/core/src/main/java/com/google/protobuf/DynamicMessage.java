@@ -345,6 +345,7 @@ public final class DynamicMessage extends AbstractMessage {
     public Builder clear() {
       fields = FieldSet.newBuilder();
       unknownFields = UnknownFieldSet.getDefaultInstance();
+      Arrays.fill(oneofCases, null);
       return this;
     }
 

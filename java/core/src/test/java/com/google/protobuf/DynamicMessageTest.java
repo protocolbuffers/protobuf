@@ -572,4 +572,36 @@ public class DynamicMessageTest {
     assertThat(dynamicFromCopy.hashCode()).isEqualTo(generated.hashCode());
     assertThat(dynamicFromBytes.hashCode()).isEqualTo(generated.hashCode());
   }
+
+  @Test
+  public void clear_resetsOneofCases_andPreservesBuiltAndClonedMessages() {
+    FieldDescriptor fooInt = TestOneof2.getDescriptor().findFieldByName("foo_int");
+    FieldDescriptor barString = TestOneof2.getDescriptor().findFieldByName("bar_string");
+    OneofDescriptor fooOneof = fooInt.getContainingOneof();
+    OneofDescriptor barOneof = barString.getContainingOneof();
+    DynamicMessage.Builder builder =
+        DynamicMessage.newBuilder(TestOneof2.getDescriptor())
+            .setField(fooInt, 1)
+            .setField(barString, "bar");
+    DynamicMessage builtBeforeClear = builder.build();
+    DynamicMessage.Builder clonedBeforeClear = builder.clone();
+
+    builder.clear();
+
+    assertThat(builder.hasOneof(fooOneof)).isFalse();
+    assertThat(builder.getOneofFieldDescriptor(fooOneof)).isNull();
+    assertThat(builder.hasOneof(barOneof)).isFalse();
+    assertThat(builder.getOneofFieldDescriptor(barOneof)).isNull();
+
+    DynamicMessage builtAfterClear = builder.build();
+    assertThat(builtAfterClear.hasOneof(fooOneof)).isFalse();
+    assertThat(builtAfterClear.getOneofFieldDescriptor(fooOneof)).isNull();
+    assertThat(builtAfterClear.hasOneof(barOneof)).isFalse();
+    assertThat(builtAfterClear.getOneofFieldDescriptor(barOneof)).isNull();
+
+    assertThat(builtBeforeClear.getOneofFieldDescriptor(fooOneof)).isSameInstanceAs(fooInt);
+    assertThat(builtBeforeClear.getOneofFieldDescriptor(barOneof)).isSameInstanceAs(barString);
+    assertThat(clonedBeforeClear.getOneofFieldDescriptor(fooOneof)).isSameInstanceAs(fooInt);
+    assertThat(clonedBeforeClear.getOneofFieldDescriptor(barOneof)).isSameInstanceAs(barString);
+  }
 }
