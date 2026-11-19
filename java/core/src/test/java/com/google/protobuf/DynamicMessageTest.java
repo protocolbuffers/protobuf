@@ -572,4 +572,77 @@ public class DynamicMessageTest {
     assertThat(dynamicFromCopy.hashCode()).isEqualTo(generated.hashCode());
     assertThat(dynamicFromBytes.hashCode()).isEqualTo(generated.hashCode());
   }
+
+  @Test
+  public void extensionRegistryAdd_defaultInstanceOfExtensionType_succeeds() throws Exception {
+    FieldDescriptor extension = UnittestProto.optionalNestedMessageExtension.getDescriptor();
+    ExtensionRegistry registry = ExtensionRegistry.newInstance();
+
+    registry.add(extension, DynamicMessage.getDefaultInstance(NestedMessage.getDescriptor()));
+
+    TestAllExtensions message =
+        TestAllExtensions.newBuilder()
+            .setExtension(
+                UnittestProto.optionalNestedMessageExtension,
+                NestedMessage.newBuilder().setBb(42).build())
+            .build();
+    DynamicMessage parsed =
+        DynamicMessage.parseFrom(
+            TestAllExtensions.getDescriptor(), message.toByteString(), registry);
+    Message parsedExtension = (Message) parsed.getField(extension);
+    assertThat(parsedExtension.getDescriptorForType()).isEqualTo(NestedMessage.getDescriptor());
+    assertThat(parsedExtension.toByteString())
+        .isEqualTo(NestedMessage.newBuilder().setBb(42).build().toByteString());
+  }
+
+  @Test
+  public void extensionRegistryAdd_generatedDefaultInstanceForEquivalentDescriptor_succeeds()
+      throws Exception {
+    // Rebuild unittest.proto in a separate pool, so its extension descriptors and message types are
+    // equivalent to, but not the same objects as, the generated ones.
+    Descriptors.FileDescriptor generatedFile = UnittestProto.getDescriptor();
+    Descriptors.FileDescriptor rebuiltFile =
+        Descriptors.FileDescriptor.buildFrom(
+            generatedFile.toProto(),
+            generatedFile.getDependencies().toArray(new Descriptors.FileDescriptor[0]));
+    FieldDescriptor rebuiltExtension =
+        rebuiltFile.findExtensionByName("optional_nested_message_extension");
+    assertThat(rebuiltExtension.getMessageType())
+        .isNotSameInstanceAs(NestedMessage.getDescriptor());
+    ExtensionRegistry registry = ExtensionRegistry.newInstance();
+
+    registry.add(rebuiltExtension, NestedMessage.getDefaultInstance());
+
+    assertThat(registry.findImmutableExtensionByName(rebuiltExtension.getFullName()).descriptor)
+        .isSameInstanceAs(rebuiltExtension);
+  }
+
+  @Test
+  public void extensionRegistryAdd_defaultInstanceOfOtherType_throws() {
+    FieldDescriptor extension = UnittestProto.optionalNestedMessageExtension.getDescriptor();
+    ExtensionRegistry registry = ExtensionRegistry.newInstance();
+
+    IllegalArgumentException e =
+        assertThrows(
+            IllegalArgumentException.class, () -> registry.add(extension, extension.toProto()));
+    assertThat(e)
+        .hasMessageThat()
+        .contains(
+            "default instance of type "
+                + DescriptorProtos.FieldDescriptorProto.getDescriptor().getFullName()
+                + " for extension "
+                + extension.getFullName());
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> registry.add(extension, TestAllTypes.getDefaultInstance()));
+    assertThat(registry.findImmutableExtensionByName(extension.getFullName())).isNull();
+  }
+
+  @Test
+  public void extensionRegistryAdd_nullDefaultInstance_throws() {
+    FieldDescriptor extension = UnittestProto.optionalNestedMessageExtension.getDescriptor();
+    ExtensionRegistry registry = ExtensionRegistry.newInstance();
+
+    assertThrows(NullPointerException.class, () -> registry.add(extension, null));
+  }
 }
