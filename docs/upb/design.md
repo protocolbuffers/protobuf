@@ -422,7 +422,7 @@ _desc = b'\n\x1aprotoc_explorer/main.proto\x12\x03pkg'
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(_desc)
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
-_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'google3.protoc_explorer.main_pb2', _globals)
+_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'protoc_explorer.main_pb2', _globals)
 ```
 
 The `AddSerializedFile()` API above is mainly just a thin wrapper around

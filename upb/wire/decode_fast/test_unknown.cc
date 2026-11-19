@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 // This test requires fasttable support to work properly.
-// Run with `--//third_party/upb:fasttable_enabled=true`.
+// Run with `--//upb:fasttable_enabled=true`.
 
 #include <cstdint>
 #include <string>

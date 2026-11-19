@@ -11,33 +11,33 @@
 #
 # Example usage:
 #
-#   $ blaze test --//third_party/upb:fasttable_enabled=True third_party/upb/upb/...
+#   $ bazel test --//upb:fasttable_enabled=True upb/...
 #
-#   # We notice that //third_party/upb/upb/test:test_generated_code is failing
+#   # We notice that //upb/test:test_generated_code is failing
 #   # when fasttable is enabled.  We can bisect the set of fasttable parsing
 #   # functions with this command:
 #
-#   $ third_party/upb/upb/wire/decode_fast/bisect.sh third_party/upb/upb/test:test_generated_code
+#   $ upb/wire/decode_fast/bisect.sh upb/test:test_generated_code
 #
 # Note that the map parsers are not part of the bisected range: they use
 # out-of-band function indices rather than the (type, cardinality, tag size)
 # numbering that UPB_DECODEFAST_DISABLE_FUNCTIONS_ABOVE walks.  To check whether
 # they are implicated, disable them all at once with:
 #
-#   $ blaze test --//third_party/upb:fasttable_enabled=True \
-#       --per_file_copt=//third_party/upb/upb/wire/decode_fast:select@-DUPB_DECODEFAST_DISABLE_MAPS \
-#       --host_per_file_copt=//third_party/upb/upb/wire/decode_fast:select@-DUPB_DECODEFAST_DISABLE_MAPS \
+#   $ bazel test --//upb:fasttable_enabled=True \
+#       --per_file_copt=//upb/wire/decode_fast:select@-DUPB_DECODEFAST_DISABLE_MAPS \
+#       --host_per_file_copt=//upb/wire/decode_fast:select@-DUPB_DECODEFAST_DISABLE_MAPS \
 #       <test_target(s)>
 
 if [[ $# -lt 1 ]]; then
-  echo "Usage: bisect.sh [blaze test flags] <test_target(s)>"
+  echo "Usage: bisect.sh [bazel test flags] <test_target(s)>"
   exit 1
 fi
 
 set -ex
 
 /google/data/ro/teams/tetralight/bin/bisect -low 0 -high 256 \
-  "blaze test --//third_party/upb:fasttable_enabled=True \
-  --per_file_copt=//third_party/upb/upb/wire/decode_fast:select@-DUPB_DECODEFAST_DISABLE_FUNCTIONS_ABOVE=\$X \
-  --host_per_file_copt=//third_party/upb/upb/wire/decode_fast:select@-DUPB_DECODEFAST_DISABLE_FUNCTIONS_ABOVE=\$X \
+  "bazel test --//upb:fasttable_enabled=True \
+  --per_file_copt=//upb/wire/decode_fast:select@-DUPB_DECODEFAST_DISABLE_FUNCTIONS_ABOVE=\$X \
+  --host_per_file_copt=//upb/wire/decode_fast:select@-DUPB_DECODEFAST_DISABLE_FUNCTIONS_ABOVE=\$X \
   $*"
