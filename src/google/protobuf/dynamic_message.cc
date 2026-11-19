@@ -639,8 +639,6 @@ void DynamicMessage::operator delete(DynamicMessage* msg,
 DynamicMessage::~DynamicMessage() {
   const Descriptor* descriptor = type_info_->globals->class_data.descriptor();
 
-  _internal_metadata_.Delete<UnknownFieldSet>();
-
   if (type_info_->extensions_offset != -1) {
     reinterpret_cast<ExtensionSet*>(MutableExtensionsRaw())->~ExtensionSet();
   }
@@ -760,6 +758,8 @@ DynamicMessage::~DynamicMessage() {
         }
     }
   }
+
+  _internal_metadata_.Delete<UnknownFieldSet>();
 }
 
 void* DynamicMessage::NewImpl(const void* prototype, void* mem, Arena* arena) {

@@ -105,9 +105,9 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MapEntry : public Message {
 
   static void SharedDtor(MessageLite& msg) {
     auto& this_ = static_cast<MapEntry&>(msg);
-    this_._internal_metadata_.template Delete<UnknownFieldSet>();
     KeyTypeHandler::DeleteNoArena(this_._impl_.key_);
     ValueTypeHandler::DeleteNoArena(this_._impl_.value_);
+    this_._internal_metadata_.template Delete<UnknownFieldSet>();
   }
 
   // Field naming follows the convention of generated messages to make code

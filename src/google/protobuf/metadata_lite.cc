@@ -55,9 +55,6 @@ inline Arena* InternalMetadata::arena() const {
 template <>
 void InternalMetadata::DeleteOutOfLineHelper<std::string>() {
   delete PtrValue<Container<std::string>>();
-  // TODO:  This store is load-bearing.  Since we are destructing
-  // the message at this point, see if we can eliminate it.
-  ptr_ = nullptr;
 }
 
 template <typename T>

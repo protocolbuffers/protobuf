@@ -6844,9 +6844,9 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FileDescriptorSet::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -7168,7 +7168,6 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FileDescriptorProto::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.name_.Destroy();
   this_._impl_.package_.Destroy();
@@ -7176,6 +7175,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FileDescriptorProto::SharedDtor(
   delete this_._impl_.options_;
   delete this_._impl_.source_code_info_;
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -7726,10 +7726,10 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void DescriptorProto_ExtensionRange::SharedDtor
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   delete this_._impl_.options_;
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -7966,9 +7966,9 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void DescriptorProto_ReservedRange::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -8279,11 +8279,11 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void DescriptorProto::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.name_.Destroy();
   delete this_._impl_.options_;
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -8773,11 +8773,11 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void ExtensionRangeOptions_Declaration::SharedD
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.full_name_.Destroy();
   this_._impl_.type_.Destroy();
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -9063,10 +9063,10 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void ExtensionRangeOptions::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   delete this_._impl_.features_;
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -9391,7 +9391,6 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FieldDescriptorProto::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.name_.Destroy();
   this_._impl_.extendee_.Destroy();
@@ -9400,6 +9399,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FieldDescriptorProto::SharedDtor(
   this_._impl_.json_name_.Destroy();
   delete this_._impl_.options_;
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -9784,11 +9784,11 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void OneofDescriptorProto::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.name_.Destroy();
   delete this_._impl_.options_;
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -10008,9 +10008,9 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void EnumDescriptorProto_EnumReservedRange::Sha
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -10261,11 +10261,11 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void EnumDescriptorProto::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.name_.Destroy();
   delete this_._impl_.options_;
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -10606,11 +10606,11 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void EnumValueDescriptorProto::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.name_.Destroy();
   delete this_._impl_.options_;
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -10874,11 +10874,11 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void ServiceDescriptorProto::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.name_.Destroy();
   delete this_._impl_.options_;
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -11154,13 +11154,13 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void MethodDescriptorProto::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.name_.Destroy();
   this_._impl_.input_type_.Destroy();
   this_._impl_.output_type_.Destroy();
   delete this_._impl_.options_;
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -11507,7 +11507,6 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FileOptions::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.java_package_.Destroy();
   this_._impl_.java_outer_classname_.Destroy();
@@ -11521,6 +11520,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FileOptions::SharedDtor(
   this_._impl_.ruby_package_.Destroy();
   delete this_._impl_.features_;
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -12093,10 +12093,10 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void MessageOptions::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   delete this_._impl_.features_;
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -12408,10 +12408,10 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FieldOptions_EditionDefault::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.value_.Destroy();
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -12628,11 +12628,11 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FieldOptions_FeatureSupport::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.deprecation_warning_.Destroy();
   this_._impl_.removal_error_.Destroy();
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -12952,11 +12952,11 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FieldOptions::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   delete this_._impl_.features_;
   delete this_._impl_.feature_support_;
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -13423,10 +13423,10 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void OneofOptions::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   delete this_._impl_.features_;
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -13707,10 +13707,10 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void EnumOptions::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   delete this_._impl_.features_;
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -14036,11 +14036,11 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void EnumValueOptions::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   delete this_._impl_.features_;
   delete this_._impl_.feature_support_;
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -14376,10 +14376,10 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void ServiceOptions::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   delete this_._impl_.features_;
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -14679,10 +14679,10 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void MethodOptions::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   delete this_._impl_.features_;
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -14969,10 +14969,10 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void UninterpretedOption_NamePart::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.name_part_.Destroy();
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -15207,12 +15207,12 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void UninterpretedOption::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.identifier_value_.Destroy();
   this_._impl_.string_value_.Destroy();
   this_._impl_.aggregate_value_.Destroy();
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -15624,9 +15624,9 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FeatureSet::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -15966,11 +15966,11 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FeatureSetDefaults_FeatureSetEditionDefaul
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   delete this_._impl_.overridable_features_;
   delete this_._impl_.fixed_features_;
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -16252,9 +16252,9 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FeatureSetDefaults::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -16532,11 +16532,11 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void SourceCodeInfo_Location::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.leading_comments_.Destroy();
   this_._impl_.trailing_comments_.Destroy();
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -16837,9 +16837,9 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void SourceCodeInfo::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -17070,10 +17070,10 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void GeneratedCodeInfo_Annotation::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.source_file_.Destroy();
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -17351,9 +17351,9 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void GeneratedCodeInfo::SharedDtor(
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL

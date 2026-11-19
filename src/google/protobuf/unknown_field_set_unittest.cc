@@ -16,6 +16,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -25,6 +26,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/port.h"
@@ -872,6 +874,42 @@ TEST(UnknownFieldTest, SettersOverrideTheDataProperly) {
   set.mutable_field(3)->set_length_delimited(absl::Cord("5555"));
   message = UnknownToProto<T>(set);
   EXPECT_EQ(message.optional_string(), "5555");
+}
+
+TEST(UnknownFieldTest, DestroyMessagesWithUnknownAndRegularFields) {
+  // Regression test for b/188560391: field destructors (repeated fields,
+  // extensions, oneofs, etc.) query InternalMetadata::arena() during message
+  // destruction, so InternalMetadata::Delete() must run after field
+  // destructors when ptr_ is not cleared.
+  {
+    unittest::TestAllTypes msg;
+    TestUtil::SetAllFields(&msg);
+    msg.mutable_unknown_fields()->AddVarint(100000, 42);
+    msg.mutable_unknown_fields()->AddLengthDelimited(100001, "unknown");
+  }
+  {
+    unittest::TestAllExtensions msg;
+    TestUtil::SetAllExtensions(&msg);
+    msg.mutable_unknown_fields()->AddVarint(100000, 42);
+  }
+  {
+    unittest::TestAllTypesLite msg;
+    msg.set_optional_string("hello");
+    msg.add_repeated_int32(1);
+    msg.add_repeated_string("world");
+    msg.mutable_optional_nested_message()->set_bb(7);
+    msg.set_oneof_string("oneof");
+    msg.mutable_unknown_fields()->append("\x80\x01\x01");
+  }
+  {
+    DynamicMessageFactory factory;
+    std::unique_ptr<Message> msg(
+        factory.GetPrototype(unittest::TestAllTypes::descriptor())->New());
+    unittest::TestAllTypes src;
+    TestUtil::SetAllFields(&src);
+    src.mutable_unknown_fields()->AddVarint(100000, 42);
+    ASSERT_TRUE(msg->ParseFromString(src.SerializeAsString()));
+  }
 }
 
 }  // namespace
