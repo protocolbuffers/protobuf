@@ -8182,6 +8182,40 @@ TEST_F(ValidationErrorTest, DupOption) {
       "already set.\n");
 }
 
+TEST_F(ValidationErrorTest, MapEntryUninterpretedOptionRejected) {
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "OrphanedMapEntry"
+          options {
+            uninterpreted_option {
+              name { name_part: "map_entry" is_extension: false }
+              identifier_value: "true"
+            }
+          }
+        }
+      )pb",
+      "foo.proto: OrphanedMapEntry: OPTION_NAME: map_entry should not be set "
+      "explicitly. Use map<KeyType, ValueType> instead.\n");
+
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Bar"
+          options {
+            uninterpreted_option {
+              name { name_part: "map_entry" is_extension: false }
+              identifier_value: "false"
+            }
+          }
+        }
+      )pb",
+      "foo.proto: Bar: OPTION_NAME: map_entry should not be set explicitly. "
+      "Use map<KeyType, ValueType> instead.\n");
+}
+
 TEST_F(ValidationErrorTest, InvalidOptionName) {
   BuildFileWithErrors(
       R"pb(

@@ -394,6 +394,15 @@ bool OptionInterpreter::InterpretSingleOption(
       });
     }
 
+    if (i == 0 && !field->is_extension() &&
+        field->number() == MessageOptions::kMapEntryFieldNumber &&
+        descriptor->full_name() == MessageOptions::descriptor()->full_name()) {
+      return AddNameError([]() -> std::string {
+        return "map_entry should not be set explicitly. "
+               "Use map<KeyType, ValueType> instead.";
+      });
+    }
+
     if (i < uninterpreted_option_->name_size() - 1) {
       if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
         return AddNameError([&] {
