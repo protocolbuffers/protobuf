@@ -477,6 +477,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   friend class ContendedMapCleanTest;
   friend class GeneratedMessageReflection;
   friend class MapFieldAccessor;
+  friend struct PrivateAccess;
   friend class google::protobuf::Reflection;
   friend class google::protobuf::DynamicMessage;
 

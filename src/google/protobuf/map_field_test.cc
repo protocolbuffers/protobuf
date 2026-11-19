@@ -24,6 +24,7 @@
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/private_access.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -450,15 +451,10 @@ TEST(MapFieldTest, ConstInit) {
 }
 
 TEST(MapFieldTest, MutableMapDoesNotAllocatePayload) {
-  struct MaybePayload : MapFieldBase {
-    // Use a derived type to get access to the protected method.
-    // We steal the function pointer here to use below to inspect the instance.
-    static constexpr auto getter() { return &MaybePayload::maybe_payload; }
-  };
   MyMapField field;
-  EXPECT_FALSE((field.*MaybePayload::getter())());
+  EXPECT_FALSE(PrivateAccess::MapFieldMaybePayload(field));
   field.MutableMap();
-  EXPECT_FALSE((field.*MaybePayload::getter())());
+  EXPECT_FALSE(PrivateAccess::MapFieldMaybePayload(field));
 }
 
 

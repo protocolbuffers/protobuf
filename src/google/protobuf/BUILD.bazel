@@ -2517,6 +2517,7 @@ cc_test(
         ":cc_test_protos",
         ":lite_test_util",
         ":port",
+        ":private_access",
         ":protobuf",
         ":protobuf_lite",
         ":test_util",

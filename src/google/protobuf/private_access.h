@@ -86,6 +86,13 @@ struct PrivateAccess {
 
   template <typename T>
   using ImplTForTesting = typename T::Impl_;
+
+  // Returns the reflection payload of a `MapFieldBase`, or null if it does not
+  // exist yet.
+  template <typename MapFieldT>
+  static auto* MapFieldMaybePayload(const MapFieldT& map_field) {
+    return map_field.maybe_payload();
+  }
 };
 
 }  // namespace internal

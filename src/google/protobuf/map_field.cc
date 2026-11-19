@@ -185,7 +185,14 @@ void MapFieldBase::SwapPayload(MapFieldBase& lhs, MapFieldBase& rhs) {
 
 void MapFieldBase::InternalSwap(MapFieldBase* other) {
   GetMapRaw().InternalSwap(&other->GetMapRaw());
+#if defined(PROTOBUF_SMALLER_MESSAGE_LITE)
+  // The arena lives in `MessageLite::_arena_`, which `InternalSwap` does not
+  // swap, so the payloads must stay with their fields when the arenas differ
+  // (e.g. during cross-arena `SwapBorrow`).
   SwapPayload(*this, *other);
+#else
+  SwapRelaxed(globals_or_payload_, other->globals_or_payload_);
+#endif
 }
 
 size_t MapFieldBase::SpaceUsedExcludingSelfLong() const {
