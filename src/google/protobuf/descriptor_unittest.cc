@@ -95,10 +95,12 @@ using ::google::protobuf::internal::cpp::HasHasbitWithoutProfile;
 using ::google::protobuf::internal::cpp::HasPreservingUnknownEnumSemantics;
 using ::google::protobuf::internal::cpp::Utf8CheckMode;
 using ::testing::_;
+using ::testing::AllOf;
 using ::testing::AnyOf;
 using ::testing::AtLeast;
 using ::testing::ElementsAre;
 using ::testing::HasSubstr;
+using ::testing::Not;
 using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SizeIs;
@@ -8205,6 +8207,51 @@ TEST_F(ValidationErrorTest, InvalidOptionName) {
 
       "foo.proto: TestMessage.foo: OPTION_NAME: Option must not use "
       "reserved name \"uninterpreted_option\".\n");
+}
+
+TEST_F(ValidationErrorTest, SkipOptionExtensionsAfterPass1Error) {
+  FileDescriptorProto file_proto;
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "TestMessage"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_BOOL
+            options {
+              uninterpreted_option {
+                name { name_part: "ctype" is_extension: false }
+                name { name_part: "foo" is_extension: true }
+                positive_int_value: 1
+              }
+            }
+          }
+          field {
+            name: "bar"
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_BOOL
+            options {
+              uninterpreted_option {
+                name { name_part: "unknown_ext" is_extension: true }
+                positive_int_value: 1
+              }
+            }
+          }
+        }
+      )pb",
+      &file_proto));
+
+  // Pass 1 fails on `foo`, so Pass 2 is skipped and `bar` is not checked.
+  BuildFileWithErrors(file_proto, AllOf(HasSubstr("Option \"ctype\""),
+                                        Not(HasSubstr("unknown_ext"))));
+
+  // Without the Pass 1 error on `foo`, Pass 2 runs and reports `bar`.
+  file_proto.mutable_message_type(0)->mutable_field(0)->clear_options();
+  BuildFileWithErrors(file_proto, HasSubstr("unknown_ext"));
 }
 
 TEST_F(ValidationErrorTest, RepeatedMessageOption) {

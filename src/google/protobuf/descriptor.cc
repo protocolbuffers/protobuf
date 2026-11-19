@@ -5920,12 +5920,14 @@ PROTOBUF_NOINLINE FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
     // Interpret any remaining uninterpreted options gathered into
     // options_to_interpret_ during descriptor building.  Cross-linking has made
     // extension options known, so all interpretations should now succeed.
-    option_interpreter.InterpretOptionExtensions(
-        absl::MakeSpan(options_to_interpret_));
-    options_to_interpret_.clear();
-    if (info != nullptr) {
-      option_interpreter.UpdateSourceCodeInfo(info);
+    if (!has_errors()) {
+      option_interpreter.InterpretOptionExtensions(
+          absl::MakeSpan(options_to_interpret_));
+      if (info != nullptr) {
+        option_interpreter.UpdateSourceCodeInfo(info);
+      }
     }
+    options_to_interpret_.clear();
   }
 
   // Validate options. See comments at InternalSetLazilyBuildDependencies about
