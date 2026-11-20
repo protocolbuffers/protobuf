@@ -3121,6 +3121,19 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
       uint32_t fieldNumber = GPBFieldNumber(fieldDescriptor);
 
       switch (fieldDataType) {
+        case GPBDataTypeBool:
+          result += GPBComputeTagSize(fieldNumber) + 1;
+          break;
+        case GPBDataTypeFixed32:
+        case GPBDataTypeSFixed32:
+        case GPBDataTypeFloat:
+          result += GPBComputeTagSize(fieldNumber) + 4;
+          break;
+        case GPBDataTypeFixed64:
+        case GPBDataTypeSFixed64:
+        case GPBDataTypeDouble:
+          result += GPBComputeTagSize(fieldNumber) + 8;
+          break;
 #define CASE_SINGLE_POD(NAME, TYPE, FUNC_TYPE)                              \
   case GPBDataType##NAME: {                                                 \
     TYPE fieldVal = GPBGetMessage##FUNC_TYPE##Field(self, fieldDescriptor); \
@@ -3133,24 +3146,17 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
     result += GPBCompute##NAME##Size(fieldNumber, fieldVal);                    \
     break;                                                                      \
   }
-        CASE_SINGLE_POD(Bool, BOOL, Bool)
-        CASE_SINGLE_POD(Fixed32, uint32_t, UInt32)
-        CASE_SINGLE_POD(SFixed32, int32_t, Int32)
-        CASE_SINGLE_POD(Float, float, Float)
-        CASE_SINGLE_POD(Fixed64, uint64_t, UInt64)
-        CASE_SINGLE_POD(SFixed64, int64_t, Int64)
-        CASE_SINGLE_POD(Double, double, Double)
-        CASE_SINGLE_POD(Int32, int32_t, Int32)
-        CASE_SINGLE_POD(Int64, int64_t, Int64)
-        CASE_SINGLE_POD(SInt32, int32_t, Int32)
-        CASE_SINGLE_POD(SInt64, int64_t, Int64)
-        CASE_SINGLE_POD(UInt32, uint32_t, UInt32)
-        CASE_SINGLE_POD(UInt64, uint64_t, UInt64)
-        CASE_SINGLE_OBJECT(Bytes)
-        CASE_SINGLE_OBJECT(String)
-        CASE_SINGLE_OBJECT(Message)
-        CASE_SINGLE_OBJECT(Group)
-        CASE_SINGLE_POD(Enum, int32_t, Int32)
+          CASE_SINGLE_POD(Int32, int32_t, Int32)
+          CASE_SINGLE_POD(Int64, int64_t, Int64)
+          CASE_SINGLE_POD(SInt32, int32_t, Int32)
+          CASE_SINGLE_POD(SInt64, int64_t, Int64)
+          CASE_SINGLE_POD(UInt32, uint32_t, UInt32)
+          CASE_SINGLE_POD(UInt64, uint64_t, UInt64)
+          CASE_SINGLE_OBJECT(Bytes)
+          CASE_SINGLE_OBJECT(String)
+          CASE_SINGLE_OBJECT(Message)
+          CASE_SINGLE_OBJECT(Group)
+          CASE_SINGLE_POD(Enum, int32_t, Int32)
 #undef CASE_SINGLE_POD
 #undef CASE_SINGLE_OBJECT
       }
@@ -3165,6 +3171,19 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
       __block size_t dataSize = 0;
 
       switch (fieldDataType) {
+        case GPBDataTypeBool:
+          dataSize = count;
+          break;
+        case GPBDataTypeFixed32:
+        case GPBDataTypeSFixed32:
+        case GPBDataTypeFloat:
+          dataSize = count * 4;
+          break;
+        case GPBDataTypeFixed64:
+        case GPBDataTypeSFixed64:
+        case GPBDataTypeDouble:
+          dataSize = count * 8;
+          break;
 #define CASE_REPEATED_POD(NAME, TYPE, ARRAY_TYPE) CASE_REPEATED_POD_EXTRA(NAME, TYPE, ARRAY_TYPE, )
 #define CASE_REPEATED_POD_EXTRA(NAME, TYPE, ARRAY_TYPE, ARRAY_ACCESSOR_NAME)           \
   case GPBDataType##NAME: {                                                            \
@@ -3182,24 +3201,17 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
     }                                                 \
     break;                                            \
   }
-        CASE_REPEATED_POD(Bool, BOOL, Bool)
-        CASE_REPEATED_POD(Fixed32, uint32_t, UInt32)
-        CASE_REPEATED_POD(SFixed32, int32_t, Int32)
-        CASE_REPEATED_POD(Float, float, Float)
-        CASE_REPEATED_POD(Fixed64, uint64_t, UInt64)
-        CASE_REPEATED_POD(SFixed64, int64_t, Int64)
-        CASE_REPEATED_POD(Double, double, Double)
-        CASE_REPEATED_POD(Int32, int32_t, Int32)
-        CASE_REPEATED_POD(Int64, int64_t, Int64)
-        CASE_REPEATED_POD(SInt32, int32_t, Int32)
-        CASE_REPEATED_POD(SInt64, int64_t, Int64)
-        CASE_REPEATED_POD(UInt32, uint32_t, UInt32)
-        CASE_REPEATED_POD(UInt64, uint64_t, UInt64)
-        CASE_REPEATED_OBJECT(Bytes)
-        CASE_REPEATED_OBJECT(String)
-        CASE_REPEATED_OBJECT(Message)
-        CASE_REPEATED_OBJECT(Group)
-        CASE_REPEATED_POD_EXTRA(Enum, int32_t, Enum, Raw)
+          CASE_REPEATED_POD(Int32, int32_t, Int32)
+          CASE_REPEATED_POD(Int64, int64_t, Int64)
+          CASE_REPEATED_POD(SInt32, int32_t, Int32)
+          CASE_REPEATED_POD(SInt64, int64_t, Int64)
+          CASE_REPEATED_POD(UInt32, uint32_t, UInt32)
+          CASE_REPEATED_POD(UInt64, uint64_t, UInt64)
+          CASE_REPEATED_OBJECT(Bytes)
+          CASE_REPEATED_OBJECT(String)
+          CASE_REPEATED_OBJECT(Message)
+          CASE_REPEATED_OBJECT(Group)
+          CASE_REPEATED_POD_EXTRA(Enum, int32_t, Enum, Raw)
 #undef CASE_REPEATED_POD
 #undef CASE_REPEATED_POD_EXTRA
 #undef CASE_REPEATED_OBJECT

@@ -41,66 +41,47 @@ GPB_INLINE size_t DataTypeSize(GPBDataType dataType) {
 }
 
 static size_t ComputePBSerializedSizeNoTagOfObject(GPBDataType dataType, id object) {
-#define FIELD_CASE(TYPE, ACCESSOR) \
-  case GPBDataType##TYPE:          \
-    return GPBCompute##TYPE##SizeNoTag([(NSNumber *)object ACCESSOR]);
-#define FIELD_CASE2(TYPE) \
-  case GPBDataType##TYPE: \
-    return GPBCompute##TYPE##SizeNoTag(object);
   switch (dataType) {
-    FIELD_CASE(Bool, boolValue)
-    FIELD_CASE(Float, floatValue)
-    FIELD_CASE(Double, doubleValue)
-    FIELD_CASE(Int32, intValue)
-    FIELD_CASE(SFixed32, intValue)
-    FIELD_CASE(SInt32, intValue)
-    FIELD_CASE(Enum, intValue)
-    FIELD_CASE(Int64, longLongValue)
-    FIELD_CASE(SInt64, longLongValue)
-    FIELD_CASE(SFixed64, longLongValue)
-    FIELD_CASE(UInt32, unsignedIntValue)
-    FIELD_CASE(Fixed32, unsignedIntValue)
-    FIELD_CASE(UInt64, unsignedLongLongValue)
-    FIELD_CASE(Fixed64, unsignedLongLongValue)
-    FIELD_CASE2(Bytes)
-    FIELD_CASE2(String)
-    FIELD_CASE2(Message)
-    FIELD_CASE2(Group)
+    case GPBDataTypeBool:
+      return 1;
+    case GPBDataTypeFixed32:
+    case GPBDataTypeSFixed32:
+    case GPBDataTypeFloat:
+      return 4;
+    case GPBDataTypeFixed64:
+    case GPBDataTypeSFixed64:
+    case GPBDataTypeDouble:
+      return 8;
+    case GPBDataTypeInt32:
+    case GPBDataTypeEnum:
+      return GPBComputeInt32SizeNoTag([(NSNumber *)object intValue]);
+    case GPBDataTypeSInt32:
+      return GPBComputeSInt32SizeNoTag([(NSNumber *)object intValue]);
+    case GPBDataTypeInt64:
+    case GPBDataTypeUInt64:
+      return GPBComputeUInt64SizeNoTag([(NSNumber *)object unsignedLongLongValue]);
+    case GPBDataTypeSInt64:
+      return GPBComputeSInt64SizeNoTag([(NSNumber *)object longLongValue]);
+    case GPBDataTypeUInt32:
+      return GPBComputeUInt32SizeNoTag([(NSNumber *)object unsignedIntValue]);
+    case GPBDataTypeBytes:
+      return GPBComputeBytesSizeNoTag(object);
+    case GPBDataTypeString:
+      return GPBComputeStringSizeNoTag(object);
+    case GPBDataTypeMessage:
+      return GPBComputeMessageSizeNoTag(object);
+    case GPBDataTypeGroup:
+      return GPBComputeGroupSizeNoTag(object);
   }
-#undef FIELD_CASE
-#undef FIELD_CASE2
 }
 
 static size_t ComputeSerializedSizeIncludingTagOfObject(GPBExtensionDescription *description,
                                                         id object) {
-#define FIELD_CASE(TYPE, ACCESSOR) \
-  case GPBDataType##TYPE:          \
-    return GPBCompute##TYPE##Size(description->fieldNumber, [(NSNumber *)object ACCESSOR]);
-#define FIELD_CASE2(TYPE) \
-  case GPBDataType##TYPE: \
-    return GPBCompute##TYPE##Size(description->fieldNumber, object);
-  switch (description->dataType) {
-    FIELD_CASE(Bool, boolValue)
-    FIELD_CASE(Float, floatValue)
-    FIELD_CASE(Double, doubleValue)
-    FIELD_CASE(Int32, intValue)
-    FIELD_CASE(SFixed32, intValue)
-    FIELD_CASE(SInt32, intValue)
-    FIELD_CASE(Enum, intValue)
-    FIELD_CASE(Int64, longLongValue)
-    FIELD_CASE(SInt64, longLongValue)
-    FIELD_CASE(SFixed64, longLongValue)
-    FIELD_CASE(UInt32, unsignedIntValue)
-    FIELD_CASE(Fixed32, unsignedIntValue)
-    FIELD_CASE(UInt64, unsignedLongLongValue)
-    FIELD_CASE(Fixed64, unsignedLongLongValue)
-    FIELD_CASE2(Bytes)
-    FIELD_CASE2(String)
-    FIELD_CASE2(Group)
-    FIELD_CASE2(Message)
+  size_t tagSize = GPBComputeTagSize(description->fieldNumber);
+  if (description->dataType == GPBDataTypeGroup) {
+    tagSize *= 2;
   }
-#undef FIELD_CASE
-#undef FIELD_CASE2
+  return tagSize + ComputePBSerializedSizeNoTagOfObject(description->dataType, object);
 }
 
 static size_t ComputeSerializedSizeIncludingTagOfArray(GPBExtensionDescription *description,
