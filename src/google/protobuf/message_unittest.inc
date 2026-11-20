@@ -60,6 +60,7 @@
 #include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
+#include "google/protobuf/testing/protobuf_test.h"
 #include "google/protobuf/wire_format_lite.h"
 
 
