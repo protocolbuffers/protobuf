@@ -1110,6 +1110,7 @@
   TestUnpackedExtensions *extsOrig = [TestUnpackedExtensions message];
   [self setUnpackedFields:fieldsOrig repeatedCount:3];
   [self setUnpackedExtensions:extsOrig repeatedCount:3];
+  XCTAssertEqual([extsOrig serializedSize], [fieldsOrig serializedSize]);
 
   NSData *fieldsData = [fieldsOrig data];
   NSData *extsData = [extsOrig data];

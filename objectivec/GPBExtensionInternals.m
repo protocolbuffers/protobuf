@@ -86,24 +86,25 @@ static size_t ComputeSerializedSizeIncludingTagOfObject(GPBExtensionDescription 
 
 static size_t ComputeSerializedSizeIncludingTagOfArray(GPBExtensionDescription *description,
                                                        NSArray *values) {
-  if (GPBExtensionIsPacked(description)) {
-    size_t size = 0;
-    size_t typeSize = DataTypeSize(description->dataType);
-    if (typeSize != 0) {
-      size = values.count * typeSize;
-    } else {
-      for (id value in values) {
-        size += ComputePBSerializedSizeNoTagOfObject(description->dataType, value);
-      }
-    }
-    return size + GPBComputeTagSize(description->fieldNumber) +
-           GPBComputeRawVarint32SizeForInteger(size);
+  GPBDataType dataType = description->dataType;
+  NSUInteger count = values.count;
+  size_t dataSize = 0;
+  size_t typeSize = DataTypeSize(dataType);
+  if (typeSize != 0) {
+    dataSize = count * typeSize;
   } else {
-    size_t size = 0;
     for (id value in values) {
-      size += ComputeSerializedSizeIncludingTagOfObject(description, value);
+      dataSize += ComputePBSerializedSizeNoTagOfObject(dataType, value);
     }
-    return size;
+  }
+  size_t tagSize = GPBComputeTagSize(description->fieldNumber);
+  if (GPBExtensionIsPacked(description)) {
+    return dataSize + tagSize + GPBComputeRawVarint32SizeForInteger(dataSize);
+  } else {
+    if (dataType == GPBDataTypeGroup) {
+      tagSize *= 2;
+    }
+    return dataSize + count * tagSize;
   }
 }
 
