@@ -1660,7 +1660,11 @@ class PROTOBUF_EXPORT MessageFactory {
 
  private:
   friend class DynamicMessageFactory;
-  static const Message* TryGetGeneratedPrototype(const Descriptor* type);
+  // Returns `type`'s prototype from `generated_factory()`, or `nullptr` if
+  // `caller` must construct it directly (avoiding re-entrancy when `caller`
+  // backs `generated_factory()`).
+  static const Message* TryGetGeneratedPrototype(
+      const Descriptor* type, const DynamicMessageFactory* caller);
 };
 
 #define DECLARE_GET_REPEATED_FIELD(TYPE)                    \

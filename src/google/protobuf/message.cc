@@ -500,6 +500,8 @@ class GeneratedMessageFactory final : public MessageFactory {
   void RegisterType(const Descriptor* descriptor, const Message* prototype);
 
   const Message* TryGetPrototype(const Descriptor* type);
+  const Message* TryGetPrototypeForDynamicFactory(
+      const Descriptor* type, const DynamicMessageFactory* caller);
 
   // implements MessageFactory ---------------------------------------
   const Message* GetPrototype(const Descriptor* type) override;
@@ -668,11 +670,22 @@ const Message* GeneratedMessageFactory::TryGetPrototype(
   return *result;
 }
 
+const Message* GeneratedMessageFactory::TryGetPrototypeForDynamicFactory(
+    const Descriptor* type, const DynamicMessageFactory* caller) {
+  if (caller == &dropped_defaults_factory_) {
+    // Avoid re-entering GetPrototype() to prevent mutex deadlock.
+    return TryGetPrototype(type);
+  }
+  // Materialize null-default types in dropped_defaults_factory_.
+  return GetPrototype(type);
+}
+
 }  // namespace
 
 const Message* MessageFactory::TryGetGeneratedPrototype(
-    const Descriptor* type) {
-  return GeneratedMessageFactory::singleton()->TryGetPrototype(type);
+    const Descriptor* type, const DynamicMessageFactory* caller) {
+  return GeneratedMessageFactory::singleton()->TryGetPrototypeForDynamicFactory(
+      type, caller);
 }
 
 MessageFactory* MessageFactory::generated_factory() {

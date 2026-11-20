@@ -829,7 +829,8 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
     const Descriptor* PROTOBUF_NONNULL type) {
   if (delegate_to_generated_factory_ &&
       type->file()->pool() == DescriptorPool::generated_pool()) {
-    const Message* result = MessageFactory::TryGetGeneratedPrototype(type);
+    const Message* result =
+        MessageFactory::TryGetGeneratedPrototype(type, this);
     if (result != nullptr) return result;
     // Otherwise, we will create it dynamically so keep going.
   }
