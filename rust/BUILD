@@ -404,7 +404,9 @@ proto_lang_toolchain(
 
 package_group(
     name = "rust_proto_library_allowed_in_different_package",
-    packages = ["//rust/test"],  # for unittest proto_libraries
+    packages = [
+        "//rust/test",  # for unittest proto_libraries
+    ],
 )
 
 # This flag controls what kernel all Rust Protobufs are using in the current build.
