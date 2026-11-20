@@ -6206,8 +6206,6 @@ enum { JD_OBJECT, JD_ARRAY, JD_STRING, JD_NUMBER, JD_TRUE, JD_FALSE, JD_NULL };
 static void jsondec_wellknown(jsondec* d, upb_Message* msg,
                               const upb_MessageDef* m);
 static upb_JsonMessageValue jsondec_value(jsondec* d, const upb_FieldDef* f);
-static void jsondec_wellknownvalue(jsondec* d, upb_Message* msg,
-                                   const upb_MessageDef* m);
 static void jsondec_object(jsondec* d, upb_Message* msg,
                            const upb_MessageDef* m);
 
@@ -7385,7 +7383,7 @@ static void jsondec_listvalue(jsondec* d, upb_Message* msg,
     upb_MessageValue value;
     value.msg_val = value_msg;
     jsondec_checkoom(d, upb_Array_Append(values, value, d->arena));
-    jsondec_wellknownvalue(d, value_msg, value_m);
+    jsondec_tomsg(d, value_msg, value_m);
   }
   jsondec_arrend(d);
 }
@@ -7410,7 +7408,7 @@ static void jsondec_struct(jsondec* d, upb_Message* msg,
     value.msg_val = value_msg;
     jsondec_checkoom(d, upb_Map_Set(fields, key, value, d->arena));
     jsondec_entrysep(d);
-    jsondec_wellknownvalue(d, value_msg, value_m);
+    jsondec_tomsg(d, value_msg, value_m);
   }
   jsondec_objend(d);
 }
@@ -7457,14 +7455,14 @@ static void jsondec_wellknownvalue(jsondec* d, upb_Message* msg,
       f = upb_MessageDef_FindFieldByNumber(m, 5);
       submsg = upb_Message_Mutable(msg, f, d->arena).msg;
       jsondec_checkoom(d, submsg);
-      jsondec_struct(d, submsg, upb_FieldDef_MessageSubDef(f));
+      jsondec_tomsg(d, submsg, upb_FieldDef_MessageSubDef(f));
       return;
     case JD_ARRAY:
       /* ListValue list_value = 6; */
       f = upb_MessageDef_FindFieldByNumber(m, 6);
       submsg = upb_Message_Mutable(msg, f, d->arena).msg;
       jsondec_checkoom(d, submsg);
-      jsondec_listvalue(d, submsg, upb_FieldDef_MessageSubDef(f));
+      jsondec_tomsg(d, submsg, upb_FieldDef_MessageSubDef(f));
       return;
     default:
       UPB_UNREACHABLE();
@@ -7790,8 +7788,6 @@ static void jsonenc_msgfield(jsonenc* e, const upb_Message* msg,
                              const upb_MessageDef* m);
 static void jsonenc_msgfields(jsonenc* e, const upb_Message* msg,
                               const upb_MessageDef* m, bool first);
-static void jsonenc_value(jsonenc* e, const upb_Message* msg,
-                          const upb_MessageDef* m);
 static void jsonenc_string(jsonenc* e, upb_StringView str);
 
 UPB_NORETURN static void jsonenc_err(jsonenc* e, const char* msg) {
@@ -8252,7 +8248,7 @@ static void jsonenc_struct(jsonenc* e, const upb_Message* msg,
       jsonenc_putsep(e, ",", &first);
       jsonenc_string(e, key.str_val);
       jsonenc_putstr(e, ":");
-      jsonenc_value(e, val.msg_val, upb_FieldDef_MessageSubDef(value_f));
+      jsonenc_msgfield(e, val.msg_val, upb_FieldDef_MessageSubDef(value_f));
     }
   }
 
@@ -8277,7 +8273,7 @@ static void jsonenc_listvalue(jsonenc* e, const upb_Message* msg,
       upb_MessageValue elem = upb_Array_Get(values, i);
 
       jsonenc_putsep(e, ",", &first);
-      jsonenc_value(e, elem.msg_val, values_m);
+      jsonenc_msgfield(e, elem.msg_val, values_m);
     }
   }
 
@@ -8316,10 +8312,8 @@ static void jsonenc_value(jsonenc* e, const upb_Message* msg,
       jsonenc_putstr(e, val.bool_val ? "true" : "false");
       break;
     case 5:
-      jsonenc_struct(e, val.msg_val, upb_FieldDef_MessageSubDef(f));
-      break;
     case 6:
-      jsonenc_listvalue(e, val.msg_val, upb_FieldDef_MessageSubDef(f));
+      jsonenc_msgfield(e, val.msg_val, upb_FieldDef_MessageSubDef(f));
       break;
   }
 }
@@ -17850,46 +17844,121 @@ struct upb_MessageDef {
   google_protobuf_SymbolVisibility visibility;
 };
 
+static bool has_wkt_field(const upb_MessageDef* m, uint32_t num,
+                          upb_Label label, upb_FieldType type) {
+  const upb_FieldDef* f = upb_MessageDef_FindFieldByNumber(m, num);
+  return f != NULL && upb_FieldDef_Label(f) == label &&
+         upb_FieldDef_Type(f) == type;
+}
+
+static bool has_wkt_submsg(const upb_FieldDef* f, const char* full_name) {
+  if (upb_FieldDef_Type(f) != kUpb_FieldType_Message) return false;
+  const upb_MessageDef* sub = upb_FieldDef_MessageSubDef(f);
+  return sub->containing_type == NULL && !upb_MessageDef_IsMapEntry(sub) &&
+         strcmp(sub->full_name, full_name) == 0;
+}
+
+static bool check_wkt1(const upb_MessageDef* m, upb_Label label,
+                       upb_FieldType type) {
+  return m->field_count == 1 && m->real_oneof_count == 0 &&
+         has_wkt_field(m, 1, label, type);
+}
+
+static bool check_wkt2(const upb_MessageDef* m, upb_FieldType t1,
+                       upb_FieldType t2) {
+  return m->field_count == 2 && m->real_oneof_count == 0 &&
+         has_wkt_field(m, 1, kUpb_Label_Optional, t1) &&
+         has_wkt_field(m, 2, kUpb_Label_Optional, t2);
+}
+
 static void assign_msg_wellknowntype(upb_MessageDef* m) {
-  const char* name = m->full_name;
-  if (name == NULL) {
-    m->well_known_type = kUpb_WellKnown_Unspecified;
+  m->well_known_type = kUpb_WellKnown_Unspecified;
+  if (m->full_name == NULL || m->containing_type != NULL ||
+      upb_MessageDef_IsMapEntry(m)) {
     return;
   }
-  if (!strcmp(name, "google.protobuf.Any")) {
-    m->well_known_type = kUpb_WellKnown_Any;
-  } else if (!strcmp(name, "google.protobuf.FieldMask")) {
-    m->well_known_type = kUpb_WellKnown_FieldMask;
-  } else if (!strcmp(name, "google.protobuf.Duration")) {
-    m->well_known_type = kUpb_WellKnown_Duration;
-  } else if (!strcmp(name, "google.protobuf.Timestamp")) {
-    m->well_known_type = kUpb_WellKnown_Timestamp;
-  } else if (!strcmp(name, "google.protobuf.DoubleValue")) {
-    m->well_known_type = kUpb_WellKnown_DoubleValue;
-  } else if (!strcmp(name, "google.protobuf.FloatValue")) {
-    m->well_known_type = kUpb_WellKnown_FloatValue;
-  } else if (!strcmp(name, "google.protobuf.Int64Value")) {
-    m->well_known_type = kUpb_WellKnown_Int64Value;
-  } else if (!strcmp(name, "google.protobuf.UInt64Value")) {
-    m->well_known_type = kUpb_WellKnown_UInt64Value;
-  } else if (!strcmp(name, "google.protobuf.Int32Value")) {
-    m->well_known_type = kUpb_WellKnown_Int32Value;
-  } else if (!strcmp(name, "google.protobuf.UInt32Value")) {
-    m->well_known_type = kUpb_WellKnown_UInt32Value;
-  } else if (!strcmp(name, "google.protobuf.BoolValue")) {
-    m->well_known_type = kUpb_WellKnown_BoolValue;
-  } else if (!strcmp(name, "google.protobuf.StringValue")) {
-    m->well_known_type = kUpb_WellKnown_StringValue;
-  } else if (!strcmp(name, "google.protobuf.BytesValue")) {
-    m->well_known_type = kUpb_WellKnown_BytesValue;
-  } else if (!strcmp(name, "google.protobuf.Value")) {
-    m->well_known_type = kUpb_WellKnown_Value;
-  } else if (!strcmp(name, "google.protobuf.ListValue")) {
-    m->well_known_type = kUpb_WellKnown_ListValue;
-  } else if (!strcmp(name, "google.protobuf.Struct")) {
-    m->well_known_type = kUpb_WellKnown_Struct;
+  static const char kPrefix[] = "google.protobuf.";
+  if (strncmp(m->full_name, kPrefix, sizeof(kPrefix) - 1) != 0) return;
+  const char* name = m->full_name + (sizeof(kPrefix) - 1);
+
+  if (!strcmp(name, "Any")) {
+    if (check_wkt2(m, kUpb_FieldType_String, kUpb_FieldType_Bytes)) {
+      m->well_known_type = kUpb_WellKnown_Any;
+    }
+  } else if (!strcmp(name, "FieldMask")) {
+    if (check_wkt1(m, kUpb_Label_Repeated, kUpb_FieldType_String)) {
+      m->well_known_type = kUpb_WellKnown_FieldMask;
+    }
+  } else if (!strcmp(name, "Duration")) {
+    if (check_wkt2(m, kUpb_FieldType_Int64, kUpb_FieldType_Int32)) {
+      m->well_known_type = kUpb_WellKnown_Duration;
+    }
+  } else if (!strcmp(name, "Timestamp")) {
+    if (check_wkt2(m, kUpb_FieldType_Int64, kUpb_FieldType_Int32)) {
+      m->well_known_type = kUpb_WellKnown_Timestamp;
+    }
+  } else if (!strcmp(name, "ListValue")) {
+    if (check_wkt1(m, kUpb_Label_Repeated, kUpb_FieldType_Message) &&
+        has_wkt_submsg(upb_MessageDef_Field(m, 0), "google.protobuf.Value")) {
+      m->well_known_type = kUpb_WellKnown_ListValue;
+    }
+  } else if (!strcmp(name, "Struct")) {
+    const upb_FieldDef* f = upb_MessageDef_FindFieldByNumber(m, 1);
+    if (m->field_count == 1 && m->real_oneof_count == 0 && f != NULL &&
+        upb_FieldDef_IsMap(f) &&
+        upb_FieldDef_Type(f) == kUpb_FieldType_Message &&
+        strcmp(upb_FieldDef_Name(f), "fields") == 0) {
+      const upb_MessageDef* entry = upb_FieldDef_MessageSubDef(f);
+      if (entry->containing_type == m &&
+          upb_FieldDef_Type(upb_MessageDef_Field(entry, 0)) ==
+              kUpb_FieldType_String &&
+          has_wkt_submsg(upb_MessageDef_Field(entry, 1),
+                         "google.protobuf.Value")) {
+        m->well_known_type = kUpb_WellKnown_Struct;
+      }
+    }
+  } else if (!strcmp(name, "Value")) {
+    static const upb_FieldType kTypes[6] = {
+        kUpb_FieldType_Enum, kUpb_FieldType_Double,  kUpb_FieldType_String,
+        kUpb_FieldType_Bool, kUpb_FieldType_Message, kUpb_FieldType_Message,
+    };
+    if (m->field_count == 6 && m->oneof_count == 1 &&
+        m->real_oneof_count == 1 &&
+        upb_OneofDef_FieldCount(upb_MessageDef_Oneof(m, 0)) == 6) {
+      for (int i = 0; i < 6; i++) {
+        if (!has_wkt_field(m, i + 1, kUpb_Label_Optional, kTypes[i])) return;
+      }
+      if (has_wkt_submsg(upb_MessageDef_FindFieldByNumber(m, 5),
+                         "google.protobuf.Struct") &&
+          has_wkt_submsg(upb_MessageDef_FindFieldByNumber(m, 6),
+                         "google.protobuf.ListValue")) {
+        m->well_known_type = kUpb_WellKnown_Value;
+      }
+    }
   } else {
-    m->well_known_type = kUpb_WellKnown_Unspecified;
+    static const struct {
+      const char* name;
+      upb_FieldType type;
+      upb_WellKnown wkt;
+    } kWrappers[] = {
+        {"DoubleValue", kUpb_FieldType_Double, kUpb_WellKnown_DoubleValue},
+        {"FloatValue", kUpb_FieldType_Float, kUpb_WellKnown_FloatValue},
+        {"Int64Value", kUpb_FieldType_Int64, kUpb_WellKnown_Int64Value},
+        {"UInt64Value", kUpb_FieldType_UInt64, kUpb_WellKnown_UInt64Value},
+        {"Int32Value", kUpb_FieldType_Int32, kUpb_WellKnown_Int32Value},
+        {"UInt32Value", kUpb_FieldType_UInt32, kUpb_WellKnown_UInt32Value},
+        {"BoolValue", kUpb_FieldType_Bool, kUpb_WellKnown_BoolValue},
+        {"StringValue", kUpb_FieldType_String, kUpb_WellKnown_StringValue},
+        {"BytesValue", kUpb_FieldType_Bytes, kUpb_WellKnown_BytesValue},
+    };
+    for (size_t i = 0; i < sizeof(kWrappers) / sizeof(kWrappers[0]); i++) {
+      if (!strcmp(name, kWrappers[i].name)) {
+        if (check_wkt1(m, kUpb_Label_Optional, kWrappers[i].type)) {
+          m->well_known_type = kWrappers[i].wkt;
+        }
+        return;
+      }
+    }
   }
 }
 
@@ -18233,6 +18302,8 @@ void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m) {
     upb_MessageDef* n = (upb_MessageDef*)upb_MessageDef_NestedMessage(m, i);
     _upb_MessageDef_Resolve(ctx, n);
   }
+
+  assign_msg_wellknowntype(m);
 }
 
 void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
@@ -18586,7 +18657,7 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   const size_t synthetic_count = _upb_OneofDefs_Finalize(ctx, m);
   m->real_oneof_count = m->oneof_count - synthetic_count;
 
-  assign_msg_wellknowntype(m);
+  m->well_known_type = kUpb_WellKnown_Unspecified;
 
   const google_protobuf_EnumDescriptorProto* const* enums =
       google_protobuf_DescriptorProto_enum_type(msg_proto, &n_enum);
