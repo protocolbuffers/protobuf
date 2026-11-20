@@ -1932,3 +1932,14 @@ message TestMessageWithManyRepeatedPtrFields {
   repeated string repeated_string_31 = 31;
   repeated string repeated_string_32 = 32;
 }
+
+enum TestClosedEnumWithCollidingNames {
+  COLLIDING_ZERO = 0;
+  V1_A = 1;
+  V1A = 2;
+  SELF = 3;
+  V1_NEG_1_A = -1;
+  V1_NEG_1A = -2;
+  V1_MIN_1_A = -2147483647;
+  V1_MIN_1A = -2147483648;
+}

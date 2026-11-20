@@ -363,3 +363,24 @@ fn test_enum_in_btree() {
     assert_that!(s.pop_first(), some(eq((NestedEnum::Baz, 1))));
     assert_that!(s.pop_first(), none());
 }
+
+#[gtest]
+fn test_closed_enum_colliding_names() {
+    type E = TestClosedEnumWithCollidingNames;
+    for (n, constant) in [
+        (0, E::CollidingZero),
+        (1, E::V1A),
+        (2, E::V1A_2),
+        (3, E::Self_),
+        (-1, E::V1Neg1A),
+        (-2, E::V1Neg1A_Neg2),
+        (-2147483647, E::V1Min1A),
+        (i32::MIN, E::V1Min1A_Neg2147483648),
+    ] {
+        expect_that!(E::is_known(n), eq(true), "n={n}");
+        expect_that!(E::try_from(n), ok(eq(&constant)), "n={n}");
+        expect_that!(constant.number(), eq(n), "n={n}");
+    }
+    expect_that!(E::is_known(4), eq(false));
+    expect_that!(format!("{:?}", E::V1A_2), eq("TestClosedEnumWithCollidingNames::V1A_2"));
+}

@@ -8,6 +8,7 @@
 #include "google/protobuf/compiler/rust/enum.h"
 
 #include <cstdint>
+#include <limits>
 #include <utility>
 
 #include <gmock/gmock.h>
@@ -55,6 +56,32 @@ TEST(EnumTest, EnumValues) {
                                         std::make_pair("Alias2", nullptr)))));
   EXPECT_THAT(EnumValues("Enum", {{"ENUM_ENUM", 1}, {"ENUM", 1}}),
               ElementsAre(EnumValue("Enum", 1, IsEmpty())));
+}
+
+TEST(EnumTest, CollidingNormalizedNamesWithDistinctNumbers) {
+  EXPECT_THAT(EnumValues("Status", {{"STATUS_OK", 1}, {"OK", 2}}),
+              ElementsAre(EnumValue("Ok", 1), EnumValue("Ok_2", 2)));
+  EXPECT_THAT(
+      EnumValues("MyEnum",
+                 {{"A1_B1_C", 1}, {"A1_B1C", 2}, {"A1B1_C", 3}, {"A1B1C", 4}}),
+      ElementsAre(EnumValue("A1B1C", 1), EnumValue("A1B1C_2", 2),
+                  EnumValue("A1B1C_3", 3), EnumValue("A1B1C_4", 4)));
+  EXPECT_THAT(
+      EnumValues("MyEnum",
+                 {{"V1_NEG_1_A", -1},
+                  {"V1_NEG_1A", -2},
+                  {"V1_NEG_1_A_", std::numeric_limits<int32_t>::min()}}),
+      ElementsAre(EnumValue("V1Neg1A", -1), EnumValue("V1Neg1A_Neg2", -2),
+                  EnumValue("V1Neg1A_Neg2147483648",
+                            std::numeric_limits<int32_t>::min())));
+  EXPECT_THAT(EnumValues("Status", {{"STATUS_SELF", 1}, {"SELF", 2}}),
+              ElementsAre(EnumValue("Self_", 1), EnumValue("Self_2", 2)));
+  EXPECT_THAT(
+      EnumValues("MyEnum",
+                 {{"V1_A", 1}, {"OTHER", 2}, {"V1A", 2}, {"MY_ENUM_V1A", 2}}),
+      ElementsAre(EnumValue("V1A", 1),
+                  EnumValue("Other", 2,
+                            ElementsAre(std::make_pair("V1A_2", nullptr)))));
 }
 
 }  // namespace

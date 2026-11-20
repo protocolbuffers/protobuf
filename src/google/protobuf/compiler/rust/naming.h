@@ -9,6 +9,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_RUST_NAMING_H__
 
 #include <array>
+#include <cstdint>
 #include <string>
 
 #include "absl/strings/string_view.h"
@@ -62,6 +63,9 @@ std::string RsViewType(Context& ctx, const FieldDescriptor& field,
 
 std::string MessageRsName(const Descriptor& desc);
 std::string EnumRsName(const EnumDescriptor& desc);
+// Returns the resolved Rust constant name for `value` within its enum,
+// accounting for prefix stripping, same-number alias deduplication, and
+// distinct-number collision disambiguation.
 std::string EnumValueRsName(const EnumValueDescriptor& value);
 
 // Returns the Rust identifier for a message extension, emitted as a
@@ -154,9 +158,15 @@ class MultiCasePrefixStripper final {
   std::array<std::string, 3> prefixes_;
 };
 
-// More efficient overload if a stripper is already constructed.
-std::string EnumValueRsName(const MultiCasePrefixStripper& stripper,
-                            absl::string_view value_name);
+// Normalizes `value_name` to an unescaped Rust constant base name (before
+// `RsSafeName` escaping and collision disambiguation).
+std::string EnumValueRsBaseName(const MultiCasePrefixStripper& stripper,
+                                absl::string_view value_name);
+
+// Appends `number` to `base_name` (using `_Neg` for negative numbers) to
+// disambiguate colliding enum constant base names with distinct numbers.
+std::string DisambiguateEnumValueRsName(absl::string_view base_name,
+                                        int32_t number);
 
 // Returns the name of the generated DescriptorInfo object for the given file.
 std::string DescriptorInfoName(const FileDescriptor& file);

@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -413,12 +414,25 @@ std::string ExtensionRsName(const FieldDescriptor& extension) {
 }
 
 std::string EnumValueRsName(const EnumValueDescriptor& value) {
-  MultiCasePrefixStripper stripper(value.type()->name());
-  return EnumValueRsName(stripper, value.name());
+  const EnumDescriptor& enum_desc = *value.type();
+  MultiCasePrefixStripper stripper(enum_desc.name());
+  std::string base_name = EnumValueRsBaseName(stripper, value.name());
+  for (int i = 0; i < value.index(); ++i) {
+    const EnumValueDescriptor* earlier = enum_desc.value(i);
+    if (EnumValueRsBaseName(stripper, earlier->name()) == base_name) {
+      // The first value with this base name gets `RsSafeName(base_name)` (which
+      // is the canonical name for same-number aliases reuse), while distinct
+      // numbers get disambiguated with their number suffix.
+      return earlier->number() == value.number()
+                 ? RsSafeName(base_name)
+                 : DisambiguateEnumValueRsName(base_name, value.number());
+    }
+  }
+  return RsSafeName(base_name);
 }
 
-std::string EnumValueRsName(const MultiCasePrefixStripper& stripper,
-                            absl::string_view value_name) {
+std::string EnumValueRsBaseName(const MultiCasePrefixStripper& stripper,
+                                absl::string_view value_name) {
   // Enum values may have a prefix of the name of the enum stripped from the
   // value names in the gencode. This prefix is flexible:
   // - It can be the original enum name, the name as UpperCamel, or
@@ -433,7 +447,16 @@ std::string EnumValueRsName(const MultiCasePrefixStripper& stripper,
   if (absl::ascii_isdigit(name[0])) {
     name = absl::StrCat("_", name);
   }
-  return RsSafeName(name);
+  return name;
+}
+
+std::string DisambiguateEnumValueRsName(absl::string_view base_name,
+                                        int32_t number) {
+  if (number < 0) {
+    // v=-1 becomes v_Neg1.
+    return absl::StrCat(base_name, "_Neg", -static_cast<int64_t>(number));
+  }
+  return absl::StrCat(base_name, "_", number);
 }
 
 std::string OneofViewEnumRsName(const OneofDescriptor& oneof) {

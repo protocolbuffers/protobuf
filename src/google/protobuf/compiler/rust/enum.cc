@@ -115,38 +115,59 @@ std::vector<RustEnumValue> EnumValues(absl::string_view enum_name,
                                       absl::Span<const EnumValueInput> values) {
   MultiCasePrefixStripper stripper(enum_name);
 
-  absl::flat_hash_set<std::string> seen_by_name;
+  // `numbers_seen_by_base_name` tracks the distinct enum numbers emitted for
+  // each normalized base name.
+  absl::flat_hash_map<std::string, absl::flat_hash_set<int32_t>>
+      numbers_seen_by_base_name;
+  // `seen_by_number` maps each enum number to its canonical `RustEnumValue` in
+  // `result`.
   absl::flat_hash_map<int32_t, RustEnumValue*> seen_by_number;
   std::vector<RustEnumValue> result;
   // The below code depends on pointer stability of elements in `result`;
   // this reserve must not be too low.
   result.reserve(values.size());
-  seen_by_name.reserve(values.size());
+  numbers_seen_by_base_name.reserve(values.size());
   seen_by_number.reserve(values.size());
 
-  for (const auto& name_and_number : values) {
-    int32_t number = name_and_number.number;
-    std::string rust_value_name =
-        EnumValueRsName(stripper, name_and_number.name);
+  for (const EnumValueInput& value : values) {
+    int32_t number = value.number;
+    std::string base_name = EnumValueRsBaseName(stripper, value.name);
 
-    if (seen_by_name.contains(rust_value_name)) {
-      // Don't add an alias with the same normalized name.
+    // `numbers_seen` tracks the distinct enum numbers emitted for this base
+    // name so far.
+    absl::flat_hash_set<int32_t>& numbers_seen =
+        numbers_seen_by_base_name[base_name];
+
+    // Look up and insert the enum number into the set for this base name. If
+    // the enum number was already present, it is a same-base-name alias; skip
+    // it.
+    if (!numbers_seen.insert(number).second) {
       continue;
     }
 
-    auto it_and_inserted = seen_by_number.try_emplace(number);
-    if (it_and_inserted.second) {
-      // This is the first value with this number; this name is canonical.
-      result.push_back(
-          RustEnumValue{rust_value_name, name_and_number.desc, number});
-      it_and_inserted.first->second = &result.back();
+    // Determine the Rust constant name for this enum value.
+    std::string value_name;
+    if (numbers_seen.size() == 1) {
+      // First time this base name is seen; use it without disambiguation.
+      value_name = RsSafeName(base_name);
     } else {
-      // This number has been seen before; this name is an alias.
-      it_and_inserted.first->second->aliases.push_back(
-          {rust_value_name, name_and_number.desc});
+      // Multiple values share this base name; append the number to
+      // disambiguate.
+      value_name = DisambiguateEnumValueRsName(base_name, number);
     }
 
-    seen_by_name.insert(std::move(rust_value_name));
+    // Now that the Rust constant name is determined uniquely, do a reverse
+    // lookup by number to see if it is an alias of a different base name.
+    auto [it, inserted] = seen_by_number.try_emplace(number);
+    if (inserted) {
+      // This is the first enum value with this number; this name is canonical.
+      result.push_back(
+          RustEnumValue{std::move(value_name), value.desc, number});
+      it->second = &result.back();
+    } else {
+      // This number was seen; this name is a different-base-name alias.
+      it->second->aliases.emplace_back(std::move(value_name), value.desc);
+    }
   }
   return result;
 }

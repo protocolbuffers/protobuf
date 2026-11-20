@@ -7,6 +7,8 @@
 
 #include "google/protobuf/compiler/rust/naming.h"
 
+#include <cstdint>
+#include <limits>
 #include <string>
 
 #include <gtest/gtest.h>
@@ -14,6 +16,9 @@
 
 using google::protobuf::compiler::rust::CamelToSnakeCase;
 using google::protobuf::compiler::rust::DefInitName;
+using google::protobuf::compiler::rust::DisambiguateEnumValueRsName;
+using google::protobuf::compiler::rust::EnumValueRsBaseName;
+using google::protobuf::compiler::rust::MultiCasePrefixStripper;
 using google::protobuf::compiler::rust::RustModuleName;
 using google::protobuf::compiler::rust::ScreamingSnakeToUpperCamelCase;
 
@@ -99,6 +104,20 @@ TEST(RustProtoNaming, DefInitName) {
   EXPECT_EQ(get_def_init_name("Foo/BarBaz.proto"), "Foo_BarBaz_proto_def_init");
   EXPECT_EQ(get_def_init_name("foo.v1.proto"), "foo_v1_proto_def_init");
   EXPECT_EQ(get_def_init_name("2fa.proto"), "pb_2fa_proto_def_init");
+}
+
+TEST(RustProtoNaming, EnumValueRsBaseNameAndDisambiguation) {
+  MultiCasePrefixStripper stripper("MyEnum");
+  EXPECT_EQ(EnumValueRsBaseName(stripper, "MY_ENUM_FOO_BAR"), "FooBar");
+  EXPECT_EQ(EnumValueRsBaseName(stripper, "MY_ENUM_2FA"), "_2Fa");
+  EXPECT_EQ(EnumValueRsBaseName(stripper, "MY_ENUM_SELF"), "Self");
+
+  EXPECT_EQ(DisambiguateEnumValueRsName("V1A", 2), "V1A_2");
+  EXPECT_EQ(DisambiguateEnumValueRsName("Self", 2), "Self_2");
+  EXPECT_EQ(DisambiguateEnumValueRsName("V1Neg1A", -1), "V1Neg1A_Neg1");
+  EXPECT_EQ(DisambiguateEnumValueRsName("V1Neg1A",
+                                        std::numeric_limits<int32_t>::min()),
+            "V1Neg1A_Neg2147483648");
 }
 
 }  // namespace
