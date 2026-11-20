@@ -529,6 +529,31 @@ void BinaryAndJsonConformanceSuite::RunEdition2026Tests() {
       [](const Json::Value& value) {
         return value["optionalForeignEnum"].asString() == "customBar";
       });
+  RunValidJsonTestWithValidator<TestAllTypesEdition2026>(
+      "RepeatedEnumValueCustomJsonNameOutput", REQUIRED,
+      R"({"repeatedForeignEnum": ["FOREIGN_ENUM_EDITION2026_BAR", "FOREIGN_ENUM_EDITION2026_BAZ", "FOREIGN_ENUM_EDITION2026_EMPTY", "FOREIGN_ENUM_EDITION2026_ESCAPES", "FOREIGN_ENUM_EDITION2026_ALIAS", "FOREIGN_ENUM_EDITION2026_NUMERIC"]})",
+      [](const Json::Value& value) {
+        const Json::Value& arr = value["repeatedForeignEnum"];
+        return arr.isArray() && arr.size() == 6 && arr[0].isString() &&
+               arr[0].asString() == "customBar" && arr[1].isString() &&
+               arr[1].asString() == "customBaz" && arr[2].isString() &&
+               arr[2].asString().empty() && arr[3].isString() &&
+               arr[3].asString() == "e\"sc\tap\ne" && arr[4].isString() &&
+               arr[4].asString() == "customAlias" && arr[5].isString() &&
+               arr[5].asString() == "6";
+      });
+  RunValidJsonTestWithValidator<TestAllTypesEdition2026>(
+      "MapEnumValueCustomJsonNameOutput", REQUIRED,
+      R"({"mapStringForeignEnum": {"a": "FOREIGN_ENUM_EDITION2026_BAR", "b": "FOREIGN_ENUM_EDITION2026_BAZ", "c": "FOREIGN_ENUM_EDITION2026_EMPTY", "d": "FOREIGN_ENUM_EDITION2026_ALIAS", "e": "FOREIGN_ENUM_EDITION2026_NUMERIC"}})",
+      [](const Json::Value& value) {
+        const Json::Value& map = value["mapStringForeignEnum"];
+        return map.isObject() && map.size() == 5 && map["a"].isString() &&
+               map["a"].asString() == "customBar" && map["b"].isString() &&
+               map["b"].asString() == "customBaz" && map["c"].isString() &&
+               map["c"].asString().empty() && map["d"].isString() &&
+               map["d"].asString() == "customAlias" && map["e"].isString() &&
+               map["e"].asString() == "6";
+      });
 
   // An empty (pb.enumvalue.json) = {} submessage leaves the custom JSON string
   // unset and must behave identically to omitting the option.
@@ -596,6 +621,29 @@ void BinaryAndJsonConformanceSuite::RunEdition2026Tests() {
           value: FOREIGN_ENUM_EDITION2026_EMPTY_OPTION_TWO
         }
       )");
+  RunValidJsonTestWithValidator<TestAllTypesEdition2026>(
+      "RepeatedEnumValueEmptyJsonOptionOutput", RECOMMENDED,
+      R"({"repeatedForeignEnum": ["FOREIGN_ENUM_EDITION2026_EMPTY", "FOREIGN_ENUM_EDITION2026_EMPTY_OPTION", "FOREIGN_ENUM_EDITION2026_EMPTY_OPTION_TWO"]})",
+      [](const Json::Value& value) {
+        const Json::Value& arr = value["repeatedForeignEnum"];
+        return arr.isArray() && arr.size() == 3 && arr[0].isString() &&
+               arr[0].asString().empty() && arr[1].isString() &&
+               arr[1].asString() == "FOREIGN_ENUM_EDITION2026_EMPTY_OPTION" &&
+               arr[2].isString() &&
+               arr[2].asString() == "FOREIGN_ENUM_EDITION2026_EMPTY_OPTION_TWO";
+      });
+  RunValidJsonTestWithValidator<TestAllTypesEdition2026>(
+      "MapEnumValueEmptyJsonOptionOutput", RECOMMENDED,
+      R"({"mapStringForeignEnum": {"a": "FOREIGN_ENUM_EDITION2026_EMPTY", "b": "FOREIGN_ENUM_EDITION2026_EMPTY_OPTION", "c": "FOREIGN_ENUM_EDITION2026_EMPTY_OPTION_TWO"}})",
+      [](const Json::Value& value) {
+        const Json::Value& map = value["mapStringForeignEnum"];
+        return map.isObject() && map.size() == 3 && map["a"].isString() &&
+               map["a"].asString().empty() && map["b"].isString() &&
+               map["b"].asString() == "FOREIGN_ENUM_EDITION2026_EMPTY_OPTION" &&
+               map["c"].isString() &&
+               map["c"].asString() ==
+                   "FOREIGN_ENUM_EDITION2026_EMPTY_OPTION_TWO";
+      });
   RunValidJsonTest<TestAllTypesEdition2026>(
       "EnumOnlyEmptyOptionZeroDefaultName", RECOMMENDED,
       R"({"optionalEmptyOptionEnum": "ENUM_ONLY_EMPTY_OPTION_EDITION2026_UNSPECIFIED"})",
