@@ -671,10 +671,15 @@ static char* encode_msgset_item(char* ptr, upb_encstate* e,
   // extension that is encoded as a MessageSet item.
   UPB_ASSERT(upb_MiniTableField_IsScalar(f));
   UPB_ASSERT(upb_MiniTableField_CType(f) == kUpb_CType_Message);
+  if (ext_val.msg_val == NULL) {
+    return ptr;
+  }
+  if (--e->depth < 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
   size_t size;
   ptr = encode_tag(ptr, e, kUpb_MsgSet_Item, kUpb_WireType_EndGroup);
   ptr = encode_message(ptr, e, ext_val.msg_val, upb_MiniTable_SubMessage(f),
                        &size);
+  e->depth++;
   ptr = encode_varint(ptr, e, size);
   ptr = encode_tag(ptr, e, kUpb_MsgSet_Message, kUpb_WireType_Delimited);
   ptr = encode_varint(ptr, e, upb_MiniTableField_Number(f));

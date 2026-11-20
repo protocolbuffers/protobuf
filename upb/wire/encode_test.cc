@@ -55,10 +55,12 @@ static void DoEncodeFieldMaxDepthExceeded(jmp_buf err, upb_encstate& e,
 static void DoEncodeExtensionMaxDepthExceeded(jmp_buf err, upb_encstate& e,
                                               const upb_MiniTableExtension* ext,
                                               upb_MessageValue ext_val,
-                                              char*& buf, size_t& size) {
+                                              char*& buf, size_t& size,
+                                              bool is_message_set = false) {
   if (UPB_SETJMP(err) == 0) {
     UPB_PRIVATE(_upb_Encode_Extension)(&e, upb_MiniTableExtension_ToField(ext),
-                                       ext_val, false, &buf, &size, e.options);
+                                       ext_val, is_message_set, &buf, &size,
+                                       e.options);
     FAIL() << "Should have jumped";
   } else {
     upb_BackAlloc_Abort(&e.alloc);
@@ -583,6 +585,234 @@ TEST(EncodeTest, MixedExtensionAndUnknownOrderSuccess) {
 
   upb_Arena_Free(arena);
 }
+
+TEST(EncodeTest, EncodeMessageSetMaxDepthBoundary) {
+  upb_Arena* arena = upb_Arena_New();
+  const upb_MiniTable* mset_mt = &upb_0wire_0test__TestMessageSet_msg_init;
+  const upb_MiniTableExtension* ext = upb_wire_test_ext_mset_recursive_ext;
+
+  // Depth-2 canonical MessageSet chain: root -> item1 -> item2.
+  upb_wire_test_TestMessageSet* canon_root =
+      upb_wire_test_TestMessageSet_new(arena);
+  upb_wire_test_TestMessageSet* item1 = upb_wire_test_TestMessageSet_new(arena);
+  upb_wire_test_TestMessageSet* item2 = upb_wire_test_TestMessageSet_new(arena);
+  upb_wire_test_set_ext_mset_recursive(canon_root, item1, arena);
+  upb_wire_test_set_ext_mset_recursive(item1, item2, arena);
+
+  char* buf;
+  size_t size;
+  EXPECT_EQ(upb_Encode(UPB_UPCAST(canon_root), mset_mt,
+                       upb_EncodeOptions_MaxDepth(1), arena, &buf, &size),
+            kUpb_EncodeStatus_MaxDepthExceeded);
+  EXPECT_EQ(upb_Encode(UPB_UPCAST(canon_root), mset_mt,
+                       upb_EncodeOptions_MaxDepth(2), arena, &buf, &size),
+            kUpb_EncodeStatus_Ok);
+
+  // Depth-2 non-canonical MessageSet chain: non_canon_root -> nc_item1 ->
+  // nc_item2.
+  upb_wire_test_TestMessageSet* non_canon_root =
+      upb_wire_test_TestMessageSet_new(arena);
+  upb_wire_test_TestMessageSet* nc_item1 =
+      upb_wire_test_TestMessageSet_new(arena);
+  upb_wire_test_TestMessageSet* nc_item2 =
+      upb_wire_test_TestMessageSet_new(arena);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(nc_item1), ext, &nc_item2, arena));
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(non_canon_root), ext, &nc_item1, arena));
+  EXPECT_EQ(upb_Encode(UPB_UPCAST(non_canon_root), mset_mt,
+                       upb_EncodeOptions_MaxDepth(1), arena, &buf, &size),
+            kUpb_EncodeStatus_MaxDepthExceeded);
+  EXPECT_EQ(upb_Encode(UPB_UPCAST(non_canon_root), mset_mt,
+                       upb_EncodeOptions_MaxDepth(2), arena, &buf, &size),
+            kUpb_EncodeStatus_Ok);
+
+  // `_upb_Encode_Extension(..., is_message_set=true)` charges the item itself.
+  upb_encstate e;
+  jmp_buf err;
+  UPB_PRIVATE(_upb_encstate_init)(&e, &err, arena);
+  upb_MessageValue ext_val;
+  ext_val.msg_val = UPB_UPCAST(item1);
+  char* ext_buf = e.alloc.limit;
+  size_t ext_size = 0;
+  e.options = upb_EncodeOptions_MaxDepth(1);
+  DoEncodeExtensionMaxDepthExceeded(err, e, ext, ext_val, ext_buf, ext_size,
+                                    /*is_message_set=*/true);
+  _upb_mapsorter_destroy(&e.sorter);
+
+  upb_encstate e_ok;
+  jmp_buf err_ok;
+  UPB_PRIVATE(_upb_encstate_init)(&e_ok, &err_ok, arena);
+  char* ok_buf = e_ok.alloc.limit;
+  size_t ok_size = 0;
+  if (UPB_SETJMP(err_ok) == 0) {
+    EXPECT_EQ(UPB_PRIVATE(_upb_Encode_Extension)(
+                  &e_ok, upb_MiniTableExtension_ToField(ext), ext_val,
+                  /*is_message_set=*/true, &ok_buf, &ok_size,
+                  upb_EncodeOptions_MaxDepth(2)),
+              kUpb_EncodeStatus_Ok);
+  } else {
+    upb_BackAlloc_Abort(&e_ok.alloc);
+    FAIL() << "Unexpected longjmp";
+  }
+  _upb_mapsorter_destroy(&e_ok.sorter);
+
+  upb_Arena_Free(arena);
+}
+
+TEST(EncodeTest, EncodeMessageSetCycleMaxDepthExceeded) {
+  upb_Arena* arena = upb_Arena_New();
+  const upb_MiniTable* mset_mt = &upb_0wire_0test__TestMessageSet_msg_init;
+  const upb_MiniTableExtension* ext = upb_wire_test_ext_mset_recursive_ext;
+
+  // Canonical self-referential MessageSet cycle.
+  upb_wire_test_TestMessageSet* canon_cycle =
+      upb_wire_test_TestMessageSet_new(arena);
+  upb_wire_test_set_ext_mset_recursive(canon_cycle, canon_cycle, arena);
+  char* buf;
+  size_t size;
+  EXPECT_EQ(upb_Encode(UPB_UPCAST(canon_cycle), mset_mt, /*options=*/0, arena,
+                       &buf, &size),
+            kUpb_EncodeStatus_MaxDepthExceeded);
+
+  // Non-canonical self-referential MessageSet cycle.
+  upb_wire_test_TestMessageSet* non_canon_cycle =
+      upb_wire_test_TestMessageSet_new(arena);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(non_canon_cycle), ext, &non_canon_cycle, arena));
+  EXPECT_EQ(upb_Encode(UPB_UPCAST(non_canon_cycle), mset_mt, /*options=*/0,
+                       arena, &buf, &size),
+            kUpb_EncodeStatus_MaxDepthExceeded);
+
+  upb_Arena_Free(arena);
+}
+
+TEST(EncodeTest, EncodeMessageSetNullItemIsSkipped) {
+  upb_Arena* arena = upb_Arena_New();
+  const upb_MiniTable* mset_mt = &upb_0wire_0test__TestMessageSet_msg_init;
+  const upb_MiniTableExtension* ext = upb_wire_test_ext_mset_recursive_ext;
+
+  // Direct `_upb_Encode_Extension(..., is_message_set=true)` with null
+  // `msg_val` succeeds and emits 0 bytes.
+  upb_encstate e;
+  jmp_buf err;
+  UPB_PRIVATE(_upb_encstate_init)(&e, &err, arena);
+  upb_MessageValue ext_val;
+  ext_val.msg_val = nullptr;
+  char* ext_buf = e.alloc.limit;
+  size_t ext_size = 999;
+  if (UPB_SETJMP(err) == 0) {
+    EXPECT_EQ(UPB_PRIVATE(_upb_Encode_Extension)(
+                  &e, upb_MiniTableExtension_ToField(ext), ext_val,
+                  /*is_message_set=*/true, &ext_buf, &ext_size, /*options=*/0),
+              kUpb_EncodeStatus_Ok);
+    EXPECT_EQ(ext_size, 0u);
+  } else {
+    upb_BackAlloc_Abort(&e.alloc);
+    FAIL() << "Unexpected longjmp";
+  }
+  _upb_mapsorter_destroy(&e.sorter);
+
+  // Canonical MessageSet extension entry with null `msg_val`.
+  upb_wire_test_TestMessageSet* canon_mset =
+      upb_wire_test_TestMessageSet_new(arena);
+  upb_AuxField* canon_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+      UPB_UPCAST(canon_mset), ext, arena);
+  ASSERT_NE(canon_ext, nullptr);
+  upb_Extension_SetMessage(canon_ext, nullptr);
+  char* buf = nullptr;
+  size_t size = 999;
+  EXPECT_EQ(upb_Encode(UPB_UPCAST(canon_mset), mset_mt, /*options=*/0, arena,
+                       &buf, &size),
+            kUpb_EncodeStatus_Ok);
+  EXPECT_EQ(size, 0u);
+  size = 999;
+  EXPECT_EQ(upb_Encode(UPB_UPCAST(canon_mset), mset_mt,
+                       kUpb_EncodeOption_Deterministic, arena, &buf, &size),
+            kUpb_EncodeStatus_Ok);
+  EXPECT_EQ(size, 0u);
+
+  // Non-canonical MessageSet extension entry with null `msg_val`.
+  upb_wire_test_TestMessageSet* non_canon_mset =
+      upb_wire_test_TestMessageSet_new(arena);
+  const upb_Message* null_msg = nullptr;
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(non_canon_mset), ext, &null_msg, arena));
+  size = 999;
+  EXPECT_EQ(upb_Encode(UPB_UPCAST(non_canon_mset), mset_mt, /*options=*/0,
+                       arena, &buf, &size),
+            kUpb_EncodeStatus_Ok);
+  EXPECT_EQ(size, 0u);
+
+  upb_Arena_Free(arena);
+}
+
+TEST(EncodeTest, EncodeMessageSetNullItemAtZeroRemainingDepth) {
+  upb_Arena* arena = upb_Arena_New();
+  const upb_MiniTable* mset_mt = &upb_0wire_0test__TestMessageSet_msg_init;
+  const upb_MiniTableExtension* ext = upb_wire_test_ext_mset_recursive_ext;
+
+  // Baseline depth-1 MessageSet (`root -> empty_child`) encoded at MaxDepth(1).
+  upb_wire_test_TestMessageSet* baseline_root =
+      upb_wire_test_TestMessageSet_new(arena);
+  upb_wire_test_TestMessageSet* empty_child =
+      upb_wire_test_TestMessageSet_new(arena);
+  upb_wire_test_set_ext_mset_recursive(baseline_root, empty_child, arena);
+  char* expected_buf = nullptr;
+  size_t expected_size = 0;
+  ASSERT_EQ(upb_Encode(UPB_UPCAST(baseline_root), mset_mt,
+                       upb_EncodeOptions_MaxDepth(1), arena, &expected_buf,
+                       &expected_size),
+            kUpb_EncodeStatus_Ok);
+  ASSERT_GT(expected_size, 0u);
+
+  // Canonical child carrying a null MessageSet item is reached with 0
+  // remaining depth under MaxDepth(1); skipping NULL before `--e->depth`
+  // avoids MaxDepthExceeded and emits no item bytes.
+  upb_wire_test_TestMessageSet* canon_root =
+      upb_wire_test_TestMessageSet_new(arena);
+  upb_wire_test_TestMessageSet* canon_child =
+      upb_wire_test_TestMessageSet_new(arena);
+  upb_AuxField* canon_null_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+      UPB_UPCAST(canon_child), ext, arena);
+  ASSERT_NE(canon_null_ext, nullptr);
+  upb_Extension_SetMessage(canon_null_ext, nullptr);
+  upb_wire_test_set_ext_mset_recursive(canon_root, canon_child, arena);
+
+  char* buf = nullptr;
+  size_t size = 0;
+  EXPECT_EQ(upb_Encode(UPB_UPCAST(canon_root), mset_mt,
+                       upb_EncodeOptions_MaxDepth(1), arena, &buf, &size),
+            kUpb_EncodeStatus_Ok);
+  ASSERT_EQ(size, expected_size);
+  for (size_t i = 0; i < size; ++i) {
+    EXPECT_EQ(buf[i], expected_buf[i]);
+  }
+
+  // Non-canonical child carrying a null MessageSet item at 0 remaining depth.
+  upb_wire_test_TestMessageSet* non_canon_root =
+      upb_wire_test_TestMessageSet_new(arena);
+  upb_wire_test_TestMessageSet* non_canon_child =
+      upb_wire_test_TestMessageSet_new(arena);
+  const upb_Message* null_msg = nullptr;
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(non_canon_child), ext, &null_msg, arena));
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(non_canon_root), ext, &non_canon_child, arena));
+
+  buf = nullptr;
+  size = 0;
+  EXPECT_EQ(upb_Encode(UPB_UPCAST(non_canon_root), mset_mt,
+                       upb_EncodeOptions_MaxDepth(1), arena, &buf, &size),
+            kUpb_EncodeStatus_Ok);
+  ASSERT_EQ(size, expected_size);
+  for (size_t i = 0; i < size; ++i) {
+    EXPECT_EQ(buf[i], expected_buf[i]);
+  }
+
+  upb_Arena_Free(arena);
+}
+
 }  // namespace
 }  // namespace upb
 

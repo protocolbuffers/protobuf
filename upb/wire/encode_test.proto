@@ -28,3 +28,12 @@ extend TestExtensions {
   optional int32 ext_i32 = 100;
   optional TestRecursive ext_recursive = 101;
 }
+
+message TestMessageSet {
+  option message_set_wire_format = true;
+  extensions 4 to max;
+}
+
+extend TestMessageSet {
+  optional TestMessageSet ext_mset_recursive = 102;
+}
