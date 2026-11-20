@@ -102,6 +102,7 @@ def _test_descriptor_sets_rule_with_srcs_calls_protoc_impl(env, target):
     action.argv().contains_at_least([
         "-I.",
         "--descriptor_set_out=" + action.actual.outputs.to_list()[0].path,
+        "--source_code_info_out=" + action.actual.outputs.to_list()[0].path.replace("-descriptor-set.proto.bin", "-source_code_info-set.proto.bin"),
         "{package}/foo.proto",
     ])
     action.argv().not_contains("--descriptor_set_in")
@@ -237,7 +238,9 @@ def _test_internal_do_not_use_fields_impl(env, targets):
 
     internal = provider.internal_do_not_use
 
-    env.expect.that_bool(internal.source_code_info == None).equals(True)
+    env.expect.that_file(internal.source_code_info).basename().equals(
+        name + "_top-source_code_info-set.proto.bin",
+    )
     env.expect.that_depset_of_files(provider.transitive_descriptor_sets).contains_exactly([
         package + "/" + name + "_top-descriptor-set.proto.bin",
         package + "/" + name + "_regular_dep-descriptor-set.proto.bin",
@@ -326,15 +329,14 @@ def _test_compile_from_descriptors_impl(env, target):
         "{package}/gen_from_desc.proto",
         "--descriptor_set_in",
     ])
-
-    expected_descriptor_sets_pattern = (
-        "*_regular_dep-descriptor-set.proto.bin" +
-        "*_top-descriptor-set.proto.bin" +
-        "*_opt_dep_dep-descriptor-set.proto.bin" +
-        "*_direct_opt-descriptor-set.proto.bin"
-    )
     action.argv().contains_predicate(
-        matching.str_matches(expected_descriptor_sets_pattern),
+        matching.str_matches(
+            "*_regular_dep-descriptor-set.proto.bin" +
+            "*_top-descriptor-set.proto.bin" +
+            "*_opt_dep_dep-descriptor-set.proto.bin" +
+            "*_direct_opt-descriptor-set.proto.bin" +
+            "*_top-source_code_info-set.proto.bin",
+        ),
     )
     action.argv().not_contains_predicate(matching.str_matches("*_dep_opt-descriptor-set.proto.bin*"))
     action.argv().not_contains_predicate(matching.str_matches("*_opt_inner_opt-descriptor-set.proto.bin*"))
@@ -343,6 +345,7 @@ def _test_compile_from_descriptors_impl(env, target):
         matching.file_basename_equals("test_compile_from_descriptors_top-descriptor-set.proto.bin"),
         matching.file_basename_equals("test_compile_from_descriptors_opt_dep_dep-descriptor-set.proto.bin"),
         matching.file_basename_equals("test_compile_from_descriptors_direct_opt-descriptor-set.proto.bin"),
+        matching.file_basename_equals("test_compile_from_descriptors_top-source_code_info-set.proto.bin"),
     ])
     action.inputs().not_contains_predicate(
         matching.file_basename_equals("test_compile_from_descriptors_dep_opt-descriptor-set.proto.bin"),
@@ -390,11 +393,18 @@ def _test_proto_info_forwards_source_code_info(name):
         name = name + "_custom",
         srcs = ["custom.proto"],
     )
-
+    util.helper_target(proto_library, name = name + "_src", srcs = ["src.proto"])
+    util.helper_target(
+        _forward_proto_info,
+        name = name + "_forwarded",
+        srcs = ["forwarded.proto"],
+        dep = name + "_src",
+    )
     analysis_test(
         name = name,
         target = [
             name + "_custom",
+            name + "_forwarded",
         ],
         impl = _test_proto_info_forwards_source_code_info_impl,
     )
@@ -405,6 +415,11 @@ def _test_proto_info_forwards_source_code_info_impl(env, targets):
     custom_sci = custom_target[ProtoInfo].internal_do_not_use.source_code_info
     env.expect.that_file(custom_sci).basename().equals(
         prefix + "_custom-source_code_info-set.proto.bin",
+    )
+
+    forwarded_sci = targets[1][ProtoInfo].internal_do_not_use.source_code_info
+    env.expect.that_file(forwarded_sci).basename().equals(
+        prefix + "_src-source_code_info-set.proto.bin",
     )
 
 def _test_proto_info_rejects_invalid_source_code_info(name):

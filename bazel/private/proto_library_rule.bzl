@@ -93,7 +93,9 @@ def _proto_library_impl(ctx):
     # encoded in the primary FileDescriptorSet. Skip declaring the split artifact
     # when `virtual_srcs` is empty (e.g. alias `proto_library` targets) to save
     # File/Action memory on this heavily used rule.
-    source_code_info = None
+    source_code_info = (
+        ctx.actions.declare_file(ctx.label.name + "-source_code_info-set.proto.bin") if virtual_srcs else None
+    )
 
     proto_info = ProtoInfo(
         srcs = virtual_srcs,
