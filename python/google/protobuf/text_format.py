@@ -69,6 +69,7 @@ _TYPE_NAME = re.compile(r'^[^\d\W]\w*(\.[^\d\W]\w*)*$')
 _QUOTES = frozenset(("'", '"'))
 _ANY_FULL_TYPE_NAME = 'google.protobuf.Any'
 _DEBUG_STRING_SILENT_MARKER = '\t '
+_UNKNOWN_FIELD_RECURSION_LIMIT = 10
 
 _as_utf8_default = True
 
@@ -498,7 +499,9 @@ class _Printer(object):
     if self.print_unknown_fields:
       self._PrintUnknownFields(unknown_fields.UnknownFieldSet(message))
 
-  def _PrintUnknownFields(self, unknown_field_set):
+  def _PrintUnknownFields(
+      self, unknown_field_set, recursion_budget=_UNKNOWN_FIELD_RECURSION_LIMIT
+  ):
     """Print unknown fields."""
     out = self.out
     for field in unknown_field_set:
@@ -511,7 +514,7 @@ class _Printer(object):
           out.write(' {\n')
           self.indent += 2
 
-        self._PrintUnknownFields(field.data)
+        self._PrintUnknownFields(field.data, max(0, recursion_budget - 1))
 
         if self.as_one_line:
           out.write('} ')
@@ -519,24 +522,29 @@ class _Printer(object):
           self.indent -= 2
           out.write(' ' * self.indent + '}\n')
       elif field.wire_type == WIRETYPE_LENGTH_DELIMITED:
-        try:
-          # If this field is parseable as a Message, it is probably
-          # an embedded message.
-          # pylint: disable=protected-access
-          embedded_unknown_message, pos = decoder._DecodeUnknownFieldSet(
-              memoryview(field.data), 0, len(field.data)
-          )
-        except Exception:  # pylint: disable=broad-except
-          pos = 0
+        embedded_unknown_message = None
+        pos = 0
+        if recursion_budget > 0:
+          try:
+            # If this field is parseable as a Message, it is probably
+            # an embedded message.
+            # pylint: disable=protected-access
+            embedded_unknown_message, pos = decoder._DecodeUnknownFieldSet(
+                memoryview(field.data), 0, len(field.data)
+            )
+          except Exception:  # pylint: disable=broad-except
+            pos = 0
 
-        if pos == len(field.data):
+        if embedded_unknown_message is not None and pos == len(field.data):
           if self.as_one_line:
             out.write(' { ')
           else:
             out.write(' {\n')
             self.indent += 2
 
-          self._PrintUnknownFields(embedded_unknown_message)
+          self._PrintUnknownFields(
+              embedded_unknown_message, recursion_budget - 1
+          )
 
           if self.as_one_line:
             out.write('} ')
@@ -544,7 +552,8 @@ class _Printer(object):
             self.indent -= 2
             out.write(' ' * self.indent + '}\n')
         else:
-          # A string or bytes field. self.as_utf8 may not work.
+          # A string or bytes field, or recursion budget exhausted.
+          # self.as_utf8 may not work.
           out.write(': "')
           out.write(text_encoding.CEscape(field.data, False))
           out.write('" ' if self.as_one_line else '"\n')

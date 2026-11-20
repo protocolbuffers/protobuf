@@ -639,6 +639,62 @@ class TextFormatMessageToStringTests(TextFormatBase):
         ),
     )
 
+  def testPrintUnknownFieldsDeeplyNestedLengthDelimited(self, message_module):
+    def MakeNested(depth):
+      data = b'\x08\x01'  # field 1: varint 1
+      for _ in range(depth):
+        length = len(data)
+        varint = bytearray()
+        while length >= 0x80:
+          varint.append((length & 0x7F) | 0x80)
+          length >>= 7
+        varint.append(length)
+        data = b'\x0a' + bytes(varint) + data
+      return data
+
+    limit = text_format._UNKNOWN_FIELD_RECURSION_LIMIT
+
+    msg_at_limit = message_module.TestEmptyMessage()
+    msg_at_limit.ParseFromString(MakeNested(limit))
+    result_at_limit = text_format.MessageToString(
+        msg_at_limit, print_unknown_fields=True
+    )
+    self.assertEqual(result_at_limit.count('{'), limit)
+    self.assertIn('1: 1', result_at_limit)
+    self.assertNotIn('"', result_at_limit)
+
+    for depth in (limit + 1, 1200):
+      empty_message = message_module.TestEmptyMessage()
+      empty_message.ParseFromString(MakeNested(depth))
+      result = text_format.MessageToString(
+          empty_message, print_unknown_fields=True
+      )
+      self.assertEqual(result.count('{'), limit)
+      self.assertNotIn('1: 1', result)
+      self.assertIn('1: "', result)
+
+  def testPrintUnknownGroupsConsumeRecursionBudget(self, message_module):
+    limit = text_format._UNKNOWN_FIELD_RECURSION_LIMIT
+    inner = b'\x0a\x02\x08\x01'  # field 1: length-delimited { field 1: 1 }
+
+    within_limit = message_module.TestEmptyMessage()
+    within_limit.ParseFromString(
+        b'\x0b' * (limit - 1) + inner + b'\x0c' * (limit - 1)
+    )
+    result_within = text_format.MessageToString(
+        within_limit, print_unknown_fields=True
+    )
+    self.assertIn('1: 1', result_within)
+    self.assertNotIn('"', result_within)
+
+    at_limit = message_module.TestEmptyMessage()
+    at_limit.ParseFromString(b'\x0b' * limit + inner + b'\x0c' * limit)
+    result_at_limit = text_format.MessageToString(
+        at_limit, print_unknown_fields=True
+    )
+    self.assertNotIn('1: 1', result_at_limit)
+    self.assertIn(r'1: "\010\001"', result_at_limit)
+
   def testBytestDoubleQuotes(self, message_module):
     msg = message_module.TestAllTypes(optional_bytes=b'"')
     self.assertEqual(str(msg), 'optional_bytes: "\\""\n')
