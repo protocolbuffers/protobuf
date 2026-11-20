@@ -1265,8 +1265,22 @@ bool ValidateTargetConstraints(const Message& options,
     std::unique_ptr<Message> dynamic_message(
         factory.GetPrototype(descriptor)->New());
     std::string serialized;
-    ABSL_CHECK(options.SerializeToString(&serialized));
-    ABSL_CHECK(dynamic_message->ParseFromString(serialized));
+    if (!options.SerializePartialToString(&serialized) ||
+        !dynamic_message->ParsePartialFromString(serialized)) {
+      error_collector.RecordError(
+          file_name, "", nullptr, DescriptorPool::ErrorCollector::OPTION_VALUE,
+          absl::StrCat("Error while parsing ", TargetTypeString(target_type),
+                       " options."));
+      return false;
+    }
+    if (!dynamic_message->IsInitialized()) {
+      error_collector.RecordError(
+          file_name, "", nullptr, DescriptorPool::ErrorCollector::OPTION_VALUE,
+          absl::StrCat("Error while parsing ", TargetTypeString(target_type),
+                       " options: Message missing required fields: ",
+                       dynamic_message->InitializationErrorString()));
+      return false;
+    }
     return ValidateTargetConstraintsRecursive(*dynamic_message, error_collector,
                                               file_name, target_type);
   }

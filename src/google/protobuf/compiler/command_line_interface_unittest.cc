@@ -6224,6 +6224,49 @@ TEST_F(CommandLineInterfaceTest,
       "Option proto2_unittest.B.i cannot be set on an entity of type `file`.");
 }
 
+TEST_F(CommandLineInterfaceTest,
+       TargetTypeEnforcementMissingRequiredFieldInCustomOption) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("foo.proto",
+                 R"schema(
+      syntax = "proto2";
+      package proto2_unittest;
+      import "google/protobuf/descriptor.proto";
+      message MyOptions {
+        required string a = 1;
+        required string b = 2 [targets = TARGET_TYPE_ENUM];
+      }
+      extend google.protobuf.FileOptions {
+        optional MyOptions file_options = 5000;
+      }
+      option (file_options).a = "x";
+      )schema");
+
+  Run("protocol_compiler --plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Error while parsing file options: Message missing required fields: "
+      "(proto2_unittest.file_options).b");
+}
+
+TEST_F(CommandLineInterfaceTest, TargetTypeEnforcementUnparseableCustomOption) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("foo.proto",
+                 R"schema(
+      syntax = "proto3";
+      package proto2_unittest;
+      import "google/protobuf/descriptor.proto";
+      extend google.protobuf.FileOptions {
+        optional string s = 5000;
+      }
+      option (s) = "\xff";
+      )schema");
+
+  Run("protocol_compiler --plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring("Error while parsing file options.");
+}
+
 
 TEST_F(CommandLineInterfaceTest, ExtensionDeclarationEnforcement) {
   CreateTempFile("foo.proto", R"schema(
