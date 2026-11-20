@@ -202,6 +202,48 @@ public class ParserTest {
   }
 
   @Test
+  public void testParseDelimitedFrom_negativeSize() {
+    // 5-byte varint encoding Integer.MIN_VALUE (-2147483648), followed by a valid tag/value.
+    byte[] negativeDelimited =
+        new byte[] {(byte) 0x80, (byte) 0x80, (byte) 0x80, (byte) 0x80, 0x08, 0x08, 0x01};
+    String expectedMsg = InvalidProtocolBufferException.negativeSize().getMessage();
+
+    InvalidProtocolBufferException e1 =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> TestAllTypes.parseDelimitedFrom(new ByteArrayInputStream(negativeDelimited)));
+    assertThat(e1).hasMessageThat().isEqualTo(expectedMsg);
+
+    InvalidProtocolBufferException e2 =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () ->
+                TestAllTypes.parser()
+                    .parsePartialDelimitedFrom(
+                        new ByteArrayInputStream(negativeDelimited),
+                        ExtensionRegistry.getGeneratedRegistry()));
+    assertThat(e2).hasMessageThat().isEqualTo(expectedMsg);
+
+    InvalidProtocolBufferException e3 =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () ->
+                TestAllTypes.newBuilder()
+                    .mergeDelimitedFrom(
+                        new ByteArrayInputStream(negativeDelimited),
+                        ExtensionRegistry.getGeneratedRegistry()));
+    assertThat(e3).hasMessageThat().isEqualTo(expectedMsg);
+
+    InvalidProtocolBufferException e4 =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () ->
+                UnknownFieldSet.newBuilder()
+                    .mergeDelimitedFrom(new ByteArrayInputStream(negativeDelimited)));
+    assertThat(e4).hasMessageThat().isEqualTo(expectedMsg);
+  }
+
+  @Test
   public void testParseUnknownFields() throws Exception {
     // All fields will be treated as unknown fields in emptyMessage.
     TestEmptyMessage emptyMessage = TestEmptyMessage.parseFrom(TestUtil.getAllSet().toByteString());
