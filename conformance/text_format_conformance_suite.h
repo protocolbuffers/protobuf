@@ -8,8 +8,10 @@
 #ifndef GOOGLE_PROTOBUF_CONFORMANCE_TEXT_FORMAT_CONFORMANCE_SUITE_H__
 #define GOOGLE_PROTOBUF_CONFORMANCE_TEXT_FORMAT_CONFORMANCE_SUITE_H__
 
+#include <functional>
 #include <string>
 
+#include "absl/strings/string_view.h"
 #include "conformance/conformance_test.h"
 #include "google/protobuf/message.h"
 
@@ -22,7 +24,22 @@ class TextFormatConformanceTestSuite : public ConformanceTestSuite {
   TextFormatConformanceTestSuite();
 
  private:
+  using Validator = std::function<bool(absl::string_view)>;
+
   void RunSuiteImpl() override;
+  void RunEdition2026Tests();
+
+  template <typename MessageType>
+  void ExpectParseFailure(const std::string& test_name, ConformanceLevel level,
+                          const std::string& input);
+  void ValidateTextFormatResponse(const ConformanceRequestSetting& setting,
+                                  const std::string& expected_text,
+                                  const Validator& validator);
+  template <typename MessageType>
+  void RunValidTextFormatTestWithValidator(const std::string& test_name,
+                                           ConformanceLevel level,
+                                           const std::string& input_text,
+                                           const Validator& validator);
 
   bool ParseTextFormatResponse(
       const ::conformance::ConformanceResponse& response,

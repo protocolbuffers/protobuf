@@ -8,6 +8,7 @@
 #include "conformance/text_format_conformance_suite.h"
 
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -15,11 +16,14 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/log/absl_log.h"
 #include "absl/log/die_if_null.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/conformance_test.h"
 #include "conformance/test_protos/test_messages_edition2023.pb.h"
+#include "conformance/test_protos/test_messages_edition2026.pb.h"
 #include "conformance/test_protos/test_messages_edition_unstable.pb.h"
 #include "editions/golden/test_messages_proto2_editions.pb.h"
 #include "editions/golden/test_messages_proto3_editions.pb.h"
@@ -32,6 +36,7 @@ using conformance::ConformanceResponse;
 using conformance::TestStatus;
 using conformance::WireFormat;
 using protobuf_test_messages::editions::TestAllTypesEdition2023;
+using protobuf_test_messages::editions::TestAllTypesEdition2026;
 using protobuf_test_messages::proto2::TestAllTypesProto2;
 using protobuf_test_messages::proto2::UnknownToTestAllTypes;
 using protobuf_test_messages::proto3::TestAllTypesProto3;
@@ -135,6 +140,9 @@ void TextFormatConformanceTestSuite::RunSuiteImpl() {
     TextFormatConformanceTestSuiteImpl<TestAllTypesProto3Editions>(this);
     TextFormatConformanceTestSuiteImpl<TestAllTypesEdition2023>(this);
   }
+  if (!performance_ && maximum_edition_ >= Edition::EDITION_2026) {
+    RunEdition2026Tests();
+  }
 }
 
 template <typename MessageType>
@@ -170,7 +178,7 @@ TextFormatConformanceTestSuiteImpl<MessageType>::
 }
 
 template <typename MessageType>
-void TextFormatConformanceTestSuiteImpl<MessageType>::ExpectParseFailure(
+void TextFormatConformanceTestSuite::ExpectParseFailure(
     const std::string& test_name, ConformanceLevel level,
     const std::string& input) {
   MessageType prototype;
@@ -185,24 +193,77 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::ExpectParseFailure(
       setting.ConformanceLevelToString(level), ".",
       setting.GetSyntaxIdentifier(), ".TextFormatInput.", test_name);
 
-  if (!suite_.RunTest(effective_test_name, request, &response)) {
+  if (!RunTest(effective_test_name, request, &response)) {
     return;
   }
 
   TestStatus test;
   test.set_name(effective_test_name);
   if (response.result_case() == ConformanceResponse::kParseError) {
-    suite_.ReportSuccess(test);
+    ReportSuccess(test);
   } else if (response.result_case() == ConformanceResponse::kSkipped) {
-    suite_.ReportSkip(test, request, response);
+    ReportSkip(test, request, response);
   } else if (response.result_case() == ConformanceResponse::kRuntimeError) {
     test.set_failure_message(
         "Should have failed to parse, but raised an error instead.");
-    suite_.ReportFailure(test, level, request, response);
+    ReportFailure(test, level, request, response);
   } else {
     test.set_failure_message("Should have failed to parse, but didn't.");
-    suite_.ReportFailure(test, level, request, response);
+    ReportFailure(test, level, request, response);
   }
+}
+
+void TextFormatConformanceTestSuite::ValidateTextFormatResponse(
+    const ConformanceRequestSetting& setting, const std::string& expected_text,
+    const Validator& validator) {
+  const ConformanceRequest& request = setting.GetRequest();
+  ConformanceResponse response;
+  if (!RunTest(setting.GetTestName(), request, &response)) {
+    return;
+  }
+
+  std::unique_ptr<Message> reference_message = setting.NewTestMessage();
+  if (!TextFormat::ParseFromString(expected_text, reference_message.get())) {
+    ABSL_LOG(FATAL) << "Failed to parse text data for test case: "
+                    << setting.GetTestName();
+  }
+  if (!VerifyResponse(setting, reference_message->SerializeAsString(), response,
+                      /*need_report_success=*/false,
+                      /*require_same_wire_format=*/false)) {
+    return;
+  }
+
+  TestStatus test;
+  test.set_name(setting.GetTestName());
+  if (!validator(response.text_payload())) {
+    test.set_failure_message("TEXT_FORMAT payload validation failed.");
+    ReportFailure(test, setting.GetLevel(), request, response);
+    return;
+  }
+  ReportSuccess(test);
+}
+
+template <typename MessageType>
+void TextFormatConformanceTestSuite::RunValidTextFormatTestWithValidator(
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_text, const Validator& validator) {
+  MessageType prototype;
+  ConformanceRequestSetting setting1(
+      level, ::conformance::TEXT_FORMAT, ::conformance::PROTOBUF,
+      ::conformance::TEXT_FORMAT_TEST, prototype, test_name, input_text);
+  RunValidInputTest(setting1, input_text);
+
+  ConformanceRequestSetting setting2(
+      level, ::conformance::TEXT_FORMAT, ::conformance::TEXT_FORMAT,
+      ::conformance::TEXT_FORMAT_TEST, prototype, test_name, input_text);
+  ValidateTextFormatResponse(setting2, input_text, validator);
+}
+
+template <typename MessageType>
+void TextFormatConformanceTestSuiteImpl<MessageType>::ExpectParseFailure(
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input) {
+  suite_.ExpectParseFailure<MessageType>(test_name, level, input);
 }
 
 template <typename MessageType>
@@ -986,6 +1047,73 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::RunClosedEnumTests() {
                      R"(
         optional_nested_enum: 42
         )");
+}
+
+void TextFormatConformanceTestSuite::RunEdition2026Tests() {
+  // Unlike JSON (which emits custom (pb.enumvalue.json) names and accepts both
+  // custom JSON names and declared enum value names when parsing), TextFormat
+  // ignores (pb.enumvalue.json): it must accept and emit only declared enum
+  // value names and reject custom JSON names, catching implementations that
+  // share enum name mappings between JSON and TextFormat.
+  RunValidTextFormatTestWithValidator<TestAllTypesEdition2026>(
+      "EnumValueWithCustomJsonNameUsesDeclaredName", REQUIRED,
+      "optional_foreign_enum: FOREIGN_ENUM_EDITION2026_BAR",
+      [](absl::string_view output) {
+        return absl::StrContains(output, "FOREIGN_ENUM_EDITION2026_BAR");
+      });
+  RunValidTextFormatTestWithValidator<TestAllTypesEdition2026>(
+      "EnumValueWithEmptyCustomJsonNameUsesDeclaredName", REQUIRED,
+      "optional_foreign_enum: FOREIGN_ENUM_EDITION2026_EMPTY",
+      [](absl::string_view output) {
+        return absl::StrContains(output, "FOREIGN_ENUM_EDITION2026_EMPTY");
+      });
+  RunValidTextFormatTestWithValidator<TestAllTypesEdition2026>(
+      "EnumValueAliasWithCustomJsonNameUsesDeclaredName", REQUIRED,
+      "optional_foreign_enum: FOREIGN_ENUM_EDITION2026_ALIAS_TOO",
+      [](absl::string_view output) {
+        return absl::StrContains(output, "FOREIGN_ENUM_EDITION2026_ALIAS") &&
+               !absl::StrContains(output, "FOREIGN_ENUM_EDITION2026_ALIAS_TOO");
+      });
+  RunValidTextFormatTestWithValidator<TestAllTypesEdition2026>(
+      "RepeatedAndMapEnumValueWithCustomJsonNameUsesDeclaredName", REQUIRED,
+      R"(
+        repeated_foreign_enum: [
+          FOREIGN_ENUM_EDITION2026_BAR,
+          FOREIGN_ENUM_EDITION2026_BAZ
+        ]
+        map_string_foreign_enum {
+          key: "a"
+          value: FOREIGN_ENUM_EDITION2026_NUMERIC
+        }
+      )",
+      [](absl::string_view output) {
+        return absl::StrContains(output, "FOREIGN_ENUM_EDITION2026_BAR") &&
+               absl::StrContains(output, "FOREIGN_ENUM_EDITION2026_BAZ") &&
+               absl::StrContains(output, "FOREIGN_ENUM_EDITION2026_NUMERIC");
+      });
+  RunValidTextFormatTestWithValidator<TestAllTypesEdition2026>(
+      "EnumValueEmptyJsonOptionUsesDeclaredName", REQUIRED,
+      "optional_foreign_enum: FOREIGN_ENUM_EDITION2026_EMPTY_OPTION",
+      [](absl::string_view output) {
+        return absl::StrContains(output,
+                                 "FOREIGN_ENUM_EDITION2026_EMPTY_OPTION");
+      });
+
+  ExpectParseFailure<TestAllTypesEdition2026>(
+      "EnumValueCustomJsonNameRejected", REQUIRED,
+      "optional_foreign_enum: customBar");
+  ExpectParseFailure<TestAllTypesEdition2026>(
+      "EnumValueCustomJsonNameStringRejected", REQUIRED,
+      R"(optional_foreign_enum: "customBar")");
+  ExpectParseFailure<TestAllTypesEdition2026>(
+      "EnumValueAliasCustomJsonNameRejected", REQUIRED,
+      "optional_foreign_enum: customAlias");
+  ExpectParseFailure<TestAllTypesEdition2026>(
+      "RepeatedEnumValueCustomJsonNameRejected", REQUIRED,
+      "repeated_foreign_enum: [customBar]");
+  ExpectParseFailure<TestAllTypesEdition2026>(
+      "MapEnumValueCustomJsonNameRejected", REQUIRED,
+      R"(map_string_foreign_enum { key: "a" value: customBar })");
 }
 
 }  // namespace conformance

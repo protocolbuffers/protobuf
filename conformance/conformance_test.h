@@ -211,7 +211,10 @@ class ConformanceTestSuite {
                              const ConformanceRequestSetting& setting,
                              Message* test_message) = 0;
 
-  void VerifyResponse(const ConformanceRequestSetting& setting,
+  // Verifies that the response payload parses and matches
+  // `equivalent_wire_format` (reporting any failure or skip). Returns true if
+  // the response matched `equivalent_wire_format`.
+  bool VerifyResponse(const ConformanceRequestSetting& setting,
                       const std::string& equivalent_wire_format,
                       const ::conformance::ConformanceResponse& response,
                       bool need_report_success, bool require_same_wire_format);
