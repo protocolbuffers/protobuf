@@ -233,7 +233,8 @@ class UntypedMessage final {
                                const ResolverPool::Field& field);
 
   template <typename T>
-  absl::Status InsertField(const ResolverPool::Field& field, T&& value);
+  PROTOBUF_NOINLINE absl::Status InsertField(const ResolverPool::Field& field,
+                                             T&& value);
 
   const ResolverPool::Message* desc_;
   // We use std::unique_ptr here to work around a compiler error with older

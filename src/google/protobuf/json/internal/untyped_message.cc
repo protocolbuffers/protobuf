@@ -543,8 +543,8 @@ absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
 }
 
 template <typename T>
-absl::Status UntypedMessage::InsertField(const ResolverPool::Field& field,
-                                         T&& value) {
+PROTOBUF_NOINLINE absl::Status UntypedMessage::InsertField(
+    const ResolverPool::Field& field, T&& value) {
   int32_t number = field.proto().number();
   auto emplace_result = fields_.try_emplace(number);
   if (emplace_result.second) {
