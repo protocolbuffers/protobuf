@@ -1006,5 +1006,184 @@ TEST(ReflectionTest, TooManyExtensionsFailGracefully) {
   }
 }
 
+TEST(ReflectionTest, ValidateWellKnownTypes) {
+  absl::StatusOr<upb::DefPool> valid_pool = LoadDescriptorProto(R"(
+    syntax: "proto3" name: "wkt.proto" package: "google.protobuf"
+    enum_type { name: "NullValue" value { name: "NULL_VALUE" number: 0 } }
+    message_type { name: "Any"
+      field { name: "type_url" number: 1 label: LABEL_OPTIONAL type: TYPE_STRING }
+      field { name: "value" number: 2 label: LABEL_OPTIONAL type: TYPE_BYTES } }
+    message_type { name: "FieldMask"
+      field { name: "paths" number: 1 label: LABEL_REPEATED type: TYPE_STRING } }
+    message_type { name: "Duration"
+      field { name: "seconds" number: 1 label: LABEL_OPTIONAL type: TYPE_INT64 }
+      field { name: "nanos" number: 2 label: LABEL_OPTIONAL type: TYPE_INT32 } }
+    message_type { name: "Timestamp"
+      field { name: "seconds" number: 1 label: LABEL_OPTIONAL type: TYPE_INT64 }
+      field { name: "nanos" number: 2 label: LABEL_OPTIONAL type: TYPE_INT32 } }
+    message_type { name: "DoubleValue"
+      field { name: "value" number: 1 label: LABEL_OPTIONAL type: TYPE_DOUBLE } }
+    message_type { name: "FloatValue"
+      field { name: "value" number: 1 label: LABEL_OPTIONAL type: TYPE_FLOAT } }
+    message_type { name: "Int64Value"
+      field { name: "value" number: 1 label: LABEL_OPTIONAL type: TYPE_INT64 } }
+    message_type { name: "UInt64Value"
+      field { name: "value" number: 1 label: LABEL_OPTIONAL type: TYPE_UINT64 } }
+    message_type { name: "Int32Value"
+      oneof_decl { name: "_value" }
+      field { name: "value" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32
+              oneof_index: 0 proto3_optional: true } }
+    message_type { name: "UInt32Value"
+      field { name: "value" number: 1 label: LABEL_OPTIONAL type: TYPE_UINT32 } }
+    message_type { name: "BoolValue"
+      field { name: "value" number: 1 label: LABEL_OPTIONAL type: TYPE_BOOL } }
+    message_type { name: "StringValue"
+      field { name: "value" number: 1 label: LABEL_OPTIONAL type: TYPE_STRING } }
+    message_type { name: "BytesValue"
+      field { name: "value" number: 1 label: LABEL_OPTIONAL type: TYPE_BYTES } }
+    message_type { name: "Struct"
+      field { name: "fields" number: 1 label: LABEL_REPEATED type: TYPE_MESSAGE
+              type_name: ".google.protobuf.Struct.FieldsEntry" }
+      nested_type { name: "FieldsEntry" options { map_entry: true }
+        field { name: "key" number: 1 label: LABEL_OPTIONAL type: TYPE_STRING }
+        field { name: "value" number: 2 label: LABEL_OPTIONAL type: TYPE_MESSAGE
+                type_name: ".google.protobuf.Value" } } }
+    message_type { name: "Value" oneof_decl { name: "kind" }
+      field { name: "null_value" number: 1 label: LABEL_OPTIONAL type: TYPE_ENUM
+              type_name: ".google.protobuf.NullValue" oneof_index: 0 }
+      field { name: "number_value" number: 2 label: LABEL_OPTIONAL
+              type: TYPE_DOUBLE oneof_index: 0 }
+      field { name: "string_value" number: 3 label: LABEL_OPTIONAL
+              type: TYPE_STRING oneof_index: 0 }
+      field { name: "bool_value" number: 4 label: LABEL_OPTIONAL type: TYPE_BOOL
+              oneof_index: 0 }
+      field { name: "struct_value" number: 5 label: LABEL_OPTIONAL
+              type: TYPE_MESSAGE type_name: ".google.protobuf.Struct"
+              oneof_index: 0 }
+      field { name: "list_value" number: 6 label: LABEL_OPTIONAL
+              type: TYPE_MESSAGE type_name: ".google.protobuf.ListValue"
+              oneof_index: 0 } }
+    message_type { name: "ListValue"
+      field { name: "values" number: 1 label: LABEL_REPEATED type: TYPE_MESSAGE
+              type_name: ".google.protobuf.Value" } }
+  )");
+  ASSERT_TRUE(valid_pool.ok()) << valid_pool.status();
+
+  const struct {
+    const char* name;
+    upb_WellKnown expected;
+  } kExpected[] = {
+      {"google.protobuf.Any", kUpb_WellKnown_Any},
+      {"google.protobuf.FieldMask", kUpb_WellKnown_FieldMask},
+      {"google.protobuf.Duration", kUpb_WellKnown_Duration},
+      {"google.protobuf.Timestamp", kUpb_WellKnown_Timestamp},
+      {"google.protobuf.DoubleValue", kUpb_WellKnown_DoubleValue},
+      {"google.protobuf.FloatValue", kUpb_WellKnown_FloatValue},
+      {"google.protobuf.Int64Value", kUpb_WellKnown_Int64Value},
+      {"google.protobuf.UInt64Value", kUpb_WellKnown_UInt64Value},
+      {"google.protobuf.Int32Value", kUpb_WellKnown_Int32Value},
+      {"google.protobuf.UInt32Value", kUpb_WellKnown_UInt32Value},
+      {"google.protobuf.BoolValue", kUpb_WellKnown_BoolValue},
+      {"google.protobuf.StringValue", kUpb_WellKnown_StringValue},
+      {"google.protobuf.BytesValue", kUpb_WellKnown_BytesValue},
+      {"google.protobuf.Value", kUpb_WellKnown_Value},
+      {"google.protobuf.ListValue", kUpb_WellKnown_ListValue},
+      {"google.protobuf.Struct", kUpb_WellKnown_Struct},
+  };
+  for (const auto& tc : kExpected) {
+    SCOPED_TRACE(tc.name);
+    EXPECT_EQ(valid_pool->FindMessageByName(tc.name).wellknowntype(),
+              tc.expected);
+  }
+
+  const struct {
+    const char* name;
+    std::string_view file_body;
+  } kNonCanonicalCases[] = {
+      {"google.protobuf.Any",
+       "package: 'google.protobuf' message_type { name: 'Any' "
+       "field { name: 'type_url' number: 1 label: LABEL_OPTIONAL "
+       "type: TYPE_STRING } }"},
+      {"google.protobuf.Any",
+       "package: 'google.protobuf' message_type { name: 'Any' "
+       "options { map_entry: true } "
+       "field { name: 'key' number: 1 label: LABEL_OPTIONAL "
+       "type: TYPE_STRING } "
+       "field { name: 'value' number: 2 label: LABEL_OPTIONAL "
+       "type: TYPE_BYTES } }"},
+      {"google.protobuf.FieldMask",
+       "package: 'google.protobuf' message_type { name: 'FieldMask' "
+       "field { name: 'paths' number: 1 label: LABEL_OPTIONAL "
+       "type: TYPE_STRING } }"},
+      {"google.protobuf.Timestamp",
+       "package: 'google.protobuf' message_type { name: 'Timestamp' "
+       "field { name: 'seconds' number: 1 label: LABEL_OPTIONAL "
+       "type: TYPE_SINT64 } "
+       "field { name: 'nanos' number: 2 label: LABEL_OPTIONAL "
+       "type: TYPE_INT32 } }"},
+      {"google.protobuf.Duration",
+       "package: 'google.protobuf' message_type { name: 'Duration' "
+       "oneof_decl { name: 'o' } "
+       "field { name: 'seconds' number: 1 label: LABEL_OPTIONAL "
+       "type: TYPE_INT64 oneof_index: 0 } "
+       "field { name: 'nanos' number: 2 label: LABEL_OPTIONAL "
+       "type: TYPE_INT32 } }"},
+      {"google.protobuf.Int32Value",
+       "package: 'google.protobuf' message_type { name: 'Int32Value' "
+       "field { name: 'value' number: 1 label: LABEL_REQUIRED "
+       "type: TYPE_INT32 } }"},
+      {"google.protobuf.Struct",
+       "package: 'google.protobuf' message_type { name: 'Value' } "
+       "message_type { name: 'Struct' "
+       "field { name: 'wrong_name' number: 1 label: LABEL_REPEATED "
+       "type: TYPE_MESSAGE type_name: '.google.protobuf.Struct.E' } "
+       "nested_type { name: 'E' options { map_entry: true } "
+       "field { name: 'key' number: 1 label: LABEL_OPTIONAL "
+       "type: TYPE_STRING } "
+       "field { name: 'value' number: 2 label: LABEL_OPTIONAL "
+       "type: TYPE_MESSAGE type_name: '.google.protobuf.Value' } } }"},
+      {"google.protobuf.Struct",
+       "package: 'google.protobuf' message_type { name: 'Value' } "
+       "message_type { name: 'Struct' "
+       "field { name: 'fields' number: 1 label: LABEL_OPTIONAL "
+       "type: TYPE_MESSAGE type_name: '.google.protobuf.Value' } }"},
+      {"google.protobuf.ListValue",
+       "package: 'google.protobuf' message_type { name: 'Sub' } "
+       "message_type { name: 'ListValue' "
+       "field { name: 'values' number: 1 label: LABEL_REPEATED "
+       "type: TYPE_MESSAGE type_name: '.google.protobuf.Sub' } }"},
+      {"google.protobuf.Value",
+       "package: 'google.protobuf' "
+       "enum_type { name: 'NullValue' value { name: 'N' number: 0 } } "
+       "message_type { name: 'ListValue' } "
+       "message_type { name: 'Value' oneof_decl { name: 'kind' } "
+       "field { name: 'a' number: 1 label: LABEL_OPTIONAL type: TYPE_ENUM "
+       "type_name: '.google.protobuf.NullValue' oneof_index: 0 } "
+       "field { name: 'b' number: 2 label: LABEL_OPTIONAL type: TYPE_DOUBLE "
+       "oneof_index: 0 } "
+       "field { name: 'c' number: 3 label: LABEL_OPTIONAL type: TYPE_STRING "
+       "oneof_index: 0 } "
+       "field { name: 'd' number: 4 label: LABEL_OPTIONAL type: TYPE_BOOL "
+       "oneof_index: 0 } "
+       "field { name: 'e' number: 5 label: LABEL_OPTIONAL type: TYPE_MESSAGE "
+       "type_name: '.google.protobuf.Value' oneof_index: 0 } "
+       "field { name: 'f' number: 6 label: LABEL_OPTIONAL type: TYPE_MESSAGE "
+       "type_name: '.google.protobuf.ListValue' oneof_index: 0 } }"},
+      {"google.protobuf.BoolValue",
+       "package: 'google' message_type { name: 'protobuf' "
+       "nested_type { name: 'BoolValue' "
+       "field { name: 'value' number: 1 label: LABEL_OPTIONAL "
+       "type: TYPE_BOOL } } }"},
+  };
+  for (const auto& tc : kNonCanonicalCases) {
+    SCOPED_TRACE(tc.file_body);
+    absl::StatusOr<upb::DefPool> pool = LoadDescriptorProto(
+        absl::StrFormat("syntax: 'proto2' name: 'f.proto' %s", tc.file_body));
+    ASSERT_TRUE(pool.ok()) << pool.status();
+    EXPECT_EQ(pool->FindMessageByName(tc.name).wellknowntype(),
+              kUpb_WellKnown_Unspecified);
+  }
+}
+
 }  // namespace
 }  // namespace upb_test

@@ -14,16 +14,20 @@
 
 #include "google/protobuf/timestamp.upb.h"
 #include "google/protobuf/timestamp.upbdefs.h"
+#include "google/protobuf/descriptor.upb.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/json/json_enumval_custom_string.upb.h"
 #include "google/protobuf/json/json_enumval_custom_string.upbdefs.h"
 #include "upb/base/status.hpp"
+#include "upb/base/string_view.h"
 #include "upb/base/upcast.h"
+#include "upb/json/encode.h"
 #include "upb/json/test.upb.h"
 #include "upb/json/test.upbdefs.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/message.h"
+#include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
 
@@ -482,3 +486,76 @@ TEST(JsonTest, RejectsTimestampOutsideNormalizedBounds) {
         std::string::npos);
   }
 }
+
+namespace {
+
+void AddField(google_protobuf_DescriptorProto* msg, upb_Arena* arena, const char* name,
+              int32_t label, int32_t type, const char* type_name = nullptr) {
+  google_protobuf_FieldDescriptorProto* f = google_protobuf_DescriptorProto_add_field(msg, arena);
+  google_protobuf_FieldDescriptorProto_set_name(f, upb_StringView_FromString(name));
+  google_protobuf_FieldDescriptorProto_set_number(f, 1);
+  google_protobuf_FieldDescriptorProto_set_label(f, label);
+  google_protobuf_FieldDescriptorProto_set_type(f, type);
+  if (type_name != nullptr) {
+    google_protobuf_FieldDescriptorProto_set_type_name(
+        f, upb_StringView_FromString(type_name));
+  }
+}
+
+TEST(JsonTest, NonCanonicalWellKnownTypesRoundTripAsRegularMessages) {
+  upb::Arena arena;
+  upb::DefPool pool;
+  upb::Status status;
+
+  google_protobuf_FileDescriptorProto* file =
+      google_protobuf_FileDescriptorProto_new(arena.ptr());
+  google_protobuf_FileDescriptorProto_set_name(file, upb_StringView_FromString("f"));
+  google_protobuf_FileDescriptorProto_set_package(
+      file, upb_StringView_FromString("google.protobuf"));
+  google_protobuf_FileDescriptorProto_set_syntax(file,
+                                        upb_StringView_FromString("proto3"));
+
+  // Non-canonical Value (singular string field 1 instead of 6-arm kind oneof)
+  // paired with a canonical ListValue (repeated Value values = 1).
+  google_protobuf_DescriptorProto* val_m =
+      google_protobuf_FileDescriptorProto_add_message_type(file, arena.ptr());
+  google_protobuf_DescriptorProto_set_name(val_m, upb_StringView_FromString("Value"));
+  AddField(val_m, arena.ptr(), "x", google_protobuf_FieldDescriptorProto_LABEL_OPTIONAL,
+           google_protobuf_FieldDescriptorProto_TYPE_STRING);
+
+  google_protobuf_DescriptorProto* list_m =
+      google_protobuf_FileDescriptorProto_add_message_type(file, arena.ptr());
+  google_protobuf_DescriptorProto_set_name(list_m,
+                                  upb_StringView_FromString("ListValue"));
+  AddField(list_m, arena.ptr(), "values",
+           google_protobuf_FieldDescriptorProto_LABEL_REPEATED,
+           google_protobuf_FieldDescriptorProto_TYPE_MESSAGE, ".google.protobuf.Value");
+
+  ASSERT_NE(upb_DefPool_AddFile(pool.ptr(), file, status.ptr()), nullptr)
+      << status.error_message();
+
+  const upb_MessageDef* v_def =
+      upb_DefPool_FindMessageByName(pool.ptr(), "google.protobuf.Value");
+  const upb_MessageDef* l_def =
+      upb_DefPool_FindMessageByName(pool.ptr(), "google.protobuf.ListValue");
+  EXPECT_EQ(upb_MessageDef_WellKnownType(v_def), kUpb_WellKnown_Unspecified);
+  EXPECT_EQ(upb_MessageDef_WellKnownType(l_def), kUpb_WellKnown_ListValue);
+
+  const upb_MiniTable* mt = upb_MessageDef_MiniTable(l_def);
+  EXPECT_FALSE(upb_JsonDecode("[1]", 3, upb_Message_New(mt, arena.ptr()), l_def,
+                              pool.ptr(), 0, arena.ptr(), status.ptr()));
+  status.Clear();
+  upb_Message* msg = upb_Message_New(mt, arena.ptr());
+  static constexpr char kJson[] = R"([{"x":"ok"}])";
+  ASSERT_TRUE(upb_JsonDecode(kJson, strlen(kJson), msg, l_def, pool.ptr(), 0,
+                             arena.ptr(), status.ptr()))
+      << status.error_message();
+  char buf[64];
+  ASSERT_EQ(
+      upb_JsonEncode(msg, l_def, pool.ptr(), 0, buf, sizeof(buf), status.ptr()),
+      strlen(kJson))
+      << status.error_message();
+  EXPECT_STREQ(buf, kJson);
+}
+
+}  // namespace

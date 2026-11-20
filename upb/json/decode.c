@@ -64,8 +64,6 @@ enum { JD_OBJECT, JD_ARRAY, JD_STRING, JD_NUMBER, JD_TRUE, JD_FALSE, JD_NULL };
 static void jsondec_wellknown(jsondec* d, upb_Message* msg,
                               const upb_MessageDef* m);
 static upb_JsonMessageValue jsondec_value(jsondec* d, const upb_FieldDef* f);
-static void jsondec_wellknownvalue(jsondec* d, upb_Message* msg,
-                                   const upb_MessageDef* m);
 static void jsondec_object(jsondec* d, upb_Message* msg,
                            const upb_MessageDef* m);
 
@@ -1243,7 +1241,7 @@ static void jsondec_listvalue(jsondec* d, upb_Message* msg,
     upb_MessageValue value;
     value.msg_val = value_msg;
     jsondec_checkoom(d, upb_Array_Append(values, value, d->arena));
-    jsondec_wellknownvalue(d, value_msg, value_m);
+    jsondec_tomsg(d, value_msg, value_m);
   }
   jsondec_arrend(d);
 }
@@ -1268,7 +1266,7 @@ static void jsondec_struct(jsondec* d, upb_Message* msg,
     value.msg_val = value_msg;
     jsondec_checkoom(d, upb_Map_Set(fields, key, value, d->arena));
     jsondec_entrysep(d);
-    jsondec_wellknownvalue(d, value_msg, value_m);
+    jsondec_tomsg(d, value_msg, value_m);
   }
   jsondec_objend(d);
 }
@@ -1315,14 +1313,14 @@ static void jsondec_wellknownvalue(jsondec* d, upb_Message* msg,
       f = upb_MessageDef_FindFieldByNumber(m, 5);
       submsg = upb_Message_Mutable(msg, f, d->arena).msg;
       jsondec_checkoom(d, submsg);
-      jsondec_struct(d, submsg, upb_FieldDef_MessageSubDef(f));
+      jsondec_tomsg(d, submsg, upb_FieldDef_MessageSubDef(f));
       return;
     case JD_ARRAY:
       /* ListValue list_value = 6; */
       f = upb_MessageDef_FindFieldByNumber(m, 6);
       submsg = upb_Message_Mutable(msg, f, d->arena).msg;
       jsondec_checkoom(d, submsg);
-      jsondec_listvalue(d, submsg, upb_FieldDef_MessageSubDef(f));
+      jsondec_tomsg(d, submsg, upb_FieldDef_MessageSubDef(f));
       return;
     default:
       UPB_UNREACHABLE();

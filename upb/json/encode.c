@@ -52,8 +52,6 @@ static void jsonenc_msgfield(jsonenc* e, const upb_Message* msg,
                              const upb_MessageDef* m);
 static void jsonenc_msgfields(jsonenc* e, const upb_Message* msg,
                               const upb_MessageDef* m, bool first);
-static void jsonenc_value(jsonenc* e, const upb_Message* msg,
-                          const upb_MessageDef* m);
 static void jsonenc_string(jsonenc* e, upb_StringView str);
 
 UPB_NORETURN static void jsonenc_err(jsonenc* e, const char* msg) {
@@ -514,7 +512,7 @@ static void jsonenc_struct(jsonenc* e, const upb_Message* msg,
       jsonenc_putsep(e, ",", &first);
       jsonenc_string(e, key.str_val);
       jsonenc_putstr(e, ":");
-      jsonenc_value(e, val.msg_val, upb_FieldDef_MessageSubDef(value_f));
+      jsonenc_msgfield(e, val.msg_val, upb_FieldDef_MessageSubDef(value_f));
     }
   }
 
@@ -539,7 +537,7 @@ static void jsonenc_listvalue(jsonenc* e, const upb_Message* msg,
       upb_MessageValue elem = upb_Array_Get(values, i);
 
       jsonenc_putsep(e, ",", &first);
-      jsonenc_value(e, elem.msg_val, values_m);
+      jsonenc_msgfield(e, elem.msg_val, values_m);
     }
   }
 
@@ -578,10 +576,8 @@ static void jsonenc_value(jsonenc* e, const upb_Message* msg,
       jsonenc_putstr(e, val.bool_val ? "true" : "false");
       break;
     case 5:
-      jsonenc_struct(e, val.msg_val, upb_FieldDef_MessageSubDef(f));
-      break;
     case 6:
-      jsonenc_listvalue(e, val.msg_val, upb_FieldDef_MessageSubDef(f));
+      jsonenc_msgfield(e, val.msg_val, upb_FieldDef_MessageSubDef(f));
       break;
   }
 }
