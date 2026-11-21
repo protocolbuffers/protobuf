@@ -78,6 +78,27 @@ public final class Descriptors {
   @SuppressWarnings("NonFinalStaticField")
   private static volatile FeatureSetDefaults javaEditionDefaults = null;
 
+  @SuppressWarnings("NonFinalStaticField")
+  private static volatile ExtensionRegistry javaFeatureRegistry = null;
+
+  private static ExtensionRegistry getJavaFeatureRegistry() {
+    if (javaFeatureRegistry == null) {
+      // Force explicit initialization before synchronized block which can trigger initialization in
+      // static initializers. Otherwise, this can result in deadlock if another thread holds the
+      // static init block's implicit lock.
+      Descriptor unused1 = FeatureSet.getDescriptor();
+      FileDescriptor unused2 = JavaFeaturesProto.getDescriptor();
+      synchronized (Descriptors.class) {
+        if (javaFeatureRegistry == null) {
+          ExtensionRegistry registry = ExtensionRegistry.newInstance();
+          registry.add(JavaFeaturesProto.java_);
+          javaFeatureRegistry = registry.getUnmodifiable();
+        }
+      }
+    }
+    return javaFeatureRegistry;
+  }
+
   /** Sets the default feature mappings used during the build. Exposed for tests. */
   static void setTestJavaEditionDefaults(FeatureSetDefaults defaults) {
     javaEditionDefaults = defaults;
@@ -86,17 +107,15 @@ public final class Descriptors {
   /** Gets the default feature mappings used during the build. */
   static FeatureSetDefaults getJavaEditionDefaults() {
     // Force explicit initialization before synchronized block which can trigger initialization in
-    // `JavaFeaturesProto.registerAllExtensions()` and `FeatureSetdefaults.parseFrom()` calls.
-    // Otherwise, this can result in deadlock if another threads holds the static init block's
-    // implicit lock. This operation should be cheap if initialization has already occurred.
+    // `getJavaFeatureRegistry()` and `FeatureSetDefaults.parseFrom()` calls. Otherwise, this can
+    // result in deadlock if another thread holds the static init block's implicit lock. This
+    // operation should be cheap if initialization has already occurred.
     Descriptor unused1 = FeatureSetDefaults.getDescriptor();
-    FileDescriptor unused2 = JavaFeaturesProto.getDescriptor();
+    ExtensionRegistry registry = getJavaFeatureRegistry();
     if (javaEditionDefaults == null) {
       synchronized (Descriptors.class) {
         if (javaEditionDefaults == null) {
           try {
-            ExtensionRegistry registry = ExtensionRegistry.newInstance();
-            registry.add(JavaFeaturesProto.java_);
             setTestJavaEditionDefaults(
                 FeatureSetDefaults.parseFrom(
                     JavaEditionDefaults.PROTOBUF_INTERNAL_JAVA_EDITION_DEFAULTS.getBytes(
@@ -3200,6 +3219,22 @@ public final class Descriptors {
     abstract GenericDescriptor getParent();
 
     void resolveFeatures(FeatureSet unresolvedFeatures) throws DescriptorValidationException {
+      // Always reparse unresolved features with only the Java feature extension registry while
+      // discarding unknown fields. This drops non-Java features (shrinking FEATURE_CACHE, reducing
+      // cache misses, and avoiding pinning custom ExtensionRegistry or ClassLoader references) and
+      // resolves Java features from custom pools or unknown fields.
+      if (!unresolvedFeatures.getExtensionFields().isEmpty()
+          || !unresolvedFeatures.getUnknownFields().isEmpty()) {
+        CodedInputStream input = unresolvedFeatures.toByteString().newCodedInput();
+        input.discardUnknownFields();
+        try {
+          unresolvedFeatures = FeatureSet.parser().parseFrom(input, getJavaFeatureRegistry());
+        } catch (InvalidProtocolBufferException e) {
+          throw new DescriptorValidationException(
+              this, "Failed to parse features with Java feature extension registry.", e);
+        }
+      }
+
       GenericDescriptor parent = getParent();
       FeatureSet inferredLegacyFeatures = null;
       if (parent != null
@@ -3209,34 +3244,6 @@ public final class Descriptors {
         this.features = parent.features;
         validateFeatures();
         return;
-      }
-
-      // Java features from a custom pool (i.e. buildFrom) may end up in unknown fields or
-      // use a different descriptor from the generated pool used by the Java runtime.
-      boolean hasPossibleCustomJavaFeature = false;
-      for (FieldDescriptor f : unresolvedFeatures.getExtensionFields().keySet()) {
-        if (f.getNumber() == JavaFeaturesProto.java_.getNumber()
-            && f != JavaFeaturesProto.java_.getDescriptor()) {
-          hasPossibleCustomJavaFeature = true;
-          break;
-        }
-      }
-      boolean hasPossibleUnknownJavaFeature =
-          !unresolvedFeatures.getUnknownFields().isEmpty()
-              && (unresolvedFeatures
-                      .getUnknownFields()
-                      .hasField(JavaFeaturesProto.java_.getNumber())
-              );
-      if (hasPossibleCustomJavaFeature || hasPossibleUnknownJavaFeature) {
-        ExtensionRegistry registry = ExtensionRegistry.newInstance();
-        registry.add(JavaFeaturesProto.java_);
-        ByteString bytes = unresolvedFeatures.toByteString();
-        try {
-          unresolvedFeatures = FeatureSet.parseFrom(bytes, registry);
-        } catch (InvalidProtocolBufferException e) {
-          throw new DescriptorValidationException(
-              this, "Failed to parse features with Java feature extension registry.", e);
-        }
       }
 
       FeatureSet.Builder features;

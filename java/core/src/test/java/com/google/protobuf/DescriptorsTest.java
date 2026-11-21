@@ -32,11 +32,13 @@ import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
+import com.google.protobuf.JavaFeaturesProto.JavaFeatures.NestInFileClassFeature.NestInFileClass;
 import com.google.protobuf.test.UnittestImport;
 import com.google.protobuf.test.UnittestImport.ImportEnum;
 import com.google.protobuf.test.UnittestImport.ImportEnumForMap;
 import legacy_features_unittest.UnittestLegacyFeatures;
 import pb.EnumFeature;
+import pb.TestFeatures;
 import pb.UnittestFeatures;
 import proto2_unittest.TestCustomOptions;
 import proto2_unittest.UnittestCustomOptions;
@@ -53,9 +55,12 @@ import proto2_unittest.UnittestProto.TestReservedEnumFields;
 import proto2_unittest.UnittestProto.TestReservedFields;
 import proto2_unittest.UnittestRetention;
 import protobuf_unittest.UnittestProto3Extensions.Proto3FileExtensions;
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -607,6 +612,278 @@ public class DescriptorsTest {
       assertThat(
               editionsClosedMessage.findFieldByName("open_enum").legacyEnumFieldTreatedAsClosed())
           .isTrue();
+    }
+
+    @Test
+    public void testResolveFeatures_knownNonJavaExtension_droppedAndInternedWithPlainFile()
+        throws Exception {
+      DescriptorProtos.FeatureSet nonJavaFeatures =
+          DescriptorProtos.FeatureSet.newBuilder()
+              .setExtension(
+                  UnittestFeatures.test,
+                  TestFeatures.newBuilder().setMultipleFeature(EnumFeature.VALUE2).build())
+              .build();
+      FileDescriptorProto plainFileProto = newEdition2023FileProto("plain_features.proto");
+      FileDescriptorProto nonJavaFileProto =
+          newEdition2023FileProto("known_non_java_features.proto", nonJavaFeatures);
+
+      FileDescriptor plainFile = FileDescriptor.buildFrom(plainFileProto, new FileDescriptor[0]);
+      FileDescriptor nonJavaFile =
+          FileDescriptor.buildFrom(nonJavaFileProto, new FileDescriptor[0]);
+
+      assertThat(nonJavaFile.features.hasExtension(UnittestFeatures.test)).isFalse();
+      assertThat(nonJavaFile.features.getUnknownFields().isEmpty()).isTrue();
+      assertThat(nonJavaFile.features).isSameInstanceAs(plainFile.features);
+    }
+
+    @Test
+    public void testResolveFeatures_unknownNonJavaField_droppedAndInternedWithPlainFile()
+        throws Exception {
+      DescriptorProtos.FeatureSet nonJavaFeatures =
+          DescriptorProtos.FeatureSet.newBuilder()
+              .setExtension(
+                  UnittestFeatures.test,
+                  TestFeatures.newBuilder().setMultipleFeature(EnumFeature.VALUE5).build())
+              .build();
+      FileDescriptorProto plainFileProto = newEdition2023FileProto("plain_features.proto");
+      FileDescriptorProto unknownNonJavaFileProto =
+          FileDescriptorProto.parseFrom(
+              newEdition2023FileProto("unknown_non_java_features.proto", nonJavaFeatures)
+                  .toByteString(),
+              ExtensionRegistry.getEmptyRegistry());
+
+      FileDescriptor plainFile = FileDescriptor.buildFrom(plainFileProto, new FileDescriptor[0]);
+      FileDescriptor unknownNonJavaFile =
+          FileDescriptor.buildFrom(unknownNonJavaFileProto, new FileDescriptor[0]);
+
+      assertThat(unknownNonJavaFile.features.hasExtension(UnittestFeatures.test)).isFalse();
+      assertThat(unknownNonJavaFile.features.getUnknownFields().isEmpty()).isTrue();
+      assertThat(unknownNonJavaFile.features).isSameInstanceAs(plainFile.features);
+    }
+
+    @Test
+    public void testResolveFeatures_childDescriptorsWithOnlyNonJavaFeatures_inheritParentFeatures()
+        throws Exception {
+      DescriptorProtos.FeatureSet fileFeatures =
+          DescriptorProtos.FeatureSet.newBuilder()
+              .setExtension(
+                  UnittestFeatures.test,
+                  TestFeatures.newBuilder().setMultipleFeature(EnumFeature.VALUE2).build())
+              .build();
+      DescriptorProtos.FeatureSet messageFeatures =
+          DescriptorProtos.FeatureSet.newBuilder()
+              .setExtension(
+                  UnittestFeatures.test,
+                  TestFeatures.newBuilder().setMultipleFeature(EnumFeature.VALUE3).build())
+              .build();
+      DescriptorProtos.FeatureSet fieldFeatures =
+          DescriptorProtos.FeatureSet.newBuilder()
+              .setExtension(
+                  UnittestFeatures.test,
+                  TestFeatures.newBuilder().setMultipleFeature(EnumFeature.VALUE4).build())
+              .build();
+      FileDescriptorProto fileProto =
+          newEdition2023FileProto("child_non_java_features.proto", fileFeatures).toBuilder()
+              .addMessageType(
+                  DescriptorProto.newBuilder()
+                      .setName("TestMessage")
+                      .setOptions(
+                          DescriptorProtos.MessageOptions.newBuilder().setFeatures(messageFeatures))
+                      .addField(
+                          FieldDescriptorProto.newBuilder()
+                              .setName("test_field")
+                              .setNumber(1)
+                              .setType(FieldDescriptorProto.Type.TYPE_INT32)
+                              .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                              .setOptions(FieldOptions.newBuilder().setFeatures(fieldFeatures))))
+              .build();
+
+      FileDescriptor file = FileDescriptor.buildFrom(fileProto, new FileDescriptor[0]);
+
+      Descriptor message = file.getMessageTypes().get(0);
+      FieldDescriptor field = message.getFields().get(0);
+      assertThat(message.features).isSameInstanceAs(file.features);
+      assertThat(field.features).isSameInstanceAs(message.features);
+    }
+
+    @Test
+    public void
+        testResolveFeatures_javaAndCoreFeaturesWithDifferentNonJavaFeatures_preservedAndInterned()
+            throws Exception {
+      DescriptorProtos.FeatureSet baseJavaAndCoreFeatures =
+          DescriptorProtos.FeatureSet.newBuilder()
+              .setFieldPresence(DescriptorProtos.FeatureSet.FieldPresence.IMPLICIT)
+              .setExtension(
+                  JavaFeaturesProto.java_,
+                  JavaFeaturesProto.JavaFeatures.newBuilder()
+                      .setUtf8Validation(JavaFeaturesProto.JavaFeatures.Utf8Validation.VERIFY)
+                      .build())
+              .build();
+      FileDescriptorProto fileProto1 =
+          newEdition2023FileProto(
+              "mixed_features_1.proto",
+              baseJavaAndCoreFeatures.toBuilder()
+                  .setExtension(
+                      UnittestFeatures.test,
+                      TestFeatures.newBuilder().setMultipleFeature(EnumFeature.VALUE2).build())
+                  .build());
+      FileDescriptorProto fileProto2 =
+          newEdition2023FileProto(
+              "mixed_features_2.proto",
+              baseJavaAndCoreFeatures.toBuilder()
+                  .setExtension(
+                      UnittestFeatures.test,
+                      TestFeatures.newBuilder().setMultipleFeature(EnumFeature.VALUE3).build())
+                  .build());
+
+      FileDescriptor file1 = FileDescriptor.buildFrom(fileProto1, new FileDescriptor[0]);
+      FileDescriptor file2 = FileDescriptor.buildFrom(fileProto2, new FileDescriptor[0]);
+
+      assertThat(file1.features).isSameInstanceAs(file2.features);
+      assertThat(file1.features.getFieldPresence())
+          .isEqualTo(DescriptorProtos.FeatureSet.FieldPresence.IMPLICIT);
+      assertThat(file1.features.getExtension(JavaFeaturesProto.java_).getUtf8Validation())
+          .isEqualTo(JavaFeaturesProto.JavaFeatures.Utf8Validation.VERIFY);
+      assertThat(file1.features.hasExtension(UnittestFeatures.test)).isFalse();
+    }
+
+    @Test
+    public void testResolveFeatures_customPoolJavaFeatures_reparsedWithRuntimeDescriptor()
+        throws Exception {
+      FileDescriptor customJavaFeaturesDescriptor =
+          FileDescriptor.buildFrom(
+              JavaFeaturesProto.getDescriptor().toProto(),
+              new FileDescriptor[] {DescriptorProtos.getDescriptor()});
+      FieldDescriptor customJavaExt =
+          customJavaFeaturesDescriptor.findExtensionByName(
+              JavaFeaturesProto.java_.getDescriptor().getName());
+      DynamicMessage customJavaValue =
+          DynamicMessage.newBuilder(customJavaExt.getMessageType())
+              .setField(
+                  customJavaExt.getMessageType().findFieldByName("utf8_validation"),
+                  customJavaExt
+                      .getMessageType()
+                      .findEnumTypeByName("Utf8Validation")
+                      .findValueByName("VERIFY"))
+              .build();
+      FileDescriptorProto fileProto =
+          newEdition2023FileProto(
+              "custom_pool_java_features.proto",
+              DescriptorProtos.FeatureSet.newBuilder()
+                  .setField(customJavaExt, customJavaValue)
+                  .build());
+
+      FileDescriptor file = FileDescriptor.buildFrom(fileProto, new FileDescriptor[0]);
+
+      assertThat(file.features.getExtension(JavaFeaturesProto.java_).getUtf8Validation())
+          .isEqualTo(JavaFeaturesProto.JavaFeatures.Utf8Validation.VERIFY);
+      assertThat(file.features.getUnknownFields().isEmpty()).isTrue();
+      // Copy keys into a List because SmallSortedMap.keySet().contains() compares by field number,
+      // whereas FieldDescriptor.equals() checks reference identity.
+      List<FieldDescriptor> retainedExtensionDescriptors =
+          new ArrayList<>(file.features.getExtensionFields().keySet());
+      assertThat(retainedExtensionDescriptors).contains(JavaFeaturesProto.java_.getDescriptor());
+      assertThat(retainedExtensionDescriptors).doesNotContain(customJavaExt);
+    }
+
+    @Test
+    public void testResolveFeatures_customPoolNonJavaFeatures_droppedAndInternedWithPlainFile()
+        throws Exception {
+      FileDescriptor customUnittestFeaturesDescriptor =
+          FileDescriptor.buildFrom(
+              UnittestFeatures.getDescriptor().toProto(),
+              new FileDescriptor[] {DescriptorProtos.getDescriptor()});
+      FieldDescriptor customTestExt =
+          customUnittestFeaturesDescriptor.findExtensionByName(
+              UnittestFeatures.test.getDescriptor().getName());
+      DynamicMessage customTestValue =
+          DynamicMessage.newBuilder(customTestExt.getMessageType())
+              .setField(
+                  customTestExt.getMessageType().findFieldByName("multiple_feature"),
+                  customUnittestFeaturesDescriptor
+                      .findEnumTypeByName("EnumFeature")
+                      .findValueByName("VALUE3"))
+              .build();
+      FileDescriptorProto plainFileProto = newEdition2023FileProto("plain_features.proto");
+      FileDescriptorProto customNonJavaFileProto =
+          newEdition2023FileProto(
+              "custom_pool_non_java_features.proto",
+              DescriptorProtos.FeatureSet.newBuilder()
+                  .setField(customTestExt, customTestValue)
+                  .build());
+
+      FileDescriptor plainFile = FileDescriptor.buildFrom(plainFileProto, new FileDescriptor[0]);
+      FileDescriptor customNonJavaFile =
+          FileDescriptor.buildFrom(customNonJavaFileProto, new FileDescriptor[0]);
+
+      List<FieldDescriptor> retainedExtensionDescriptors =
+          new ArrayList<>(customNonJavaFile.features.getExtensionFields().keySet());
+      assertThat(retainedExtensionDescriptors).doesNotContain(customTestExt);
+      assertThat(retainedExtensionDescriptors)
+          .doesNotContain(UnittestFeatures.test.getDescriptor());
+      assertThat(customNonJavaFile.features.getUnknownFields().isEmpty()).isTrue();
+      assertThat(customNonJavaFile.features).isSameInstanceAs(plainFile.features);
+    }
+
+    @Test
+    public void testInternalUpdateFileDescriptor_nonJavaFeaturesDropped_preservesInternedFeatures()
+        throws Exception {
+      FileDescriptorProto rawProto =
+          newEdition2023FileProto(
+              "generated_update_features.proto",
+              DescriptorProtos.FeatureSet.newBuilder()
+                  .setExtension(
+                      JavaFeaturesProto.java_,
+                      JavaFeaturesProto.JavaFeatures.newBuilder()
+                          .setUtf8Validation(JavaFeaturesProto.JavaFeatures.Utf8Validation.VERIFY)
+                          .build())
+                  .setExtension(
+                      UnittestFeatures.test,
+                      TestFeatures.newBuilder().setMultipleFeature(EnumFeature.VALUE2).build())
+                  .build());
+      String latin1Data = rawProto.toByteString().toString(StandardCharsets.ISO_8859_1);
+      FileDescriptor file =
+          FileDescriptor.internalBuildGeneratedFileFrom(
+              new String[] {latin1Data}, new FileDescriptor[0]);
+      file.resolveAllFeaturesImmutable();
+      DescriptorProtos.FeatureSet beforeUpdate = file.features;
+      ExtensionRegistry registry = ExtensionRegistry.newInstance();
+      registry.add(JavaFeaturesProto.java_);
+      registry.add(UnittestFeatures.test);
+
+      FileDescriptor.internalUpdateFileDescriptor(file, registry);
+
+      assertThat(file.features).isSameInstanceAs(beforeUpdate);
+      assertThat(file.features.hasExtension(UnittestFeatures.test)).isFalse();
+      assertThat(file.features.getUnknownFields().isEmpty()).isTrue();
+      assertThat(file.features.getExtension(JavaFeaturesProto.java_).getUtf8Validation())
+          .isEqualTo(JavaFeaturesProto.JavaFeatures.Utf8Validation.VERIFY);
+    }
+
+    @Test
+    public void testResolveFeatures_malformedJavaFeatureBytes_throwsDescriptorValidationException()
+        throws Exception {
+      ByteArrayOutputStream invalidFeatureBytes = new ByteArrayOutputStream();
+      CodedOutputStream codedOutput = CodedOutputStream.newInstance(invalidFeatureBytes);
+      codedOutput.writeTag(
+          JavaFeaturesProto.java_.getNumber(), WireFormat.WIRETYPE_LENGTH_DELIMITED);
+      codedOutput.writeUInt32NoTag(1);
+      codedOutput.writeRawByte((byte) 0); // Tag 0 is invalid inside a submessage payload.
+      codedOutput.flush();
+      DescriptorProtos.FeatureSet malformedFeatures =
+          DescriptorProtos.FeatureSet.parseFrom(
+              invalidFeatureBytes.toByteArray(), ExtensionRegistry.getEmptyRegistry());
+      FileDescriptorProto fileProto =
+          newEdition2023FileProto("malformed_java_features.proto", malformedFeatures);
+
+      DescriptorValidationException thrown =
+          assertThrows(
+              DescriptorValidationException.class,
+              () -> FileDescriptor.buildFrom(fileProto, new FileDescriptor[0]));
+
+      assertThat(thrown)
+          .hasMessageThat()
+          .contains("Failed to parse features with Java feature extension registry.");
     }
 
     @Test
@@ -1567,6 +1844,22 @@ public class DescriptorsTest {
       assertThat(Proto3FileExtensions.singularInt.getDescriptor().hasPresence()).isTrue();
       assertThat(Proto3FileExtensions.repeatedInt.getDescriptor().hasPresence()).isFalse();
     }
+
+    private static FileDescriptorProto newEdition2023FileProto(String name) {
+      return FileDescriptorProto.newBuilder()
+          .setName(name)
+          .setPackage("proto2_unittest")
+          .setSyntax("editions")
+          .setEdition(Edition.EDITION_2023)
+          .build();
+    }
+
+    private static FileDescriptorProto newEdition2023FileProto(
+        String name, DescriptorProtos.FeatureSet features) {
+      return newEdition2023FileProto(name).toBuilder()
+          .setOptions(FileOptions.newBuilder().setFeatures(features))
+          .build();
+    }
   }
 
   public static class FeatureInheritanceTest {
@@ -1588,7 +1881,7 @@ public class DescriptorsTest {
     public void setUp() {
       FeatureSetDefaults.Builder defaults = Descriptors.getJavaEditionDefaults().toBuilder();
       for (FeatureSetEditionDefault.Builder editionDefaults : defaults.getDefaultsBuilderList()) {
-        setTestFeature(editionDefaults.getOverridableFeaturesBuilder(), 1);
+        setTestFeature(editionDefaults.getOverridableFeaturesBuilder(), NestInFileClass.NO);
       }
       Descriptors.setTestJavaEditionDefaults(defaults.build());
 
@@ -1657,16 +1950,21 @@ public class DescriptorsTest {
               .setOutputType(".proto2_unittest.TopMessage");
     }
 
-    void setTestFeature(DescriptorProtos.FeatureSet.Builder features, int value) {
+    @After
+    public void tearDown() {
+      Descriptors.setTestJavaEditionDefaults(null);
+    }
+
+    void setTestFeature(DescriptorProtos.FeatureSet.Builder features, NestInFileClass value) {
       features.setExtension(
-          UnittestFeatures.test,
-          features.getExtension(UnittestFeatures.test).toBuilder()
-              .setMultipleFeature(EnumFeature.forNumber(value))
+          JavaFeaturesProto.java_,
+          features.getExtension(JavaFeaturesProto.java_).toBuilder()
+              .setNestInFileClass(value)
               .build());
     }
 
-    int getTestFeature(DescriptorProtos.FeatureSet features) {
-      return features.getExtension(UnittestFeatures.test).getMultipleFeature().getNumber();
+    NestInFileClass getTestFeature(DescriptorProtos.FeatureSet features) {
+      return features.getExtension(JavaFeaturesProto.java_).getNestInFileClass();
     }
 
     FileDescriptor buildFrom(FileDescriptorProto fileProto) throws Exception {
@@ -1676,168 +1974,191 @@ public class DescriptorsTest {
     @Test
     public void testFileDefaults() throws Exception {
       FileDescriptor descriptor = buildFrom(fileProto.build());
-      assertThat(getTestFeature(descriptor.features)).isEqualTo(1);
+      assertThat(getTestFeature(descriptor.features)).isEqualTo(NestInFileClass.NO);
     }
 
     @Test
     public void testFileOverrides() throws Exception {
-      setTestFeature(fileProto.getOptionsBuilder().getFeaturesBuilder(), 3);
+      setTestFeature(fileProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
       FileDescriptor descriptor = buildFrom(fileProto.build());
-      assertThat(getTestFeature(descriptor.features)).isEqualTo(3);
+      assertThat(getTestFeature(descriptor.features)).isEqualTo(NestInFileClass.YES);
     }
 
     @Test
     public void testFileMessageInherit() throws Exception {
-      setTestFeature(fileProto.getOptionsBuilder().getFeaturesBuilder(), 3);
+      setTestFeature(fileProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
       FileDescriptor descriptor = buildFrom(fileProto.build());
-      assertThat(getTestFeature(descriptor.getMessageTypes().get(0).features)).isEqualTo(3);
+      assertThat(getTestFeature(descriptor.getMessageTypes().get(0).features))
+          .isEqualTo(NestInFileClass.YES);
     }
 
     @Test
     public void testFileMessageOverride() throws Exception {
-      setTestFeature(fileProto.getOptionsBuilder().getFeaturesBuilder(), 3);
-      setTestFeature(topMessageProto.getOptionsBuilder().getFeaturesBuilder(), 5);
+      setTestFeature(fileProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
+      setTestFeature(
+          topMessageProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.LEGACY);
       FileDescriptor descriptor = buildFrom(fileProto.build());
-      assertThat(getTestFeature(descriptor.getMessageTypes().get(0).features)).isEqualTo(5);
+      assertThat(getTestFeature(descriptor.getMessageTypes().get(0).features))
+          .isEqualTo(NestInFileClass.LEGACY);
     }
 
     @Test
     public void testFileEnumInherit() throws Exception {
-      setTestFeature(fileProto.getOptionsBuilder().getFeaturesBuilder(), 3);
+      setTestFeature(fileProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
       FileDescriptor descriptor = buildFrom(fileProto.build());
-      assertThat(getTestFeature(descriptor.getEnumTypes().get(0).features)).isEqualTo(3);
+      assertThat(getTestFeature(descriptor.getEnumTypes().get(0).features))
+          .isEqualTo(NestInFileClass.YES);
     }
 
     @Test
     public void testFileEnumOverride() throws Exception {
-      setTestFeature(fileProto.getOptionsBuilder().getFeaturesBuilder(), 3);
-      setTestFeature(topEnumProto.getOptionsBuilder().getFeaturesBuilder(), 5);
+      setTestFeature(fileProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
+      setTestFeature(topEnumProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.LEGACY);
       FileDescriptor descriptor = buildFrom(fileProto.build());
-      assertThat(getTestFeature(descriptor.getEnumTypes().get(0).features)).isEqualTo(5);
+      assertThat(getTestFeature(descriptor.getEnumTypes().get(0).features))
+          .isEqualTo(NestInFileClass.LEGACY);
     }
 
     @Test
     public void testFileExtensionInherit() throws Exception {
-      setTestFeature(fileProto.getOptionsBuilder().getFeaturesBuilder(), 3);
+      setTestFeature(fileProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
       FileDescriptor descriptor = buildFrom(fileProto.build());
-      assertThat(getTestFeature(descriptor.getExtensions().get(0).features)).isEqualTo(3);
+      assertThat(getTestFeature(descriptor.getExtensions().get(0).features))
+          .isEqualTo(NestInFileClass.YES);
     }
 
     @Test
     public void testFileExtensionOverride() throws Exception {
-      setTestFeature(fileProto.getOptionsBuilder().getFeaturesBuilder(), 3);
-      setTestFeature(topExtensionProto.getOptionsBuilder().getFeaturesBuilder(), 5);
+      setTestFeature(fileProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
+      setTestFeature(
+          topExtensionProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.LEGACY);
       FileDescriptor descriptor = buildFrom(fileProto.build());
-      assertThat(getTestFeature(descriptor.getExtensions().get(0).features)).isEqualTo(5);
+      assertThat(getTestFeature(descriptor.getExtensions().get(0).features))
+          .isEqualTo(NestInFileClass.LEGACY);
     }
 
     @Test
     public void testFileServiceInherit() throws Exception {
-      setTestFeature(fileProto.getOptionsBuilder().getFeaturesBuilder(), 3);
+      setTestFeature(fileProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
       FileDescriptor descriptor = buildFrom(fileProto.build());
-      assertThat(getTestFeature(descriptor.getServices().get(0).features)).isEqualTo(3);
+      assertThat(getTestFeature(descriptor.getServices().get(0).features))
+          .isEqualTo(NestInFileClass.YES);
     }
 
     @Test
     public void testFileServiceOverride() throws Exception {
-      setTestFeature(fileProto.getOptionsBuilder().getFeaturesBuilder(), 3);
-      setTestFeature(serviceProto.getOptionsBuilder().getFeaturesBuilder(), 5);
+      setTestFeature(fileProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
+      setTestFeature(serviceProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.LEGACY);
       FileDescriptor descriptor = buildFrom(fileProto.build());
-      assertThat(getTestFeature(descriptor.getServices().get(0).features)).isEqualTo(5);
+      assertThat(getTestFeature(descriptor.getServices().get(0).features))
+          .isEqualTo(NestInFileClass.LEGACY);
     }
 
     @Test
     public void testMessageFieldInherit() throws Exception {
-      setTestFeature(topMessageProto.getOptionsBuilder().getFeaturesBuilder(), 3);
+      setTestFeature(
+          topMessageProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
       FileDescriptor descriptor = buildFrom(fileProto.build());
       assertThat(getTestFeature(descriptor.getMessageTypes().get(0).getFields().get(0).features))
-          .isEqualTo(3);
+          .isEqualTo(NestInFileClass.YES);
     }
 
     @Test
     public void testMessageFieldOverride() throws Exception {
-      setTestFeature(topMessageProto.getOptionsBuilder().getFeaturesBuilder(), 3);
-      setTestFeature(fieldProto.getOptionsBuilder().getFeaturesBuilder(), 5);
+      setTestFeature(
+          topMessageProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
+      setTestFeature(fieldProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.LEGACY);
       FileDescriptor descriptor = buildFrom(fileProto.build());
       assertThat(getTestFeature(descriptor.getMessageTypes().get(0).getFields().get(0).features))
-          .isEqualTo(5);
+          .isEqualTo(NestInFileClass.LEGACY);
     }
 
     @Test
     public void testMessageEnumInherit() throws Exception {
-      setTestFeature(topMessageProto.getOptionsBuilder().getFeaturesBuilder(), 3);
+      setTestFeature(
+          topMessageProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
       FileDescriptor descriptor = buildFrom(fileProto.build());
       assertThat(getTestFeature(descriptor.getMessageTypes().get(0).getEnumTypes().get(0).features))
-          .isEqualTo(3);
+          .isEqualTo(NestInFileClass.YES);
     }
 
     @Test
     public void testMessageEnumOverride() throws Exception {
-      setTestFeature(topMessageProto.getOptionsBuilder().getFeaturesBuilder(), 3);
-      setTestFeature(nestedEnumProto.getOptionsBuilder().getFeaturesBuilder(), 5);
+      setTestFeature(
+          topMessageProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
+      setTestFeature(
+          nestedEnumProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.LEGACY);
       FileDescriptor descriptor = buildFrom(fileProto.build());
       assertThat(getTestFeature(descriptor.getMessageTypes().get(0).getEnumTypes().get(0).features))
-          .isEqualTo(5);
+          .isEqualTo(NestInFileClass.LEGACY);
     }
 
     @Test
     public void testMessageMessageInherit() throws Exception {
-      setTestFeature(topMessageProto.getOptionsBuilder().getFeaturesBuilder(), 3);
+      setTestFeature(
+          topMessageProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
       FileDescriptor descriptor = buildFrom(fileProto.build());
       assertThat(
               getTestFeature(descriptor.getMessageTypes().get(0).getNestedTypes().get(0).features))
-          .isEqualTo(3);
+          .isEqualTo(NestInFileClass.YES);
     }
 
     @Test
     public void testMessageMessageOverride() throws Exception {
-      setTestFeature(topMessageProto.getOptionsBuilder().getFeaturesBuilder(), 3);
-      setTestFeature(nestedMessageProto.getOptionsBuilder().getFeaturesBuilder(), 5);
+      setTestFeature(
+          topMessageProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
+      setTestFeature(
+          nestedMessageProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.LEGACY);
       FileDescriptor descriptor = buildFrom(fileProto.build());
       assertThat(
               getTestFeature(descriptor.getMessageTypes().get(0).getNestedTypes().get(0).features))
-          .isEqualTo(5);
+          .isEqualTo(NestInFileClass.LEGACY);
     }
 
     @Test
     public void testMessageExtensionInherit() throws Exception {
-      setTestFeature(topMessageProto.getOptionsBuilder().getFeaturesBuilder(), 3);
+      setTestFeature(
+          topMessageProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
       FileDescriptor descriptor = buildFrom(fileProto.build());
       assertThat(
               getTestFeature(descriptor.getMessageTypes().get(0).getExtensions().get(0).features))
-          .isEqualTo(3);
+          .isEqualTo(NestInFileClass.YES);
     }
 
     @Test
     public void testMessageExtensionOverride() throws Exception {
-      setTestFeature(topMessageProto.getOptionsBuilder().getFeaturesBuilder(), 3);
-      setTestFeature(nestedExtensionProto.getOptionsBuilder().getFeaturesBuilder(), 5);
+      setTestFeature(
+          topMessageProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
+      setTestFeature(
+          nestedExtensionProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.LEGACY);
       FileDescriptor descriptor = buildFrom(fileProto.build());
       assertThat(
               getTestFeature(descriptor.getMessageTypes().get(0).getExtensions().get(0).features))
-          .isEqualTo(5);
+          .isEqualTo(NestInFileClass.LEGACY);
     }
 
     @Test
     public void testMessageOneofInherit() throws Exception {
-      setTestFeature(topMessageProto.getOptionsBuilder().getFeaturesBuilder(), 3);
+      setTestFeature(
+          topMessageProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
       FileDescriptor descriptor = buildFrom(fileProto.build());
       assertThat(getTestFeature(descriptor.getMessageTypes().get(0).getOneofs().get(0).features))
-          .isEqualTo(3);
+          .isEqualTo(NestInFileClass.YES);
     }
 
     @Test
     public void testMessageOneofOverride() throws Exception {
-      setTestFeature(topMessageProto.getOptionsBuilder().getFeaturesBuilder(), 3);
-      setTestFeature(oneofProto.getOptionsBuilder().getFeaturesBuilder(), 5);
+      setTestFeature(
+          topMessageProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
+      setTestFeature(oneofProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.LEGACY);
       FileDescriptor descriptor = buildFrom(fileProto.build());
       assertThat(getTestFeature(descriptor.getMessageTypes().get(0).getOneofs().get(0).features))
-          .isEqualTo(5);
+          .isEqualTo(NestInFileClass.LEGACY);
     }
 
     @Test
     public void testOneofFieldInherit() throws Exception {
-      setTestFeature(oneofProto.getOptionsBuilder().getFeaturesBuilder(), 3);
+      setTestFeature(oneofProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
       FileDescriptor descriptor = buildFrom(fileProto.build());
       assertThat(
               getTestFeature(
@@ -1849,13 +2170,14 @@ public class DescriptorsTest {
                       .getFields()
                       .get(0)
                       .features))
-          .isEqualTo(3);
+          .isEqualTo(NestInFileClass.YES);
     }
 
     @Test
     public void testOneofFieldOverride() throws Exception {
-      setTestFeature(oneofProto.getOptionsBuilder().getFeaturesBuilder(), 3);
-      setTestFeature(oneofFieldProto.getOptionsBuilder().getFeaturesBuilder(), 5);
+      setTestFeature(oneofProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
+      setTestFeature(
+          oneofFieldProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.LEGACY);
       FileDescriptor descriptor = buildFrom(fileProto.build());
       assertThat(
               getTestFeature(
@@ -1867,41 +2189,42 @@ public class DescriptorsTest {
                       .getFields()
                       .get(0)
                       .features))
-          .isEqualTo(5);
+          .isEqualTo(NestInFileClass.LEGACY);
     }
 
     @Test
     public void testEnumValueInherit() throws Exception {
-      setTestFeature(topEnumProto.getOptionsBuilder().getFeaturesBuilder(), 3);
+      setTestFeature(topEnumProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
       FileDescriptor descriptor = buildFrom(fileProto.build());
       assertThat(getTestFeature(descriptor.getEnumTypes().get(0).getValues().get(0).features))
-          .isEqualTo(3);
+          .isEqualTo(NestInFileClass.YES);
     }
 
     @Test
     public void testEnumValueOverride() throws Exception {
-      setTestFeature(topEnumProto.getOptionsBuilder().getFeaturesBuilder(), 3);
-      setTestFeature(enumValueProto.getOptionsBuilder().getFeaturesBuilder(), 5);
+      setTestFeature(topEnumProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
+      setTestFeature(
+          enumValueProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.LEGACY);
       FileDescriptor descriptor = buildFrom(fileProto.build());
       assertThat(getTestFeature(descriptor.getEnumTypes().get(0).getValues().get(0).features))
-          .isEqualTo(5);
+          .isEqualTo(NestInFileClass.LEGACY);
     }
 
     @Test
     public void testServiceMethodInherit() throws Exception {
-      setTestFeature(serviceProto.getOptionsBuilder().getFeaturesBuilder(), 3);
+      setTestFeature(serviceProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
       FileDescriptor descriptor = buildFrom(fileProto.build());
       assertThat(getTestFeature(descriptor.getServices().get(0).getMethods().get(0).features))
-          .isEqualTo(3);
+          .isEqualTo(NestInFileClass.YES);
     }
 
     @Test
     public void testServiceMethodOverride() throws Exception {
-      setTestFeature(serviceProto.getOptionsBuilder().getFeaturesBuilder(), 3);
-      setTestFeature(methodProto.getOptionsBuilder().getFeaturesBuilder(), 5);
+      setTestFeature(serviceProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.YES);
+      setTestFeature(methodProto.getOptionsBuilder().getFeaturesBuilder(), NestInFileClass.LEGACY);
       FileDescriptor descriptor = buildFrom(fileProto.build());
       assertThat(getTestFeature(descriptor.getServices().get(0).getMethods().get(0).features))
-          .isEqualTo(5);
+          .isEqualTo(NestInFileClass.LEGACY);
     }
   }
 }
