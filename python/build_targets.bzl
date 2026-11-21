@@ -255,7 +255,7 @@ def build_targets(name):
     py_library(
         name = "python_srcs",
         srcs = [":python_src_files"],
-        imports = ["python"],
+        imports = ["."],
         srcs_version = "PY2AND3",
         visibility = [
             "//:__pkg__",
@@ -273,7 +273,7 @@ def build_targets(name):
             "//python/google/protobuf/internal/numpy:__init__.py",
             "//python/google/protobuf/internal/numpy:numpy_test.py",
         ],
-        imports = ["python"],
+        imports = ["."],
         srcs_version = "PY3",
         visibility = [
             "//:__pkg__",
@@ -382,7 +382,7 @@ def build_targets(name):
             "google/protobuf/internal/import_test_package/__init__.py",
             "google/protobuf/internal/test_util.py",
         ],
-        imports = ["python"],
+        imports = ["."],
         srcs_version = "PY2AND3",
         visibility = ["//python:__subpackages__"],
         deps = [
@@ -527,6 +527,11 @@ def build_targets(name):
         srcs = ["python_version_test.py"],
     )
 
+    internal_py_test(
+        name = "sys_path_test",
+        srcs = ["sys_path_test.py"],
+    )
+
     conformance_test(
         name = "conformance_test",
         env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "python"},
@@ -603,6 +608,7 @@ def build_targets(name):
             "google/protobuf/python_protobuf.h",
             "internal.bzl",
             "python_version_test.py",
+            "sys_path_test.py",
         ],
         strip_prefix = strip_prefix.from_root(""),
         visibility = ["//pkg:__pkg__"],
