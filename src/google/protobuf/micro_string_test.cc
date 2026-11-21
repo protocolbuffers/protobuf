@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <functional>
@@ -19,6 +20,7 @@
 #include <utility>
 #include <vector>
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
@@ -386,6 +388,71 @@ TEST_F(MicroStringTest, CapacityRoundingUpStaysWithinBoundsForMicroRep) {
 
   // This one jumps to LargeRep
   EXPECT_GE(get_capacity_for_size(255), 256);
+}
+
+TEST_F(MicroStringTest, RejectsOver4GiB) {
+#ifdef GTEST_HAS_DEATH_TEST
+  constexpr bool kHasDeathTest = true;
+#else
+  constexpr bool kHasDeathTest = false;
+#endif
+  if (sizeof(size_t) < 8 || !kHasDeathTest) {
+    GTEST_SKIP() << "Requires 64-bit size_t and death tests.";
+  }
+
+  const size_t four_gib = static_cast<size_t>(uint64_t{1} << 32);
+  const absl::string_view over_4g(reinterpret_cast<const char*>(0x1000),
+                                  four_gib);
+  constexpr absl::string_view kNarrowError =
+      "Integer overflow in CheckedNarrow: 4294967296 not in [0, 4294967295]";
+  MicroString str;
+  EXPECT_DEATH_IF_SUPPORTED(str.Set(over_4g, heap_message()),
+                            testing::HasSubstr(kNarrowError));
+  EXPECT_DEATH_IF_SUPPORTED(str.SetAlias(over_4g, heap_message()),
+                            testing::HasSubstr(kNarrowError));
+  str.Set(std::string(64, 'x'), heap_message());
+  ASSERT_TRUE(MicroStringTestPeer::IsStringRep(str));
+  EXPECT_DEATH_IF_SUPPORTED(str.Set(over_4g, heap_message()),
+                            testing::HasSubstr(kNarrowError));
+  str.Destroy();
+}
+
+TEST_F(MicroStringTest, CapacityRoundingUpStaysWithinBoundsForOwnedRep) {
+#ifndef GTEST_HAS_DEATH_TEST
+  GTEST_SKIP() << "Death tests are not supported.";
+#else
+  if (sizeof(size_t) < 8 || !internal::RunLargeMemoryTests() ||
+      internal::HasAnySanitizer()) {
+    GTEST_SKIP() << "Not enough memory for this test.";
+  }
+
+  const size_t four_gib = static_cast<size_t>(uint64_t{1} << 32);
+  constexpr size_t kMaxOwned = MicroString::kMaxOwnedRepCapacity;
+  ASSERT_EQ(kMaxOwned, four_gib - 8);
+
+  const auto check_size = [&](size_t size, bool expect_string_rep) {
+    // Isolate each 4 GiB allocation in a subprocess so the OS reclaims its
+    // pages immediately instead of retaining multiple spans in the allocator.
+    EXPECT_EXIT(
+        {
+          if (char* p = static_cast<char*>(calloc(size, 1))) {
+            MicroString str;
+            str.Set(absl::string_view(p, size), heap_message());
+            ABSL_CHECK_EQ(MicroStringTestPeer::IsStringRep(str),
+                          expect_string_rep);
+            if (!expect_string_rep) ABSL_CHECK_EQ(str.Capacity(), kMaxOwned);
+            ABSL_CHECK_EQ(str.Get().size(), size);
+            str.Destroy();
+            free(p);
+          }
+          std::exit(0);
+        },
+        testing::ExitedWithCode(0), "");
+  };
+  check_size(kMaxOwned - 7, /*expect_string_rep=*/false);
+  check_size(kMaxOwned, /*expect_string_rep=*/false);
+  check_size(kMaxOwned + 1, /*expect_string_rep=*/true);
+#endif
 }
 
 TEST_F(MicroStringTest, PoisonsTheUnusedCapacity) {
