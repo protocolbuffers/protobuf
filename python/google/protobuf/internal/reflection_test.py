@@ -1450,6 +1450,70 @@ class Proto2ReflectionTest(unittest.TestCase):
     # Remove a non-existent element.
     self.assertRaises(ValueError, proto.repeated_int32.remove, 123)
 
+  def testRepeatedScalarReentrantInsert(self):
+    """insert() with a value whose __index__() modifies the container."""
+    msg = descriptor_pb2.FileDescriptorProto()
+    msg.public_dependency.extend([10, 20, 30])
+    class Evil:
+      def __index__(self):
+        del msg.public_dependency[:]
+        return 42
+    with self.assertRaises(RuntimeError):
+      msg.public_dependency.insert(2, Evil())
+
+  def testRepeatedScalarReentrantRemove(self):
+    """remove() with a value whose __eq__() modifies the container."""
+    msg = descriptor_pb2.FileDescriptorProto()
+    msg.public_dependency.extend([10, 20, 30])
+    class Evil:
+      def __eq__(self, other):
+        del msg.public_dependency[:]
+        return True
+    with self.assertRaises(RuntimeError):
+      msg.public_dependency.remove(Evil())
+
+  def testRepeatedScalarReentrantSetSlice(self):
+    """Slice assignment with an iterable whose __iter__() modifies container."""
+    msg = descriptor_pb2.FileDescriptorProto()
+    msg.public_dependency.extend([10, 20, 30, 40])
+    class Evil:
+      def __iter__(self):
+        del msg.public_dependency[:]
+        return iter([90, 91])
+      def __len__(self):
+        return 2
+    with self.assertRaises((RuntimeError, SystemError)):
+      msg.public_dependency[1:3] = Evil()
+
+  def testRepeatedScalarReentrantDelSlice(self):
+    """Slice deletion with __index__() key that modifies the container."""
+    msg = descriptor_pb2.FileDescriptorProto()
+    msg.public_dependency.extend([10, 20, 30, 40, 50])
+    class Evil:
+      def __index__(self):
+        del msg.public_dependency[:]
+        return 1
+    with self.assertRaises(RuntimeError):
+      del msg.public_dependency[Evil():3]
+
+  def testRepeatedScalarReentrantDelExtSlice(self):
+    """Extended slice del with __index__() step that modifies container."""
+    msg = descriptor_pb2.FileDescriptorProto()
+    msg.public_dependency.extend([1, 2, 3, 4, 5, 6, 7, 8])
+    class EvilStep:
+      def __index__(self):
+        del msg.public_dependency[:]
+        return 2
+    with self.assertRaises(RuntimeError):
+      del msg.public_dependency[::EvilStep()]
+
+  def testRepeatedScalarExtendSelf(self):
+    """extend(self) must not loop infinitely."""
+    msg = descriptor_pb2.FileDescriptorProto()
+    msg.public_dependency.extend([1, 2, 3])
+    msg.public_dependency.extend(msg.public_dependency)
+    self.assertEqual(list(msg.public_dependency), [1, 2, 3, 1, 2, 3])
+
   def testRepeatedScalarsReverse_Empty(self):
     proto = unittest_pb2.TestAllTypes()
 
