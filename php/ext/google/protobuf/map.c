@@ -700,5 +700,5 @@ void Map_ModuleInit() {
 
   h = &MapFieldIter_object_handlers;
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
-  h->dtor_obj = map_field_iter_dtor;
+  h->free_obj = map_field_iter_dtor;
 }

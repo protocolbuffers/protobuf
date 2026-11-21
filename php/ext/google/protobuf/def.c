@@ -1157,7 +1157,7 @@ void Def_ModuleInit() {
   DescriptorPool_class_entry->create_object = CreateHandler_ReturnNull;
   h = &DescriptorPool_object_handlers;
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
-  h->dtor_obj = DescriptorPool_destructor;
+  h->free_obj = DescriptorPool_destructor;
 
   INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\Internal\\DescriptorPool",
                    InternalDescriptorPool_methods);

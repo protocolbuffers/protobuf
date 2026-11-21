@@ -699,5 +699,5 @@ void Array_ModuleInit() {
 
   h = &repeated_field_iter_object_handlers;
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
-  h->dtor_obj = RepeatedFieldIter_dtor;
+  h->free_obj = RepeatedFieldIter_dtor;
 }
