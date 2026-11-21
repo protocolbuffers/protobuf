@@ -399,6 +399,98 @@ public final class Descriptors {
       }
     }
 
+    /** Options controlling how a {@link FileDescriptor} is built. */
+    public static final class BuildOptions {
+      private static final BuildOptions DEFAULT_INSTANCE = newBuilder().build();
+
+      private final boolean allowUnknownDependencies;
+      private final boolean unsafeDisableLimitChecks;
+
+      private BuildOptions(Builder builder) {
+        this.allowUnknownDependencies = builder.allowUnknownDependencies;
+        this.unsafeDisableLimitChecks = builder.unsafeDisableLimitChecks;
+      }
+
+      /** Returns a {@link BuildOptions} instance with default settings. */
+      public static BuildOptions getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+      }
+
+      /** Creates a new {@link Builder} for {@link BuildOptions}. */
+      public static Builder newBuilder() {
+        return new Builder();
+      }
+
+      /** Returns a new {@link Builder} initialized with the settings of this instance. */
+      public Builder toBuilder() {
+        return new Builder(this);
+      }
+
+      /**
+       * Returns whether non-existing dependencies are ignored and undefined types are replaced with
+       * placeholder descriptors.
+       */
+      public boolean getAllowUnknownDependencies() {
+        return allowUnknownDependencies;
+      }
+
+      /**
+       * Returns whether descriptor limit checks (such as package name length and depth limits) are
+       * disabled.
+       */
+      public boolean getUnsafeDisableLimitChecks() {
+        return unsafeDisableLimitChecks;
+      }
+
+      /** Builder for {@link BuildOptions}. */
+      public static final class Builder {
+        private boolean allowUnknownDependencies;
+        private boolean unsafeDisableLimitChecks;
+
+        private Builder() {}
+
+        private Builder(BuildOptions options) {
+          this.allowUnknownDependencies = options.allowUnknownDependencies;
+          this.unsafeDisableLimitChecks = options.unsafeDisableLimitChecks;
+        }
+
+        /**
+         * If true, non-existing dependencies will be ignored and undefined types will be replaced
+         * with a placeholder type.
+         */
+        @CanIgnoreReturnValue
+        public Builder setAllowUnknownDependencies(boolean allowUnknownDependencies) {
+          this.allowUnknownDependencies = allowUnknownDependencies;
+          return this;
+        }
+
+        /**
+         * If true, disables descriptor limit checks (such as package name length and depth limits)
+         * when building descriptors.
+         *
+         * <p>Warning: Disabling limit checks may expose the process to denial-of-service risks and
+         * should not be set if untrusted descriptors are in use.
+         */
+        @CanIgnoreReturnValue
+        public Builder setUnsafeDisableLimitChecks(boolean unsafeDisableLimitChecks) {
+          this.unsafeDisableLimitChecks = unsafeDisableLimitChecks;
+          return this;
+        }
+
+        public BuildOptions build() {
+          return new BuildOptions(this);
+        }
+      }
+    }
+
+    private static final BuildOptions ALLOW_UNKNOWN_DEPENDENCIES_OPTIONS =
+        BuildOptions.newBuilder().setAllowUnknownDependencies(true).build();
+    private static final BuildOptions GENERATED_CODE_OPTIONS =
+        BuildOptions.newBuilder()
+            .setAllowUnknownDependencies(true)
+            .setUnsafeDisableLimitChecks(true)
+            .build();
+
     /**
      * Construct a {@code FileDescriptor}.
      *
@@ -410,7 +502,7 @@ public final class Descriptors {
      */
     public static FileDescriptor buildFrom(FileDescriptorProto proto, FileDescriptor[] dependencies)
         throws DescriptorValidationException {
-      return buildFrom(proto, dependencies, false);
+      return buildFrom(proto, dependencies, BuildOptions.getDefaultInstance(), false);
     }
 
     /**
@@ -428,13 +520,35 @@ public final class Descriptors {
     public static FileDescriptor buildFrom(
         FileDescriptorProto proto, FileDescriptor[] dependencies, boolean allowUnknownDependencies)
         throws DescriptorValidationException {
-      return buildFrom(proto, dependencies, allowUnknownDependencies, false);
+      return buildFrom(
+          proto,
+          dependencies,
+          allowUnknownDependencies
+              ? ALLOW_UNKNOWN_DEPENDENCIES_OPTIONS
+              : BuildOptions.getDefaultInstance(),
+          false);
+    }
+
+    /**
+     * Construct a {@code FileDescriptor}.
+     *
+     * @param proto the protocol message form of the FileDescriptor
+     * @param dependencies {@code FileDescriptor}s corresponding to all of the file's dependencies
+     * @param options options controlling how the {@code FileDescriptor} is built
+     * @throws DescriptorValidationException {@code proto} is not a valid descriptor. This can occur
+     *     for a number of reasons; for instance, because a field has an undefined type or because
+     *     two messages were defined with the same name.
+     */
+    public static FileDescriptor buildFrom(
+        FileDescriptorProto proto, FileDescriptor[] dependencies, BuildOptions options)
+        throws DescriptorValidationException {
+      return buildFrom(proto, dependencies, checkNotNull(options), false);
     }
 
     private static FileDescriptor buildFrom(
         FileDescriptorProto proto,
         FileDescriptor[] dependencies,
-        boolean allowUnknownDependencies,
+        BuildOptions options,
         boolean allowUnresolvedFeatures)
         throws DescriptorValidationException {
       // Building descriptors involves two steps:  translating and linking.
@@ -446,6 +560,7 @@ public final class Descriptors {
       // FieldDescriptor for an embedded message contains a pointer directly
       // to the Descriptor for that message's type.  We also detect undefined
       // types in the linking step.
+      boolean allowUnknownDependencies = options.getAllowUnknownDependencies();
       FileDescriptorTables tables =
           new FileDescriptorTables(dependencies, allowUnknownDependencies);
       FileDescriptor result =
@@ -531,7 +646,7 @@ public final class Descriptors {
       try {
         // When building descriptors for generated code, we allow unknown
         // dependencies by default.
-        result = buildFrom(proto, dependencies, true);
+        result = buildFrom(proto, dependencies, GENERATED_CODE_OPTIONS, false);
       } catch (DescriptorValidationException e) {
         throw new IllegalArgumentException(
             "Invalid embedded descriptor for \"" + proto.getName() + "\".", e);
@@ -563,7 +678,7 @@ public final class Descriptors {
       try {
         // When building descriptors for generated code, we allow unknown
         // dependencies by default and delay feature resolution until later.
-        return buildFrom(proto, dependencies, true, true);
+        return buildFrom(proto, dependencies, GENERATED_CODE_OPTIONS, true);
       } catch (DescriptorValidationException e) {
         throw new IllegalArgumentException(
             "Invalid embedded descriptor for \"" + proto.getName() + "\".", e);
@@ -3628,29 +3743,32 @@ public final class Descriptors {
      */
     void addPackage(final String fullName, final FileDescriptor file)
         throws DescriptorValidationException {
-      final int dotpos = fullName.lastIndexOf('.');
-      final String name;
-      if (dotpos == -1) {
-        name = fullName;
-      } else {
-        addPackage(fullName.substring(0, dotpos), file);
-        name = fullName.substring(dotpos + 1);
-      }
+      int start = 0;
+      while (true) {
+        final int dotpos = fullName.indexOf('.', start);
+        final String prefix = (dotpos == -1) ? fullName : fullName.substring(0, dotpos);
+        final String name =
+            (dotpos == -1) ? fullName.substring(start) : fullName.substring(start, dotpos);
 
-      final GenericDescriptor old =
-          descriptorsByName.put(fullName, new PackageDescriptor(name, fullName, file));
-      if (old != null) {
-        descriptorsByName.put(fullName, old);
-        if (!(old instanceof PackageDescriptor)) {
-          throw new DescriptorValidationException(
-              file,
-              '\"'
-                  + name
-                  + "\" is already defined (as something other than a "
-                  + "package) in file \""
-                  + old.getFile().getName()
-                  + "\".");
+        final GenericDescriptor old =
+            descriptorsByName.put(prefix, new PackageDescriptor(name, prefix, file));
+        if (old != null) {
+          descriptorsByName.put(prefix, old);
+          if (!(old instanceof PackageDescriptor)) {
+            throw new DescriptorValidationException(
+                file,
+                '\"'
+                    + name
+                    + "\" is already defined (as something other than a "
+                    + "package) in file \""
+                    + old.getFile().getName()
+                    + "\".");
+          }
         }
+        if (dotpos == -1) {
+          break;
+        }
+        start = dotpos + 1;
       }
     }
 

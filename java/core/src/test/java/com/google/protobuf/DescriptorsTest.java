@@ -1567,6 +1567,36 @@ public class DescriptorsTest {
       assertThat(Proto3FileExtensions.singularInt.getDescriptor().hasPresence()).isTrue();
       assertThat(Proto3FileExtensions.repeatedInt.getDescriptor().hasPresence()).isFalse();
     }
+
+    @Test
+    public void testBuildFromWithBuildOptions() throws Exception {
+      FileDescriptor.BuildOptions defaultOptions = FileDescriptor.BuildOptions.getDefaultInstance();
+      assertThat(defaultOptions.getAllowUnknownDependencies()).isFalse();
+      assertThat(defaultOptions.getUnsafeDisableLimitChecks()).isFalse();
+
+      FileDescriptor.BuildOptions options =
+          defaultOptions
+              .toBuilder()
+              .setAllowUnknownDependencies(true)
+              .setUnsafeDisableLimitChecks(true)
+              .build();
+      assertThat(options.getAllowUnknownDependencies()).isTrue();
+      assertThat(options.getUnsafeDisableLimitChecks()).isTrue();
+
+      StringBuilder deepPackage = new StringBuilder("a");
+      for (int i = 0; i < 200; i++) {
+        deepPackage.append(".a");
+      }
+      FileDescriptorProto proto =
+          FileDescriptorProto.newBuilder()
+              .setName("deep.proto")
+              .setPackage(deepPackage.toString())
+              .addMessageType(DescriptorProto.newBuilder().setName("Foo"))
+              .build();
+      FileDescriptor file = FileDescriptor.buildFrom(proto, new FileDescriptor[0], options);
+      assertThat(file.getPackage()).isEqualTo(deepPackage.toString());
+      assertThat(file.findMessageTypeByName("Foo")).isNotNull();
+    }
   }
 
   public static class FeatureInheritanceTest {
