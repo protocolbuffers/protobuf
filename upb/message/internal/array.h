@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include "upb/mem/arena.h"
+#include "upb/port/overflow.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -26,8 +27,16 @@ extern "C" {
 
 #define _UPB_ARRAY_DEFAULT_INITIAL_SIZE 4
 
+#if UPB_FUTURE_32BIT_ARRAY
+#define _UPB_ARRAY_SIZE_T uint32_t
+#define _UPB_ARRAY_MAX_SIZE UINT32_MAX
+#else
+#define _UPB_ARRAY_SIZE_T size_t
+#define _UPB_ARRAY_MAX_SIZE SIZE_MAX
+#endif
+
 // Our internal representation for repeated fields.
-struct upb_Array {
+struct UPB_ALIGN_AS(UPB_MALLOC_ALIGN) upb_Array {
   // This is a tagged pointer. Bits #0 and #1 encode the elem size as follows:
   //   0 maps to elem size 1
   //   1 maps to elem size 4
@@ -37,8 +46,10 @@ struct upb_Array {
   // Bit #2 contains the frozen/immutable flag.
   uintptr_t UPB_ONLYBITS(data);
 
-  size_t UPB_ONLYBITS(size);     // The number of elements in the array.
-  size_t UPB_PRIVATE(capacity);  // Allocated storage. Measured in elements.
+  // The number of elements in the array.
+  _UPB_ARRAY_SIZE_T UPB_ONLYBITS(size);
+  // Allocated storage. Measured in elements.
+  _UPB_ARRAY_SIZE_T UPB_PRIVATE(capacity);
 };
 
 UPB_INLINE void UPB_PRIVATE(_upb_Array_ShallowFreeze)(struct upb_Array* arr) {
@@ -95,6 +106,16 @@ UPB_API_INLINE void* upb_Array_MutableDataPtr(struct upb_Array* array) {
   return (void*)upb_Array_DataPtr(array);
 }
 
+// Returns the largest capacity an array of (1 << elem_size_lg2)-byte elements
+// can have, such that the capacity fits in upb_Array and the allocation of
+// `overhead` + capacity elements does not overflow.
+UPB_INLINE size_t UPB_PRIVATE(_upb_Array_MaxCapacity)(int elem_size_lg2,
+                                                      size_t overhead) {
+  const size_t max_bytes = SIZE_MAX - (UPB_MALLOC_ALIGN - 1) -
+                           UPB_PRIVATE(kUpb_Asan_GuardSize) - overhead;
+  return UPB_MIN(max_bytes >> elem_size_lg2, _UPB_ARRAY_MAX_SIZE);
+}
+
 UPB_NODISCARD UPB_INLINE struct upb_Array* UPB_PRIVATE(
     _upb_Array_NewMaybeAllowSlow)(upb_Arena* arena, size_t init_capacity,
                                   int elem_size_lg2, bool allow_slow) {
@@ -103,9 +124,8 @@ UPB_NODISCARD UPB_INLINE struct upb_Array* UPB_PRIVATE(
 
   const size_t array_size =
       UPB_ALIGN_UP(sizeof(struct upb_Array), UPB_MALLOC_ALIGN);
-  const size_t max_bytes =
-      SIZE_MAX - (UPB_MALLOC_ALIGN - 1) - UPB_PRIVATE(kUpb_Asan_GuardSize);
-  if (UPB_UNLIKELY(init_capacity > (max_bytes - array_size) >> elem_size_lg2)) {
+  if (UPB_UNLIKELY(init_capacity > UPB_PRIVATE(_upb_Array_MaxCapacity)(
+                                       elem_size_lg2, array_size))) {
     return NULL;
   }
   const size_t elem_bytes = init_capacity << elem_size_lg2;
@@ -126,7 +146,8 @@ UPB_NODISCARD UPB_INLINE struct upb_Array* UPB_PRIVATE(
         UPB_PRIVATE(_upb_Array_SetTaggedPtr)(array, data,
                                              (size_t)elem_size_lg2);
         array->UPB_ONLYBITS(size) = 0;
-        array->UPB_PRIVATE(capacity) = pool_bytes >> elem_size_lg2;
+        array->UPB_PRIVATE(capacity) =
+            UPB_MIN(pool_bytes >> elem_size_lg2, _UPB_ARRAY_MAX_SIZE);
         return array;
       }
     }
@@ -165,13 +186,15 @@ UPB_NODISCARD bool UPB_PRIVATE(_upb_Array_Realloc)(struct upb_Array* array,
 UPB_NODISCARD UPB_FORCEINLINE bool UPB_PRIVATE(_upb_Array_TryFastRealloc)(
     struct upb_Array* array, size_t capacity, int elem_size_lg2,
     upb_Arena* arena) {
-  const size_t max_bytes =
-      SIZE_MAX - (UPB_MALLOC_ALIGN - 1) - UPB_PRIVATE(kUpb_Asan_GuardSize);
-  if (UPB_UNLIKELY(capacity > max_bytes >> elem_size_lg2)) return false;
-  size_t old_bytes = array->UPB_PRIVATE(capacity) << elem_size_lg2;
+  if (UPB_UNLIKELY(capacity >
+                   UPB_PRIVATE(_upb_Array_MaxCapacity)(elem_size_lg2, 0))) {
+    return false;
+  }
+  size_t old_bytes = (size_t)array->UPB_PRIVATE(capacity) << elem_size_lg2;
   size_t new_bytes = capacity << elem_size_lg2;
   UPB_ASSUME(new_bytes > old_bytes);
-  if (!upb_Arena_TryExtend(arena, array, old_bytes, new_bytes)) return false;
+  void* data = upb_Array_MutableDataPtr(array);
+  if (!upb_Arena_TryExtend(arena, data, old_bytes, new_bytes)) return false;
   array->UPB_PRIVATE(capacity) = capacity;
   return true;
 }
@@ -194,6 +217,17 @@ UPB_NODISCARD UPB_INLINE bool UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
   if (!upb_Array_Reserve(array, size, arena)) return false;
   array->UPB_ONLYBITS(size) = size;
   return true;
+}
+
+// Grow without initializing new elements.
+UPB_NODISCARD UPB_INLINE bool UPB_PRIVATE(_upb_Array_GrowUninitialized)(
+    struct upb_Array* array, size_t count, upb_Arena* arena) {
+  size_t new_size;
+  if (UPB_UNLIKELY(
+          upb_AddOverflow(array->UPB_ONLYBITS(size), count, &new_size))) {
+    return false;
+  }
+  return UPB_PRIVATE(_upb_Array_ResizeUninitialized)(array, new_size, arena);
 }
 
 // This function is intended for situations where elem_size is compile-time
@@ -224,6 +258,8 @@ UPB_API_INLINE size_t upb_Array_Capacity(const struct upb_Array* arr) {
 #undef _UPB_ARRAY_MASK_IMM
 #undef _UPB_ARRAY_MASK_LG2
 #undef _UPB_ARRAY_MASK_ALL
+#undef _UPB_ARRAY_SIZE_T
+#undef _UPB_ARRAY_MAX_SIZE
 
 #include "upb/port/undef.inc"
 
