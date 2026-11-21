@@ -201,6 +201,13 @@ namespace Google.Protobuf.Collections
             int fixedSize = codec.FixedSize;
             if (fixedSize == 0)
             {
+                // Size the whole run in one call rather than one delegate call per element.
+                var packedSizeCalculator = codec.PackedSizeCalculator;
+                if (packedSizeCalculator != null)
+                {
+                    return packedSizeCalculator(array, count);
+                }
+
                 var calculator = codec.ValueSizeCalculator;
                 int tmp = 0;
                 for (int i = 0; i < count; i++)
