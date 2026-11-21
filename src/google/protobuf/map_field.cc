@@ -378,22 +378,25 @@ void MapFieldBase::SyncMapWithRepeatedFieldNoLock() {
 
   if (rep.empty()) return;
 
-  const Message* prototype = &rep[0];
+  const Message* prototype = GetPrototype();
   const Reflection* reflection = prototype->GetReflection();
   const Descriptor* descriptor = prototype->GetDescriptor();
   const FieldDescriptor* key_des = descriptor->map_key();
   const FieldDescriptor* val_des = descriptor->map_value();
 
   GenericMapRef map_ref;
-  map_ref.key_type_ = descriptor->map_key()->cpp_type();
-  map_ref.value_type_ = descriptor->map_value()->cpp_type();
+  map_ref.key_type_ = key_des->cpp_type();
+  map_ref.value_type_ = val_des->cpp_type();
   map_ref.map_ = &GetMapRaw();
-  if (descriptor->map_value()->message_type()) {
+  if (val_des->message_type()) {
     map_ref.value_class_data_ =
         GetClassData(GetMapEntryValuePrototype(*prototype));
   }
 
   for (const Message& elem : rep) {
+    // Entries must be instances of the map's entry prototype; the public
+    // reflection APIs enforce this when entries are added.
+    ABSL_CHECK_EQ(GetClassData(elem), GetClassData(*prototype));
     // MapKey type will be set later.
     Reflection::ScratchSpace map_key_scratch_space;
     MapKey map_key;

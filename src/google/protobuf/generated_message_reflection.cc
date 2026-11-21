@@ -2930,10 +2930,9 @@ Message* Reflection::AddMessage(Message* message, const FieldDescriptor* field,
                                 MessageFactory* factory) const {
   USAGE_MUTABLE_CHECK_ALL(AddMessage, REPEATED, MESSAGE);
 
-  if (factory == nullptr) factory = message_factory_;
-
   Arena* arena = message->GetArena();
   if (field->is_extension()) {
+    if (factory == nullptr) factory = message_factory_;
     return static_cast<Message*>(
         MutableExtensionSet(message)->AddMessage(arena, field, factory));
   } else {
@@ -2944,22 +2943,22 @@ Message* Reflection::AddMessage(Message* message, const FieldDescriptor* field,
     // We can't use AddField<Message>() because RepeatedPtrFieldBase doesn't
     // know how to allocate one.
     RepeatedPtrFieldBase* repeated = nullptr;
+    MapFieldBase* map_field = nullptr;
     if (IsMapFieldInApi(field)) {
-      repeated =
-          MutableRaw<MapFieldBase>(message, field)->MutableRepeatedField();
+      map_field = MutableRaw<MapFieldBase>(message, field);
+      repeated = map_field->MutableRepeatedField();
     } else {
       repeated = MutableRaw<RepeatedPtrFieldBase>(message, field);
     }
     result = repeated->AddFromCleared<GenericTypeHandler<Message>>();
     if (result == nullptr) {
       // We must allocate a new object.
-      const Message* prototype;
-      if (repeated->size() == 0) {
-        prototype = factory->GetPrototype(field->message_type());
+      if (map_field != nullptr) {
+        result = map_field->GetPrototype()->New(arena);
       } else {
-        prototype = &repeated->Get<GenericTypeHandler<Message>>(0);
+        result =
+            DownCastMessage<Message>(GetMessageClassData(field)->New(arena));
       }
-      result = prototype->New(arena);
       // We can guarantee here that repeated and result are either both heap
       // allocated or arena owned. So it is safe to call the unsafe version
       // of AddAllocated.
