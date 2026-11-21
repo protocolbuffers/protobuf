@@ -18,8 +18,6 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/log/die_if_null.h"
-#include "absl/memory/memory.h"
-#include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
@@ -176,7 +174,7 @@ class FieldMaskTree {
   ~FieldMaskTree() = default;
 
   void MergeFromFieldMask(const FieldMask& mask);
-  void MergeToFieldMask(FieldMask* mask);
+  void MergeToFieldMask(FieldMask* mask) const;
 
   // Add a field path into the tree. In a FieldMask, each field path matches
   // the specified field and also all its sub-fields. If the field path to
@@ -194,9 +192,9 @@ class FieldMaskTree {
   // will be moved.
   void RemovePath(absl::string_view path, const Descriptor* descriptor);
 
-  // Calculate the intersection part of a field path with this tree and add
-  // the intersection field path into out.
-  void IntersectPath(absl::string_view path, FieldMaskTree* out);
+  // Calculate the intersection of this tree with `other` and add all resulting
+  // field paths into `out`.
+  void IntersectToFieldMask(const FieldMaskTree& other, FieldMask* out) const;
 
   // Merge all fields specified by this tree from one message to another.
   void MergeMessage(const Message& source,
@@ -270,10 +268,6 @@ class FieldMaskTree {
     absl::btree_map<std::string, std::unique_ptr<Node>> children;
   };
 
-  // Merge all leaf nodes of a subtree to another tree.
-  void MergeLeafNodesToTree(absl::string_view prefix, const Node* node,
-                            FieldMaskTree* out);
-
   // Merge all fields specified by a sub-tree from one message to another.
   void MergeMessage(const Node* node, const Message& source,
                     const FieldMaskUtil::MergeOptions& options,
@@ -300,33 +294,78 @@ void FieldMaskTree::MergeFromFieldMask(const FieldMask& mask) {
 
 namespace {
 
+// Calls `f` on every leaf path in the intersection of `root1` and `root2`,
+// or every leaf path in `root1` when `root2` is nullptr.
 template <typename F>
-void ForEachLeaf(const FieldMaskTree::Node* root, F&& f) {
+void ForEachLeaf(const FieldMaskTree::Node* root1,
+                 const FieldMaskTree::Node* root2, F&& f) {
+  if (root1->children.empty() ||
+      (root2 != nullptr && root2->children.empty())) {
+    return;
+  }
+
   struct StackElement {
-    const FieldMaskTree::Node* node;
-    std::string path;
+    const FieldMaskTree::Node* node1;
+    const FieldMaskTree::Node* node2;
+    absl::string_view segment;
+    size_t prefix_length;
   };
 
+  std::string current_path;
   std::vector<StackElement> stack;
-  stack.push_back(StackElement{root, ""});
+  stack.push_back(StackElement{root1, root2, "", 0});
 
   while (!stack.empty()) {
-    StackElement next = std::move(stack.back());
+    StackElement next = stack.back();
     stack.pop_back();
-    const FieldMaskTree::Node* node = next.node;
-    const std::string& path = next.path;
+    current_path.resize(next.prefix_length);
+    if (!current_path.empty()) {
+      current_path.push_back('.');
+    }
+    if (!next.segment.empty()) {
+      current_path.append(next.segment.data(), next.segment.size());
+    }
 
-    if (node->children.empty()) {
-      f(std::move(next.path));
+    const FieldMaskTree::Node* node1 = next.node1;
+    const FieldMaskTree::Node* node2 = next.node2;
+    if (node2 != nullptr) {
+      if (node1->children.empty()) {
+        node1 = node2;
+        node2 = nullptr;
+      } else if (node2->children.empty()) {
+        node2 = nullptr;
+      }
+    }
+
+    if (node2 == nullptr) {
+      if (node1->children.empty()) {
+        if (!current_path.empty()) {
+          f(absl::string_view(current_path));
+        }
+      } else {
+        // Iterate in reverse order to maintain the order of the field mask (we
+        // want the next pop to be the first child not the last child).
+        for (auto it = node1->children.crbegin(); it != node1->children.crend();
+             ++it) {
+          stack.push_back(StackElement{it->second.get(), nullptr, it->first,
+                                       current_path.size()});
+        }
+      }
     } else {
-      // Iterate in reverse order to maintain the order of the field mask (we
-      // want the next pop to be the first child not the last child).
-      for (auto it = node->children.crbegin(); it != node->children.crend();
-           ++it) {
-        const auto& [name, child_ptr] = *it;
-        std::string current_path =
-            path.empty() ? std::string(name) : absl::StrCat(path, ".", name);
-        stack.push_back(StackElement{child_ptr.get(), std::move(current_path)});
+      // Iterate the smaller map in reverse order to maintain sorted field mask
+      // order while minimizing lookups.
+      const auto& smaller = node1->children.size() <= node2->children.size()
+                                ? node1->children
+                                : node2->children;
+      const auto& larger = node1->children.size() <= node2->children.size()
+                               ? node2->children
+                               : node1->children;
+      for (auto it = smaller.crbegin(); it != smaller.crend(); ++it) {
+        auto other_it = larger.find(it->first);
+        if (other_it != larger.end()) {
+          stack.push_back(StackElement{it->second.get(), other_it->second.get(),
+                                       it->first, current_path.size()});
+        }
       }
     }
   }
@@ -334,15 +373,9 @@ void ForEachLeaf(const FieldMaskTree::Node* root, F&& f) {
 
 }  // namespace
 
-void FieldMaskTree::MergeToFieldMask(FieldMask* mask) {
-  if (root_.children.empty()) {
-    return;
-  }
-  ForEachLeaf(&root_, [mask](std::string&& path) {
-    if (!path.empty()) {
-      mask->add_paths(std::move(path));
-    }
-  });
+void FieldMaskTree::MergeToFieldMask(FieldMask* mask) const {
+  ForEachLeaf(&root_, nullptr,
+              [mask](absl::string_view path) { mask->add_paths(path); });
 }
 
 void FieldMaskTree::AddPath(absl::string_view path) {
@@ -379,40 +412,36 @@ void FieldMaskTree::RemovePath(absl::string_view path,
   if (parts.empty()) {
     return;
   }
-  std::vector<Node*> nodes(parts.size());
-  Node* node = &root_;
+  // Validate the entire path up front and collect each segment's descriptor
+  // before mutating the tree, so invalid paths never expand wildcard leaves.
+  std::vector<const Descriptor*> descriptors(parts.size());
   const Descriptor* current_descriptor = descriptor;
-  Node* new_branch_node = nullptr;
   for (size_t i = 0; i < parts.size(); ++i) {
-    nodes[i] = node;
+    descriptors[i] = current_descriptor;
     const FieldDescriptor* field_descriptor =
         current_descriptor->FindFieldByName(parts[i]);
     if (field_descriptor == nullptr ||
         (field_descriptor->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE &&
          i != parts.size() - 1)) {
       // Invalid path.
-      if (new_branch_node != nullptr) {
-        // If add any new nodes, cleanup.
-        new_branch_node->ClearChildren();
-      }
       return;
     }
+    current_descriptor = field_descriptor->message_type();
+  }
 
+  std::vector<Node*> nodes(parts.size());
+  Node* node = &root_;
+  for (size_t i = 0; i < parts.size(); ++i) {
+    nodes[i] = node;
     if (node->children.empty()) {
-      if (new_branch_node == nullptr) {
-        new_branch_node = node;
-      }
-      for (int j = 0; j < current_descriptor->field_count(); ++j) {
-        node->children[current_descriptor->field(j)->name()] =
+      for (int j = 0; j < descriptors[i]->field_count(); ++j) {
+        node->children[descriptors[i]->field(j)->name()] =
             std::make_unique<Node>();
       }
     }
     auto it = node->children.find(parts[i]);
     if (it == node->children.end()) return;
     node = it->second.get();
-    if (field_descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      current_descriptor = field_descriptor->message_type();
-    }
   }
   // Remove path.
   for (int i = parts.size() - 1; i >= 0; i--) {
@@ -423,41 +452,10 @@ void FieldMaskTree::RemovePath(absl::string_view path,
   }
 }
 
-void FieldMaskTree::IntersectPath(absl::string_view path, FieldMaskTree* out) {
-  const Node* node = &root_;
-  for (absl::string_view node_name : absl::StrSplit(path, '.')) {
-    if (node->children.empty()) {
-      if (node != &root_) {
-        out->AddPath(path);
-      }
-      return;
-    }
-    auto it = node->children.find(node_name);
-    if (it == node->children.end()) {
-      // No intersection found.
-      return;
-    }
-    node = it->second.get();
-  }
-  // Now we found a matching node with the given path. Add all leaf nodes
-  // to out.
-  MergeLeafNodesToTree(path, node, out);
-}
-
-void FieldMaskTree::MergeLeafNodesToTree(absl::string_view prefix,
-                                         const Node* node, FieldMaskTree* out) {
-  if (node->children.empty()) {
-    out->AddPath(prefix);
-    return;
-  }
-
-  if (prefix.empty()) {
-    ForEachLeaf(node, [out](const std::string& path) { out->AddPath(path); });
-  } else {
-    ForEachLeaf(node, [prefix, out](const std::string& path) {
-      out->AddPath(absl::StrCat(prefix, ".", path));
-    });
-  }
+void FieldMaskTree::IntersectToFieldMask(const FieldMaskTree& other,
+                                         FieldMask* out) const {
+  ForEachLeaf(&root_, &other.root_,
+              [out](absl::string_view path) { out->add_paths(path); });
 }
 
 void FieldMaskTree::MergeMessage(const Node* node, const Message& source,
@@ -658,13 +656,11 @@ void FieldMaskUtil::Union(const FieldMask& mask1, const FieldMask& mask2,
 
 void FieldMaskUtil::Intersect(const FieldMask& mask1, const FieldMask& mask2,
                               FieldMask* out) {
-  FieldMaskTree tree, intersection;
-  tree.MergeFromFieldMask(mask1);
-  for (int i = 0; i < mask2.paths_size(); ++i) {
-    tree.IntersectPath(mask2.paths(i), &intersection);
-  }
+  FieldMaskTree tree1, tree2;
+  tree1.MergeFromFieldMask(mask1);
+  tree2.MergeFromFieldMask(mask2);
   out->Clear();
-  intersection.MergeToFieldMask(out);
+  tree1.IntersectToFieldMask(tree2, out);
 }
 
 void FieldMaskUtil::Subtract(const Descriptor* descriptor,

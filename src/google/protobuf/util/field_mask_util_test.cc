@@ -357,9 +357,32 @@ TEST(FieldMaskUtilTest, TestIntersect) {
   EXPECT_EQ("foo.bar.baz", FieldMaskUtil::ToString(out));
   FieldMaskUtil::Intersect(mask2, mask1, &out);
   EXPECT_EQ("foo.bar.baz", FieldMaskUtil::ToString(out));
+  FieldMaskUtil::FromString("foo.bar.baz,foo.bar.quz,foo.qux,quz", &mask1);
+  FieldMaskUtil::FromString("foo.bar,bar", &mask2);
+  FieldMaskUtil::Intersect(mask1, mask2, &out);
+  EXPECT_EQ("foo.bar.baz,foo.bar.quz", FieldMaskUtil::ToString(out));
+  FieldMaskUtil::Intersect(mask2, mask1, &out);
+  EXPECT_EQ("foo.bar.baz,foo.bar.quz", FieldMaskUtil::ToString(out));
+  // Overlap with duplicate and nested prefixes in mask2.
+  FieldMaskUtil::FromString("foo.bar.baz,foo.bar.quz,quz", &mask1);
+  FieldMaskUtil::FromString("foo.bar,foo.bar,foo.bar.baz,foo", &mask2);
+  FieldMaskUtil::Intersect(mask1, mask2, &out);
+  EXPECT_EQ("foo.bar.baz,foo.bar.quz", FieldMaskUtil::ToString(out));
+  FieldMaskUtil::Intersect(mask2, mask1, &out);
+  EXPECT_EQ("foo.bar.baz,foo.bar.quz", FieldMaskUtil::ToString(out));
+  // Overlap across multi-level branching trees with matching and non-matching
+  // siblings.
+  FieldMaskUtil::FromString("a.b.c,a.b.d,a.e.f,a.e.g,h", &mask1);
+  FieldMaskUtil::FromString("a.b.d,a.b.x,a.e.g,a.e.y,i", &mask2);
+  FieldMaskUtil::Intersect(mask1, mask2, &out);
+  EXPECT_EQ("a.b.d,a.e.g", FieldMaskUtil::ToString(out));
+  FieldMaskUtil::Intersect(mask2, mask1, &out);
+  EXPECT_EQ("a.b.d,a.e.g", FieldMaskUtil::ToString(out));
   // Intersect with empty mask.
   mask1.Clear();
   FieldMaskUtil::Intersect(mask1, mask2, &out);
+  EXPECT_EQ("", FieldMaskUtil::ToString(out));
+  FieldMaskUtil::Intersect(mask2, mask1, &out);
   EXPECT_EQ("", FieldMaskUtil::ToString(out));
   // Intersect with masks containing empty paths alongside non-empty paths.
   mask1.Clear();
@@ -373,6 +396,24 @@ TEST(FieldMaskUtilTest, TestIntersect) {
   EXPECT_EQ("foo.bar.baz", FieldMaskUtil::ToString(out));
   FieldMaskUtil::Intersect(mask2, mask1, &out);
   EXPECT_EQ("foo.bar.baz", FieldMaskUtil::ToString(out));
+  // Intersect when out aliases mask1 or mask2.
+  FieldMaskUtil::FromString("foo.bar.baz,quz", &mask1);
+  FieldMaskUtil::FromString("foo.bar,bar", &mask2);
+  FieldMaskUtil::Intersect(mask1, mask2, &mask1);
+  EXPECT_EQ("foo.bar.baz", FieldMaskUtil::ToString(mask1));
+  FieldMaskUtil::FromString("foo.bar.baz,quz", &mask1);
+  FieldMaskUtil::Intersect(mask1, mask2, &mask2);
+  EXPECT_EQ("foo.bar.baz", FieldMaskUtil::ToString(mask2));
+  // Intersect with malformed dotted paths.
+  FieldMaskUtil::FromString(".,..,.a,a.", &mask1);
+  FieldMaskUtil::Intersect(mask1, mask1, &out);
+  EXPECT_EQ("a,a.", FieldMaskUtil::ToString(out));
+  FieldMaskUtil::FromString("a..b", &mask1);
+  FieldMaskUtil::FromString("a", &mask2);
+  FieldMaskUtil::Intersect(mask1, mask2, &out);
+  EXPECT_EQ("a..b", FieldMaskUtil::ToString(out));
+  FieldMaskUtil::Intersect(mask2, mask1, &out);
+  EXPECT_EQ("a..b", FieldMaskUtil::ToString(out));
 }
 
 TEST(FieldMaskUtilTest, TestSubtract) {
@@ -406,6 +447,53 @@ TEST(FieldMaskUtilTest, TestSubtract) {
   FieldMaskUtil::FromString("optional_nested_message.nonexist_field", &mask2);
   FieldMaskUtil::Subtract<TestAllTypes>(mask1, mask2, &out);
   EXPECT_EQ("optional_nested_message", FieldMaskUtil::ToString(out));
+
+  // Recursive message with a multi-level invalid path does not expand or
+  // modify the wildcard leaf.
+  FieldMaskUtil::FromString("child", &mask1);
+  FieldMaskUtil::FromString("child.child.child.nonexist_field", &mask2);
+  FieldMaskUtil::Subtract<NestedTestAllTypes>(mask1, mask2, &out);
+  EXPECT_EQ("child", FieldMaskUtil::ToString(out));
+
+  // Multi-level invalid path whose intermediate segment is a non-message field
+  // does not expand or modify the wildcard leaf.
+  FieldMaskUtil::FromString("child", &mask1);
+  FieldMaskUtil::FromString("child.payload.optional_int32.nonexist_field",
+                            &mask2);
+  FieldMaskUtil::Subtract<NestedTestAllTypes>(mask1, mask2, &out);
+  EXPECT_EQ("child", FieldMaskUtil::ToString(out));
+
+  // Recursive message with a multi-level valid path expands each wildcard
+  // level and removes only the target sub-path.
+  FieldMaskUtil::FromString("child", &mask1);
+  FieldMaskUtil::FromString("child.child.payload", &mask2);
+  FieldMaskUtil::Subtract<NestedTestAllTypes>(mask1, mask2, &out);
+  EXPECT_EQ(
+      "child.child.child,child.child.eager_child,child.child.lazy_child,"
+      "child.child.repeated_child,child.eager_child,child.lazy_child,"
+      "child.payload,child.repeated_child",
+      FieldMaskUtil::ToString(out));
+
+  // Multi-level path across distinct message types expands each level with the
+  // corresponding message descriptor and removes only the target leaf.
+  FieldMaskUtil::FromString("child", &mask1);
+  FieldMaskUtil::FromString("child.payload.optional_foreign_message.c", &mask2);
+  FieldMaskUtil::Subtract<NestedTestAllTypes>(mask1, mask2, &out);
+  EXPECT_FALSE(FieldMaskUtil::IsPathInFieldMask(
+      "child.payload.optional_foreign_message.c", out));
+  EXPECT_TRUE(FieldMaskUtil::IsPathInFieldMask(
+      "child.payload.optional_foreign_message.d", out));
+  EXPECT_TRUE(
+      FieldMaskUtil::IsPathInFieldMask("child.payload.optional_int32", out));
+  EXPECT_TRUE(FieldMaskUtil::IsPathInFieldMask("child.child", out));
+
+  // Invalid path after transitioning across distinct message types does not
+  // expand or modify the wildcard leaf.
+  FieldMaskUtil::FromString("child", &mask1);
+  FieldMaskUtil::FromString(
+      "child.payload.optional_foreign_message.nonexist_field", &mask2);
+  FieldMaskUtil::Subtract<NestedTestAllTypes>(mask1, mask2, &out);
+  EXPECT_EQ("child", FieldMaskUtil::ToString(out));
 
   // mask1 is "optional_nested_message" and mask2 is
   // "optional_nested_message".
