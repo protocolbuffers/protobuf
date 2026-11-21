@@ -2981,7 +2981,7 @@ const upb_MiniTable* MakeOneofTable(std::initializer_list<upb_FieldType> types,
   return mt;
 }
 
-std::vector<int> GetOneofDecodeOptionsToTest() {
+std::vector<int> GetDecodeOptionsWithAliasToTest() {
   std::vector<int> ret;
   for (int options : GetDecodeOptionsToTest()) {
     ret.push_back(options);
@@ -3017,7 +3017,7 @@ TEST(DecodeTest, FailedOneofScalarLeavesPreviousMember) {
     payload.append(10, '\x80');
     payload.push_back('\x01');
 
-    for (int options : GetOneofDecodeOptionsToTest()) {
+    for (int options : GetDecodeOptionsWithAliasToTest()) {
       SCOPED_TRACE(options);
       Arena arena;
       upb_Message* msg = upb_Message_New(mt, arena.ptr());
@@ -3060,7 +3060,7 @@ TEST(DecodeTest, FailedOneofStringLeavesPreviousMember) {
 
   for (const std::string& payload : kPayloads) {
     SCOPED_TRACE(absl::CEscape(payload));
-    for (int options : GetOneofDecodeOptionsToTest()) {
+    for (int options : GetDecodeOptionsWithAliasToTest()) {
       SCOPED_TRACE(options);
       Arena arena;
       upb_Message* msg = upb_Message_New(mt, arena.ptr());
@@ -3070,6 +3070,98 @@ TEST(DecodeTest, FailedOneofStringLeavesPreviousMember) {
       EXPECT_EQ(upb_Message_WhichOneofFieldNumber(msg, int_field), 1u);
       EXPECT_EQ(upb_Message_GetInt64(msg, int_field, 0), 123);
     }
+  }
+}
+
+// A scalar string that fails UTF-8 validation must never be stored in the
+// message: the field is left exactly as it was, as in the MiniTable decoder.
+// With kUpb_DecodeOption_AliasString, values decoded earlier in the same
+// payload still alias the input after a failed decode.
+TEST(DecodeTest, FailedScalarStringLeavesValueUnchanged) {
+  Arena mt_arena;
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::String>(
+      1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+#if UPB_FASTTABLE
+  ASSERT_TRUE(MiniTable::HasFastTableEntry(mt, field));
+#endif
+  const std::string kValid = ToBinaryPayload(
+      wire_types::WireMessage{{1, wire_types::Delimited("abc")}});
+  const std::string kBadPayloads[] = {
+      // <= 16 bytes: routed through upb_EpsCopyInputStream's patch buffer.
+      ToBinaryPayload(
+          wire_types::WireMessage{{1, wire_types::Delimited("ab\xff")}}),
+      // > 16 bytes: aliases the caller's input buffer directly.
+      ToBinaryPayload(wire_types::WireMessage{
+          {1, wire_types::Delimited(std::string(20, 'a') + "\xff")}}),
+  };
+
+  for (const std::string& bad_utf8 : kBadPayloads) {
+    for (absl::string_view initial :
+         {absl::string_view(""), absl::string_view("abc")}) {
+      for (int options : GetDecodeOptionsWithAliasToTest()) {
+        SCOPED_TRACE(absl::StrCat("bad_size=", bad_utf8.size(),
+                                  " initial=", initial, " options=", options));
+        Arena arena;
+        upb_Message* msg = upb_Message_New(mt, arena.ptr());
+        if (!initial.empty()) {
+          ASSERT_EQ(upb_Decode(kValid.data(), kValid.size(), msg, mt, nullptr,
+                               /*options=*/0, arena.ptr()),
+                    kUpb_DecodeStatus_Ok);
+        }
+        upb_StringView before = upb_Message_GetString(
+            msg, field, upb_StringView_FromDataAndSize(nullptr, 0));
+
+        auto bad_buf = std::make_unique<char[]>(bad_utf8.size());
+        memcpy(bad_buf.get(), bad_utf8.data(), bad_utf8.size());
+        EXPECT_EQ(upb_Decode(bad_buf.get(), bad_utf8.size(), msg, mt, nullptr,
+                             options, arena.ptr()),
+                  kUpb_DecodeStatus_BadUtf8);
+        bad_buf.reset();
+
+        upb_StringView after = upb_Message_GetString(
+            msg, field, upb_StringView_FromDataAndSize(nullptr, 0));
+        EXPECT_EQ(after.data, before.data);
+        EXPECT_EQ(after.size, before.size);
+        EXPECT_EQ(absl::string_view(after.data, after.size), initial);
+      }
+    }
+  }
+}
+
+TEST(DecodeTest, OutOfMemoryScalarStringCopyLeavesValueUnchanged) {
+  Arena mt_arena;
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::String>(
+      1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+#if UPB_FASTTABLE
+  ASSERT_TRUE(MiniTable::HasFastTableEntry(mt, field));
+#endif
+  const std::string kInitial = ToBinaryPayload(
+      wire_types::WireMessage{{1, wire_types::Delimited("abc")}});
+  const std::string kTooLarge = ToBinaryPayload(wire_types::WireMessage{
+      {1, wire_types::Delimited(std::string(1024, 'x'))}});
+
+  for (int options : GetDecodeOptionsToTest()) {
+    SCOPED_TRACE(options);
+    alignas(8) char mem[512];
+    upb_Arena* arena = upb_Arena_Init(mem, sizeof(mem), nullptr);
+    ASSERT_NE(arena, nullptr);
+    upb_Message* msg = upb_Message_New(mt, arena);
+    ASSERT_NE(msg, nullptr);
+    ASSERT_EQ(upb_Decode(kInitial.data(), kInitial.size(), msg, mt, nullptr,
+                         options, arena),
+              kUpb_DecodeStatus_Ok);
+    upb_StringView before = upb_Message_GetString(
+        msg, field, upb_StringView_FromDataAndSize(nullptr, 0));
+
+    EXPECT_EQ(upb_Decode(kTooLarge.data(), kTooLarge.size(), msg, mt, nullptr,
+                         options, arena),
+              kUpb_DecodeStatus_OutOfMemory);
+    upb_StringView after = upb_Message_GetString(
+        msg, field, upb_StringView_FromDataAndSize(nullptr, 0));
+    EXPECT_EQ(after.data, before.data);
+    EXPECT_EQ(after.size, before.size);
+    EXPECT_EQ(absl::string_view(after.data, after.size), "abc");
+    upb_Arena_Free(arena);
   }
 }
 
