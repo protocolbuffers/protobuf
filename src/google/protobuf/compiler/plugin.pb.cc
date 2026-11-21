@@ -994,11 +994,9 @@ void Version::CopyFrom(const Version& from) {
 
 void Version::InternalSwap(Version* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.suffix_, &other->_impl_.suffix_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.suffix_, &other->_impl_.suffix_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(Version, _impl_.patch_)
       + sizeof(Version::_impl_.patch_)
@@ -1359,13 +1357,11 @@ PROTOBUF_NOINLINE bool CodeGeneratorRequest::IsInitializedImpl(
 
 void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.file_to_generate_.InternalSwap(&other->_impl_.file_to_generate_);
   _impl_.proto_file_.InternalSwap(&other->_impl_.proto_file_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.parameter_, &other->_impl_.parameter_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.parameter_, &other->_impl_.parameter_);
   swap(_impl_.compiler_version_, other->_impl_.compiler_version_);
   _impl_.source_file_descriptors_.InternalSwap(&other->_impl_.source_file_descriptors_);
 }
@@ -1634,13 +1630,11 @@ void CodeGeneratorResponse_File::CopyFrom(const CodeGeneratorResponse_File& from
 
 void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.insertion_point_, &other->_impl_.insertion_point_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.content_, &other->_impl_.content_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.insertion_point_, &other->_impl_.insertion_point_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.content_, &other->_impl_.content_);
   swap(_impl_.generated_code_info_, other->_impl_.generated_code_info_);
 }
 
@@ -1928,12 +1922,10 @@ void CodeGeneratorResponse::CopyFrom(const CodeGeneratorResponse& from) {
 
 void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.file_.InternalSwap(&other->_impl_.file_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.error_, &other->_impl_.error_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.error_, &other->_impl_.error_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.maximum_edition_)
       + sizeof(CodeGeneratorResponse::_impl_.maximum_edition_)

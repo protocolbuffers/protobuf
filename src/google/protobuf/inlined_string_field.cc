@@ -44,17 +44,13 @@ class InlinedStringField::ScopedCheckInvariants {
 #endif  // NDEBUG || !GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL_INLINE
 
 
-std::string* InlinedStringField::Mutable(const MessageLite& parent) {
+std::string* InlinedStringField::Mutable(
+    [[maybe_unused]] const MessageLite& parent) {
   ScopedCheckInvariants invariants(this);
-  Arena* arena = parent.GetArena();
-  if (arena == nullptr) {
+  if (!IsLongDonated()) {
     return UnsafeMutablePointer();
   }
-  if (!IsDonated()) {
-    MaybeRegisterForDestruction(arena, get_mutable());
-    return UnsafeMutablePointer();
-  }
-  return MutableSlow(arena);
+  return MutableSlow();
 }
 
 bool InlinedStringField::IsDonated(const std::string& str) {
@@ -95,41 +91,17 @@ size_t InlinedStringField::Capacity() const {
   return str_.capacity();
 }
 
-void InlinedStringField::RegisterForDestruction(Arena* arena,
-                                                std::string* str) {
-  arena->OwnCustomDestructor(str, DestroyArenaString);
-}
-
-void InlinedStringField::DestroyArenaString(void* p) {
-  std::string* str = static_cast<std::string*>(p);
-  if (IsDonated(*str)) return;
-
-  str->~basic_string();
-  // Reset in case we destroy more than once.
-  ::new (p) std::string();
-}
-
-std::string* InlinedStringField::MutableSlow(::google::protobuf::Arena* arena) {
-  if (arena != nullptr) {
-    RegisterForDestruction(arena, get_mutable());
-  }
+std::string* InlinedStringField::MutableSlow() {
   return UnsafeMutablePointer();
 }
 
-void InlinedStringField::SetAllocated(std::string* value,
-                                      const MessageLite& parent) {
-  Arena* arena = parent.GetArena();
-  if (arena != nullptr && value != nullptr) {
-    MaybeRegisterForDestruction(arena, get_mutable());
-  }
+void InlinedStringField::SetAllocated(
+    std::string* value, [[maybe_unused]] const MessageLite& parent) {
   SetAllocatedNoArena(value);
 }
 
-void InlinedStringField::Set(std::string&& value, const MessageLite& parent) {
-  Arena* arena = parent.GetArena();
-  if (arena != nullptr) {
-    MaybeRegisterForDestruction(arena, get_mutable());
-  }
+void InlinedStringField::Set(std::string&& value,
+                             [[maybe_unused]] const MessageLite& parent) {
   SetNoArena(std::move(value));
 }
 
@@ -139,10 +111,9 @@ std::string* InlinedStringField::Release() {
   return released;
 }
 
-std::string* InlinedStringField::Release(const MessageLite& parent) {
-  Arena* arena = parent.GetArena();
-  // We can not steal donated arena strings.
-  std::string* released = (arena != nullptr && IsDonated())
+std::string* InlinedStringField::Release(
+    [[maybe_unused]] const MessageLite& parent) {
+  std::string* released = IsLongDonated()
                               ? new std::string(*get_mutable())
                               : new std::string(std::move(*get_mutable()));
   get_mutable()->clear();
@@ -151,10 +122,7 @@ std::string* InlinedStringField::Release(const MessageLite& parent) {
 
 void InlinedStringField::ClearToDefault(const LazyString& default_value,
                                         const MessageLite& parent, bool) {
-  Arena* arena = parent.GetArena();
-  if (arena != nullptr) {
-    MaybeRegisterForDestruction(arena, get_mutable());
-  }
+  (void)parent;
   get_mutable()->assign(default_value.get());
 }
 

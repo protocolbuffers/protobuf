@@ -7632,8 +7632,6 @@ PROTOBUF_NOINLINE bool FileDescriptorProto::IsInitializedImpl(
 
 void FileDescriptorProto::InternalSwap(FileDescriptorProto* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.dependency_.InternalSwap(&other->_impl_.dependency_);
@@ -7644,9 +7642,9 @@ void FileDescriptorProto::InternalSwap(FileDescriptorProto* PROTOBUF_RESTRICT PR
   _impl_.public_dependency_.InternalSwap(&other->_impl_.public_dependency_);
   _impl_.weak_dependency_.InternalSwap(&other->_impl_.weak_dependency_);
   _impl_.option_dependency_.InternalSwap(&other->_impl_.option_dependency_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.package_, &other->_impl_.package_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.syntax_, &other->_impl_.syntax_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.package_, &other->_impl_.package_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.syntax_, &other->_impl_.syntax_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_.edition_)
       + sizeof(FileDescriptorProto::_impl_.edition_)
@@ -8682,8 +8680,6 @@ PROTOBUF_NOINLINE bool DescriptorProto::IsInitializedImpl(
 
 void DescriptorProto::InternalSwap(DescriptorProto* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.field_.InternalSwap(&other->_impl_.field_);
@@ -8694,7 +8690,7 @@ void DescriptorProto::InternalSwap(DescriptorProto* PROTOBUF_RESTRICT PROTOBUF_N
   _impl_.oneof_decl_.InternalSwap(&other->_impl_.oneof_decl_);
   _impl_.reserved_range_.InternalSwap(&other->_impl_.reserved_range_);
   _impl_.reserved_name_.InternalSwap(&other->_impl_.reserved_name_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_.visibility_)
       + sizeof(DescriptorProto::_impl_.visibility_)
@@ -8959,12 +8955,10 @@ void ExtensionRangeOptions_Declaration::CopyFrom(const ExtensionRangeOptions_Dec
 
 void ExtensionRangeOptions_Declaration::InternalSwap(ExtensionRangeOptions_Declaration* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.full_name_, &other->_impl_.full_name_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.type_, &other->_impl_.type_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.full_name_, &other->_impl_.full_name_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.type_, &other->_impl_.type_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_.repeated_)
       + sizeof(ExtensionRangeOptions_Declaration::_impl_.repeated_)
@@ -9707,15 +9701,13 @@ PROTOBUF_NOINLINE bool FieldDescriptorProto::IsInitializedImpl(
 
 void FieldDescriptorProto::InternalSwap(FieldDescriptorProto* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.extendee_, &other->_impl_.extendee_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.type_name_, &other->_impl_.type_name_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.default_value_, &other->_impl_.default_value_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.json_name_, &other->_impl_.json_name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.extendee_, &other->_impl_.extendee_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.type_name_, &other->_impl_.type_name_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.default_value_, &other->_impl_.default_value_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.json_name_, &other->_impl_.json_name_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.type_)
       + sizeof(FieldDescriptorProto::_impl_.type_)
@@ -9951,11 +9943,9 @@ PROTOBUF_NOINLINE bool OneofDescriptorProto::IsInitializedImpl(
 
 void OneofDescriptorProto::InternalSwap(OneofDescriptorProto* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_);
   swap(_impl_.options_, other->_impl_.options_);
 }
 
@@ -10524,14 +10514,12 @@ PROTOBUF_NOINLINE bool EnumDescriptorProto::IsInitializedImpl(
 
 void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.value_.InternalSwap(&other->_impl_.value_);
   _impl_.reserved_range_.InternalSwap(&other->_impl_.reserved_range_);
   _impl_.reserved_name_.InternalSwap(&other->_impl_.reserved_name_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_.visibility_)
       + sizeof(EnumDescriptorProto::_impl_.visibility_)
@@ -10789,11 +10777,9 @@ PROTOBUF_NOINLINE bool EnumValueDescriptorProto::IsInitializedImpl(
 
 void EnumValueDescriptorProto::InternalSwap(EnumValueDescriptorProto* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_.number_)
       + sizeof(EnumValueDescriptorProto::_impl_.number_)
@@ -11069,12 +11055,10 @@ PROTOBUF_NOINLINE bool ServiceDescriptorProto::IsInitializedImpl(
 
 void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.method_.InternalSwap(&other->_impl_.method_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_);
   swap(_impl_.options_, other->_impl_.options_);
 }
 
@@ -11382,13 +11366,11 @@ PROTOBUF_NOINLINE bool MethodDescriptorProto::IsInitializedImpl(
 
 void MethodDescriptorProto::InternalSwap(MethodDescriptorProto* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.input_type_, &other->_impl_.input_type_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.output_type_, &other->_impl_.output_type_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.input_type_, &other->_impl_.input_type_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.output_type_, &other->_impl_.output_type_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_.server_streaming_)
       + sizeof(MethodDescriptorProto::_impl_.server_streaming_)
@@ -11982,20 +11964,18 @@ PROTOBUF_NOINLINE bool FileOptions::IsInitializedImpl(
 void FileOptions::InternalSwap(FileOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.java_package_, &other->_impl_.java_package_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.java_outer_classname_, &other->_impl_.java_outer_classname_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.go_package_, &other->_impl_.go_package_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.objc_class_prefix_, &other->_impl_.objc_class_prefix_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.csharp_namespace_, &other->_impl_.csharp_namespace_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.swift_prefix_, &other->_impl_.swift_prefix_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.php_class_prefix_, &other->_impl_.php_class_prefix_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.php_namespace_, &other->_impl_.php_namespace_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.php_metadata_namespace_, &other->_impl_.php_metadata_namespace_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.ruby_package_, &other->_impl_.ruby_package_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.java_package_, &other->_impl_.java_package_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.java_outer_classname_, &other->_impl_.java_outer_classname_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.go_package_, &other->_impl_.go_package_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.objc_class_prefix_, &other->_impl_.objc_class_prefix_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.csharp_namespace_, &other->_impl_.csharp_namespace_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.swift_prefix_, &other->_impl_.swift_prefix_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.php_class_prefix_, &other->_impl_.php_class_prefix_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.php_namespace_, &other->_impl_.php_namespace_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.php_metadata_namespace_, &other->_impl_.php_metadata_namespace_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.ruby_package_, &other->_impl_.ruby_package_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.cc_enable_arenas_)
       + sizeof(FileOptions::_impl_.cc_enable_arenas_)
@@ -12550,11 +12530,9 @@ void FieldOptions_EditionDefault::CopyFrom(const FieldOptions_EditionDefault& fr
 
 void FieldOptions_EditionDefault::InternalSwap(FieldOptions_EditionDefault* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.value_, &other->_impl_.value_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.value_, &other->_impl_.value_);
   swap(_impl_.edition_, other->_impl_.edition_);
 }
 
@@ -12823,12 +12801,10 @@ void FieldOptions_FeatureSupport::CopyFrom(const FieldOptions_FeatureSupport& fr
 
 void FieldOptions_FeatureSupport::InternalSwap(FieldOptions_FeatureSupport* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.deprecation_warning_, &other->_impl_.deprecation_warning_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.removal_error_, &other->_impl_.removal_error_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.deprecation_warning_, &other->_impl_.deprecation_warning_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.removal_error_, &other->_impl_.removal_error_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_.edition_removed_)
       + sizeof(FieldOptions_FeatureSupport::_impl_.edition_removed_)
@@ -15115,11 +15091,9 @@ PROTOBUF_NOINLINE bool UninterpretedOption_NamePart::IsInitializedImpl(
 
 void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_part_, &other->_impl_.name_part_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_part_, &other->_impl_.name_part_);
   swap(_impl_.is_extension_, other->_impl_.is_extension_);
 }
 
@@ -15450,14 +15424,12 @@ PROTOBUF_NOINLINE bool UninterpretedOption::IsInitializedImpl(
 
 void UninterpretedOption::InternalSwap(UninterpretedOption* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.name_.InternalSwap(&other->_impl_.name_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.identifier_value_, &other->_impl_.identifier_value_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.string_value_, &other->_impl_.string_value_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.aggregate_value_, &other->_impl_.aggregate_value_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.identifier_value_, &other->_impl_.identifier_value_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.string_value_, &other->_impl_.string_value_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.aggregate_value_, &other->_impl_.aggregate_value_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_.double_value_)
       + sizeof(UninterpretedOption::_impl_.double_value_)
@@ -16755,15 +16727,13 @@ void SourceCodeInfo_Location::CopyFrom(const SourceCodeInfo_Location& from) {
 
 void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.path_.InternalSwap(&other->_impl_.path_);
   _impl_.span_.InternalSwap(&other->_impl_.span_);
   _impl_.leading_detached_comments_.InternalSwap(&other->_impl_.leading_detached_comments_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.leading_comments_, &other->_impl_.leading_comments_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.trailing_comments_, &other->_impl_.trailing_comments_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.leading_comments_, &other->_impl_.leading_comments_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.trailing_comments_, &other->_impl_.trailing_comments_);
 }
 
 ::google::protobuf::Metadata SourceCodeInfo_Location::GetMetadata() const {
@@ -17272,12 +17242,10 @@ void GeneratedCodeInfo_Annotation::CopyFrom(const GeneratedCodeInfo_Annotation& 
 
 void GeneratedCodeInfo_Annotation::InternalSwap(GeneratedCodeInfo_Annotation* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.path_.InternalSwap(&other->_impl_.path_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.source_file_, &other->_impl_.source_file_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.source_file_, &other->_impl_.source_file_);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_.semantic_)
       + sizeof(GeneratedCodeInfo_Annotation::_impl_.semantic_)

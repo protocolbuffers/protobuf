@@ -386,11 +386,9 @@ void CppFileOptions::CopyFrom(const CppFileOptions& from) {
 
 void CppFileOptions::InternalSwap(CppFileOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.namespace__.InternalSwap(&_impl_.namespace__, &other->_impl_.namespace__, arena);
+  _impl_.namespace__.InternalSwap(&_impl_.namespace__, &other->_impl_.namespace__);
 }
 
 ::google::protobuf::Metadata CppFileOptions::GetMetadata() const {

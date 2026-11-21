@@ -910,10 +910,7 @@ void SwapFieldHelper::SwapInlinedStrings(const Reflection* r, Message* lhs,
   auto* lhs_string = r->MutableRaw<InlinedStringField>(lhs, field);
   auto* rhs_string = r->MutableRaw<InlinedStringField>(rhs, field);
   if (unsafe_shallow_swap) {
-    Arena* lhs_arena = lhs->GetArena();
-    Arena* rhs_arena = rhs->GetArena();
-    ABSL_DCHECK_EQ(lhs_arena, rhs_arena);
-    InlinedStringField::InternalSwap(lhs_string, rhs_string, lhs_arena);
+    InlinedStringField::InternalSwap(lhs_string, rhs_string);
   } else {
     const std::string temp = lhs_string->Get();
     lhs_string->Set(rhs_string->Get(), *lhs);
@@ -979,7 +976,7 @@ void SwapFieldHelper::SwapArenaStringPtr(ArenaStringPtr* lhs,
   Arena* lhs_arena = lhs_parent.GetArena();
   Arena* rhs_arena = rhs_parent.GetArena();
   if (lhs_arena == rhs_arena) {
-    ArenaStringPtr::InternalSwap(lhs, rhs, lhs_arena);
+    ArenaStringPtr::InternalSwap(lhs, rhs);
   } else if (lhs->IsDefault() && rhs->IsDefault()) {
     // Nothing to do.
   } else if (lhs->IsDefault()) {

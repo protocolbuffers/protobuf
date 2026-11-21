@@ -387,8 +387,7 @@ class PROTOBUF_EXPORT ArenaStringPtr {
   // logic in Swap()/UnsafeArenaSwap() at the message level, so this method is
   // 'unsafe' if called directly.
   PROTOBUF_NDEBUG_INLINE static void InternalSwap(ArenaStringPtr* rhs,
-                                                  ArenaStringPtr* lhs,
-                                                  Arena* arena);
+                                                  ArenaStringPtr* lhs);
 
   // Internal setter used only at parse time to directly set a donated string
   // value.
@@ -532,27 +531,8 @@ inline void ArenaStringPtr::SetBytes(const void* p, size_t n,
 }
 
 PROTOBUF_NDEBUG_INLINE void ArenaStringPtr::InternalSwap(ArenaStringPtr* rhs,
-                                                         ArenaStringPtr* lhs,
-                                                         Arena* arena) {
-  // Silence unused variable warnings in release buildls.
-  (void)arena;
+                                                         ArenaStringPtr* lhs) {
   std::swap(lhs->tagged_ptr_, rhs->tagged_ptr_);
-  if (internal::DebugHardenForceCopyInSwap()) {
-    for (auto* p : {lhs, rhs}) {
-      if (p->IsDefault()) continue;
-      std::string* old_value = p->tagged_ptr_.Get();
-      std::string* new_value =
-          p->IsFixedSizeArena()
-              ? Arena::Create<std::string>(arena, *old_value)
-              : Arena::Create<std::string>(arena, std::move(*old_value));
-      if (arena == nullptr) {
-        delete old_value;
-        p->tagged_ptr_.SetAllocated(new_value);
-      } else {
-        p->tagged_ptr_.SetMutableArena(new_value);
-      }
-    }
-  }
 }
 
 inline void ArenaStringPtr::ClearNonDefaultToEmpty() {
