@@ -523,14 +523,17 @@ static VALUE Message_respond_to_missing(int argc, VALUE* argv, VALUE _self) {
   }
 }
 
-void Message_InitFromValue(upb_Message* msg, const upb_MessageDef* m, VALUE val,
-                           upb_Arena* arena);
+#define PBRUBY_MAX_INIT_DEPTH 100
+
+static void Message_InitFromValue(upb_Message* msg, const upb_MessageDef* m,
+                                  VALUE val, upb_Arena* arena, int depth);
 
 typedef struct {
   upb_Map* map;
   TypeInfo key_type;
   TypeInfo val_type;
   upb_Arena* arena;
+  int depth;
 } MapInit;
 
 static int Map_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
@@ -547,7 +550,7 @@ static int Map_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
     upb_Message* msg = upb_Message_New(t, map_init->arena);
     if (!msg) Arena_raise_oom();
     Message_InitFromValue(msg, map_init->val_type.def.msgdef, val,
-                          map_init->arena);
+                          map_init->arena, map_init->depth + 1);
     v.msg_val = msg;
   } else {
     v = Convert_RubyToUpb(val, "", map_init->val_type, map_init->arena);
@@ -559,7 +562,7 @@ static int Map_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
 }
 
 static void Map_InitFromValue(upb_Map* map, const upb_FieldDef* f, VALUE val,
-                              upb_Arena* arena) {
+                              upb_Arena* arena, int depth) {
   const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(f);
   const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumber(entry_m, 1);
   const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumber(entry_m, 2);
@@ -569,18 +572,19 @@ static void Map_InitFromValue(upb_Map* map, const upb_FieldDef* f, VALUE val,
              "(given %s).",
              upb_FieldDef_Name(f), rb_class2name(CLASS_OF(val)));
   }
-  MapInit map_init = {map, TypeInfo_get(key_f), TypeInfo_get(val_f), arena};
+  MapInit map_init = {map, TypeInfo_get(key_f), TypeInfo_get(val_f), arena,
+                      depth};
   rb_hash_foreach(val, Map_initialize_kwarg, (VALUE)&map_init);
 }
 
 static upb_MessageValue MessageValue_FromValue(VALUE val, TypeInfo info,
-                                               upb_Arena* arena) {
+                                               upb_Arena* arena, int depth) {
   if (info.type == kUpb_CType_Message) {
     upb_MessageValue msgval;
     const upb_MiniTable* t = upb_MessageDef_MiniTable(info.def.msgdef);
     upb_Message* msg = upb_Message_New(t, arena);
     if (!msg) Arena_raise_oom();
-    Message_InitFromValue(msg, info.def.msgdef, val, arena);
+    Message_InitFromValue(msg, info.def.msgdef, val, arena, depth);
     msgval.msg_val = msg;
     return msgval;
   } else {
@@ -589,7 +593,8 @@ static upb_MessageValue MessageValue_FromValue(VALUE val, TypeInfo info,
 }
 
 static void RepeatedField_InitFromValue(upb_Array* arr, const upb_FieldDef* f,
-                                        VALUE val, upb_Arena* arena) {
+                                        VALUE val, upb_Arena* arena,
+                                        int depth) {
   TypeInfo type_info = TypeInfo_get(f);
 
   if (TYPE(val) != T_ARRAY) {
@@ -603,7 +608,7 @@ static void RepeatedField_InitFromValue(upb_Array* arr, const upb_FieldDef* f,
     VALUE entry = rb_ary_entry(val, i);
     upb_MessageValue msgval;
     if (upb_FieldDef_IsSubMessage(f) && TYPE(entry) == T_HASH) {
-      msgval = MessageValue_FromValue(entry, type_info, arena);
+      msgval = MessageValue_FromValue(entry, type_info, arena, depth + 1);
     } else {
       msgval = Convert_RubyToUpb(entry, upb_FieldDef_Name(f), type_info, arena);
     }
@@ -614,22 +619,23 @@ static void RepeatedField_InitFromValue(upb_Array* arr, const upb_FieldDef* f,
 }
 
 static void Message_InitFieldFromValue(upb_Message* msg, const upb_FieldDef* f,
-                                       VALUE val, upb_Arena* arena) {
+                                       VALUE val, upb_Arena* arena, int depth) {
   if (TYPE(val) == T_NIL) return;
 
   if (upb_FieldDef_IsMap(f)) {
     upb_Map* map = upb_Message_Mutable(msg, f, arena).map;
     if (!map) Arena_raise_oom();
-    Map_InitFromValue(map, f, val, arena);
+    Map_InitFromValue(map, f, val, arena, depth);
   } else if (upb_FieldDef_IsRepeated(f)) {
     upb_Array* arr = upb_Message_Mutable(msg, f, arena).array;
     if (!arr) Arena_raise_oom();
-    RepeatedField_InitFromValue(arr, f, val, arena);
+    RepeatedField_InitFromValue(arr, f, val, arena, depth);
   } else if (upb_FieldDef_IsSubMessage(f)) {
     if (TYPE(val) == T_HASH) {
       upb_Message* submsg = upb_Message_Mutable(msg, f, arena).msg;
       if (!submsg) Arena_raise_oom();
-      Message_InitFromValue(submsg, upb_FieldDef_MessageSubDef(f), val, arena);
+      Message_InitFromValue(submsg, upb_FieldDef_MessageSubDef(f), val, arena,
+                            depth + 1);
     } else {
       Message_setfield(msg, f, val, arena);
     }
@@ -646,6 +652,7 @@ typedef struct {
   upb_Message* msg;
   const upb_MessageDef* msgdef;
   upb_Arena* arena;
+  int depth;
 } MsgInit;
 
 static int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
@@ -670,13 +677,17 @@ static int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
              "Unknown field name '%s' in initialization map entry.", name);
   }
 
-  Message_InitFieldFromValue(msg_init->msg, f, val, msg_init->arena);
+  Message_InitFieldFromValue(msg_init->msg, f, val, msg_init->arena,
+                             msg_init->depth);
   return ST_CONTINUE;
 }
 
-void Message_InitFromValue(upb_Message* msg, const upb_MessageDef* m, VALUE val,
-                           upb_Arena* arena) {
-  MsgInit msg_init = {msg, m, arena};
+static void Message_InitFromValue(upb_Message* msg, const upb_MessageDef* m,
+                                  VALUE val, upb_Arena* arena, int depth) {
+  if (depth > PBRUBY_MAX_INIT_DEPTH) {
+    rb_raise(rb_eArgError, "Maximum recursion depth exceeded");
+  }
+  MsgInit msg_init = {msg, m, arena, depth};
   if (TYPE(val) == T_HASH) {
     rb_hash_foreach(val, Message_initialize_kwarg, (VALUE)&msg_init);
   } else {
@@ -709,7 +720,8 @@ static VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
   if (argc != 1) {
     rb_raise(rb_eArgError, "Expected 0 or 1 arguments.");
   }
-  Message_InitFromValue((upb_Message*)self->msg, self->msgdef, argv[0], arena);
+  Message_InitFromValue((upb_Message*)self->msg, self->msgdef, argv[0], arena,
+                        0);
   return Qnil;
 }
 
@@ -1300,10 +1312,15 @@ static VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
 
   if (argc == 2) {
     VALUE hash_args = argv[1];
+    bool from_to_h = false;
     if (TYPE(hash_args) != T_HASH) {
       if (RTEST(rb_funcall(hash_args, rb_intern("respond_to?"), 1,
                            rb_str_new2("to_h")))) {
         hash_args = rb_funcall(hash_args, rb_intern("to_h"), 0);
+        if (TYPE(hash_args) != T_HASH) {
+          rb_raise(rb_eArgError, "Expected hash arguments.");
+        }
+        from_to_h = true;
       } else {
         rb_raise(rb_eArgError, "Expected hash arguments.");
       }
@@ -1324,6 +1341,30 @@ static VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
                               ID2SYM(rb_intern("format_enums_as_integers")),
                               Qfalse))) {
       options |= upb_JsonEncode_FormatEnumsAsIntegers;
+    }
+
+    VALUE max_nesting =
+        rb_hash_lookup2(hash_args, ID2SYM(rb_intern("max_nesting")), Qnil);
+    if (!NIL_P(max_nesting) && max_nesting != Qfalse &&
+        !(from_to_h && max_nesting == INT2FIX(0))) {
+      if (!RB_INTEGER_TYPE_P(max_nesting)) {
+        rb_raise(rb_eArgError, "Expected positive integer for max_nesting.");
+      }
+      uint16_t clamped_depth;
+      if (FIXNUM_P(max_nesting)) {
+        long depth_val = FIX2LONG(max_nesting);
+        if (depth_val < 1) {
+          rb_raise(rb_eArgError, "Expected positive integer for max_nesting.");
+        }
+        clamped_depth =
+            depth_val > UINT16_MAX ? UINT16_MAX : (uint16_t)depth_val;
+      } else {
+        if (RTEST(rb_funcall(max_nesting, rb_intern("<"), 1, INT2FIX(1)))) {
+          rb_raise(rb_eArgError, "Expected positive integer for max_nesting.");
+        }
+        clamped_depth = UINT16_MAX;
+      }
+      options |= upb_JsonEncodeOptions_MaxDepth(clamped_depth);
     }
   }
 

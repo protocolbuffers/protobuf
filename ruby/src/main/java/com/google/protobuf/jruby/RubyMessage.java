@@ -71,64 +71,88 @@ public class RubyMessage extends RubyObject {
       if (!(args[0] instanceof RubyHash)) {
         throw runtime.newArgumentError("expected Hash arguments.");
       }
-      RubyHash hash = args[0].convertToHash();
-      hash.visitAll(
-          context,
-          new RubyHash.Visitor() {
-            @Override
-            public void visit(IRubyObject key, IRubyObject value) {
-              if (!(key instanceof RubySymbol) && !(key instanceof RubyString)) {
-                throw Utils.createTypeError(
-                    context, "Expected string or symbols as hash keys in initialization map.");
-              }
-              final FieldDescriptor fieldDescriptor =
-                  findField(context, key, ignoreUnknownFieldsOnInit);
-
-              if (value == null || value.isNil()) return;
-
-              if (fieldDescriptor.isMapField()) {
-                if (!(value instanceof RubyHash))
-                  throw runtime.newArgumentError(
-                      "Expected Hash object as initializer value for map field '"
-                          + key.asJavaString()
-                          + "' (given "
-                          + value.getMetaClass()
-                          + ").");
-
-                final RubyMap map = newMapForField(context, fieldDescriptor);
-                map.mergeIntoSelf(context, value);
-                fields.put(fieldDescriptor, map);
-              } else if (fieldDescriptor.isRepeated()) {
-                if (!(value instanceof RubyArray))
-                  throw runtime.newArgumentError(
-                      "Expected array as initializer value for repeated field '"
-                          + key.asJavaString()
-                          + "' (given "
-                          + value.getMetaClass()
-                          + ").");
-                fields.put(fieldDescriptor, rubyToRepeatedField(context, fieldDescriptor, value));
-              } else {
-                OneofDescriptor oneof = fieldDescriptor.getContainingOneof();
-                if (oneof != null) {
-                  oneofCases.put(oneof, fieldDescriptor);
-                }
-
-                if (value instanceof RubyHash
-                    && fieldDescriptor.getType() == FieldDescriptor.Type.MESSAGE) {
-                  RubyDescriptor descriptor =
-                      (RubyDescriptor) getDescriptorForField(context, fieldDescriptor);
-                  RubyClass typeClass = (RubyClass) descriptor.msgclass(context);
-                  value = (IRubyObject) typeClass.newInstance(context, value, Block.NULL_BLOCK);
-                  fields.put(fieldDescriptor, value);
-                } else {
-                  indexSet(context, key, value);
-                }
-              }
-            }
-          },
-          null);
+      initializeFromHash(context, args[0].convertToHash(), 0);
     }
     return this;
+  }
+
+  static RubyMessage newInstanceFromHash(
+      ThreadContext context, RubyClass typeClass, RubyHash hash, int depth) {
+    if (depth > MAX_INIT_DEPTH) {
+      throw context.runtime.newArgumentError("Maximum recursion depth exceeded");
+    }
+    RubyMessage msg = (RubyMessage) typeClass.newInstance(context, Block.NULL_BLOCK);
+    msg.initializeFromHash(context, hash, depth);
+    return msg;
+  }
+
+  void initializeFromHash(final ThreadContext context, RubyHash hash, final int depth) {
+    if (depth > MAX_INIT_DEPTH) {
+      throw context.runtime.newArgumentError("Maximum recursion depth exceeded");
+    }
+    final Ruby runtime = context.runtime;
+    hash.visitAll(
+        context,
+        new RubyHash.Visitor() {
+          @Override
+          public void visit(IRubyObject key, IRubyObject value) {
+            if (!(key instanceof RubySymbol) && !(key instanceof RubyString)) {
+              throw Utils.createTypeError(
+                  context, "Expected string or symbols as hash keys in initialization map.");
+            }
+            final FieldDescriptor fieldDescriptor =
+                findField(context, key, ignoreUnknownFieldsOnInit);
+
+            if (fieldDescriptor == null || value == null || value.isNil()) {
+              return;
+            }
+
+            if (fieldDescriptor.isMapField()) {
+              if (!(value instanceof RubyHash))
+                throw runtime.newArgumentError(
+                    "Expected Hash object as initializer value for map field '"
+                        + key.asJavaString()
+                        + "' (given "
+                        + value.getMetaClass()
+                        + ").");
+
+              final RubyMap map = newMapForField(context, fieldDescriptor);
+              map.mergeIntoSelf(context, value, depth);
+              fields.put(fieldDescriptor, map);
+            } else if (fieldDescriptor.isRepeated()) {
+              if (!(value instanceof RubyArray))
+                throw runtime.newArgumentError(
+                    "Expected array as initializer value for repeated field '"
+                        + key.asJavaString()
+                        + "' (given "
+                        + value.getMetaClass()
+                        + ").");
+              fields.put(
+                  fieldDescriptor, rubyToRepeatedField(context, fieldDescriptor, value, depth));
+            } else {
+              OneofDescriptor oneof = fieldDescriptor.getContainingOneof();
+
+              if (value instanceof RubyHash
+                  && fieldDescriptor.getType() == FieldDescriptor.Type.MESSAGE) {
+                RubyDescriptor descriptor =
+                    (RubyDescriptor) getDescriptorForField(context, fieldDescriptor);
+                RubyClass typeClass = (RubyClass) descriptor.msgclass(context);
+                value = newInstanceFromHash(context, typeClass, value.convertToHash(), depth + 1);
+                if (oneof != null) {
+                  FieldDescriptor oneofCase = oneofCases.get(oneof);
+                  if (oneofCase != null && oneofCase != fieldDescriptor) {
+                    fields.remove(oneofCase);
+                  }
+                  oneofCases.put(oneof, fieldDescriptor);
+                }
+                fields.put(fieldDescriptor, value);
+              } else {
+                indexSet(context, key, value);
+              }
+            }
+          }
+        },
+        null);
   }
 
   /*
@@ -651,11 +675,12 @@ public class RubyMessage extends RubyObject {
    *     MessageClass.encode_json(msg, options = {}) => json_string
    *
    * Encodes the given message object into its serialized JSON representation.
-   * @param options [Hash] options for the decoder
+   * @param options [Hash] options for the encoder
    *  preserve_proto_fieldnames: set true to use original fieldnames (default is to camelCase)
    *  emit_defaults: set true to also emit fields that have no presence, with their default values
    *  (default is to omit them). Fields that have presence are emitted only when set.
    *  format_enums_as_integers: set true to emit enum values as integer (default is string)
+   *  max_nesting: maximum JSON nesting depth (default is 100)
    */
   @JRubyMethod(name = "encode_json", required = 1, optional = 1, meta = true)
   public static IRubyObject encodeJson(
@@ -663,14 +688,21 @@ public class RubyMessage extends RubyObject {
     Ruby runtime = context.runtime;
     RubyMessage message = (RubyMessage) args[0];
     JsonFormat.Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
+    int maxNesting = DEFAULT_JSON_MAX_NESTING;
     String result;
 
     if (args.length > 1) {
       RubyHash options;
+      boolean fromToH = false;
       if (args[1] instanceof RubyHash) {
         options = (RubyHash) args[1];
       } else if (args[1].respondsTo("to_h")) {
-        options = (RubyHash) args[1].callMethod(context, "to_h");
+        IRubyObject converted = args[1].callMethod(context, "to_h");
+        if (!(converted instanceof RubyHash)) {
+          throw runtime.newArgumentError("Expected hash arguments.");
+        }
+        options = (RubyHash) converted;
+        fromToH = true;
       } else {
         throw runtime.newArgumentError("Expected hash arguments.");
       }
@@ -679,6 +711,7 @@ public class RubyMessage extends RubyObject {
       IRubyObject preserveNames = options.fastARef(runtime.newSymbol("preserve_proto_fieldnames"));
       IRubyObject printingEnumsAsInts =
           options.fastARef(runtime.newSymbol("format_enums_as_integers"));
+      IRubyObject maxNestingObj = options.fastARef(runtime.newSymbol("max_nesting"));
 
       if (emitDefaults != null && emitDefaults.isTrue()) {
         printer = printer.alwaysPrintFieldsWithNoPresence();
@@ -691,14 +724,56 @@ public class RubyMessage extends RubyObject {
       if (printingEnumsAsInts != null && printingEnumsAsInts.isTrue()) {
         printer = printer.printingEnumsAsInts();
       }
+
+      boolean disabledStateNesting =
+          fromToH
+              && maxNestingObj instanceof RubyFixnum
+              && ((RubyFixnum) maxNestingObj).getLongValue() == 0;
+      if (maxNestingObj != null
+          && !maxNestingObj.isNil()
+          && !(maxNestingObj instanceof RubyBoolean && !maxNestingObj.isTrue())
+          && !disabledStateNesting) {
+        if (!(maxNestingObj instanceof RubyInteger)) {
+          throw runtime.newArgumentError("Expected positive integer for max_nesting.");
+        }
+        if (maxNestingObj instanceof RubyFixnum) {
+          long val = ((RubyFixnum) maxNestingObj).getLongValue();
+          if (val < 1) {
+            throw runtime.newArgumentError("Expected positive integer for max_nesting.");
+          }
+          maxNesting = (int) Math.min(val, MAX_JSON_NESTING);
+        } else {
+          if (((RubyNumeric) maxNestingObj).isNegative()) {
+            throw runtime.newArgumentError("Expected positive integer for max_nesting.");
+          }
+          maxNesting = MAX_JSON_NESTING;
+        }
+      }
     }
     printer =
-        printer.usingTypeRegistry(
-            JsonFormat.TypeRegistry.newBuilder().add(message.descriptor).build());
+        printer
+            .usingRecursionLimit(maxNesting)
+            .usingTypeRegistry(
+                JsonFormat.TypeRegistry.newBuilder().add(message.descriptor).build());
+
+    int buildLimit = Math.min(maxNesting, 1000) * 3;
+    DynamicMessage builtMessage;
+    try {
+      builtMessage = message.build(context, 0, buildLimit);
+    } catch (RaiseException e) {
+      if (e.getMessage() != null && e.getMessage().contains("Recursion limit exceeded")) {
+        throw createParseError(context, "Error occurred during encoding: Max depth exceeded");
+      }
+      throw e;
+    }
 
     try {
-      result = printer.print(message.build(context, 0, SINK_MAXIMUM_NESTING));
+      result = printer.print(builtMessage);
     } catch (InvalidProtocolBufferException e) {
+      if (e.getMessage() != null
+          && (e.getMessage().contains("recursion") || e.getMessage().contains("nesting"))) {
+        throw createParseError(context, e.getMessage());
+      }
       throw runtime.newRuntimeError(e.getMessage());
     } catch (IllegalArgumentException e) {
       throw createParseError(context, e.getMessage());
@@ -1140,7 +1215,7 @@ public class RubyMessage extends RubyObject {
               (RubyClass)
                   ((RubyDescriptor) getDescriptorForField(context, fieldDescriptor))
                       .msgclass(context);
-          msg = (RubyMessage) typeClass.newInstance(context, value);
+          msg = newInstanceFromHash(context, typeClass, value.convertToHash(), depth + 1);
         } else {
           msg = (RubyMessage) value;
         }
@@ -1444,7 +1519,7 @@ public class RubyMessage extends RubyObject {
   }
 
   private RubyRepeatedField rubyToRepeatedField(
-      ThreadContext context, FieldDescriptor fieldDescriptor, IRubyObject value) {
+      ThreadContext context, FieldDescriptor fieldDescriptor, IRubyObject value, int depth) {
     RubyArray arr = value.convertToArray();
     RubyRepeatedField repeatedField = repeatedFieldForFieldDescriptor(context, fieldDescriptor);
     IRubyObject[] values = new IRubyObject[arr.size()];
@@ -1465,8 +1540,9 @@ public class RubyMessage extends RubyObject {
       if (item.isNil()) {
         throw Utils.createTypeError(context, "nil message not allowed here.");
       }
-      if (item instanceof RubyHash && typeClass != null) {
-        values[i] = ((RubyClass) typeClass).newInstance(context, item, Block.NULL_BLOCK);
+      if (item instanceof RubyHash && fieldType == FieldDescriptor.Type.MESSAGE) {
+        values[i] =
+            newInstanceFromHash(context, (RubyClass) typeClass, item.convertToHash(), depth + 1);
       } else {
         if (fieldType == FieldDescriptor.Type.ENUM) {
           item = enumToSymbol(context, fieldDescriptor.getEnumType(), item);
@@ -1551,6 +1627,9 @@ public class RubyMessage extends RubyObject {
   private static final String HAS_PREFIX = "has_";
   private static final String QUESTION_MARK = "?";
   private static final int SINK_MAXIMUM_NESTING = 64;
+  private static final int DEFAULT_JSON_MAX_NESTING = 100;
+  private static final int MAX_JSON_NESTING = 65535;
+  private static final int MAX_INIT_DEPTH = 100;
 
   private Descriptor descriptor;
   private DynamicMessage.Builder builder;

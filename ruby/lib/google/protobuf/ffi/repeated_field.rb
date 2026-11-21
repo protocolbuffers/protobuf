@@ -312,8 +312,12 @@ module Google
       attr :name, :arena, :array, :type, :descriptor
 
       def internal_push(*elements)
+        internal_push_elements(elements, 0)
+      end
+
+      def internal_push_elements(elements, depth = 0)
         elements.each do |element|
-          msgval = convert_ruby_to_upb(element, arena, type, descriptor)
+          msgval = convert_ruby_to_upb(element, arena, type, descriptor, depth: depth)
           # The conversion can run Ruby code that freezes the field; do not
           # append to a frozen array.
           raise FrozenError if frozen?
@@ -368,7 +372,7 @@ module Google
         end
       end
 
-      def initialize(type, type_class: nil, initial_values: nil, name: nil, arena: nil, array: nil, descriptor: nil)
+      def initialize(type, type_class: nil, initial_values: nil, name: nil, arena: nil, array: nil, descriptor: nil, depth: 0)
         @name = name || 'RepeatedField'
         raise ArgumentError.new "Expected argument type to be a Symbol" unless type.is_a? Symbol
         field_number = Google::Protobuf::FFI::FieldType[type]
@@ -391,7 +395,7 @@ module Google
           unless initial_values.is_a? Enumerable
             raise ArgumentError.new "Expected array as initializer value for repeated field '#{name}' (given #{initial_values.class})."
           end
-          internal_push(*initial_values)
+          internal_push_elements(initial_values, depth)
         end
 
         # Should always be the last expression of the initializer to avoid
@@ -406,9 +410,9 @@ module Google
       # @param arena [Arena] Owning message's arena
       # @param values [Enumerable] Initial values
       # @param array [::FFI::Pointer] Existing upb_Array
-      def self.construct_for_field(field, arena: nil, values: nil, array: nil)
+      def self.construct_for_field(field, arena: nil, values: nil, array: nil, depth: 0)
         instance = allocate
-        options = {initial_values: values, name: field.name, arena: arena, array: array}
+        options = {initial_values: values, name: field.name, arena: arena, array: array, depth: depth}
         if [:enum, :message].include? field.type
           options[:descriptor] = field.subtype
         end

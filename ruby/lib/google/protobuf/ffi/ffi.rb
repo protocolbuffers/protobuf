@@ -208,6 +208,10 @@ module Google
       def self.decode_max_depth(i)
         i << 16
       end
+
+      def self.json_encode_max_depth(i)
+        ([i, 0xffff].min) << 16
+      end
     end
   end
 end

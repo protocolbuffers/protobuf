@@ -405,6 +405,11 @@ public class RubyMap extends RubyObject {
   }
 
   protected RubyMap mergeIntoSelf(final ThreadContext context, IRubyObject hashmap) {
+    return mergeIntoSelf(context, hashmap, 0);
+  }
+
+  protected RubyMap mergeIntoSelf(
+      final ThreadContext context, IRubyObject hashmap, final int depth) {
     if (hashmap instanceof RubyHash) {
       ((RubyHash) hashmap)
           .visitAll(
@@ -412,8 +417,12 @@ public class RubyMap extends RubyObject {
               new RubyHash.Visitor() {
                 @Override
                 public void visit(IRubyObject key, IRubyObject val) {
-                  if (val instanceof RubyHash && !valueTypeClass.isNil()) {
-                    val = ((RubyClass) valueTypeClass).newInstance(context, val, Block.NULL_BLOCK);
+                  if (val instanceof RubyHash
+                      && !valueTypeClass.isNil()
+                      && valueType == FieldDescriptor.Type.MESSAGE) {
+                    val =
+                        RubyMessage.newInstanceFromHash(
+                            context, (RubyClass) valueTypeClass, val.convertToHash(), depth + 1);
                   }
                   indexSet(context, key, val);
                 }

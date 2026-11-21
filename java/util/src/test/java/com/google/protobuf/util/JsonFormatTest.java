@@ -2624,6 +2624,279 @@ public class JsonFormatTest {
     }
   }
 
+  private static Any createNestedAnyOfAny(int depth) throws InvalidProtocolBufferException {
+    ByteString payload = ByteString.EMPTY;
+    for (int i = 0; i < depth; i++) {
+      payload =
+          Any.newBuilder()
+              .setTypeUrl("type.googleapis.com/google.protobuf.Any")
+              .setValue(payload)
+              .build()
+              .toByteString();
+    }
+    return Any.parseFrom(payload, ExtensionRegistry.getEmptyRegistry());
+  }
+
+  private static TestRecursive createNestedTestRecursive(int depth) {
+    TestRecursive message = TestRecursive.newBuilder().setValue(1234).build();
+    for (int i = 0; i < depth; i++) {
+      message = TestRecursive.newBuilder().setNested(message).build();
+    }
+    return message;
+  }
+
+  @Test
+  public void testPrintRecursionLimitAnyOfAny() throws Exception {
+    com.google.protobuf.TypeRegistry registry =
+        com.google.protobuf.TypeRegistry.newBuilder().add(Any.getDescriptor()).build();
+    JsonFormat.Printer printer = JsonFormat.printer().usingTypeRegistry(registry);
+    JsonFormat.Parser parser = JsonFormat.parser().usingTypeRegistry(registry);
+
+    assertThrows(IllegalArgumentException.class, () -> printer.usingRecursionLimit(0));
+    assertThrows(IllegalArgumentException.class, () -> printer.usingRecursionLimit(-1));
+
+    // Deeply nested Any-of-Any (5,000 layers) passes binary Any.parseFrom() at wire depth 1
+    // because Any.value is opaque bytes, and must fail cleanly instead of StackOverflowError.
+    Any deepAny = createNestedAnyOfAny(5000);
+    InvalidProtocolBufferException deepError =
+        assertThrows(InvalidProtocolBufferException.class, () -> printer.print(deepAny));
+    assertThat(deepError).hasMessageThat().contains("recursion");
+
+    // Default limit is 100: 100 nested Any layers succeed and round-trip through Parser; 101 fail.
+    Any atLimit = createNestedAnyOfAny(100);
+    String json = printer.print(atLimit);
+    Any.Builder roundTripped = Any.newBuilder();
+    parser.merge(json, roundTripped);
+    assertThat(roundTripped.build()).isEqualTo(atLimit);
+
+    Any overLimit = createNestedAnyOfAny(101);
+    InvalidProtocolBufferException overLimitError =
+        assertThrows(InvalidProtocolBufferException.class, () -> printer.print(overLimit));
+    assertThat(overLimitError).hasMessageThat().contains("recursion");
+
+    // Custom recursion limit via usingRecursionLimit().
+    JsonFormat.Printer customPrinter = printer.usingRecursionLimit(3);
+    assertThat(customPrinter.print(createNestedAnyOfAny(3))).isNotEmpty();
+    Any customOverLimit = createNestedAnyOfAny(4);
+    InvalidProtocolBufferException customError =
+        assertThrows(
+            InvalidProtocolBufferException.class, () -> customPrinter.print(customOverLimit));
+    assertThat(customError).hasMessageThat().contains("recursion");
+  }
+
+  @Test
+  public void testPrintRecursionLimitMessage() throws Exception {
+    JsonFormat.Printer printer = JsonFormat.printer();
+    JsonFormat.Parser parser = JsonFormat.parser();
+
+    TestRecursive atLimit = createNestedTestRecursive(100);
+    String json = printer.print(atLimit);
+    TestRecursive.Builder roundTripped = TestRecursive.newBuilder();
+    parser.merge(json, roundTripped);
+    assertThat(roundTripped.build()).isEqualTo(atLimit);
+
+    TestRecursive overLimit = createNestedTestRecursive(101);
+    InvalidProtocolBufferException overLimitError =
+        assertThrows(InvalidProtocolBufferException.class, () -> printer.print(overLimit));
+    assertThat(overLimitError).hasMessageThat().contains("recursion");
+
+    JsonFormat.Printer customPrinter = printer.usingRecursionLimit(3);
+    assertThat(customPrinter.print(createNestedTestRecursive(3))).isNotEmpty();
+    TestRecursive customOverLimit = createNestedTestRecursive(4);
+    InvalidProtocolBufferException customError =
+        assertThrows(
+            InvalidProtocolBufferException.class, () -> customPrinter.print(customOverLimit));
+    assertThat(customError).hasMessageThat().contains("recursion");
+  }
+
+  @Test
+  public void testPrintRecursionLimitAnyWithNestedMessage() throws Exception {
+    com.google.protobuf.TypeRegistry registry =
+        com.google.protobuf.TypeRegistry.newBuilder()
+            .add(Any.getDescriptor())
+            .add(TestAny.getDescriptor())
+            .add(TestRecursive.getDescriptor())
+            .build();
+    JsonFormat.Printer printer = JsonFormat.printer().usingTypeRegistry(registry);
+    JsonFormat.Parser parser = JsonFormat.parser().usingTypeRegistry(registry);
+
+    // 1 Any unpack + 99 nested TestRecursive fields = 100 total depth (succeeds and round-trips).
+    Any atLimit =
+        Any.newBuilder()
+            .setTypeUrl("type.googleapis.com/" + TestRecursive.getDescriptor().getFullName())
+            .setValue(createNestedTestRecursive(99).toByteString())
+            .build();
+    String json = printer.print(atLimit);
+    Any.Builder roundTripped = Any.newBuilder();
+    parser.merge(json, roundTripped);
+    assertThat(roundTripped.build().getTypeUrl()).isEqualTo(atLimit.getTypeUrl());
+
+    // 1 Any unpack + 100 nested TestRecursive fields = 101 total depth (exceeds limit).
+    Any overLimit =
+        Any.newBuilder()
+            .setTypeUrl("type.googleapis.com/" + TestRecursive.getDescriptor().getFullName())
+            .setValue(createNestedTestRecursive(100).toByteString())
+            .build();
+    InvalidProtocolBufferException overLimitError =
+        assertThrows(InvalidProtocolBufferException.class, () -> printer.print(overLimit));
+    assertThat(overLimitError).hasMessageThat().contains("recursion");
+
+    // Chained TestAny -> anyValue (+1) -> Any unpack (+1) -> TestAny (2 levels per layer):
+    // 50 layers = depth 100 (succeeds); 51 layers = depth 102 (fails).
+    TestAny testAnyAtLimit = TestAny.getDefaultInstance();
+    for (int i = 0; i < 50; i++) {
+      Any packed =
+          Any.newBuilder()
+              .setTypeUrl("type.googleapis.com/" + TestAny.getDescriptor().getFullName())
+              .setValue(testAnyAtLimit.toByteString())
+              .build();
+      testAnyAtLimit = TestAny.newBuilder().setAnyValue(packed).build();
+    }
+    assertThat(printer.print(testAnyAtLimit)).isNotEmpty();
+
+    TestAny testAnyOverLimit =
+        TestAny.newBuilder()
+            .setAnyValue(
+                Any.newBuilder()
+                    .setTypeUrl("type.googleapis.com/" + TestAny.getDescriptor().getFullName())
+                    .setValue(testAnyAtLimit.toByteString())
+                    .build())
+            .build();
+    InvalidProtocolBufferException chainedError =
+        assertThrows(InvalidProtocolBufferException.class, () -> printer.print(testAnyOverLimit));
+    assertThat(chainedError).hasMessageThat().contains("recursion");
+  }
+
+  @Test
+  public void testPrintRecursionLimitStructAndListValueConsistency() throws Exception {
+    // Verify Concrete (Struct/ListValue) and Reflective (DynamicMessage) Printer match each other
+    // and match JsonFormat.Parser across nesting depths and limits.
+    for (int limit = 1; limit <= 5; limit++) {
+      for (int depth = 1; depth <= 6; depth++) {
+        String structJson = createNestedStructJson(depth);
+        String listJson = createNestedListValueJson(depth);
+
+        for (String input : new String[] {structJson, listJson}) {
+          TestStruct.Builder concreteBuilder = TestStruct.newBuilder();
+          JsonFormat.parser().merge(input, concreteBuilder);
+          TestStruct concreteMessage = concreteBuilder.build();
+
+          DynamicMessage.Builder reflectiveBuilder =
+              DynamicMessage.newBuilder(TestStruct.getDescriptor());
+          JsonFormat.parser().merge(input, reflectiveBuilder);
+          DynamicMessage reflectiveMessage = reflectiveBuilder.build();
+
+          boolean parserFailed = false;
+          try {
+            JsonFormat.parser().usingRecursionLimit(limit).merge(input, TestStruct.newBuilder());
+          } catch (InvalidProtocolBufferException e) {
+            assertThat(e).hasMessageThat().contains("recursion");
+            parserFailed = true;
+          }
+
+          boolean concretePrintFailed = false;
+          try {
+            assertThat(JsonFormat.printer().usingRecursionLimit(limit).print(concreteMessage))
+                .isNotEmpty();
+          } catch (InvalidProtocolBufferException e) {
+            assertThat(e).hasMessageThat().contains("recursion");
+            concretePrintFailed = true;
+          }
+
+          boolean reflectivePrintFailed = false;
+          try {
+            assertThat(JsonFormat.printer().usingRecursionLimit(limit).print(reflectiveMessage))
+                .isNotEmpty();
+          } catch (InvalidProtocolBufferException e) {
+            assertThat(e).hasMessageThat().contains("recursion");
+            reflectivePrintFailed = true;
+          }
+
+          assertWithMessage(
+                  "Concrete print vs parser mismatch for limit=%s, depth=%s", limit, depth)
+              .that(concretePrintFailed)
+              .isEqualTo(parserFailed);
+          assertWithMessage(
+                  "Reflective print vs concrete print mismatch for limit=%s, depth=%s",
+                  limit, depth)
+              .that(reflectivePrintFailed)
+              .isEqualTo(concretePrintFailed);
+        }
+      }
+    }
+
+    // Verify default limit (100) allows depth-99 Struct/ListValue inside TestStruct (total JSON
+    // depth 100, despite Struct's 3x binary message nesting) and rejects depth 100 (total 101).
+    Struct.Builder structAtLimit = Struct.newBuilder();
+    Value structVal = Value.newBuilder().setNumberValue(1).build();
+    for (int i = 0; i < 99; i++) {
+      structVal =
+          Value.newBuilder().setStructValue(Struct.newBuilder().putFields("a", structVal)).build();
+    }
+    structAtLimit.mergeFrom(structVal.getStructValue());
+    TestStruct testStructAtLimit = TestStruct.newBuilder().setStructValue(structAtLimit).build();
+    String printedStruct = JsonFormat.printer().print(testStructAtLimit);
+    TestStruct.Builder parsedStruct = TestStruct.newBuilder();
+    JsonFormat.parser().merge(printedStruct, parsedStruct);
+    assertThat(parsedStruct.build()).isEqualTo(testStructAtLimit);
+
+    JsonFormat.Printer defaultPrinter = JsonFormat.printer();
+    TestStruct testStructOverLimit =
+        TestStruct.newBuilder()
+            .setStructValue(Struct.newBuilder().putFields("a", structVal))
+            .build();
+    InvalidProtocolBufferException structError =
+        assertThrows(
+            InvalidProtocolBufferException.class, () -> defaultPrinter.print(testStructOverLimit));
+    assertThat(structError).hasMessageThat().contains("recursion");
+
+    Value listVal = Value.newBuilder().setNumberValue(1).build();
+    for (int i = 0; i < 99; i++) {
+      listVal = Value.newBuilder().setListValue(ListValue.newBuilder().addValues(listVal)).build();
+    }
+    TestStruct testListAtLimit =
+        TestStruct.newBuilder().setListValue(listVal.getListValue()).build();
+    String printedList = defaultPrinter.print(testListAtLimit);
+    TestStruct.Builder parsedList = TestStruct.newBuilder();
+    JsonFormat.parser().merge(printedList, parsedList);
+    assertThat(parsedList.build()).isEqualTo(testListAtLimit);
+
+    TestStruct testListOverLimit =
+        TestStruct.newBuilder().setListValue(ListValue.newBuilder().addValues(listVal)).build();
+    InvalidProtocolBufferException listError =
+        assertThrows(
+            InvalidProtocolBufferException.class, () -> defaultPrinter.print(testListOverLimit));
+    assertThat(listError).hasMessageThat().contains("recursion");
+  }
+
+  private String createNestedListValueJson(int depth) {
+    // depth 1: {"listValue": [1]}
+    // depth 2: {"listValue": [[1]]}
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"listValue\": ");
+    for (int i = 0; i < depth; i++) {
+      sb.append("[");
+    }
+    sb.append("1");
+    for (int i = 0; i < depth; i++) {
+      sb.append("]");
+    }
+    sb.append("}");
+    return sb.toString();
+  }
+
+  @Test
+  public void testPrintRecursionLimitPrinterReusableAfterError() throws Exception {
+    JsonFormat.Printer printer = JsonFormat.printer().usingRecursionLimit(2);
+    TestRecursive overLimit = createNestedTestRecursive(3);
+    InvalidProtocolBufferException error =
+        assertThrows(InvalidProtocolBufferException.class, () -> printer.print(overLimit));
+    assertThat(error).hasMessageThat().contains("recursion");
+
+    String json = printer.print(createNestedTestRecursive(2));
+    assertThat(json).contains("1234");
+  }
+
   // Test that we are not leaking out JSON exceptions.
   @Test
   public void testJsonException_forwardsIOException() throws Exception {

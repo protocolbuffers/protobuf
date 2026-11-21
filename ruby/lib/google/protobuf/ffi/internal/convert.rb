@@ -12,13 +12,14 @@ module Google
   module Protobuf
     module Internal
       module Convert
+        MAX_INIT_DEPTH = 100
 
         # Arena should be the
         # @param value [Object] Value to convert
         # @param arena [Arena] Arena that owns the Message where the MessageValue
         #   will be set
         # @return [Google::Protobuf::FFI::MessageValue]
-        def convert_ruby_to_upb(value, arena, c_type, msg_or_enum_def)
+        def convert_ruby_to_upb(value, arena, c_type, msg_or_enum_def, depth: 0)
           raise ArgumentError.new "Expected Descriptor or EnumDescriptor, instead got #{msg_or_enum_def.class}" unless [NilClass, Descriptor, EnumDescriptor].include? msg_or_enum_def.class
           return_value = Google::Protobuf::FFI::MessageValue.new
           case c_type
@@ -62,7 +63,7 @@ module Google
             if value.is_a? Hash
               raise RuntimeError.new "Attempted to initialize message from Hash for field #{name} but have no definition" if msg_or_enum_def.nil?
               new_message = msg_or_enum_def.msgclass.
-                send(:private_constructor, arena, initial_value: value)
+                send(:private_constructor, arena, initial_value: value, depth: depth + 1)
               return_value[:msg_val] = new_message.instance_variable_get(:@msg)
               return return_value
             end

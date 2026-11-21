@@ -90,7 +90,8 @@ public class JsonFormat {
         /* omittingInsignificantWhitespace */ false,
         /* printingEnumsAsInts */ false,
         /* sortingMapKeys */ false,
-        /* printingFullyQualifiedExtensionNames */ printingFullyQualifiedExtensionNamesDefaultValue);
+        /* printingFullyQualifiedExtensionNames */ printingFullyQualifiedExtensionNamesDefaultValue,
+        Printer.DEFAULT_RECURSION_LIMIT);
   }
 
   private enum ShouldPrintDefaults {
@@ -115,6 +116,10 @@ public class JsonFormat {
     private final boolean printingEnumsAsInts;
     private final boolean sortingMapKeys;
     private final boolean printingFullyQualifiedExtensionNames;
+    private final int recursionLimit;
+
+    // The default printing recursion limit is aligned with the parser and proto binary parser.
+    private static final int DEFAULT_RECURSION_LIMIT = 100;
 
     private Printer(
         com.google.protobuf.TypeRegistry registry,
@@ -126,7 +131,8 @@ public class JsonFormat {
         boolean omittingInsignificantWhitespace,
         boolean printingEnumsAsInts,
         boolean sortingMapKeys,
-        boolean printingFullyQualifiedExtensionNames) {
+        boolean printingFullyQualifiedExtensionNames,
+        int recursionLimit) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
       this.extensionRegistry = extensionRegistry;
@@ -137,6 +143,7 @@ public class JsonFormat {
       this.printingEnumsAsInts = printingEnumsAsInts;
       this.sortingMapKeys = sortingMapKeys;
       this.printingFullyQualifiedExtensionNames = printingFullyQualifiedExtensionNames;
+      this.recursionLimit = recursionLimit;
     }
 
     /**
@@ -160,7 +167,8 @@ public class JsonFormat {
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
           sortingMapKeys,
-          printingFullyQualifiedExtensionNames);
+          printingFullyQualifiedExtensionNames,
+          recursionLimit);
     }
 
     /**
@@ -184,7 +192,8 @@ public class JsonFormat {
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
           sortingMapKeys,
-          printingFullyQualifiedExtensionNames);
+          printingFullyQualifiedExtensionNames,
+          recursionLimit);
     }
 
     /**
@@ -205,7 +214,8 @@ public class JsonFormat {
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
           sortingMapKeys,
-          printingFullyQualifiedExtensionNames);
+          printingFullyQualifiedExtensionNames,
+          recursionLimit);
     }
 
     /**
@@ -236,7 +246,8 @@ public class JsonFormat {
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
           sortingMapKeys,
-          printingFullyQualifiedExtensionNames);
+          printingFullyQualifiedExtensionNames,
+          recursionLimit);
     }
 
     /**
@@ -267,7 +278,8 @@ public class JsonFormat {
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
           sortingMapKeys,
-          printingFullyQualifiedExtensionNames);
+          printingFullyQualifiedExtensionNames,
+          recursionLimit);
     }
 
     /**
@@ -290,7 +302,8 @@ public class JsonFormat {
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
           sortingMapKeys,
-          printingFullyQualifiedExtensionNames);
+          printingFullyQualifiedExtensionNames,
+          recursionLimit);
     }
 
     /**
@@ -309,7 +322,8 @@ public class JsonFormat {
           omittingInsignificantWhitespace,
           true,
           sortingMapKeys,
-          printingFullyQualifiedExtensionNames);
+          printingFullyQualifiedExtensionNames,
+          recursionLimit);
     }
 
     private void checkUnsetPrintingEnumsAsInts() {
@@ -334,7 +348,8 @@ public class JsonFormat {
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
           sortingMapKeys,
-          printingFullyQualifiedExtensionNames);
+          printingFullyQualifiedExtensionNames,
+          recursionLimit);
     }
 
     /**
@@ -363,7 +378,8 @@ public class JsonFormat {
           true,
           printingEnumsAsInts,
           sortingMapKeys,
-          printingFullyQualifiedExtensionNames);
+          printingFullyQualifiedExtensionNames,
+          recursionLimit);
     }
 
     /**
@@ -388,7 +404,8 @@ public class JsonFormat {
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
           true,
-          printingFullyQualifiedExtensionNames);
+          printingFullyQualifiedExtensionNames,
+          recursionLimit);
     }
 
     /**
@@ -412,7 +429,8 @@ public class JsonFormat {
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
           sortingMapKeys,
-          true);
+          true,
+          recursionLimit);
     }
 
     /**
@@ -439,14 +457,39 @@ public class JsonFormat {
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
           sortingMapKeys,
-          false);
+          false,
+          recursionLimit);
+    }
+
+    /**
+     * Creates a new {@link Printer} configured with the given maximum recursion depth. The new
+     * Printer clones all other configurations from the current {@link Printer}.
+     *
+     * @throws IllegalArgumentException if {@code recursionLimit < 1}
+     */
+    public Printer usingRecursionLimit(int recursionLimit) {
+      if (recursionLimit < 1) {
+        throw new IllegalArgumentException("recursionLimit must be >= 1.");
+      }
+      return new Printer(
+          registry,
+          oldRegistry,
+          extensionRegistry,
+          shouldPrintDefaults,
+          includingDefaultValueFields,
+          preservingProtoFieldNames,
+          omittingInsignificantWhitespace,
+          printingEnumsAsInts,
+          sortingMapKeys,
+          printingFullyQualifiedExtensionNames,
+          recursionLimit);
     }
 
     /**
      * Converts a protobuf message to the ProtoJSON format.
      *
      * @throws InvalidProtocolBufferException if the message contains Any types that can't be
-     *     resolved
+     *     resolved or exceeds the recursion limit
      * @throws IOException if writing to the output fails
      */
     public void appendTo(MessageOrBuilder message, Appendable output) throws IOException {
@@ -463,13 +506,14 @@ public class JsonFormat {
               omittingInsignificantWhitespace,
               printingEnumsAsInts,
               sortingMapKeys,
-              printingFullyQualifiedExtensionNames)
+              printingFullyQualifiedExtensionNames,
+              recursionLimit)
           .print(message);
     }
 
     /**
      * Converts a protobuf message to the ProtoJSON format. Throws exceptions if there are unknown
-     * Any types in the message.
+     * Any types in the message or if the message exceeds the recursion limit.
      */
     public String print(MessageOrBuilder message) throws InvalidProtocolBufferException {
       try {
@@ -889,6 +933,8 @@ public class JsonFormat {
     // We use Gson to help handle string escapes.
     private final Gson gson;
     private final CharSequence blankOrSpace;
+    private final int recursionLimit;
+    private int currentDepth;
 
     private static class GsonHolder {
       private static final Gson DEFAULT_GSON = new GsonBuilder().create();
@@ -905,7 +951,8 @@ public class JsonFormat {
         boolean omittingInsignificantWhitespace,
         boolean printingEnumsAsInts,
         boolean sortingMapKeys,
-        boolean printingFullyQualifiedExtensionNames) {
+        boolean printingFullyQualifiedExtensionNames,
+        int recursionLimit) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
       this.extensionRegistry = extensionRegistry;
@@ -916,6 +963,8 @@ public class JsonFormat {
       this.sortingMapKeys = sortingMapKeys;
       this.printingFullyQualifiedExtensionNames = printingFullyQualifiedExtensionNames;
       this.gson = GsonHolder.DEFAULT_GSON;
+      this.recursionLimit = recursionLimit;
+      this.currentDepth = 0;
       // json format related properties, determined by printerType
       if (omittingInsignificantWhitespace) {
         this.generator = new CompactTextGenerator(jsonOutput);
@@ -1053,26 +1102,34 @@ public class JsonFormat {
           throw new InvalidProtocolBufferException("Cannot find type for url: " + typeUrl);
         }
       }
-      ByteString content = (ByteString) message.getField(valueField);
-      Message contentMessage =
-          DynamicMessage.getDefaultInstance(type)
-              .getParserForType()
-              .parseFrom(content, extensionRegistry);
-      WellKnownTypePrinter printer = wellKnownTypePrinters.get(getTypeName(typeUrl));
-      if (printer != null) {
-        // If the type is one of the well-known types, we use a special
-        // formatting.
-        generator.println("{");
-        generator.indent();
-        generator.println("\"@type\":" + blankOrSpace + gson.toJson(typeUrl) + ",");
-        generator.print("\"value\":" + blankOrSpace);
-        printer.print(this, contentMessage);
-        generator.println();
-        generator.outdent();
-        generator.print("}");
-      } else {
-        // Print the content message instead (with a "@type" field added).
-        print(contentMessage, typeUrl);
+      if (currentDepth >= recursionLimit) {
+        throw new InvalidProtocolBufferException("Hit recursion limit.");
+      }
+      ++currentDepth;
+      try {
+        ByteString content = (ByteString) message.getField(valueField);
+        Message contentMessage =
+            DynamicMessage.getDefaultInstance(type)
+                .getParserForType()
+                .parseFrom(content, extensionRegistry);
+        WellKnownTypePrinter printer = wellKnownTypePrinters.get(getTypeName(typeUrl));
+        if (printer != null) {
+          // If the type is one of the well-known types, we use a special
+          // formatting.
+          generator.println("{");
+          generator.indent();
+          generator.println("\"@type\":" + blankOrSpace + gson.toJson(typeUrl) + ",");
+          generator.print("\"value\":" + blankOrSpace);
+          printer.print(this, contentMessage);
+          generator.println();
+          generator.outdent();
+          generator.print("}");
+        } else {
+          // Print the content message instead (with a "@type" field added).
+          print(contentMessage, typeUrl);
+        }
+      } finally {
+        --currentDepth;
       }
     }
 
@@ -1136,6 +1193,9 @@ public class JsonFormat {
       }
       boolean printedElement = false;
       for (Map.Entry<String, Value> entry : entries) {
+        if (currentDepth >= recursionLimit) {
+          throw new InvalidProtocolBufferException("Hit recursion limit.");
+        }
         if (printedElement) {
           generator.println(",");
         } else {
@@ -1143,7 +1203,12 @@ public class JsonFormat {
         }
         printStringEscapedAndQuoted(entry.getKey());
         generator.print(":" + blankOrSpace);
-        printValueConcrete(entry.getValue());
+        ++currentDepth;
+        try {
+          printValueConcrete(entry.getValue());
+        } finally {
+          --currentDepth;
+        }
       }
       if (printedElement) {
         generator.println();
@@ -1232,7 +1297,14 @@ public class JsonFormat {
                     + "infinity or nan, because they would be parsed as a string.");
           }
         }
-        printSingleFieldValue(field, entry.getValue());
+        if (field.getType() == FieldDescriptor.Type.MESSAGE) {
+          // Struct and ListValue nested inside Value are transparent in JSON; recurse directly
+          // without double-counting depth so reflective printing matches concrete printing and
+          // ParserImpl.mergeValueReflectively.
+          print((Message) entry.getValue());
+        } else {
+          printSingleFieldValue(field, entry.getValue());
+        }
       }
     }
 
@@ -1250,12 +1322,20 @@ public class JsonFormat {
       generator.print("[");
       boolean printedElement = false;
       for (Value value : message.getValuesList()) {
+        if (currentDepth >= recursionLimit) {
+          throw new InvalidProtocolBufferException("Hit recursion limit.");
+        }
         if (printedElement) {
           generator.print("," + blankOrSpace);
         } else {
           printedElement = true;
         }
-        printValueConcrete(value);
+        ++currentDepth;
+        try {
+          printValueConcrete(value);
+        } finally {
+          --currentDepth;
+        }
       }
       generator.print("]");
     }
@@ -1567,7 +1647,15 @@ public class JsonFormat {
 
         case MESSAGE:
         case GROUP:
-          print((Message) value);
+          if (currentDepth >= recursionLimit) {
+            throw new InvalidProtocolBufferException("Hit recursion limit.");
+          }
+          ++currentDepth;
+          try {
+            print((Message) value);
+          } finally {
+            --currentDepth;
+          }
           break;
       }
     }

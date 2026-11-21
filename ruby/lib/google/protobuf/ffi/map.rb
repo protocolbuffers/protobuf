@@ -339,12 +339,12 @@ module Google
         instance
       end
 
-      def internal_merge_into_self(other)
+      def internal_merge_into_self(other, depth: 0)
         case other
         when Hash
           other.each do |key, value|
             key_message_value = convert_ruby_to_upb(key, arena, key_type, nil)
-            value_message_value = convert_ruby_to_upb(value, arena, value_type, descriptor)
+            value_message_value = convert_ruby_to_upb(value, arena, value_type, descriptor, depth: depth)
             Google::Protobuf::FFI.map_set(@map_ptr, key_message_value, value_message_value, arena)
           end
         when Google::Protobuf::Map
@@ -367,7 +367,7 @@ module Google
         internal_dup.internal_merge_into_self(other)
       end
 
-      def initialize(key_type, value_type, value_type_class: nil, initial_values: nil, arena: nil, map: nil, descriptor: nil, name: nil)
+      def initialize(key_type, value_type, value_type_class: nil, initial_values: nil, arena: nil, map: nil, descriptor: nil, name: nil, depth: 0)
         @name = name || 'Map'
 
         unless [:int32, :int64, :uint32, :uint64, :bool, :string, :bytes].include? key_type
@@ -395,7 +395,7 @@ module Google
         @arena = arena || Google::Protobuf::FFI.create_arena
         @map_ptr = map || Google::Protobuf::FFI.create_map(@arena, @key_type, @value_type)
 
-        internal_merge_into_self(initial_values) unless initial_values.nil?
+        internal_merge_into_self(initial_values, depth: depth) unless initial_values.nil?
 
         # Should always be the last expression of the initializer to avoid
         # leaking references to this object before construction is complete.
@@ -409,7 +409,7 @@ module Google
       # @param arena [Arena] Owning message's arena
       # @param value [Hash|Map] Initial value
       # @param map [::FFI::Pointer] Existing upb_Map
-      def self.construct_for_field(field, arena: nil, value: nil, map: nil)
+      def self.construct_for_field(field, arena: nil, value: nil, map: nil, depth: 0)
         raise ArgumentError.new "Expected Hash object as initializer value for map field '#{field.name}' (given #{value.class})." unless value.nil? or value.is_a? Hash
         instance = allocate
         raise ArgumentError.new "Expected field with type :message, instead got #{field.class}" unless field.type == :message
@@ -419,7 +419,7 @@ module Google
 
         value_field_def = Google::Protobuf::FFI.get_field_by_number(message_descriptor, 2)
         value_field_type = Google::Protobuf::FFI.get_type(value_field_def)
-        instance.send(:initialize, key_field_type, value_field_type, initial_values: value, name: field.name, arena: arena, map: map, descriptor: value_field_def.subtype)
+        instance.send(:initialize, key_field_type, value_field_type, initial_values: value, name: field.name, arena: arena, map: map, descriptor: value_field_def.subtype, depth: depth)
         instance
       end
 
