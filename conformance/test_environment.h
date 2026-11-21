@@ -94,19 +94,6 @@ struct ConformanceEnvironmentOptions {
   // EDITION_PROTO3.  That is the one place the clamp lives.
   Edition maximum_edition = EDITION_PROTO3;
 
-  // When true, only performance tests run; when false, only regular tests run.
-  // Because the two kinds of tests are mutually exclusive within one run, a
-  // performance run needs its own failure list, like conformance_test_runner's
-  // *_performance.txt lists: with a shared list, every regular test's entry
-  // would be "unseen" (and dropped by `fix`).
-  //
-  // TODO: b/410126673 - This in-binary mode is transitional.  It only mirrors
-  // conformance_test_runner's --performance flag until the performance tests
-  // are a suite of their own, which BUILD files enable or disable like any
-  // other suite.  Remove it together with the --performance flag at that
-  // point.
-  bool performance = false;
-
   // Rewrites the failure list at the end of the run.  Entries that no longer
   // fail are dropped.  New failures are added with their messages.  The rules,
   // wildcard entries included, are those of ResultLedger::SaveFailureList().
@@ -119,8 +106,9 @@ struct ConformanceEnvironmentOptions {
 
   // Where to write the fixed failure list.  Required when `fix` is set and
   // `failure_list_files` doesn't have exactly one entry.  Otherwise defaults
-  // to that single file under $BUILD_WORKSPACE_DIRECTORY, that is the source
-  // file under `bazel run`.
+  // to that single file.  Relative paths, here and in `failure_list_files`,
+  // are resolved under $BUILD_WORKSPACE_DIRECTORY when it is set.  Under
+  // `bazel run` that is the source file.
   std::string fix_output_file;
 
   // Whether TearDown() fails the run if some expected failures were never

@@ -7,6 +7,12 @@
 
 #include "conformance/test_environment.h"
 
+#ifdef _WIN32
+#include <direct.h>  // for _getcwd
+#else
+#include <unistd.h>  // for getcwd
+#endif
+
 #include <algorithm>
 #include <cstdlib>
 #include <memory>
@@ -37,6 +43,21 @@ namespace protobuf {
 namespace conformance {
 namespace internal {
 namespace {
+
+// The current working directory, or "" if it can't be determined.
+std::string CurrentWorkingDirectory() {
+  // Both glibc/macOS (as an extension) and the MSVC CRT malloc() a buffer of
+  // the right size when given a null one.
+#ifdef _WIN32
+  char* cwd = _getcwd(nullptr, 0);
+#else
+  char* cwd = getcwd(nullptr, 0);
+#endif
+  if (cwd == nullptr) return "";
+  std::string result = cwd;
+  std::free(cwd);
+  return result;
+}
 
 // Whether `path` is absolute on this platform.  Only paths that start with a
 // slash are absolute on POSIX; Windows also has drive letters ("C:\\...",
@@ -146,6 +167,10 @@ absl::Status ReportSkip(absl::string_view test_name,
                         absl::string_view skip_reason) {
   return ConformanceEnvironment::Get().ledger().ReportSkip(test_name,
                                                            skip_reason);
+}
+
+void ReportNotSelected(absl::string_view test_name) {
+  ConformanceEnvironment::Get().ledger().ReportNotSelected(test_name);
 }
 
 ConformanceEnvironment::ConformanceEnvironment(
@@ -277,6 +302,7 @@ void ConformanceEnvironment::TearDown() {
              "run.  Rerun with --fix and without the filter.";
     } else {
       std::string output_file = options_.fix_output_file;
+      const char* workspace = std::getenv("BUILD_WORKSPACE_DIRECTORY");
       if (output_file.empty()) {
         if (options_.failure_list_files.empty()) {
           ADD_FAILURE() << "--fix needs --fix_output_file when no "
@@ -286,9 +312,7 @@ void ConformanceEnvironment::TearDown() {
                            "--failure_list is given.";
         } else if (IsAbsolutePath(options_.failure_list_files[0])) {
           output_file = options_.failure_list_files[0];
-        } else if (const char* workspace =
-                       std::getenv("BUILD_WORKSPACE_DIRECTORY");
-                   workspace != nullptr) {
+        } else if (workspace != nullptr) {
           output_file =
               absl::StrCat(workspace, "/", options_.failure_list_files[0]);
         } else {
@@ -296,15 +320,43 @@ void ConformanceEnvironment::TearDown() {
                            "$BUILD_WORKSPACE_DIRECTORY (which `bazel run` "
                            "sets) to locate the failure list to rewrite.";
         }
+      } else if (!IsAbsolutePath(output_file) && workspace != nullptr) {
+        // Like a relative --failure_list, a relative --fix_output_file names a
+        // source file: under `bazel run` the working directory is the
+        // runfiles tree, so resolve it against the workspace instead.  This is
+        // how conformance_test() (conformance.bzl) lets --fix create a failure
+        // list that doesn't exist yet.
+        output_file = absl::StrCat(workspace, "/", output_file);
       }
       if (!output_file.empty()) {
+        const bool relative = !IsAbsolutePath(output_file);
         absl::Status status = ledger_.SaveFailureList(output_file);
         if (status.ok()) {
-          ABSL_LOG(INFO) << "Wrote updated failure list to " << output_file;
-          fixed_list = output_file;
+          // Report where the file actually landed: a relative path outside
+          // `bazel run` is relative to whatever the working directory is.
+          std::string absolute_path = output_file;
+          if (relative) {
+            std::string cwd = CurrentWorkingDirectory();
+            if (!cwd.empty()) {
+              absolute_path = absl::StrCat(cwd, "/", output_file);
+            }
+          }
+          ABSL_LOG(INFO) << "Wrote updated failure list to " << absolute_path;
+          if (relative && workspace == nullptr &&
+              (std::getenv("TEST_SRCDIR") != nullptr ||
+               std::getenv("TEST_TMPDIR") != nullptr)) {
+            ABSL_LOG(WARNING)
+                << "The updated failure list was written inside the test "
+                   "sandbox, not into the source tree, because "
+                   "$BUILD_WORKSPACE_DIRECTORY is unset.  To update the "
+                   "checked-in list use `bazel run <target> -- --fix` instead "
+                   "of `bazel test`.";
+          }
+          fixed_list = absolute_path;
         } else {
           ADD_FAILURE() << "Failed to write updated failure list to "
-                        << output_file << ": " << status;
+                        << output_file << ": " << status
+                        << " (does the directory exist?)";
         }
       }
     }

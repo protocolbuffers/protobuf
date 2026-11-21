@@ -34,7 +34,7 @@
 //                   .SerializeBinary(),
 //               Yields(WhenParsed(EqualsBinaryProto(input))));
 
-// TODO Possible future APIs to expand conformance coverage:
+// TODO: Possible future APIs to expand conformance coverage:
 // - Add ClearUnknownFields() to InMemoryMessage
 // - Add MergeFrom() method to InMemoryMessage to merge raw binary
 // - Remove && qualifiers on Parse* and add InMemoryMessage::Merge that merges
@@ -150,6 +150,19 @@ class InMemoryMessage {
   TestResult SerializeText(TextSerializationOptions options = {}) &&;
   TestResult SerializeJson() &&;
 
+  // Discards the message instead of serializing it back.  This ends a test
+  // whose outcome is whether the input parsed, e.g. one that expects a parse
+  // error.  The test name carries no output-format suffix:
+  // "Required.Proto3.ProtobufInput.<name>".
+  //
+  // The protocol has no parse-only request yet, so the testee is still asked
+  // to serialize, in the input's format; a test must not depend on that
+  // payload.  Like the Serialize*() methods this consumes the message and must
+  // remain the terminal call of a test: once further operations on an
+  // InMemoryMessage exist (Merge, reflection accessors; see the TODO at the top
+  // of this file) they have to come before it, not after.
+  TestResult Discard() &&;
+
  private:
   InMemoryMessage(class Testee* testee, absl::string_view name,
                   TestPriority priority, const Descriptor* type,
@@ -161,7 +174,15 @@ class InMemoryMessage {
         request_(std::move(request)) {}
   friend class Test;
 
-  TestResult SerializeImpl(::conformance::WireFormat format);
+  // Whether a test's full name ends in the ".<Format>Output" suffix, which
+  // Discard() leaves out.
+  enum class NameStyle { kWithOutputFormat, kWithoutOutputFormat };
+
+  // Finishes the test: requests `output_format` from the testee and runs it
+  // under the name built according to `name_style`.  All public terminal
+  // methods funnel into this.
+  TestResult Finish(::conformance::WireFormat output_format,
+                    NameStyle name_style);
 
   class Testee* testee_;
   std::string name_;

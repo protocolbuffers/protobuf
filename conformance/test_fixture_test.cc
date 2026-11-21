@@ -193,17 +193,6 @@ TEST_F(Edition2023MessageTest, IsSkippedInSetUpUnderDefaultMaximumEdition) {
   FAIL() << "SetUp() should have skipped this test.";
 }
 
-// TODO: Transitional.  Goes away with the in-binary
-// performance mode, see ConformanceEnvironmentOptions::performance.
-class PerformanceFixtureTest : public FixtureTest {
- protected:
-  bool IsPerformanceTest() const override { return true; }
-};
-
-TEST_F(PerformanceFixtureTest, IsSkippedWithoutPerformanceMode) {
-  FAIL() << "SetUp() should have skipped this test.";
-}
-
 // Checks, from an overriding SetUp(), that the documented `if (IsSkipped())
 // return;` pattern sees the base class's skip.
 class SkipAwareSetUpTest : public Edition2023MessageTest {

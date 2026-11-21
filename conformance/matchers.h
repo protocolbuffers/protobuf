@@ -34,6 +34,7 @@
 //     the test is listed.  kP0 failures always count (see TestPriority).
 //   - A test the testee skipped passes unless it is listed.  The test
 //     environment counts it as a listed skip.
+//   - A test the runner filtered out with --test is not counted at all.
 //   - A result checked again gets the same verdict and is not counted again,
 //     which is what gtest's second evaluation of a failing matcher needs.  A
 //     check that contradicts an earlier one of the same result fails.
