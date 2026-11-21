@@ -34,6 +34,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/wire_format_lite.h"
 
 
@@ -431,6 +432,7 @@ class EncodedDescriptorDatabase::DescriptorIndex {
   // to the index.
   template <typename FileProto>
   bool AddFile(const FileProto& file, Value value);
+  bool AddFileLazy(absl::string_view filename, Value value);
 
   Value FindFile(absl::string_view filename);
   Value FindSymbol(absl::string_view name);
@@ -444,13 +446,18 @@ class EncodedDescriptorDatabase::DescriptorIndex {
  private:
   friend class EncodedDescriptorDatabase;
 
-  bool AddSymbol(absl::string_view symbol);
+  void EnsureSymbolsIndexed();
+  bool IndexSymbolsForFile(size_t index);
+  template <typename FileProto>
+  bool IndexSymbolsForParsedFile(const FileProto& file, int data_offset);
+  bool AddSymbol(absl::string_view symbol, int data_offset);
 
   template <typename DescProto>
   bool AddNestedExtensions(absl::string_view filename,
-                           const DescProto& message_type);
+                           const DescProto& message_type, int data_offset);
   template <typename FieldProto>
-  bool AddExtension(absl::string_view filename, const FieldProto& field);
+  bool AddExtension(absl::string_view filename, const FieldProto& field,
+                    int data_offset);
 
   // All the maps below have two representations:
   //  - a absl::btree_set<> where we insert initially.
@@ -463,7 +470,7 @@ class EncodedDescriptorDatabase::DescriptorIndex {
 
   using String = std::string;
 
-  String EncodeString(absl::string_view str) const { return String(str); }
+  String EncodeString(absl::string_view str, int) const { return String(str); }
   absl::string_view DecodeString(const String& str, int) const { return str; }
 
   struct EncodedEntry {
@@ -479,27 +486,24 @@ class EncodedDescriptorDatabase::DescriptorIndex {
 
   struct FileEntry {
     int data_offset;
-    String encoded_name;
-
-    absl::string_view name(const DescriptorIndex& index) const {
-      return index.DecodeString(encoded_name, data_offset);
-    }
+    std::string name;
   };
   struct FileCompare {
-    const DescriptorIndex& index;
+    using is_transparent = void;
 
     bool operator()(const FileEntry& a, const FileEntry& b) const {
-      return a.name(index) < b.name(index);
+      return a.name < b.name;
     }
     bool operator()(const FileEntry& a, absl::string_view b) const {
-      return a.name(index) < b;
+      return a.name < b;
     }
     bool operator()(absl::string_view a, const FileEntry& b) const {
-      return a < b.name(index);
+      return a < b.name;
     }
   };
-  absl::btree_set<FileEntry, FileCompare> by_name_{FileCompare{*this}};
+  absl::btree_set<FileEntry, FileCompare> by_name_{FileCompare{}};
   std::vector<FileEntry> by_name_flat_;
+  size_t indexed_symbols_count_ = 0;
 
   struct SymbolEntry {
     int data_offset;
@@ -621,10 +625,49 @@ class EncodedDescriptorDatabase::DescriptorIndex {
   std::vector<ExtensionEntry> by_extension_flat_;
 };
 
+namespace {
+
+bool ExtractFilename(const void* encoded_file_descriptor, int size,
+                     absl::string_view* name) {
+  if (size < 2) return false;
+  const uint8_t* bytes = static_cast<const uint8_t*>(encoded_file_descriptor);
+  // In protobuf wire format, field 1 string is tag 0x0A: (1 << 3) | 2
+  if (bytes[0] != 0x0A) return false;
+  uint32_t length = 0;
+  int pos = 1;
+  for (int shift = 0; shift < 35; shift += 7) {
+    if (pos >= size) return false;
+    uint8_t b = bytes[pos++];
+    if (shift == 28 && b >= 8) return false;
+    length |= static_cast<uint32_t>(b & 0x7F) << shift;
+    if ((b & 0x80) == 0) {
+      if (length <= static_cast<uint32_t>(size - pos)) {
+        *name = absl::string_view(reinterpret_cast<const char*>(bytes + pos),
+                                  length);
+        return true;
+      }
+      return false;
+    }
+  }
+  return false;
+}
+
+}  // namespace
+
 bool EncodedDescriptorDatabase::Add(
     const void* PROTOBUF_NONNULL encoded_file_descriptor, int size) {
+  if (lazy_symbol_indexing_) {
+    absl::string_view filename;
+    if (ExtractFilename(encoded_file_descriptor, size, &filename)) {
+      return Add(encoded_file_descriptor, size, filename);
+    }
+  }
+
   FileDescriptorProto file;
   if (file.ParseFromArray(encoded_file_descriptor, size)) {
+    if (lazy_symbol_indexing_) {
+      return Add(encoded_file_descriptor, size, file.name());
+    }
     return index_->AddFile(file, std::make_pair(encoded_file_descriptor, size));
   } else {
     ABSL_LOG(ERROR) << "Invalid file descriptor data passed to "
@@ -633,12 +676,35 @@ bool EncodedDescriptorDatabase::Add(
   }
 }
 
+bool EncodedDescriptorDatabase::Add(const void* PROTOBUF_NONNULL
+                                        encoded_file_descriptor,
+                                    int size, absl::string_view filename) {
+  if (lazy_symbol_indexing_) {
+    return index_->AddFileLazy(filename,
+                               std::make_pair(encoded_file_descriptor, size));
+  }
+  return Add(encoded_file_descriptor, size);
+}
+
 bool EncodedDescriptorDatabase::AddCopy(
     const void* PROTOBUF_NONNULL encoded_file_descriptor, int size) {
   void* copy = internal::Allocate(size);
   memcpy(copy, encoded_file_descriptor, size);
   files_to_delete_.push_back(copy);
   return Add(copy, size);
+}
+
+bool EncodedDescriptorDatabase::AddCopy(const void* PROTOBUF_NONNULL
+                                            encoded_file_descriptor,
+                                        int size, absl::string_view filename) {
+  void* copy = internal::Allocate(size);
+  memcpy(copy, encoded_file_descriptor, size);
+  files_to_delete_.push_back(copy);
+  return Add(copy, size, filename);
+}
+
+void EncodedDescriptorDatabase::SetLazySymbolIndexing(bool lazy) {
+  lazy_symbol_indexing_ = lazy;
 }
 
 bool EncodedDescriptorDatabase::FindFileByName(
@@ -695,42 +761,86 @@ bool EncodedDescriptorDatabase::FindAllExtensionNumbers(
 template <typename FileProto>
 bool EncodedDescriptorDatabase::DescriptorIndex::AddFile(const FileProto& file,
                                                          Value value) {
-  // We push `value` into the array first. This is important because the AddXXX
-  // functions below will expect it to be there.
+  if (!AddFileLazy(file.name(), value)) {
+    return false;
+  }
+  const size_t index = all_values_.size() - 1;
+  if (!IndexSymbolsForParsedFile(file, static_cast<int>(index))) {
+    return false;
+  }
+  if (indexed_symbols_count_ == index) {
+    indexed_symbols_count_ = all_values_.size();
+  }
+  return true;
+}
+
+bool EncodedDescriptorDatabase::DescriptorIndex::AddFileLazy(
+    absl::string_view filename, Value value) {
   all_values_.push_back({value.first, value.second, {}});
 
+  const bool inserted =
+      !std::binary_search(by_name_flat_.begin(), by_name_flat_.end(), filename,
+                          FileCompare{}) &&
+      by_name_
+          .insert(
+              {static_cast<int>(all_values_.size() - 1), std::string(filename)})
+          .second;
+  if (!inserted) {
+    ABSL_LOG(ERROR) << "File already exists in database: " << filename;
+    all_values_.pop_back();
+    return false;
+  }
+  return true;
+}
+
+bool EncodedDescriptorDatabase::DescriptorIndex::IndexSymbolsForFile(
+    size_t index) {
+  auto value = all_values_[index].value();
+  int data_offset = static_cast<int>(index);
+  FileDescriptorProto file;
+  if (!file.ParseFromArray(value.first, value.second)) {
+    ABSL_LOG(ERROR) << "Invalid file descriptor data in database.";
+    return false;
+  }
+  return IndexSymbolsForParsedFile(file, data_offset);
+}
+
+template <typename FileProto>
+bool EncodedDescriptorDatabase::DescriptorIndex::IndexSymbolsForParsedFile(
+    const FileProto& file, int data_offset) {
   if (!ValidateSymbolName(file.package())) {
     ABSL_LOG(ERROR) << "Invalid package name: " << file.package();
     return false;
   }
-  all_values_.back().encoded_package = EncodeString(file.package());
-
-  if (std::binary_search(by_name_flat_.begin(), by_name_flat_.end(),
-                         file.name(), by_name_.key_comp()) ||
-      !by_name_
-           .insert({static_cast<int>(all_values_.size() - 1),
-                    EncodeString(file.name())})
-           .second) {
-    ABSL_LOG(ERROR) << "File already exists in database: " << file.name();
-    return false;
-  }
+  all_values_[data_offset].encoded_package =
+      EncodeString(file.package(), data_offset);
 
   for (const auto& message_type : file.message_type()) {
-    if (!AddSymbol(message_type.name())) return false;
-    if (!AddNestedExtensions(file.name(), message_type)) return false;
+    if (!AddSymbol(message_type.name(), data_offset)) return false;
+    if (!AddNestedExtensions(file.name(), message_type, data_offset)) {
+      return false;
+    }
   }
   for (const auto& enum_type : file.enum_type()) {
-    if (!AddSymbol(enum_type.name())) return false;
+    if (!AddSymbol(enum_type.name(), data_offset)) return false;
   }
   for (const auto& extension : file.extension()) {
-    if (!AddSymbol(extension.name())) return false;
-    if (!AddExtension(file.name(), extension)) return false;
+    if (!AddSymbol(extension.name(), data_offset)) return false;
+    if (!AddExtension(file.name(), extension, data_offset)) return false;
   }
   for (const auto& service : file.service()) {
-    if (!AddSymbol(service.name())) return false;
+    if (!AddSymbol(service.name(), data_offset)) return false;
   }
 
   return true;
+}
+
+void EncodedDescriptorDatabase::DescriptorIndex::EnsureSymbolsIndexed() {
+  if (indexed_symbols_count_ >= all_values_.size()) return;
+  for (size_t i = indexed_symbols_count_; i < all_values_.size(); ++i) {
+    (void)IndexSymbolsForFile(i);
+  }
+  indexed_symbols_count_ = all_values_.size();
 }
 
 template <typename SymbolEntry, typename Iter, typename Iter2, typename Index>
@@ -763,9 +873,8 @@ static bool CheckForMutualSubsymbols(const SymbolEntry& symbol_entry,
 }
 
 bool EncodedDescriptorDatabase::DescriptorIndex::AddSymbol(
-    absl::string_view symbol) {
-  SymbolEntry entry = {static_cast<int>(all_values_.size() - 1),
-                       EncodeString(symbol)};
+    absl::string_view symbol, int data_offset) {
+  SymbolEntry entry = {data_offset, EncodeString(symbol, data_offset)};
 
   // We need to make sure not to violate our map invariant.
 
@@ -801,19 +910,20 @@ bool EncodedDescriptorDatabase::DescriptorIndex::AddSymbol(
 
 template <typename DescProto>
 bool EncodedDescriptorDatabase::DescriptorIndex::AddNestedExtensions(
-    absl::string_view filename, const DescProto& message_type) {
+    absl::string_view filename, const DescProto& message_type,
+    int data_offset) {
   for (const auto& nested_type : message_type.nested_type()) {
-    if (!AddNestedExtensions(filename, nested_type)) return false;
+    if (!AddNestedExtensions(filename, nested_type, data_offset)) return false;
   }
   for (const auto& extension : message_type.extension()) {
-    if (!AddExtension(filename, extension)) return false;
+    if (!AddExtension(filename, extension, data_offset)) return false;
   }
   return true;
 }
 
 template <typename FieldProto>
 bool EncodedDescriptorDatabase::DescriptorIndex::AddExtension(
-    absl::string_view filename, const FieldProto& field) {
+    absl::string_view filename, const FieldProto& field, int data_offset) {
   if (!field.extendee().empty() && field.extendee()[0] == '.') {
     // The extension is fully-qualified.  We can use it as a lookup key in
     // the by_symbol_ table.
@@ -822,8 +932,8 @@ bool EncodedDescriptorDatabase::DescriptorIndex::AddExtension(
             std::make_pair(field.extendee().substr(1), field.number()),
             by_extension_.key_comp()) ||
         !by_extension_
-             .insert({static_cast<int>(all_values_.size() - 1),
-                      EncodeString(field.extendee()), field.number()})
+             .insert({data_offset, EncodeString(field.extendee(), data_offset),
+                      field.number()})
              .second) {
       ABSL_LOG(ERROR)
           << "Extension conflicts with extension already in database: "
@@ -842,6 +952,7 @@ bool EncodedDescriptorDatabase::DescriptorIndex::AddExtension(
 
 std::pair<const void*, int>
 EncodedDescriptorDatabase::DescriptorIndex::FindSymbol(absl::string_view name) {
+  EnsureSymbolsIndexed();
   EnsureFlat();
   return FindSymbolOnlyFlat(name);
 }
@@ -860,6 +971,7 @@ EncodedDescriptorDatabase::DescriptorIndex::FindSymbolOnlyFlat(
 std::pair<const void*, int>
 EncodedDescriptorDatabase::DescriptorIndex::FindExtension(
     absl::string_view containing_type, int field_number) {
+  EnsureSymbolsIndexed();
   EnsureFlat();
 
   auto it = std::lower_bound(
@@ -892,6 +1004,7 @@ void EncodedDescriptorDatabase::DescriptorIndex::EnsureFlat() {
 
 bool EncodedDescriptorDatabase::DescriptorIndex::FindAllExtensionNumbers(
     absl::string_view containing_type, std::vector<int>* output) {
+  EnsureSymbolsIndexed();
   EnsureFlat();
 
   bool success = false;
@@ -913,11 +1026,11 @@ void EncodedDescriptorDatabase::DescriptorIndex::FindAllFileNames(
   output->resize(by_name_.size() + by_name_flat_.size());
   int i = 0;
   for (const auto& entry : by_name_) {
-    (*output)[i] = std::string(entry.name(*this));
+    (*output)[i] = std::string(entry.name);
     i++;
   }
   for (const auto& entry : by_name_flat_) {
-    (*output)[i] = std::string(entry.name(*this));
+    (*output)[i] = std::string(entry.name);
     i++;
   }
 }
@@ -928,8 +1041,8 @@ EncodedDescriptorDatabase::DescriptorIndex::FindFile(
   EnsureFlat();
 
   auto it = std::lower_bound(by_name_flat_.begin(), by_name_flat_.end(),
-                             filename, by_name_.key_comp());
-  return it == by_name_flat_.end() || it->name(*this) != filename
+                             filename, FileCompare{});
+  return it == by_name_flat_.end() || it->name != filename
              ? std::make_pair(nullptr, 0)
              : all_values_[it->data_offset].value();
 }
@@ -950,8 +1063,9 @@ bool EncodedDescriptorDatabase::MaybeParse(
   return internal::ParseNoReflection(source, *output);
 }
 
-EncodedDescriptorDatabase::EncodedDescriptorDatabase()
-    : index_(new DescriptorIndex()) {}
+EncodedDescriptorDatabase::EncodedDescriptorDatabase(bool lazy_symbol_indexing)
+    : index_(new DescriptorIndex()),
+      lazy_symbol_indexing_(lazy_symbol_indexing) {}
 
 EncodedDescriptorDatabase::~EncodedDescriptorDatabase() {
   for (void* p : files_to_delete_) {

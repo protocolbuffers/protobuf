@@ -2321,8 +2321,11 @@ namespace {
 
 
 EncodedDescriptorDatabase* GeneratedDatabase() {
-  static auto generated_database =
-      internal::OnShutdownDelete(new EncodedDescriptorDatabase());
+  static auto generated_database = internal::OnShutdownDelete([] {
+    auto* db = new EncodedDescriptorDatabase();
+    db->SetLazySymbolIndexing(true);
+    return db;
+  }());
   return generated_database;
 }
 
@@ -2385,6 +2388,12 @@ void DescriptorPool::InternalAddGeneratedFile(
   // or deadlock.
   absl::MutexLockMaybe lock(internal_generated_pool()->mutex());
   ABSL_CHECK(GeneratedDatabase()->Add(encoded_file_descriptor, size));
+}
+
+void DescriptorPool::InternalAddGeneratedFile(
+    const void* encoded_file_descriptor, int size, absl::string_view filename) {
+  absl::MutexLockMaybe lock(internal_generated_pool()->mutex());
+  ABSL_CHECK(GeneratedDatabase()->Add(encoded_file_descriptor, size, filename));
 }
 
 
