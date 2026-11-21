@@ -23,7 +23,7 @@ load(
     "bootstrap_upb_proto_library",
 )
 
-package(default_applicable_licenses = ["//:license"])
+package(default_applicable_licenses = ["//:license", "//:package_metadata"])
 
 bootstrap_upb_proto_library(
     name = "descriptor_upb_proto",

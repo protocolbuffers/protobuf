@@ -8,7 +8,7 @@
 load("//bazel:proto_library.bzl", "proto_library")
 
 package(
-    default_applicable_licenses = ["//:license"],
+    default_applicable_licenses = ["//:license", "//:package_metadata"],
 )
 
 exports_files(

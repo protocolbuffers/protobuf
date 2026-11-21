@@ -11,7 +11,7 @@ load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("//hpb:hpb_users.bzl", "HPB_USERS")
 
-package(default_applicable_licenses = ["//:license"])
+package(default_applicable_licenses = ["//:license", "//:package_metadata"])
 
 licenses(["notice"])
 
