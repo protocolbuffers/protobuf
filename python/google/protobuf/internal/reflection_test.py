@@ -1482,6 +1482,17 @@ class Proto2ReflectionTest(unittest.TestCase):
     self.assertEqual(2, proto.repeated_int32[2])
     self.assertEqual(1, proto.repeated_int32[3])
 
+  def testRepeatedScalarsReverseViaSliceSelfAssign(self):
+    # Reverse-in-place via extended-slice self assignment. The source sequence
+    # aliases the field's own storage, so the assignment must stage it before
+    # writing. Regression test: this previously wrote out of bounds (and
+    # produced an incorrect result) in the upb backend.
+    for n in (3, 4, 5, 6, 8, 16, 64, 256, 1024):
+      proto = unittest_pb2.TestAllTypes()
+      proto.repeated_int32.extend(range(n))
+      proto.repeated_int32[::-1] = proto.repeated_int32
+      self.assertEqual(list(range(n - 1, -1, -1)), list(proto.repeated_int32))
+
   def testRepeatedComposites(self):
     proto = unittest_pb2.TestAllTypes()
     self.assertFalse(proto.repeated_nested_message)
