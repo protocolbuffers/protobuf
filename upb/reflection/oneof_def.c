@@ -124,7 +124,7 @@ void _upb_OneofDef_Insert(upb_DefBuilder* ctx, upb_OneofDef* o,
   const bool name_exists = upb_strtable_lookup2(&o->ntof, name, size, NULL);
   if (UPB_UNLIKELY(name_exists)) {
     _upb_DefBuilder_Errf(ctx, "oneof fields have the same name (%.*s)",
-                         (int)size, name);
+                         _upb_StringView_FormatPrecision(size), name);
   }
 
   const bool ok = upb_inttable_insert(&o->itof, number, v, ctx->arena) &&
