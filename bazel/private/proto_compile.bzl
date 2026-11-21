@@ -343,7 +343,8 @@ def _create_proto_descriptors(
         # TODO: Kythe-specific; remove `transitive_sources` parameter
         # and `transitive_inputs.append(transitive_sources)` below once Kythe moves
         # to use the new `source_code_info` FileDescriptorSet outputs.
-        transitive_sources = None):
+        transitive_sources = None,
+        transitive_proto_sources = None):
     """Creates an action to generate descriptor sets from direct proto sources.
 
     Args:
@@ -366,6 +367,7 @@ def _create_proto_descriptors(
       host_path_separator: (str) Separator for PATH-like environment variables on the host.
       toolchain: Toolchain type if toolchain resolution is enabled.
       transitive_sources: (depset[File]) TODO: Kythe-specific; remove once Kythe uses `source_code_info` outputs.
+      transitive_proto_sources: (depset[File]|None) Transitive `.proto` source files used to derive path-mappable `-I` search paths.
     """
     if not srcs:
         actions.write(descriptor_set, "")
@@ -394,9 +396,14 @@ def _create_proto_descriptors(
 
     args.add("--retain_options")
 
-    args.add_all(transitive_proto_path, map_each = _import_virtual_proto_path)
-    args.add_all(transitive_proto_path, map_each = _import_repo_proto_path)
-    args.add_all(transitive_proto_path, map_each = _import_main_output_proto_path)
+    if transitive_proto_sources != None:
+        args.add_all(transitive_proto_sources, map_each = _import_virtual_proto_path, uniquify = True)
+        args.add_all(transitive_proto_sources, map_each = _import_repo_proto_path, uniquify = True)
+        args.add_all(transitive_proto_sources, map_each = _import_main_output_proto_path, uniquify = True)
+    else:
+        args.add_all(transitive_proto_path, map_each = _import_virtual_proto_path)
+        args.add_all(transitive_proto_path, map_each = _import_repo_proto_path)
+        args.add_all(transitive_proto_path, map_each = _import_main_output_proto_path)
     args.add("-I.")
 
     args.add_all(protoc_opts)
@@ -477,6 +484,7 @@ def _create_proto_descriptors(
         outputs = outputs,
         use_default_shell_env = True,
         toolchain = toolchain,
+        execution_requirements = {"supports-path-mapping": "1"} if transitive_proto_sources != None else None,
     )
 
 # Functions exported to proto_common or proto_library

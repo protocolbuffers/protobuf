@@ -161,6 +161,7 @@ def _proto_library_impl(ctx):
             descriptor_set = descriptor_set,
             source_code_info = source_code_info,
             transitive_proto_path = proto_info.transitive_proto_path,
+            transitive_proto_sources = proto_info.transitive_sources,
             dependencies_descriptor_sets = dependencies_descriptor_sets,
             transitive_extension_declarations = proto_info.transitive_extension_declarations,
             proto_compiler = proto_compiler,

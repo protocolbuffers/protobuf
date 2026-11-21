@@ -18,6 +18,11 @@ load("//bazel/private:proto_compile.bzl", "proto_compile")
 _STRIP_IMPORT_PREFIX = "/bazel"
 
 def bazel_proto_library_test_suite(name):
+    """Defines the `proto_library` analysis test suite.
+
+    Args:
+      name: Name of the generated `test_suite` target.
+    """
     tests = [
         _test_creates_descriptor_sets,
         _test_descriptor_sets_rule_with_srcs_calls_protoc,
@@ -57,10 +62,18 @@ def bazel_proto_library_test_suite(name):
         tests.append(_test_experimental_proto_descriptor_sets_include_source_info)
         tests.append(_test_protocopt_include_source_info)
         tests.append(_test_both_include_source_info_flags)
+        tests.append(_test_descriptor_set_path_mapping)
 
     test_suite(
         name = name,
         tests = tests,
+    )
+
+def _output_flag_matcher(prefix, unmapped_path, suffix):
+    """Matches either an unmapped exec path flag or its `*-out/cfg/` stripped equivalent."""
+    return matching.any(
+        matching.equals_wrapper(prefix + unmapped_path),
+        matching.str_matches(prefix + "*-out/cfg/" + suffix),
     )
 
 def _test_creates_descriptor_sets(name):
@@ -99,11 +112,13 @@ def _test_descriptor_sets_rule_with_srcs_calls_protoc_impl(env, target):
     action = env.expect.that_target(target).action_generating(
         "{package}/{name}-descriptor-set.proto.bin",
     )
-    action.argv().contains_at_least([
-        "-I.",
-        "--descriptor_set_out=" + action.actual.outputs.to_list()[0].path,
-        "--source_code_info_out=" + action.actual.outputs.to_list()[0].path.replace("-descriptor-set.proto.bin", "-source_code_info-set.proto.bin"),
-        "{package}/foo.proto",
+    out_path = action.actual.outputs.to_list()[0].path
+    sci_path = out_path.replace("-descriptor-set.proto.bin", "-source_code_info-set.proto.bin")
+    action.argv().contains_at_least_predicates([
+        matching.equals_wrapper("-I."),
+        _output_flag_matcher("--descriptor_set_out=", out_path, "*/{package}/{name}-descriptor-set.proto.bin".format(package = target.label.package, name = target.label.name)),
+        _output_flag_matcher("--source_code_info_out=", sci_path, "*/{package}/{name}-source_code_info-set.proto.bin".format(package = target.label.package, name = target.label.name)),
+        matching.equals_wrapper("{package}/foo.proto".format(package = target.label.package)),
     ])
     action.argv().not_contains("--descriptor_set_in")
 
@@ -560,7 +575,10 @@ def _test_strip_import_prefix_without_deps_impl(env, target):
     action = env.expect.that_target(target).action_generating(
         "{package}/{name}-descriptor-set.proto.bin",
     )
-    action.argv().contains("-I" + env.ctx.bin_dir.path + "/" + target.label.package + "/_virtual_imports/" + target.label.name)
+    virtual_dir = target.label.package + "/_virtual_imports/" + target.label.name
+    action.argv().contains_predicate(
+        _output_flag_matcher("-I", env.ctx.bin_dir.path + "/" + virtual_dir, "*/" + virtual_dir),
+    )
 
 def _test_strict_public_imports_enabled(name):
     util.helper_target(proto_library, name = name + "_foo", srcs = ["foo.proto"])
@@ -750,7 +768,10 @@ def _test_relative_strip_import_prefix_impl(env, target):
     action = env.expect.that_target(target).action_generating(
         "{package}/{name}-descriptor-set.proto.bin",
     )
-    action.argv().contains("-I" + env.ctx.bin_dir.path + "/" + target.label.package + "/_virtual_imports/" + target.label.name)
+    virtual_dir = target.label.package + "/_virtual_imports/" + target.label.name
+    action.argv().contains_predicate(
+        _output_flag_matcher("-I", env.ctx.bin_dir.path + "/" + virtual_dir, "*/" + virtual_dir),
+    )
 
 def _test_absolute_strip_import_prefix(name):
     util.helper_target(
@@ -770,7 +791,10 @@ def _test_absolute_strip_import_prefix_impl(env, target):
     action = env.expect.that_target(target).action_generating(
         "{package}/{name}-descriptor-set.proto.bin",
     )
-    action.argv().contains("-I" + env.ctx.bin_dir.path + "/" + target.label.package + "/_virtual_imports/" + target.label.name)
+    virtual_dir = target.label.package + "/_virtual_imports/" + target.label.name
+    action.argv().contains_predicate(
+        _output_flag_matcher("-I", env.ctx.bin_dir.path + "/" + virtual_dir, "*/" + virtual_dir),
+    )
 
 def _test_absolute_strip_import_prefix_with_slash(name):
     util.helper_target(
@@ -790,7 +814,10 @@ def _test_absolute_strip_import_prefix_with_slash_impl(env, target):
     action = env.expect.that_target(target).action_generating(
         "{package}/{name}-descriptor-set.proto.bin",
     )
-    action.argv().contains("-I" + env.ctx.bin_dir.path + "/" + target.label.package + "/_virtual_imports/" + target.label.name)
+    virtual_dir = target.label.package + "/_virtual_imports/" + target.label.name
+    action.argv().contains_predicate(
+        _output_flag_matcher("-I", env.ctx.bin_dir.path + "/" + virtual_dir, "*/" + virtual_dir),
+    )
 
 def _test_dot_in_strip_import_prefix(name):
     util.helper_target(
@@ -990,7 +1017,10 @@ def _test_source_and_generated_proto_files_impl(env, target):
     action = env.expect.that_target(target).action_generating(
         "{package}/{name}-descriptor-set.proto.bin",
     )
-    action.argv().contains_at_least(["-I.", "-I" + env.ctx.genfiles_dir.path])
+    action.argv().contains_at_least_predicates([
+        matching.equals_wrapper("-I."),
+        _output_flag_matcher("-I", env.ctx.genfiles_dir.path, "*"),
+    ])
 
 def _test_proto_library(name):
     util.helper_target(
@@ -1082,3 +1112,50 @@ def _test_proto_library_with_mixed_sources_impl(env, target):
         target.label.package + "/a.proto",
         target.label.package + "/generated2.proto",
     ])
+
+def _test_descriptor_set_path_mapping(name):
+    util.helper_target(
+        native.genrule,
+        name = name + "_gen_dep",
+        outs = [name + "_dep_gen.proto"],
+        cmd = "",
+    )
+    util.helper_target(
+        proto_library,
+        name = name + "_dep_proto",
+        srcs = [name + "_dep_gen.proto"],
+    )
+    util.helper_target(
+        proto_library,
+        name = name + "_top_proto",
+        srcs = ["foo/top.proto"],
+        strip_import_prefix = "foo",
+        deps = [":" + name + "_dep_proto"],
+    )
+
+    analysis_test(
+        name = name,
+        target = name + "_top_proto",
+        config_settings = {
+            "//command_line_option:experimental_output_paths": "strip",
+        },
+        impl = _test_descriptor_set_path_mapping_impl,
+    )
+
+def _test_descriptor_set_path_mapping_impl(env, target):
+    action = env.expect.that_target(target).action_generating(
+        "{package}/{name}-descriptor-set.proto.bin",
+    )
+    env.expect.that_str(action.actual.execution_info.get("supports-path-mapping", "")).equals("1")
+    action.argv().contains_at_least_predicates([
+        matching.str_matches("--descriptor_set_out=*-out/cfg/*"),
+        matching.str_matches("--source_code_info_out=*-out/cfg/*"),
+        matching.str_matches("-I*-out/cfg/bin/*/_virtual_imports/" + target.label.name),
+        matching.str_matches("-I*-out/cfg/*"),
+        matching.equals_wrapper("-I."),
+        matching.str_matches("*-out/cfg/bin/*/_virtual_imports/" + target.label.name + "/top.proto"),
+        matching.str_matches("*-out/cfg/*_dep_proto-descriptor-set.proto.bin"),
+    ])
+    for arg in action.actual.argv[1:]:
+        if "-out/" in arg:
+            env.expect.that_str(arg).contains("-out/cfg/")
