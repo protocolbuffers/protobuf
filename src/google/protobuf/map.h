@@ -1385,7 +1385,9 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
     StaticValidityCheck();
 
     this->AssertLoadFactor();
-    this->ClearTable(this->arena(), /*reset=*/false);
+    // `Map` is destructor-skippable so `~Map()` only runs off-arena.
+    ABSL_DCHECK_EQ(this->arena(), nullptr);
+    this->ClearTable(/*arena=*/nullptr, /*reset=*/false);
   }
 
  private:
