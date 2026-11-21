@@ -29,6 +29,7 @@
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
 
+
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -469,6 +470,7 @@ TEST(ReflectionVisitTest, VisitMapAfterMutableRepeated) {
   EXPECT_THAT(key_val_pairs, testing::UnorderedElementsAre(
                                  testing::Pair(0, 200), testing::Pair(1, 200)));
 }
+
 
 }  // namespace
 }  // namespace internal
