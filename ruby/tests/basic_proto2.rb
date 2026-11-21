@@ -388,6 +388,56 @@ module BasicTestProto2
       assert_equal 'another test', extension.get(message)
     end
 
+    def test_message_extension_decode
+      extension = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.optional_msg_extension'
+      # TestExtensionPayload.big is an int64 at field 3, with a value that does
+      # not fit in 32 bits, so the payload must be parsed as its declared type
+      # to be preserved.
+      payload = TestExtensionPayload.new(big: 1 << 32)
+      message = TestExtensions.new
+      extension.set(message, payload)
+      encoded = TestExtensions.encode(message)
+
+      # Re-encoding without reading the extension must preserve the bytes.
+      assert_equal encoded, TestExtensions.encode(TestExtensions.decode(encoded))
+
+      decoded = TestExtensions.decode(encoded)
+      assert extension.has?(decoded)
+      assert_equal payload, extension.get(decoded)
+      assert_equal 1 << 32, extension.get(decoded).big
+      assert_equal encoded, TestExtensions.encode(decoded)
+
+      extension.clear(decoded)
+      refute extension.has?(decoded)
+      assert_empty TestExtensions.encode(decoded)
+    end
+
+    def test_repeated_and_enum_extension_decode
+      pool = Google::Protobuf::DescriptorPool.generated_pool
+      repeated_msg_extension = pool.lookup 'basic_test_proto2.repeated_msg_extension'
+      enum_extension = pool.lookup 'basic_test_proto2.optional_enum_extension'
+      repeated_int32_extension = pool.lookup 'basic_test_proto2.repeated_int32_extension'
+
+      # repeated_msg_extension: [{big: 7}, {big: 8}]
+      # optional_enum_extension: B
+      # repeated_int32_extension: [1, 2]
+      encoded = "\x1a\x02\x18\x07\x1a\x02\x18\x08\x20\x02\x28\x01\x28\x02".b
+      decoded = TestExtensions.decode(encoded)
+      assert_equal [TestExtensionPayload.new(big: 7), TestExtensionPayload.new(big: 8)],
+                   repeated_msg_extension.get(decoded).to_a
+      assert_equal :B, enum_extension.get(decoded)
+      assert_equal [1, 2], repeated_int32_extension.get(decoded).to_a
+
+      enum_extension.set(decoded, :C)
+      assert_equal :C, enum_extension.get(decoded)
+
+      redecoded = TestExtensions.decode(TestExtensions.encode(decoded))
+      assert_equal [TestExtensionPayload.new(big: 7), TestExtensionPayload.new(big: 8)],
+                   repeated_msg_extension.get(redecoded).to_a
+      assert_equal :C, enum_extension.get(redecoded)
+      assert_equal [1, 2], repeated_int32_extension.get(redecoded).to_a
+    end
+
     def test_message_set_extension_json_roundtrip
       omit "Java Protobuf JsonFormat does not handle Proto2 extensions" if defined? JRUBY_VERSION and :NATIVE == Google::Protobuf::IMPLEMENTATION
       message = TestMessageSet.new
@@ -420,6 +470,9 @@ module BasicTestProto2
       encoded_message = TestMessageSet.encode message
       decoded_message = TestMessageSet.decode encoded_message
       assert_equal message, decoded_message
+      assert_equal 42, ext1.get(decoded_message).i
+      assert_equal 'foo', ext2.get(decoded_message).str
+      assert_equal 'bar', ext3.get(decoded_message).text
     end
 
     def test_field_explicit_presence

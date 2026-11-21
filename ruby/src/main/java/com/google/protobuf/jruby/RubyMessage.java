@@ -1418,6 +1418,12 @@ public class RubyMessage extends RubyObject {
   private IRubyObject getDescriptorForField(
       ThreadContext context, FieldDescriptor fieldDescriptor) {
     RubyDescriptor thisRbDescriptor = (RubyDescriptor) getDescriptor(context, metaClass);
+    if (fieldDescriptor.isExtension()) {
+      // Extensions are not fields of this message's descriptor, so resolve their type through the
+      // pool instead. An extension is always defined in the same pool as the message it extends.
+      return RubyFieldDescriptor.lookupSubtype(
+          context, fieldDescriptor, thisRbDescriptor.getPool());
+    }
     RubyFieldDescriptor fd =
         (RubyFieldDescriptor)
             thisRbDescriptor.lookup(context, context.runtime.newString(fieldDescriptor.getName()));

@@ -293,15 +293,24 @@ public class RubyFieldDescriptor extends RubyObject {
   }
 
   private void calculateSubtype(ThreadContext context) {
+    this.subtype = lookupSubtype(context, descriptor, pool);
+  }
+
+  /**
+   * Returns the message or enum descriptor in {@code pool} for the type of {@code descriptor}, or
+   * nil if it is neither a message nor an enum field.
+   */
+  static IRubyObject lookupSubtype(
+      ThreadContext context, FieldDescriptor descriptor, RubyDescriptorPool pool) {
     FieldDescriptor.Type fdType = descriptor.getType();
     if (fdType == FieldDescriptor.Type.MESSAGE) {
       RubyString messageName = context.runtime.newString(descriptor.getMessageType().getFullName());
-      this.subtype = pool.lookup(context, messageName);
+      return pool.lookup(context, messageName);
     } else if (fdType == FieldDescriptor.Type.ENUM) {
       RubyString enumName = context.runtime.newString(descriptor.getEnumType().getFullName());
-      this.subtype = pool.lookup(context, enumName);
+      return pool.lookup(context, enumName);
     } else {
-      this.subtype = context.nil;
+      return context.nil;
     }
   }
 
