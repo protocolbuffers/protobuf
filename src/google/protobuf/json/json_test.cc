@@ -1725,6 +1725,28 @@ TEST_P(JsonTest, UnknownGroupField) {
                                       "\273>\010c\274>", &out);
   ASSERT_OK(s);
   EXPECT_EQ(out, "{}");
+
+  // Nested unknown groups: 999: !{1000: !{1: 99}}
+  out.clear();
+  ASSERT_OK(BinaryToJsonString(
+      resolver_.get(), "type.googleapis.com/proto3.TestMessage",
+      "\xbb\x3e\xc3\x3e\x08\x63\xc4\x3e\xbc\x3e", &out));
+  EXPECT_EQ(out, "{}");
+
+  // Mismatched end-group tag inside an unknown group (start 999, end 1000).
+  EXPECT_THAT(BinaryToJsonString(resolver_.get(),
+                                 "type.googleapis.com/proto3.TestMessage",
+                                 "\xbb\x3e\xc4\x3e", &out),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+
+  // Unclosed unknown group at the end of a length-delimited submessage
+  // (message_value = field 11 -> 0x5a, length 2, unknown start-group 999),
+  // followed by outer bool_value = true (field 1 -> 0x08 0x01).
+  out.clear();
+  ASSERT_OK(BinaryToJsonString(resolver_.get(),
+                               "type.googleapis.com/proto3.TestMessage",
+                               "\x5a\x02\xbb\x3e\x08\x01", &out));
+  EXPECT_EQ(out, R"({"boolValue":true,"messageValue":{}})");
 }
 
 TEST_P(JsonTest, MalformedLengthDelimitedField) {
@@ -1778,8 +1800,9 @@ TEST_P(JsonTest, DeeplyNestedGroupsRejected) {
   payload.append(200, 0x0C);
 
   std::string out;
-  absl::Status s = BinaryToJsonString(
-      resolver.get(), "type.googleapis.com/RecursiveGroup", payload, &out);
+  absl::Status s;
+  s = BinaryToJsonString(resolver.get(), "type.googleapis.com/RecursiveGroup",
+                         payload, &out);
   EXPECT_THAT(s, StatusIs(absl::StatusCode::kInvalidArgument));
 }
 

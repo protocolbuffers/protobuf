@@ -21,6 +21,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
@@ -214,9 +215,79 @@ PROTOBUF_NOINLINE static absl::Status MakeMalformedLengthDelimError() {
   return absl::InvalidArgumentError("malformed length-delimited field");
 }
 
+namespace {
+
+// Skips an unknown wire field (and, for WIRETYPE_START_GROUP, all nested
+// records up to the matching WIRETYPE_END_GROUP). Returns true if `stream` hits
+// end-of-message (`ReadTag() == 0`) inside an unclosed group, or false if
+// normal decoding should continue.
+PROTOBUF_NOINLINE absl::StatusOr<bool> SkipUnknownField(
+    io::CodedInputStream& stream, int32_t field_number, int32_t wire_type) {
+  std::vector<int32_t> group_stack;
+  while (true) {
+    switch (wire_type) {
+      case WireFormatLite::WIRETYPE_VARINT: {
+        uint64_t x;
+        if (!stream.ReadVarint64(&x)) {
+          return MakeUnexpectedEofError();
+        }
+        break;
+      }
+      case WireFormatLite::WIRETYPE_FIXED64: {
+        uint64_t x;
+        if (!stream.ReadLittleEndian64(&x)) {
+          return MakeUnexpectedEofError();
+        }
+        break;
+      }
+      case WireFormatLite::WIRETYPE_FIXED32: {
+        uint32_t x;
+        if (!stream.ReadLittleEndian32(&x)) {
+          return MakeUnexpectedEofError();
+        }
+        break;
+      }
+      case WireFormatLite::WIRETYPE_LENGTH_DELIMITED: {
+        uint32_t x;
+        if (!stream.ReadVarint32(&x)) {
+          return MakeUnexpectedEofError();
+        }
+        if (!stream.Skip(x)) {
+          return MakeMalformedLengthDelimError();
+        }
+        break;
+      }
+      case WireFormatLite::WIRETYPE_START_GROUP:
+        group_stack.push_back(field_number);
+        break;
+      case WireFormatLite::WIRETYPE_END_GROUP:
+        if (group_stack.empty()) {
+          return MakeEndGroupWithoutGroupError(field_number);
+        }
+        if (field_number != group_stack.back()) {
+          return MakeEndGroupMismatchError(field_number, group_stack.back());
+        }
+        group_stack.pop_back();
+        break;
+      default:
+        return MakeUnknownWireTypeError(wire_type);
+    }
+    if (group_stack.empty()) {
+      return false;
+    }
+    uint32_t tag = stream.ReadTag();
+    if (tag == 0) {
+      return true;
+    }
+    field_number = tag >> 3;
+    wire_type = tag & 7;
+  }
+}
+
+}  // namespace
+
 absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
                                     absl::optional<int32_t> current_group) {
-  std::vector<int32_t> group_stack;
   while (true) {
     uint32_t tag = stream.ReadTag();
     if (tag == 0) {
@@ -229,8 +300,7 @@ absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
     // EGROUP markers can show up as "unknown fields", so we need to handle them
     // before we even do field lookup. Being inside of a group behaves as if a
     // special field has been added to the message.
-    if (wire_type == WireFormatLite::WIRETYPE_END_GROUP &&
-        group_stack.empty()) {
+    if (wire_type == WireFormatLite::WIRETYPE_END_GROUP) {
       if (!current_group.has_value()) {
         return MakeEndGroupWithoutGroupError(field_number);
       }
@@ -241,59 +311,16 @@ absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
     }
 
     const auto* field = desc_->FindField(field_number);
-    if (!group_stack.empty() || field == nullptr) {
-      // Skip unknown field. If the group-stack is non-empty, we are in the
-      // process of working through an unknown group.
-      switch (wire_type) {
-        case WireFormatLite::WIRETYPE_VARINT: {
-          uint64_t x;
-          if (!stream.ReadVarint64(&x)) {
-            return MakeUnexpectedEofError();
-          }
-          continue;
-        }
-        case WireFormatLite::WIRETYPE_FIXED64: {
-          uint64_t x;
-          if (!stream.ReadLittleEndian64(&x)) {
-            return MakeUnexpectedEofError();
-          }
-          continue;
-        }
-        case WireFormatLite::WIRETYPE_FIXED32: {
-          uint32_t x;
-          if (!stream.ReadLittleEndian32(&x)) {
-            return MakeUnexpectedEofError();
-          }
-          continue;
-        }
-        case WireFormatLite::WIRETYPE_LENGTH_DELIMITED: {
-          uint32_t x;
-          if (!stream.ReadVarint32(&x)) {
-            return MakeUnexpectedEofError();
-          }
-          if (!stream.Skip(x)) {
-            return MakeMalformedLengthDelimError();
-          }
-          continue;
-        }
-        case WireFormatLite::WIRETYPE_START_GROUP: {
-          group_stack.push_back(field_number);
-          continue;
-        }
-        case WireFormatLite::WIRETYPE_END_GROUP: {
-          if (group_stack.empty()) {
-            return MakeEndGroupWithoutGroupError(field_number);
-          }
-          if (field_number != group_stack.back()) {
-            return MakeEndGroupMismatchError(field_number, group_stack.back());
-          }
-          group_stack.pop_back();
-          continue;
-        }
-        default:
-          return MakeUnknownWireTypeError(wire_type);
+    if (field == nullptr) {
+      absl::StatusOr<bool> reached_end_of_stream =
+          SkipUnknownField(stream, field_number, wire_type);
+      RETURN_IF_ERROR(reached_end_of_stream.status());
+      if (*reached_end_of_stream) {
+        return absl::OkStatus();
       }
+      continue;
     }
+
     switch (wire_type) {
       case WireFormatLite::WIRETYPE_VARINT:
         RETURN_IF_ERROR(DecodeVarint(stream, *field));
@@ -334,8 +361,8 @@ absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
   return absl::OkStatus();
 }
 
-absl::Status UntypedMessage::DecodeVarint(io::CodedInputStream& stream,
-                                          const ResolverPool::Field& field) {
+PROTOBUF_NOINLINE absl::Status UntypedMessage::DecodeVarint(
+    io::CodedInputStream& stream, const ResolverPool::Field& field) {
   switch (field.proto().kind()) {
     case Field::TYPE_BOOL: {
       char byte;
@@ -398,8 +425,8 @@ absl::Status UntypedMessage::DecodeVarint(io::CodedInputStream& stream,
   return absl::OkStatus();
 }
 
-absl::Status UntypedMessage::Decode64Bit(io::CodedInputStream& stream,
-                                         const ResolverPool::Field& field) {
+PROTOBUF_NOINLINE absl::Status UntypedMessage::Decode64Bit(
+    io::CodedInputStream& stream, const ResolverPool::Field& field) {
   switch (field.proto().kind()) {
     case Field::TYPE_FIXED64: {
       uint64_t x;
@@ -434,8 +461,8 @@ absl::Status UntypedMessage::Decode64Bit(io::CodedInputStream& stream,
   return absl::OkStatus();
 }
 
-absl::Status UntypedMessage::Decode32Bit(io::CodedInputStream& stream,
-                                         const ResolverPool::Field& field) {
+PROTOBUF_NOINLINE absl::Status UntypedMessage::Decode32Bit(
+    io::CodedInputStream& stream, const ResolverPool::Field& field) {
   switch (field.proto().kind()) {
     case Field::TYPE_FIXED32: {
       uint32_t x;
@@ -469,8 +496,8 @@ absl::Status UntypedMessage::Decode32Bit(io::CodedInputStream& stream,
   return absl::OkStatus();
 }
 
-absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
-                                             const ResolverPool::Field& field) {
+PROTOBUF_NOINLINE absl::Status UntypedMessage::DecodeDelimited(
+    io::CodedInputStream& stream, const ResolverPool::Field& field) {
   if (!stream.IncrementRecursionDepth()) {
     return MakeTooDeepError();
   }
@@ -479,6 +506,23 @@ absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
     return MakeUnexpectedEofError();
   }
 
+  if (field.proto().kind() == Field::TYPE_MESSAGE) {
+    auto inner_desc = field.MessageType();
+    RETURN_IF_ERROR(inner_desc.status());
+
+    UntypedMessage inner(*inner_desc);
+    RETURN_IF_ERROR(inner.Decode(stream));
+    RETURN_IF_ERROR(InsertField(field, std::move(inner)));
+  } else {
+    RETURN_IF_ERROR(DecodeDelimitedScalar(stream, field));
+  }
+  // TODO: Remove this suppression.
+  (void)stream.DecrementRecursionDepthAndPopLimit(limit);
+  return absl::OkStatus();
+}
+
+PROTOBUF_NOINLINE absl::Status UntypedMessage::DecodeDelimitedScalar(
+    io::CodedInputStream& stream, const ResolverPool::Field& field) {
   switch (field.proto().kind()) {
     case Field::TYPE_STRING:
     case Field::TYPE_BYTES: {
@@ -494,15 +538,6 @@ absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
       }
 
       RETURN_IF_ERROR(InsertField(field, std::move(buf)));
-      break;
-    }
-    case Field::TYPE_MESSAGE: {
-      auto inner_desc = field.MessageType();
-      RETURN_IF_ERROR(inner_desc.status());
-
-      auto inner = ParseFromStream(*inner_desc, stream);
-      RETURN_IF_ERROR(inner.status());
-      RETURN_IF_ERROR(InsertField(field, std::move(*inner)));
       break;
     }
     default: {
@@ -537,14 +572,12 @@ absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
       break;
     }
   }
-  // TODO: Remove this suppression.
-  (void)stream.DecrementRecursionDepthAndPopLimit(limit);
   return absl::OkStatus();
 }
 
 template <typename T>
-absl::Status UntypedMessage::InsertField(const ResolverPool::Field& field,
-                                         T&& value) {
+PROTOBUF_NOINLINE absl::Status UntypedMessage::InsertField(
+    const ResolverPool::Field& field, T&& value) {
   int32_t number = field.proto().number();
   auto emplace_result = fields_.try_emplace(number);
   if (emplace_result.second) {

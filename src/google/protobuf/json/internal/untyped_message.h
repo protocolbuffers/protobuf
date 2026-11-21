@@ -223,17 +223,20 @@ class UntypedMessage final {
   absl::Status Decode(io::CodedInputStream& stream,
                       absl::optional<int32_t> current_group = absl::nullopt);
 
-  absl::Status DecodeVarint(io::CodedInputStream& stream,
-                            const ResolverPool::Field& field);
-  absl::Status Decode64Bit(io::CodedInputStream& stream,
-                           const ResolverPool::Field& field);
-  absl::Status Decode32Bit(io::CodedInputStream& stream,
-                           const ResolverPool::Field& field);
-  absl::Status DecodeDelimited(io::CodedInputStream& stream,
-                               const ResolverPool::Field& field);
+  PROTOBUF_NOINLINE absl::Status DecodeVarint(io::CodedInputStream& stream,
+                                              const ResolverPool::Field& field);
+  PROTOBUF_NOINLINE absl::Status Decode64Bit(io::CodedInputStream& stream,
+                                             const ResolverPool::Field& field);
+  PROTOBUF_NOINLINE absl::Status Decode32Bit(io::CodedInputStream& stream,
+                                             const ResolverPool::Field& field);
+  PROTOBUF_NOINLINE absl::Status DecodeDelimited(
+      io::CodedInputStream& stream, const ResolverPool::Field& field);
+  PROTOBUF_NOINLINE absl::Status DecodeDelimitedScalar(
+      io::CodedInputStream& stream, const ResolverPool::Field& field);
 
   template <typename T>
-  absl::Status InsertField(const ResolverPool::Field& field, T&& value);
+  PROTOBUF_NOINLINE absl::Status InsertField(const ResolverPool::Field& field,
+                                             T&& value);
 
   const ResolverPool::Message* desc_;
   // We use std::unique_ptr here to work around a compiler error with older
