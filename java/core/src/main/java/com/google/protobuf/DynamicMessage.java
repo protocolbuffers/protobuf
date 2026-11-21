@@ -326,7 +326,7 @@ public final class DynamicMessage extends AbstractMessage {
   /** Builder for {@link DynamicMessage}s. */
   public static final class Builder extends AbstractMessage.Builder<Builder> {
     private final Descriptor type;
-    private FieldSet.Builder<FieldDescriptor> fields;
+    FieldSet.Builder<FieldDescriptor> fields; // Package-private for MessageReflection.
     private final FieldDescriptor[] oneofCases;
     private UnknownFieldSet unknownFields;
 
