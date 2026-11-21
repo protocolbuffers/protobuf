@@ -532,6 +532,60 @@ module CommonTests
     assert_equal({"a" => 1, "c" => 3, "b" => 2}, m.to_h)
   end
 
+  def test_map_ctor_with_map
+    m = Google::Protobuf::Map.new(:string, :int32, {"a" => 1, "b" => 2})
+    m2 = Google::Protobuf::Map.new(:string, :int32, m)
+    assert_equal({"a" => 1, "b" => 2}, m2.to_h)
+    m2["c"] = 3
+    assert_equal({"a" => 1, "b" => 2}, m.to_h)
+  end
+
+  def test_map_ctor_with_message_map
+    m = Google::Protobuf::Map.new(:string, :message, proto_module::TestMessage,
+      {"a" => proto_module::TestMessage.new(optional_int32: 1)})
+    m2 = Google::Protobuf::Map.new(:string, :message, proto_module::TestMessage, m)
+    assert_equal ["a"], m2.keys
+    assert_equal 1, m2["a"].optional_int32
+    m2["b"] = proto_module::TestMessage.new(optional_int32: 2)
+    assert_equal ["a"], m.keys
+  end
+
+  def test_map_ctor_with_enum_map
+    m = Google::Protobuf::Map.new(:string, :enum, proto_module::TestEnum, {"a" => :A})
+    m2 = Google::Protobuf::Map.new(:string, :enum, proto_module::TestEnum, m)
+    assert_equal({"a" => :A}, m2.to_h)
+    m2["b"] = :B
+    assert_equal({"a" => :A}, m.to_h)
+  end
+
+  def test_map_merge_hash
+    m = Google::Protobuf::Map.new(:string, :int32, {"a" => 1, "b" => 2})
+    merged = m.merge({"b" => 20, "c" => 30})
+    assert_equal({"a" => 1, "b" => 20, "c" => 30}, merged.to_h)
+    assert_equal({"a" => 1, "b" => 2}, m.to_h)
+  end
+
+  def test_map_merge_map
+    m = Google::Protobuf::Map.new(:string, :message, proto_module::TestMessage,
+      {"a" => proto_module::TestMessage.new(optional_int32: 1)})
+    other = Google::Protobuf::Map.new(:string, :message, proto_module::TestMessage,
+      {"b" => proto_module::TestMessage.new(optional_int32: 2)})
+    merged = m.merge(other)
+    assert_equal ["a", "b"], merged.keys.sort
+    assert_equal 1, merged["a"].optional_int32
+    assert_equal 2, merged["b"].optional_int32
+    assert_equal ["a"], m.keys
+    assert_equal ["b"], other.keys
+  end
+
+  def test_map_merge_mismatching_types
+    m = Google::Protobuf::Map.new(:string, :message, proto_module::TestMessage)
+    other = Google::Protobuf::Map.new(:string, :message, proto_module::TestMessage2)
+    assert_raises ArgumentError do
+      m.merge(other)
+    end
+  end
+
   def test_map_keytypes
     m = Google::Protobuf::Map.new(:int32, :int32)
     m[1] = 42
