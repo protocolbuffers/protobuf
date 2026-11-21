@@ -171,8 +171,7 @@ static_assert(alignof(CppFeaturesGlobalsTypeInternal) ==
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CppFeaturesGlobalsTypeInternal
-        PROTOBUF_ALIGNAS(
-            ::_pbi::kClassDataAlignment) CppFeatures_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+        CppFeatures_globals_ alignas(::_pbi::kClassDataAlignment) PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 }  // namespace pb
 static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
     file_level_enum_descriptors_google_2fprotobuf_2fcpp_5ffeatures_2eproto[2];

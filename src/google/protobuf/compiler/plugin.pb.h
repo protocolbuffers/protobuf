@@ -60,19 +60,19 @@ PROTOC_EXPORT extern const uint32_t CodeGeneratorResponse_Feature_internal_data_
 class CodeGeneratorRequest;
 struct CodeGeneratorRequestGlobalsTypeInternal;
 PROTOC_EXPORT extern const CodeGeneratorRequestGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) CodeGeneratorRequest_globals_;
+    CodeGeneratorRequest_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class CodeGeneratorResponse;
 struct CodeGeneratorResponseGlobalsTypeInternal;
 PROTOC_EXPORT extern const CodeGeneratorResponseGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) CodeGeneratorResponse_globals_;
+    CodeGeneratorResponse_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class CodeGeneratorResponse_File;
 struct CodeGeneratorResponse_FileGlobalsTypeInternal;
 PROTOC_EXPORT extern const CodeGeneratorResponse_FileGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) CodeGeneratorResponse_File_globals_;
+    CodeGeneratorResponse_File_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class Version;
 struct VersionGlobalsTypeInternal;
 PROTOC_EXPORT extern const VersionGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) Version_globals_;
+    Version_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 }  // namespace compiler
 template <>
 internal::EnumTraitsT<::google::protobuf::compiler::CodeGeneratorResponse_Feature_internal_data_>

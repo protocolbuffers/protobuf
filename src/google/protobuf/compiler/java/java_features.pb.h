@@ -55,11 +55,11 @@ PROTOC_EXPORT extern const uint32_t JavaFeatures_Utf8Validation_internal_data_[]
 class JavaFeatures;
 struct JavaFeaturesGlobalsTypeInternal;
 PROTOC_EXPORT extern const JavaFeaturesGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) JavaFeatures_globals_;
+    JavaFeatures_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class JavaFeatures_NestInFileClassFeature;
 struct JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal;
 PROTOC_EXPORT extern const JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) JavaFeatures_NestInFileClassFeature_globals_;
+    JavaFeatures_NestInFileClassFeature_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 }  // namespace pb
 namespace google {
 namespace protobuf {
