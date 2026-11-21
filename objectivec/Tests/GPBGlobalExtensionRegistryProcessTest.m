@@ -56,6 +56,11 @@ typedef BOOL (*GPBTestWaitForFirstLookupFunction)(int64_t timeoutInSeconds,
   id<GPBExtensionRegistry> globalRegistry = [GPBExtensionRegistry globalExtensionRegistry];
   XCTAssertFalse(GPBGlobalExtensionRegistryHasStartedIndexing());
 
+  // Looking up a nil descriptor returns nil without starting section indexing.
+  GPBDescriptor *nilDescriptor = (GPBDescriptor *_Nonnull)(id)nil;
+  XCTAssertNil([globalRegistry extensionForDescriptor:nilDescriptor fieldNumber:1]);
+  XCTAssertFalse(GPBGlobalExtensionRegistryHasStartedIndexing());
+
   // The dynamic images resolve the protobuf runtime and TestAllExtensions from
   // this test bundle through the flat namespace, so first make the (already
   // loaded) test bundle's symbols globally visible.
