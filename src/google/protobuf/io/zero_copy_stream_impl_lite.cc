@@ -368,9 +368,15 @@ bool CopyingOutputStreamAdaptor::WriteAliasedRaw(const void* data, int size) {
 }
 
 bool CopyingOutputStreamAdaptor::WriteCord(const absl::Cord& cord) {
+  static constexpr size_t kMaxChunkSize =
+      static_cast<size_t>((std::numeric_limits<int>::max)());
   for (absl::string_view chunk : cord.Chunks()) {
-    if (!WriteAliasedRaw(chunk.data(), chunk.size())) {
-      return false;
+    while (!chunk.empty()) {
+      const size_t to_write = (std::min)(chunk.size(), kMaxChunkSize);
+      if (!WriteAliasedRaw(chunk.data(), static_cast<int>(to_write))) {
+        return false;
+      }
+      chunk.remove_prefix(to_write);
     }
   }
   return true;
