@@ -115,22 +115,6 @@ Message* MaybeForceCopy(Arena* arena, Message* msg) {
   delete msg;
   return copy;
 }
-
-// Returns true if the submessages of `field`, as created by `message_factory`,
-// are instances of the generated class for `expected`. Matching descriptors
-// alone are not sufficient: e.g. a DynamicMessageFactory creates messages with
-// the same descriptor that are not instances of the generated class.
-bool IsMatchingConcreteMessageType(MessageFactory* message_factory,
-                                   const FieldDescriptor* field,
-                                   const Descriptor* expected) {
-  if (field->message_type() != expected) return false;
-  if (message_factory == MessageFactory::generated_factory()) return true;
-  if (message_factory == nullptr) return false;
-  const Message* expected_prototype =
-      MessageFactory::generated_factory()->GetPrototype(expected);
-  return expected_prototype != nullptr &&
-         message_factory->GetPrototype(expected) == expected_prototype;
-}
 }  // anonymous namespace
 
 namespace internal {
@@ -430,30 +414,6 @@ static void ReportReflectionUsageEnumTypeError(
                   << value->full_name();
 }
 
-static void ReportReflectionUsageConcreteMessageTypeError(
-    const Descriptor* descriptor, const FieldDescriptor* field,
-    absl::string_view method, const Descriptor* expected) {
-  const Descriptor* actual = field->message_type();
-  ABSL_LOG(FATAL) << "Protocol Buffer reflection usage error:\n"
-                     "  Method      : google::protobuf::Reflection::"
-                  << method
-                  << "\n"
-                     "  Message type: "
-                  << descriptor->full_name()
-                  << "\n"
-                     "  Field       : "
-                  << field->full_name()
-                  << "\n"
-                     "  Problem     : Field has the wrong submessage type; the "
-                     "exact generated class is required, not just the same "
-                     "descriptor:\n"
-                     "    Expected  : "
-                  << expected->full_name()
-                  << " (generated class)\n"
-                     "    Actual    : "
-                  << (actual != nullptr ? actual->full_name() : "null");
-}
-
 static void ReportReflectionUsageOneofError(
     const Descriptor* descriptor, const OneofDescriptor* oneof_descriptor,
     absl::string_view method, const char* description) {
@@ -487,11 +447,6 @@ static void ReportReflectionUsageOneofError(
 #define USAGE_CHECK_ENUM_VALUE(METHOD)     \
   if (value->type() != field->enum_type()) \
   ReportReflectionUsageEnumTypeError(descriptor_, field, #METHOD, value)
-
-#define USAGE_CHECK_CONCRETE_MESSAGE_TYPE(METHOD, EXPECTED)                  \
-  if (!IsMatchingConcreteMessageType(message_factory_, field, (EXPECTED)))   \
-  ReportReflectionUsageConcreteMessageTypeError(descriptor_, field, #METHOD, \
-                                                (EXPECTED))
 
 #ifdef NDEBUG
 // Avoid a virtual method call in optimized builds.
@@ -3079,9 +3034,8 @@ void* Reflection::MutableRawRepeatedField(Message* message,
        cpptype != FieldDescriptor::CPPTYPE_INT32))
     ReportReflectionUsageTypeError(descriptor_, field,
                                    "MutableRawRepeatedField", cpptype);
-  if (desc != nullptr) {
-    USAGE_CHECK_CONCRETE_MESSAGE_TYPE(MutableRawRepeatedField, desc);
-  }
+  if (desc != nullptr)
+    ABSL_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
   if (field->is_extension()) {
     return MutableExtensionSet(message)->MutableRawRepeatedField(
         *message, field->number(), field->type(), field->is_packed(), field);
@@ -3109,9 +3063,8 @@ const void* Reflection::GetRawRepeatedField(
                                    cpptype);
   if (ctype >= 0)
     ABSL_CHECK(internal::IsMatchingCType(field, ctype)) << "subtype mismatch";
-  if (desc != nullptr) {
-    USAGE_CHECK_CONCRETE_MESSAGE_TYPE(GetRawRepeatedField, desc);
-  }
+  if (desc != nullptr)
+    ABSL_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
   if (field->is_extension()) {
     return GetExtensionSet(message).GetRawRepeatedField(
         field->number(), internal::DefaultRawPtr());
@@ -3764,7 +3717,7 @@ const void* Reflection::RepeatedFieldData(
       << "the actual field type (for enums T should be the generated enum "
       << "type or int32_t).";
   if (message_type != nullptr) {
-    USAGE_CHECK_CONCRETE_MESSAGE_TYPE(RepeatedFieldData, message_type);
+    ABSL_CHECK_EQ(message_type, field->message_type());
   }
   if (field->is_extension()) {
     return GetExtensionSet(message).GetRawRepeatedField(
@@ -3786,7 +3739,7 @@ void* Reflection::RepeatedFieldData(Message* message,
       << "the actual field type (for enums T should be the generated enum "
       << "type or int32_t).";
   if (message_type != nullptr) {
-    USAGE_CHECK_CONCRETE_MESSAGE_TYPE(RepeatedFieldData, message_type);
+    ABSL_CHECK_EQ(message_type, field->message_type());
   }
   if (field->is_extension()) {
     return MutableExtensionSet(message)->MutableRawRepeatedField(

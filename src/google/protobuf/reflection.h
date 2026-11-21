@@ -14,7 +14,6 @@
 #include <memory>
 #include <type_traits>
 
-#include "absl/log/absl_check.h"
 #include "absl/types/span.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/descriptor.h"
@@ -268,10 +267,6 @@ class MutableRepeatedFieldRef<T,
   void Clear() const { accessor_->Clear(data_); }
 
   void Swap(const MutableRepeatedFieldRef& other) const {
-    ABSL_CHECK(default_instance_ != nullptr &&
-               default_instance_ == other.default_instance_)
-        << "Cannot swap repeated fields with different message types or "
-           "factories.";
     accessor_->Swap(data_, other.accessor_, other.data_);
   }
 
