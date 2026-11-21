@@ -105,6 +105,41 @@ TEST(Table, StringTable) {
   }
 }
 
+TEST(Table, InitAndResizeOverflow) {
+  upb::Arena arena;
+  // The smallest expected_size for which expected_size + 1 + expected_size / 7
+  // wraps size_t (0xE000000000000000 when size_t is 64 bits). One below it,
+  // the sum is exactly SIZE_MAX.
+  const size_t overflow_expected = SIZE_MAX - SIZE_MAX / 8;
+  EXPECT_EQ(_upb_entries_needed_for(overflow_expected - 1), SIZE_MAX);
+  EXPECT_EQ(_upb_entries_needed_for(overflow_expected), SIZE_MAX);
+  EXPECT_EQ(_upb_entries_needed_for(SIZE_MAX), SIZE_MAX);
+
+  upb_strtable str_t;
+  EXPECT_FALSE(upb_strtable_init(&str_t, overflow_expected, arena.ptr()));
+  EXPECT_FALSE(upb_strtable_init(&str_t, SIZE_MAX, arena.ptr()));
+  ASSERT_TRUE(upb_strtable_init(&str_t, 4, arena.ptr()));
+  ASSERT_TRUE(
+      upb_strtable_insert(&str_t, "k", 1, upb_value_int32(7), arena.ptr()));
+  EXPECT_FALSE(upb_strtable_resize(&str_t, 257, arena.ptr()));
+  EXPECT_FALSE(upb_strtable_resize(&str_t, 32, arena.ptr()));
+  upb_value out;
+  ASSERT_TRUE(upb_strtable_lookup2(&str_t, "k", 1, &out));
+  EXPECT_EQ(upb_value_getint32(out), 7);
+
+  upb_exttable ext_t;
+  EXPECT_FALSE(upb_exttable_init(&ext_t, overflow_expected, arena.ptr()));
+  EXPECT_FALSE(upb_exttable_init(&ext_t, SIZE_MAX, arena.ptr()));
+  ASSERT_TRUE(upb_exttable_init(&ext_t, 4, arena.ptr()));
+
+  upb_inttable int_t;
+  ASSERT_TRUE(upb_inttable_init(&int_t, arena.ptr()));
+  ASSERT_TRUE(upb_inttable_insert(&int_t, 42, upb_value_int32(9), arena.ptr()));
+  EXPECT_FALSE(upb_inttable_resize(&int_t, 257, arena.ptr()));
+  ASSERT_TRUE(upb_inttable_lookup(&int_t, 42, &out));
+  EXPECT_EQ(upb_value_getint32(out), 9);
+}
+
 class IntTableTest : public testing::TestWithParam<int> {
   void SetUp() override {
     if (GetParam() > 0) {
