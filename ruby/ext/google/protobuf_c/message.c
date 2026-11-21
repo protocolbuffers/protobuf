@@ -590,7 +590,7 @@ static void RepeatedField_InitFromValue(upb_Array* arr, const upb_FieldDef* f,
              upb_FieldDef_Name(f), rb_class2name(CLASS_OF(val)));
   }
 
-  for (int i = 0; i < RARRAY_LEN(val); i++) {
+  for (size_t i = 0; i < RARRAY_LEN(val); i++) {
     VALUE entry = rb_ary_entry(val, i);
     upb_MessageValue msgval;
     if (upb_FieldDef_IsSubMessage(f) && TYPE(entry) == T_HASH) {
@@ -802,10 +802,10 @@ static VALUE Message_inspect(VALUE _self) {
 
 static VALUE RepeatedField_CreateArray(const upb_Array* arr, TypeInfo type_info,
                                        bool emit_defaults) {
-  int size = arr ? upb_Array_Size(arr) : 0;
+  size_t size = arr ? upb_Array_Size(arr) : 0;
   VALUE ary = rb_ary_new2(size);
 
-  for (int i = 0; i < size; i++) {
+  for (size_t i = 0; i < size; i++) {
     upb_MessageValue msgval = upb_Array_Get(arr, i);
     VALUE val = Scalar_CreateHash(msgval, type_info, emit_defaults);
     rb_ary_push(ary, val);
