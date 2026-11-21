@@ -1228,6 +1228,27 @@ static const char* _upb_Decoder_DecodeEmptyMessage(upb_Decoder* d,
   return ptr;
 }
 
+// Decodes the rest of a message, starting with a field at `ptr` that the fast
+// decoder could not parse (or any field, if fasttable is unavailable).
+UPB_FORCEINLINE
+const char* _upb_Decoder_DecodeMessageLoop(upb_Decoder* d, const char* ptr,
+                                           upb_Message* msg,
+                                           const upb_MiniTable* mt) {
+  while (!upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
+    ptr = _upb_Decoder_DecodeFieldNoFast(d, ptr, msg, mt);
+    if (d->message_is_done) break;
+    if (_upb_Decoder_TryDecodeMessageFast(d, &ptr, msg, mt, 0, 0)) {
+      d->message_is_done = false;
+      return ptr;
+    }
+  }
+  d->message_is_done = false;
+
+  return UPB_UNLIKELY(mt && mt->UPB_PRIVATE(required_count))
+             ? _upb_Decoder_CheckRequired(d, ptr, msg, mt)
+             : ptr;
+}
+
 // When fasttable is enabled, _upb_Decoder_DecodeMessage possibly calls a
 // preserve_none function, which forces a spill of all callee-save registers
 // registers to the stack in its prologue and restoration in its epilogue, due
@@ -1260,20 +1281,18 @@ const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
     return ptr;
   }
 
-  while (!upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
-    ptr = _upb_Decoder_DecodeFieldNoFast(d, ptr, msg, mt);
-    if (d->message_is_done) break;
-    if (_upb_Decoder_TryDecodeMessageFast(d, &ptr, msg, mt, 0, 0)) {
-      d->message_is_done = false;
-      return ptr;
-    }
-  }
-  d->message_is_done = false;
-
-  return UPB_UNLIKELY(mt && mt->UPB_PRIVATE(required_count))
-             ? _upb_Decoder_CheckRequired(d, ptr, msg, mt)
-             : ptr;
+  return _upb_Decoder_DecodeMessageLoop(d, ptr, msg, mt);
 }
+
+#if UPB_FASTTABLE
+UPB_PRESERVE_NONE UPB_NOINLINE const char* _upb_Decoder_FinishMessage(
+    upb_Decoder* d, const char* ptr, upb_Message* msg,
+    const upb_MiniTable* mt) {
+  UPB_ASSERT(mt);
+  UPB_ASSERT(d->message_is_done == false);
+  return _upb_Decoder_DecodeMessageLoop(d, ptr, msg, mt);
+}
+#endif
 
 static upb_DecodeStatus _upb_Decoder_DecodeTop(struct upb_Decoder* d,
                                                const char* buf,

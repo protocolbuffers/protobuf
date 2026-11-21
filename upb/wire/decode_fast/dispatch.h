@@ -42,6 +42,31 @@ UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
   return tag;
 }
 
+typedef UPB_PRESERVE_NONE upb_FastDecoder_Return
+    upb_DecodeFast_Func(UPB_PARSE_PARAMS);
+
+// State for a repeated message field whose elements are being decoded in a
+// single run by the fast decoder, without returning to the parent message's
+// field parser between elements. Lives on the stack of that field parser, and
+// is linked from upb_Decoder.fast_repeated_message_run while the run is active.
+//
+// Each element is decoded with kUpb_DecodeFastData2_InRepeatedMessageRun set
+// in data2. When an element is done, upb_DecodeFast_MessageIsDoneFallback()
+// tail calls upb_Decoder.fast_repeated_message_next, which either starts
+// decoding the next element, or ends the run (unlinking it from
+// upb_Decoder.fast_repeated_message_run) and returns to the field parser.
+typedef struct {
+  void* prev;  // The enclosing run, if any.
+  // The parent message's limit, saved when the run starts. Elements that fit
+  // before parent_limit_ptr set their limit directly, rather than with
+  // PushLimit().
+  ptrdiff_t parent_limit;
+  const char* parent_limit_ptr;
+  struct upb_Array* arr;  // The array being appended to.
+  upb_Message** dst;      // Next unused element slot.
+  upb_Message** end;      // End of the array's capacity.
+} upb_DecodeFast_RepeatedMessageRun;
+
 UPB_INLINE UPB_PRESERVE_NONE upb_FastDecoder_Return
 _upb_FastDecoder_TagDispatch(struct upb_Decoder* d, const char* ptr,
                              upb_Message* msg, const upb_MiniTable* table,

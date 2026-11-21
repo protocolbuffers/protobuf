@@ -249,14 +249,45 @@ UPB_INLINE int upb_DecodeFastData_GetTableSlot(uint64_t data) {
 //
 //                  48                32                16                 0
 // |--------|--------|--------|--------|--------|--------|--------|--------|
-// |  mask  |                  (unused)                  |   actual tag    |
+// |  mask  |R|T|    |  repeated tag   |    (unused)     |   actual tag    |
 // |--------|--------|--------|--------|--------|--------|--------|--------|
+//
+// - `R` (bit 55) is set when the message being decoded is an element of a
+//   repeated message field, and the loop over the elements is being driven by
+//   the fast decoder (see upb_DecodeFast_RepeatedMessageRun). When the end of
+//   such a message is reached, we continue on to the next element instead of
+//   returning to the parent message's field parser.
+// - `T` (bit 54) is only meaningful when `R` is set, and is set when the
+//   repeated field's tag is two bytes long rather than one.
+// - `repeated tag` (bits 32-47) is only meaningful when `R` is set, and is the
+//   repeated field's tag, as upb_DecodeFastData_GetExpectedTag() returns it.
+//
+// data2 is per-message: it is created fresh for each submessage, so these
+// bits never leak into a nested message.
+enum {
+  kUpb_DecodeFastData2_InRepeatedMessageRun = 1ULL << 55,
+  kUpb_DecodeFastData2_RepeatedMessageRunTag2 = 1ULL << 54,
+  kUpb_DecodeFastData2_RepeatedMessageTagShift = 32,
+};
+
 UPB_INLINE uint8_t upb_DecodeFastData2_GetMask(uint64_t data2) {
   return data2 >> 56;
 }
 
 UPB_INLINE uint64_t upb_DecodeFastData2_PackMask(uint8_t mask) {
   return (uint64_t)mask << 56;
+}
+
+UPB_INLINE bool upb_DecodeFastData2_InRepeatedMessageRun(uint64_t data2) {
+  return (data2 & kUpb_DecodeFastData2_InRepeatedMessageRun) != 0;
+}
+
+UPB_INLINE bool upb_DecodeFastData2_RepeatedMessageRunTag2(uint64_t data2) {
+  return (data2 & kUpb_DecodeFastData2_RepeatedMessageRunTag2) != 0;
+}
+
+UPB_INLINE uint16_t upb_DecodeFastData2_GetRepeatedMessageTag(uint64_t data2) {
+  return (uint16_t)(data2 >> kUpb_DecodeFastData2_RepeatedMessageTagShift);
 }
 
 UPB_INLINE uint16_t upb_DecodeFastData2_GetOriginalTag(uint64_t data2) {

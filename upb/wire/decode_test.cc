@@ -577,6 +577,233 @@ TEST(RepeatedFieldTest, UnpackedRepeatedGrowOutOfMemory) {
   }
 }
 
+// A message with a single repeated message field (number 1), whose elements
+// have a single int32 field (number 1).
+struct RepeatedLeafMessageTables {
+  const upb_MiniTable* mt;
+  const upb_MiniTableField* field;
+  const upb_MiniTable* sub_mt;
+  const upb_MiniTableField* sub_field;
+};
+
+RepeatedLeafMessageTables MakeRepeatedLeafMessageTables(upb_Arena* arena) {
+  auto [sub_mt, sub_field] =
+      MiniTable::MakeSingleFieldTable<field_types::Int32>(
+          1, kUpb_DecodeFast_Scalar, arena);
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::Message>(
+      1, kUpb_DecodeFast_Repeated, arena);
+  const upb_MiniTable* subs[1] = {sub_mt};
+  ABSL_CHECK(
+      upb_MiniTable_Link(const_cast<upb_MiniTable*>(mt), subs, 1, nullptr, 0));
+  return {mt, field, sub_mt, sub_field};
+}
+
+std::vector<int32_t> GetRepeatedLeafValues(const upb_Message* msg,
+                                           const RepeatedLeafMessageTables& t) {
+  std::vector<int32_t> ret;
+  const upb_Array* arr = upb_Message_GetArray(msg, t.field);
+  if (!arr) return ret;
+  for (size_t i = 0; i < upb_Array_Size(arr); i++) {
+    const upb_Message* sub = upb_Array_Get(arr, i).msg_val;
+    ret.push_back(upb_Message_GetInt32(sub, t.sub_field, -1));
+  }
+  return ret;
+}
+
+TEST(RepeatedFieldTest, RepeatedLeafMessages) {
+  for (int options : GetDecodeOptionsToTest()) {
+    // Enough elements to force several array reallocations and buffer
+    // refreshes in the middle of the run.
+    for (int count : {1, 2, 3, 1000}) {
+      Arena mt_arena;
+      Arena msg_arena;
+      auto t = MakeRepeatedLeafMessageTables(mt_arena.ptr());
+      wire_types::WireMessage wire_msg;
+      std::vector<int32_t> expected;
+      for (int i = 0; i < count; ++i) {
+        wire_msg.push_back(
+            {1, wire_types::Delimited{ToBinaryPayload(
+                    wire_types::WireMessage{{1, wire_types::Varint(i)}})}});
+        expected.push_back(i);
+      }
+      std::string payload = ToBinaryPayload(wire_msg);
+      upb_Message* msg = upb_Message_New(t.mt, msg_arena.ptr());
+      upb_DecodeStatus result =
+          upb_Decode(payload.data(), payload.size(), msg, t.mt, nullptr,
+                     options, msg_arena.ptr());
+      ASSERT_EQ(result, kUpb_DecodeStatus_Ok)
+          << upb_DecodeStatus_String(result);
+      EXPECT_EQ(GetRepeatedLeafValues(msg, t), expected)
+          << "options=" << options << " count=" << count;
+    }
+  }
+}
+
+TEST(RepeatedFieldTest, RepeatedLeafMessagesTrace) {
+  char trace_buf[64];
+  Arena mt_arena;
+  Arena msg_arena;
+  auto t = MakeRepeatedLeafMessageTables(mt_arena.ptr());
+  std::string payload = ToBinaryPayload(wire_types::WireMessage{
+      {1, wire_types::Delimited{ToBinaryPayload(
+              wire_types::WireMessage{{1, wire_types::Varint(5)}})}},
+      {1, wire_types::Delimited{ToBinaryPayload(
+              wire_types::WireMessage{{1, wire_types::Varint(6)}})}},
+      {1, wire_types::Delimited{ToBinaryPayload(
+              wire_types::WireMessage{{1, wire_types::Varint(7)}})}},
+  });
+  upb_Message* msg = upb_Message_New(t.mt, msg_arena.ptr());
+  upb_DecodeStatus result =
+      upb_DecodeWithTrace(payload.data(), payload.size(), msg, t.mt, nullptr, 0,
+                          msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+  ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+  EXPECT_EQ(GetRepeatedLeafValues(msg, t), (std::vector<int32_t>{5, 6, 7}));
+#if !defined(NDEBUG)
+#if UPB_FASTTABLE
+  // All elements are decoded in a single run, with no MiniTable fallback. Each
+  // element is traced as "DFF": dispatch, int32 field, end of element.
+  EXPECT_EQ(FilteredTrace(absl::string_view(trace_buf)), "DDFFDFFDFF");
+#else
+  EXPECT_EQ(FilteredTrace(absl::string_view(trace_buf)), "MMMMMM");
+#endif
+#endif
+}
+
+TEST(RepeatedFieldTest, RepeatedEmptyMessages) {
+  for (int options : GetDecodeOptionsToTest()) {
+    Arena mt_arena;
+    Arena msg_arena;
+    auto t = MakeRepeatedLeafMessageTables(mt_arena.ptr());
+    std::string payload = ToBinaryPayload(wire_types::WireMessage{
+        {1, wire_types::Delimited{""}},
+        {1, wire_types::Delimited{ToBinaryPayload(
+                wire_types::WireMessage{{1, wire_types::Varint(6)}})}},
+        {1, wire_types::Delimited{""}},
+    });
+    upb_Message* msg = upb_Message_New(t.mt, msg_arena.ptr());
+    upb_DecodeStatus result =
+        upb_Decode(payload.data(), payload.size(), msg, t.mt, nullptr, options,
+                   msg_arena.ptr());
+    ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+    // -1 means the field is not present.
+    EXPECT_EQ(GetRepeatedLeafValues(msg, t), (std::vector<int32_t>{-1, 6, -1}));
+  }
+}
+
+TEST(RepeatedFieldTest, RepeatedMessageFallbackMidElement) {
+  for (int options : GetDecodeOptionsToTest()) {
+    Arena mt_arena;
+    Arena msg_arena;
+    auto t = MakeRepeatedLeafMessageTables(mt_arena.ptr());
+    // The second element contains an unknown group, which the fast decoder
+    // can't handle, so it has to finish that element with the MiniTable
+    // decoder and then resume decoding the remaining elements.
+    std::string payload = ToBinaryPayload(wire_types::WireMessage{
+        {1, wire_types::Delimited{ToBinaryPayload(
+                wire_types::WireMessage{{1, wire_types::Varint(5)}})}},
+        {1, wire_types::Delimited{ToBinaryPayload(wire_types::WireMessage{
+                {2, wire_types::Group{{3, wire_types::Varint(1)}}},
+                {1, wire_types::Varint(6)}})}},
+        {1, wire_types::Delimited{ToBinaryPayload(
+                wire_types::WireMessage{{1, wire_types::Varint(7)}})}},
+        {1, wire_types::Delimited{ToBinaryPayload(
+                wire_types::WireMessage{{1, wire_types::Varint(8)}})}},
+    });
+    upb_Message* msg = upb_Message_New(t.mt, msg_arena.ptr());
+    upb_DecodeStatus result =
+        upb_Decode(payload.data(), payload.size(), msg, t.mt, nullptr, options,
+                   msg_arena.ptr());
+    ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+    EXPECT_EQ(GetRepeatedLeafValues(msg, t),
+              (std::vector<int32_t>{5, 6, 7, 8}));
+
+    // The unknown group is preserved in the second element.
+    const upb_Array* arr = upb_Message_GetArray(msg, t.field);
+    ASSERT_NE(arr, nullptr);
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_StringView unknown;
+    EXPECT_TRUE(upb_Message_NextUnknown(upb_Array_Get(arr, 1).msg_val, &unknown,
+                                        &iter));
+    iter = kUpb_Message_UnknownBegin;
+    EXPECT_FALSE(upb_Message_NextUnknown(upb_Array_Get(arr, 2).msg_val,
+                                         &unknown, &iter));
+  }
+}
+
+TEST(RepeatedFieldTest, NestedRepeatedMessages) {
+  for (int options : GetDecodeOptionsToTest()) {
+    Arena mt_arena;
+    Arena msg_arena;
+    // Middle has a repeated message field of leaf messages; Top has a repeated
+    // message field of Middle messages.
+    auto leaf = MakeRepeatedLeafMessageTables(mt_arena.ptr());
+    auto [top_mt, top_field] =
+        MiniTable::MakeSingleFieldTable<field_types::Message>(
+            1, kUpb_DecodeFast_Repeated, mt_arena.ptr());
+    const upb_MiniTable* subs[1] = {leaf.mt};
+    ASSERT_TRUE(upb_MiniTable_Link(const_cast<upb_MiniTable*>(top_mt), subs, 1,
+                                   nullptr, 0));
+
+    wire_types::WireMessage top_wire;
+    std::vector<std::vector<int32_t>> expected;
+    for (int i = 0; i < 20; ++i) {
+      wire_types::WireMessage middle_wire;
+      std::vector<int32_t> expected_middle;
+      for (int j = 0; j < i; ++j) {
+        middle_wire.push_back(
+            {1, wire_types::Delimited{ToBinaryPayload(wire_types::WireMessage{
+                    {1, wire_types::Varint(i * 100 + j)}})}});
+        expected_middle.push_back(i * 100 + j);
+      }
+      top_wire.push_back(
+          {1, wire_types::Delimited{ToBinaryPayload(middle_wire)}});
+      expected.push_back(std::move(expected_middle));
+    }
+    std::string payload = ToBinaryPayload(top_wire);
+    upb_Message* msg = upb_Message_New(top_mt, msg_arena.ptr());
+    upb_DecodeStatus result =
+        upb_Decode(payload.data(), payload.size(), msg, top_mt, nullptr,
+                   options, msg_arena.ptr());
+    ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+
+    std::vector<std::vector<int32_t>> actual;
+    const upb_Array* arr = upb_Message_GetArray(msg, top_field);
+    ASSERT_NE(arr, nullptr);
+    for (size_t i = 0; i < upb_Array_Size(arr); i++) {
+      actual.push_back(
+          GetRepeatedLeafValues(upb_Array_Get(arr, i).msg_val, leaf));
+    }
+    EXPECT_EQ(actual, expected);
+  }
+}
+
+TEST(RepeatedFieldTest, NestedRepeatedMessageOverrunsParent) {
+  for (int options : GetDecodeOptionsToTest()) {
+    Arena mt_arena;
+    Arena msg_arena;
+    auto leaf = MakeRepeatedLeafMessageTables(mt_arena.ptr());
+    auto [top_mt, top_field] =
+        MiniTable::MakeSingleFieldTable<field_types::Message>(
+            1, kUpb_DecodeFast_Repeated, mt_arena.ptr());
+    const upb_MiniTable* subs[1] = {leaf.mt};
+    ASSERT_TRUE(upb_MiniTable_Link(const_cast<upb_MiniTable*>(top_mt), subs, 1,
+                                   nullptr, 0));
+    // The middle message is 6 bytes long. Its second leaf element claims to be
+    // 4 bytes long, but only 0 bytes remain in the middle message.
+    std::string middle("\x0a\x02\x08\x05\x0a\x04", 6);
+    std::string payload = ToBinaryPayload(wire_types::WireMessage{
+        {1, wire_types::Delimited{middle}},
+        {1, wire_types::Delimited{std::string("\x08\x01\x08\x02", 4)}},
+    });
+    upb_Message* msg = upb_Message_New(top_mt, msg_arena.ptr());
+    upb_DecodeStatus result =
+        upb_Decode(payload.data(), payload.size(), msg, top_mt, nullptr,
+                   options, msg_arena.ptr());
+    EXPECT_EQ(result, kUpb_DecodeStatus_Malformed)
+        << upb_DecodeStatus_String(result);
+  }
+}
+
 TYPED_TEST(PackedTest, DecodeTruncatedPackedFieldMaxLen) {
   char trace_buf[64];
   upb::Arena msg_arena;
