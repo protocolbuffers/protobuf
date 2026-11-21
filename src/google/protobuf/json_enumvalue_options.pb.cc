@@ -388,11 +388,9 @@ void JsonEnumValueOptions::CopyFrom(const JsonEnumValueOptions& from) {
 
 void JsonEnumValueOptions::InternalSwap(JsonEnumValueOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.string_.InternalSwap(&_impl_.string_, &other->_impl_.string_, arena);
+  _impl_.string_.InternalSwap(&_impl_.string_, &other->_impl_.string_);
 }
 
 ::google::protobuf::Metadata JsonEnumValueOptions::GetMetadata() const {

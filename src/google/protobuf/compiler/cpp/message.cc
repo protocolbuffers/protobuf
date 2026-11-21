@@ -425,16 +425,6 @@ bool IsCrossFileMaybeMap(const FieldDescriptor* field) {
   return IsCrossFileMessage(field);
 }
 
-bool HasNonSplitOptionalString(const Descriptor* desc, const Options& options) {
-  for (const auto* field : internal::FieldRange(desc)) {
-    if (IsString(field) && !field->is_repeated() &&
-        !field->real_containing_oneof() && !ShouldSplit(field, options)) {
-      return true;
-    }
-  }
-  return false;
-}
-
 
 using Sub = ::google::protobuf::io::Printer::Sub;
 std::vector<Sub> ClassVars(const Descriptor* desc, Options opts) {
@@ -3465,12 +3455,6 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
           "\n");
     }
 
-    if (HasNonSplitOptionalString(descriptor_, options_)) {
-      p->Emit(R"cc(
-        auto* arena = GetArena();
-        ABSL_DCHECK_EQ(arena, other->GetArena());
-      )cc");
-    }
     format("_internal_metadata_.InternalSwap(&other->_internal_metadata_);\n");
 
     if (field_layout_.HasHasbits()) {

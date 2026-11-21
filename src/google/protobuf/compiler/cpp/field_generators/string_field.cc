@@ -75,6 +75,20 @@ class SingularString : public FieldGeneratorBase {
 
   bool IsInlined() const override { return is_inlined(); }
 
+  // Arena-allocated messages destroy their inlined strings in their
+  // `ArenaDtor`, which they register on construction.
+  ArenaDtorNeeds NeedsArenaDestructor() const override {
+    return is_inlined() ? ArenaDtorNeeds::kRequired : ArenaDtorNeeds::kNone;
+  }
+
+  void GenerateArenaDestructorCode(io::Printer* p) const override {
+    if (!is_inlined()) return;
+    // `this_` is the message being destroyed (we are in a static method).
+    p->Emit(R"cc(
+      $this_mutable_field$.~InlinedStringField();
+    )cc");
+  }
+
   void GeneratePrivateMembers(io::Printer* p) const override {
     // Skips the automatic destruction if inlined; rather calls it explicitly if
     // allocating arena is null.
@@ -548,14 +562,13 @@ void SingularString::GenerateSwappingCode(io::Printer* p) const {
 
   if (!is_inlined()) {
     p->Emit(R"cc(
-      ::_pbi::ArenaStringPtr::InternalSwap(&$field_$, &other->$field_$, arena);
+      ::_pbi::ArenaStringPtr::InternalSwap(&$field_$, &other->$field_$);
     )cc");
     return;
   }
 
   p->Emit(R"cc(
-    ::_pbi::InlinedStringField::InternalSwap(&$field_$, &other->$field_$,
-                                             arena);
+    ::_pbi::InlinedStringField::InternalSwap(&$field_$, &other->$field_$);
   )cc");
 }
 

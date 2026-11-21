@@ -95,8 +95,9 @@ class PROTOBUF_EXPORT InlinedStringField {
   explicit InlinedStringField(Arena* arena);
   InlinedStringField(Arena* arena, const InlinedStringField& rhs);
   ~InlinedStringField() {
-    ABSL_DCHECK(!IsLongDonated());
-    Destruct();
+    if (!IsDonated()) {
+      Destruct();
+    }
   }
 
   // Lvalue Set.
@@ -166,16 +167,7 @@ class PROTOBUF_EXPORT InlinedStringField {
   // Swap()/UnsafeArenaSwap() at the message level, so this method is
   // 'unsafe' if called directly.
   PROTOBUF_NDEBUG_INLINE static void InternalSwap(InlinedStringField* lhs,
-                                                  InlinedStringField* rhs,
-                                                  Arena* arena);
-
-  // Frees storage (if not on an arena).
-  PROTOBUF_NDEBUG_INLINE void Destroy(Arena* arena) {
-    if (arena == nullptr) {
-      DestroyNoArena();
-    }
-  }
-  PROTOBUF_NDEBUG_INLINE void DestroyNoArena();
+                                                  InlinedStringField* rhs);
 
   // Clears content, but keeps allocated std::string, to avoid the overhead of
   // heap operations. After this returns, the content (as seen by the user) will
@@ -237,20 +229,11 @@ class PROTOBUF_EXPORT InlinedStringField {
     std::string str_;
   };
 
-  std::string* MutableSlow(Arena* arena);
-
-  static void RegisterForDestruction(Arena* arena, std::string* str);
-  static void MaybeRegisterForDestruction(Arena* arena, std::string* str) {
-    if (IsDonated(*str)) return;
-    RegisterForDestruction(arena, str);
-  }
-  static void DestroyArenaString(void* p);
+  std::string* MutableSlow();
 
 
-  // When constructed in an Arena, we want our destructor to be skipped.
   friend google::protobuf::Arena;
   typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
 };
 
 inline std::string* InlinedStringField::get_mutable() { return &str_; }
@@ -271,9 +254,6 @@ inline InlinedStringField::InlinedStringField([[maybe_unused]] Arena* arena,
                                               const InlinedStringField& rhs) {
   const std::string& src = *rhs.get_const();
   ::new (static_cast<void*>(&str_)) std::string(src);
-  if (arena != nullptr) {
-    MaybeRegisterForDestruction(arena, get_mutable());
-  }
 }
 
 inline const std::string& InlinedStringField::GetNoArena() const {
@@ -290,12 +270,6 @@ inline void InlinedStringField::SetAllocatedNoArena(std::string* value) {
   }
 }
 
-inline void InlinedStringField::DestroyNoArena() {
-  // This is invoked from the generated message's ArenaDtor, which is used to
-  // clean up objects not allocated on the Arena.
-  this->~InlinedStringField();
-}
-
 inline void InlinedStringField::SetNoArena(absl::string_view value) {
   get_mutable()->assign(value.data(), value.length());
 }
@@ -305,30 +279,12 @@ inline void InlinedStringField::SetNoArena(std::string&& value) {
 }
 
 PROTOBUF_NDEBUG_INLINE void InlinedStringField::InternalSwap(
-    InlinedStringField* lhs, InlinedStringField* rhs, Arena* arena) {
-  const bool lhs_donated = lhs->IsDonated();
-  const bool rhs_donated = rhs->IsDonated();
-#ifdef GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL_INLINE
+    InlinedStringField* lhs, InlinedStringField* rhs) {
   lhs->get_mutable()->swap(*rhs->get_mutable());
-  if (arena != nullptr && lhs_donated != rhs_donated) {
-    if (lhs_donated) lhs->RegisterForDestruction(arena, lhs->get_mutable());
-    if (rhs_donated) rhs->RegisterForDestruction(arena, rhs->get_mutable());
-  }
-#else
-  lhs->get_mutable()->swap(*rhs->get_mutable());
-  if (arena != nullptr && lhs_donated != rhs_donated) {
-    MaybeRegisterForDestruction(arena, lhs->get_mutable());
-    MaybeRegisterForDestruction(arena, rhs->get_mutable());
-  }
-#endif
 }
 
-inline void InlinedStringField::Set(absl::string_view value,
-                                    const MessageLite& parent) {
-  Arena* arena = parent.GetArena();
-  if (arena != nullptr) {
-    MaybeRegisterForDestruction(arena, get_mutable());
-  }
+inline void InlinedStringField::Set(
+    absl::string_view value, [[maybe_unused]] const MessageLite& parent) {
   SetNoArena(value);
 }
 
@@ -395,11 +351,12 @@ inline std::string* InlinedStringField::UnsafeMutablePointer() {
 }
 
 inline std::string* InlinedStringField::Mutable(std::nullptr_t) {
-  return get_mutable();
+  // See `Mutable(const MessageLite&)`.
+  return IsLongDonated() ? MutableSlow() : get_mutable();
 }
 
 inline std::string* InlinedStringField::MutableNoCopy(std::nullptr_t) {
-  return get_mutable();
+  return Mutable(nullptr);
 }
 
 }  // namespace internal

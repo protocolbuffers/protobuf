@@ -80,6 +80,20 @@ class SingularStringView : public FieldGeneratorBase {
 
   bool IsInlined() const override { return is_inlined(); }
 
+  // Arena-allocated messages destroy their inlined strings in their
+  // `ArenaDtor`, which they register on construction.
+  ArenaDtorNeeds NeedsArenaDestructor() const override {
+    return is_inlined() ? ArenaDtorNeeds::kRequired : ArenaDtorNeeds::kNone;
+  }
+
+  void GenerateArenaDestructorCode(io::Printer* p) const override {
+    if (!is_inlined()) return;
+    // `this_` is the message being destroyed (we are in a static method).
+    p->Emit(R"cc(
+      $this_mutable_field$.~InlinedStringField();
+    )cc");
+  }
+
   std::string FieldTypeName() const {
     if (is_inlined()) return "InlinedStringField";
     if (!use_micro_string()) return "ArenaStringPtr";
@@ -427,14 +441,13 @@ void SingularStringView::GenerateSwappingCode(io::Printer* p) const {
 
   if (!is_inlined()) {
     p->Emit(R"cc(
-      $field_$.InternalSwap(&$field_$, &other->$field_$, arena);
+      $field_$.InternalSwap(&$field_$, &other->$field_$);
     )cc");
     return;
   }
 
   p->Emit(R"cc(
-    ::_pbi::InlinedStringField::InternalSwap(&$field_$, &other->$field_$,
-                                             arena);
+    ::_pbi::InlinedStringField::InternalSwap(&$field_$, &other->$field_$);
   )cc");
 }
 
