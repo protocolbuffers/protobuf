@@ -52,12 +52,12 @@ pub static EXTENSIONS: [LazyLock<MiniTableExtensionInitPtr>];
 #[cfg(all(target_family = "unix", not(target_vendor = "apple")))]
 core::arch::global_asm!(
     r#"
-    .section linkme_EXTENSIONS,"awR",@progbits
+    .section linkme_EXTENSIONS,"awR"
     .globl LINKME_SENTINEL_EXTENSIONS
     LINKME_SENTINEL_EXTENSIONS:
     .size   LINKME_SENTINEL_EXTENSIONS, 0
 
-    .section linkm2_EXTENSIONS,"awR",@progbits
+    .section linkm2_EXTENSIONS,"awR"
     .globl LINKM2_SENTINEL_EXTENSIONS
     LINKM2_SENTINEL_EXTENSIONS:
     .size   LINKM2_SENTINEL_EXTENSIONS, 0
@@ -81,12 +81,12 @@ pub static EXTENSION_MINI_TABLE_TO_DEF_INITS: [ExtensionMiniTableToDefInit];
 #[cfg(all(not(lite_runtime), target_family = "unix", not(target_vendor = "apple")))]
 core::arch::global_asm!(
     r#"
-    .section linkme_EXTENSION_MINI_TABLE_TO_DEF_INITS,"awR",@progbits
+    .section linkme_EXTENSION_MINI_TABLE_TO_DEF_INITS,"awR"
     .globl LINKME_SENTINEL_EXTENSION_MINI_TABLE_TO_DEF_INITS
     LINKME_SENTINEL_EXTENSION_MINI_TABLE_TO_DEF_INITS:
     .size   LINKME_SENTINEL_EXTENSION_MINI_TABLE_TO_DEF_INITS, 0
 
-    .section linkm2_EXTENSION_MINI_TABLE_TO_DEF_INITS,"awR",@progbits
+    .section linkm2_EXTENSION_MINI_TABLE_TO_DEF_INITS,"awR"
     .globl LINKM2_SENTINEL_EXTENSION_MINI_TABLE_TO_DEF_INITS
     LINKM2_SENTINEL_EXTENSION_MINI_TABLE_TO_DEF_INITS:
     .size   LINKM2_SENTINEL_EXTENSION_MINI_TABLE_TO_DEF_INITS, 0
