@@ -221,3 +221,19 @@ TYPED_TEST(RequiredFieldsTest, TestRequired) {
       )json",
       {R"(map_string_message["d\"ef"].required_int32)"});
 }
+
+TYPED_TEST(RequiredFieldsTest, TestScalarMapKeepsPaths) {
+  // A map with scalar values must not leave an entry on the field path.
+  TestFixture::CheckRequired(
+      R"json(
+      {
+        "required_message": {},
+        "optional_message": {
+          "required_message": {},
+          "map_string_string": {"a": "b"}
+        },
+        "map_int32_message": {"5": {}}
+      }
+      )json",
+      {"map_int32_message[5].required_int32"});
+}
