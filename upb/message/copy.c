@@ -67,6 +67,10 @@ static bool upb_Clone_MessageValue(void* value, upb_CType value_type,
     case kUpb_CType_Bytes: {
       upb_StringView source = *(upb_StringView*)value;
       size_t size = source.size;
+      if (size == 0) {
+        *(upb_StringView*)value = upb_StringView_FromDataAndSize(NULL, 0);
+        return true;
+      }
       void* cloned_data = upb_Arena_Malloc(arena, size);
       if (cloned_data == NULL) {
         return false;

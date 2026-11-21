@@ -13,6 +13,8 @@
 
 #include "upb/message/copy.h"
 
+#include <gtest/gtest.h>
+
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -20,7 +22,6 @@
 #include <string_view>
 #include <vector>
 
-#include <gtest/gtest.h>
 #include "google/protobuf/test_messages_proto2.upb.h"
 #include "google/protobuf/test_messages_proto2.upb_minitable.h"
 #include "upb/base/string_view.h"
@@ -38,6 +39,7 @@
 #include "upb/mini_table/message.h"
 #include "upb/test/test.upb.h"
 #include "upb/test/test.upb_minitable.h"
+#include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 
 // Must be last.
@@ -785,6 +787,120 @@ TEST(GeneratedCode, DeepCloneMessageNonCanonicalExtensions) {
   EXPECT_TRUE(
       upb_StringView_IsEqual(upb_test_ModelExtension1_str(cloned_ext),
                              upb_StringView_FromString("LifecycleValue")));
+
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, DeepCloneMapStringAndBytesPositiveControl) {
+  upb_Arena* source_arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(source_arena);
+  ASSERT_NE(msg, nullptr);
+
+  // Wire-encoded map_string_string (field 69, tag \xaa\x04) and
+  // map_string_bytes (field 70, tag \xb2\x04) entries with explicit empty
+  // value field (\x12\x00), plus non-empty values set via generated accessors.
+  static const char kWireWithEmptyValueField[] =
+      "\xaa\x04\x05\x0a\x01"
+      "k\x12\x00"
+      "\xb2\x04\x05\x0a\x01"
+      "b\x12\x00";
+  ASSERT_EQ(
+      upb_Decode(kWireWithEmptyValueField, sizeof(kWireWithEmptyValueField) - 1,
+                 UPB_UPCAST(msg),
+                 &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
+                 nullptr, 0, source_arena),
+      kUpb_DecodeStatus_Ok);
+  ASSERT_TRUE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_map_string_string_set(
+          msg, upb_StringView_FromString("key1"),
+          upb_StringView_FromString("value1"), source_arena));
+  ASSERT_TRUE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_map_string_bytes_set(
+          msg, upb_StringView_FromString("bytes1"),
+          upb_StringView_FromDataAndSize("a\0b", 3), source_arena));
+
+  upb_Arena* arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* clone =
+      (protobuf_test_messages_proto2_TestAllTypesProto2*)upb_Message_DeepClone(
+          UPB_UPCAST(msg),
+          &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
+          arena);
+  ASSERT_NE(clone, nullptr);
+  upb_Arena_Free(source_arena);
+
+  upb_StringView val;
+  ASSERT_TRUE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_map_string_string_get(
+          clone, upb_StringView_FromString("k"), &val));
+  EXPECT_EQ(val.size, 0u);
+  ASSERT_TRUE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_map_string_string_get(
+          clone, upb_StringView_FromString("key1"), &val));
+  EXPECT_TRUE(upb_StringView_IsEqual(val, upb_StringView_FromString("value1")));
+
+  ASSERT_TRUE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_map_string_bytes_get(
+          clone, upb_StringView_FromString("b"), &val));
+  EXPECT_EQ(val.size, 0u);
+  ASSERT_TRUE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_map_string_bytes_get(
+          clone, upb_StringView_FromString("bytes1"), &val));
+  EXPECT_TRUE(
+      upb_StringView_IsEqual(val, upb_StringView_FromDataAndSize("a\0b", 3)));
+
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, DeepCloneMapEntryWithoutValueField) {
+  upb_Arena* source_arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(source_arena);
+  ASSERT_NE(msg, nullptr);
+
+  // Wire-encoded map_string_string (field 69, tag \xaa\x04) and
+  // map_string_bytes (field 70, tag \xb2\x04) entries that omit field 2 (the
+  // value field), leaving the decoded map entry value as {NULL, 0}.
+  static const char kWireWithoutValueField[] =
+      "\xaa\x04\x03\x0a\x01"
+      "k"
+      "\xaa\x04\x00"
+      "\xb2\x04\x03\x0a\x01"
+      "b";
+  ASSERT_EQ(
+      upb_Decode(kWireWithoutValueField, sizeof(kWireWithoutValueField) - 1,
+                 UPB_UPCAST(msg),
+                 &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
+                 nullptr, 0, source_arena),
+      kUpb_DecodeStatus_Ok);
+
+  upb_Arena* arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* clone =
+      (protobuf_test_messages_proto2_TestAllTypesProto2*)upb_Message_DeepClone(
+          UPB_UPCAST(msg),
+          &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
+          arena);
+  ASSERT_NE(clone, nullptr);
+  upb_Arena_Free(source_arena);
+
+  upb_StringView val;
+  ASSERT_TRUE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_map_string_string_get(
+          clone, upb_StringView_FromString("k"), &val));
+  EXPECT_EQ(val.data, nullptr);
+  EXPECT_EQ(val.size, 0u);
+
+  ASSERT_TRUE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_map_string_string_get(
+          clone, upb_StringView_FromDataAndSize(nullptr, 0), &val));
+  EXPECT_EQ(val.data, nullptr);
+  EXPECT_EQ(val.size, 0u);
+
+  ASSERT_TRUE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_map_string_bytes_get(
+          clone, upb_StringView_FromString("b"), &val));
+  EXPECT_EQ(val.data, nullptr);
+  EXPECT_EQ(val.size, 0u);
 
   upb_Arena_Free(arena);
 }
