@@ -133,15 +133,25 @@ PyObject* PyUpb_GetWktBases(PyUpb_ModuleState* state) {
   if (!state->wkt_bases) {
     PyObject* wkt_module = PyImport_ImportModule(PYUPB_PROTOBUF_INTERNAL_PACKAGE
                                                  ".well_known_types");
-
-    if (wkt_module == NULL) {
+    if (!wkt_module) return NULL;
+    PyObject* wkt_bases = PyObject_GetAttrString(wkt_module, "WKTBASES");
+    if (!wkt_bases) {
+      Py_DECREF(wkt_module);
       return NULL;
     }
-
-    state->wkt_bases = PyObject_GetAttrString(wkt_module, "WKTBASES");
     PyObject* m = PyState_FindModule(&module_def);
+    if (!m) {
+      PyErr_SetString(PyExc_RuntimeError, "protobuf module state is unavailable");
+      Py_DECREF(wkt_bases);
+      Py_DECREF(wkt_module);
+      return NULL;
+    }
     // Reparent ownership to m.
-    PyModule_AddObject(m, "__internal_wktbases", state->wkt_bases);
+    if (PyModule_AddObject(m, "__internal_wktbases", wkt_bases) < 0) {
+      Py_DECREF(wkt_module);
+      return NULL;
+    }
+    state->wkt_bases = wkt_bases;
     Py_DECREF(wkt_module);
   }
 
