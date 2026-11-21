@@ -10,6 +10,7 @@ package com.google.protobuf;
 import static com.google.protobuf.MessageSchema.getMutableUnknownFields;
 
 import com.google.protobuf.GeneratedMessageLite.ExtensionDescriptor;
+import com.google.protobuf.Internal.EnumVerifier;
 import com.google.protobuf.Internal.ProtobufList;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -444,6 +445,82 @@ final class ArrayDecoders {
     while (position < fieldLimit) {
       position = decodeVarint32(data, position, registers);
       output.addInt(registers.int1);
+    }
+    if (position != fieldLimit) {
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+    return position;
+  }
+
+  /**
+   * Decodes a repeated enum field. Returns the position after all read values. Values rejected by
+   * {@code enumVerifier} are stored in the unknown fields of {@code message} instead of {@code
+   * list}. A null {@code enumVerifier} accepts all values.
+   */
+  static int decodeEnumList(
+      int tag,
+      byte[] data,
+      int position,
+      int limit,
+      ProtobufList<?> list,
+      Object message,
+      EnumVerifier enumVerifier,
+      Registers registers) {
+    if (enumVerifier == null) {
+      return decodeVarint32List(tag, data, position, limit, list, registers);
+    }
+    final IntArrayList output = (IntArrayList) list;
+    while (true) {
+      position = decodeVarint32(data, position, registers);
+      if (enumVerifier.isInRange(registers.int1)) {
+        output.addInt(registers.int1);
+      } else {
+        // UnknownFieldSetLite requires varint to be represented as Long.
+        getMutableUnknownFields(message).storeField(tag, (long) registers.int1);
+      }
+      if (position >= limit) {
+        break;
+      }
+      int nextPosition = decodeVarint32(data, position, registers);
+      if (tag != registers.int1) {
+        break;
+      }
+      position = nextPosition;
+    }
+    return position;
+  }
+
+  /**
+   * Decodes a packed enum field. Returns the position after all read values. Values rejected by
+   * {@code enumVerifier} are stored in the unknown fields of {@code message} instead of {@code
+   * list}. A null {@code enumVerifier} accepts all values.
+   */
+  static int decodePackedEnumList(
+      byte[] data,
+      int position,
+      ProtobufList<?> list,
+      Object message,
+      int number,
+      EnumVerifier enumVerifier,
+      Registers registers)
+      throws IOException {
+    if (enumVerifier == null) {
+      return decodePackedVarint32List(data, position, list, registers);
+    }
+    final IntArrayList output = (IntArrayList) list;
+    position = decodeLengthPrefixVarint(data, position, data.length, registers);
+    final int packedDataByteSize = registers.int1;
+    final int fieldLimit = position + packedDataByteSize;
+    while (position < fieldLimit) {
+      position = decodeVarint32(data, position, registers);
+      if (enumVerifier.isInRange(registers.int1)) {
+        output.addInt(registers.int1);
+      } else {
+        // UnknownFieldSetLite requires varint to be represented as Long.
+        getMutableUnknownFields(message)
+            .storeField(
+                WireFormat.makeTag(number, WireFormat.WIRETYPE_VARINT), (long) registers.int1);
+      }
     }
     if (position != fieldLimit) {
       throw InvalidProtocolBufferException.truncatedMessage();
