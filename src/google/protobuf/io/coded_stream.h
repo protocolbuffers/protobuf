@@ -1362,6 +1362,8 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodedOutputStream {
   static void SetDefaultSerializationDeterministic() {
     default_serialization_deterministic_.store(true, std::memory_order_relaxed);
   }
+  template <bool kPlusOne = false, typename T>
+  PROTOBUF_ALWAYS_INLINE static size_t VarintSizeImpl(T value);
 };
 
 // inline methods ====================================================
@@ -1793,77 +1795,68 @@ inline uint8_t* CodedOutputStream::WriteTagToArray(uint32_t value,
 
 #if (defined(__x86__) || defined(__x86_64__) || defined(_M_IX86) || \
      defined(_M_X64)) &&                                            \
-    !(defined(__LZCNT__) || defined(__AVX2__))
+    !PROTOBUF_HAS_X86_LZCNT
 // X86 CPUs lacking the lzcnt instruction are faster with the bsr-based
-// implementation. MSVC does not define __LZCNT__, the nearest option that
-// it interprets as lzcnt availability is __AVX2__.
+// implementation.
 #define PROTOBUF_CODED_STREAM_H_PREFER_BSR 1
-#else
+#else  // !(x86 && !PROTOBUF_HAS_X86_LZCNT)
 #define PROTOBUF_CODED_STREAM_H_PREFER_BSR 0
-#endif
-inline size_t CodedOutputStream::VarintSize32(uint32_t value) {
+#endif  // x86 && !PROTOBUF_HAS_X86_LZCNT
+
+template <bool kPlusOne, typename T>
+inline size_t CodedOutputStream::VarintSizeImpl(T value) {
+  static_assert(std::is_unsigned_v<T>, "T must be unsigned");
+  constexpr uint32_t kDigits = std::numeric_limits<T>::digits;
 #if PROTOBUF_CODED_STREAM_H_PREFER_BSR
   // Explicit OR 0x1 to avoid calling absl::countl_zero(0), which
   // requires a branch to check for on platforms without a clz instruction.
-  uint32_t log2value = (std::numeric_limits<uint32_t>::digits - 1) -
-                       absl::countl_zero(value | 0x1);
-  return static_cast<size_t>((log2value * 9 + (64 + 9)) / 64);
-#else
+  uint32_t log2value =
+      (kDigits - 1) - absl::countl_zero(static_cast<T>(value | 0x1));
+  return static_cast<size_t>(
+      (log2value * 9 + (64 + 9) + (kPlusOne ? 64u : 0u)) / 64);
+#elif defined(__clang__) && PROTOBUF_HAS_X86_LZCNT
+  // Purely additive numerator (lea + add + shr) avoids imul by -9 on x86
+  // lzcnt, and factoring out kMaxBytes lets it fold into adjacent tag and
+  // length-prefix constants.
+  constexpr size_t kMaxBytes = (kDigits * 9 + 64) / 64 + (kPlusOne ? 1 : 0);
+  uint32_t clz = absl::countl_zero(value);
+  return kMaxBytes - static_cast<size_t>((clz * 9 + (kDigits - 1)) / 64);
+#else   // !PREFER_BSR && !(__clang__ && PROTOBUF_HAS_X86_LZCNT)
+  // Single uint32_t >> 6 term lets ARM64 emit 1-cycle unshifted scalar adds
+  // and fuse NEON accumulations into usra, and lowers cleanly on GCC without
+  // 3-operand LEAs.
   uint32_t clz = absl::countl_zero(value);
   return static_cast<size_t>(
-      ((std::numeric_limits<uint32_t>::digits * 9 + 64) - (clz * 9)) / 64);
-#endif
+      ((kDigits * 9 + 64 + (kPlusOne ? 64u : 0u)) - (clz * 9)) / 64);
+#endif  // PROTOBUF_CODED_STREAM_H_PREFER_BSR
+}
+#undef PROTOBUF_CODED_STREAM_H_PREFER_BSR
+
+inline size_t CodedOutputStream::VarintSize32(uint32_t value) {
+  return VarintSizeImpl(value);
 }
 
 inline size_t CodedOutputStream::VarintSize32PlusOne(uint32_t value) {
-  // Same as above, but one more.
-#if PROTOBUF_CODED_STREAM_H_PREFER_BSR
-  uint32_t log2value = (std::numeric_limits<uint32_t>::digits - 1) -
-                       absl::countl_zero(value | 0x1);
-  return static_cast<size_t>((log2value * 9 + (64 + 9) + 64) / 64);
-#else
-  uint32_t clz = absl::countl_zero(value);
-  return static_cast<size_t>(
-      ((std::numeric_limits<uint32_t>::digits * 9 + 64 + 64) - (clz * 9)) / 64);
-#endif
+  return VarintSizeImpl</*kPlusOne=*/true>(value);
 }
 
 inline size_t CodedOutputStream::VarintSize64(uint64_t value) {
-#if PROTOBUF_CODED_STREAM_H_PREFER_BSR
-  // Explicit OR 0x1 to avoid calling absl::countl_zero(0), which
-  // requires a branch to check for on platforms without a clz instruction.
-  uint32_t log2value = (std::numeric_limits<uint64_t>::digits - 1) -
-                       absl::countl_zero(value | 0x1);
-  return static_cast<size_t>((log2value * 9 + (64 + 9)) / 64);
-#else
-  uint32_t clz = absl::countl_zero(value);
-  return static_cast<size_t>(
-      ((std::numeric_limits<uint64_t>::digits * 9 + 64) - (clz * 9)) / 64);
-#endif
+  return VarintSizeImpl(value);
 }
 
 inline size_t CodedOutputStream::VarintSize64PlusOne(uint64_t value) {
-  // Same as above, but one more.
-#if PROTOBUF_CODED_STREAM_H_PREFER_BSR
-  uint32_t log2value = (std::numeric_limits<uint64_t>::digits - 1) -
-                       absl::countl_zero(value | 0x1);
-  return static_cast<size_t>((log2value * 9 + (64 + 9) + 64) / 64);
-#else
-  uint32_t clz = absl::countl_zero(value);
-  return static_cast<size_t>(
-      ((std::numeric_limits<uint64_t>::digits * 9 + 64 + 64) - (clz * 9)) / 64);
-#endif
+  return VarintSizeImpl</*kPlusOne=*/true>(value);
 }
 
 inline size_t CodedOutputStream::VarintSize32SignExtended(int32_t value) {
-  return VarintSize64(static_cast<uint64_t>(int64_t{value}));
+  return VarintSizeImpl(static_cast<uint64_t>(int64_t{value}));
 }
 
 inline size_t CodedOutputStream::VarintSize32SignExtendedPlusOne(
     int32_t value) {
-  return VarintSize64PlusOne(static_cast<uint64_t>(int64_t{value}));
+  return VarintSizeImpl</*kPlusOne=*/true>(
+      static_cast<uint64_t>(int64_t{value}));
 }
-#undef PROTOBUF_CODED_STREAM_H_PREFER_BSR
 
 inline void CodedOutputStream::WriteString(absl::string_view str) {
   WriteRaw(str.data(), static_cast<int>(str.size()));

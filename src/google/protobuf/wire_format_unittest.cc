@@ -31,6 +31,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/test_protos/lazy_field_test.pb.h"
 #include "google/protobuf/text_format.h"
@@ -54,28 +55,64 @@ namespace {
 
 PROTOBUF_INSTANTIATE_WIRE_FORMAT_UNITTEST(, );
 
+// Verifies that repeated_fn and packed_fn (including CachedSize updates and
+// resetting a non-zero CachedSize on empty input) match summing scalar_fn for
+// every prefix length of v from v.size() down to 0.
+template <typename T>
+void ExpectRepeatedVarintSizes(RepeatedField<T> v, size_t (*scalar_fn)(T),
+                               size_t (*repeated_fn)(const RepeatedField<T>&),
+                               size_t (*packed_fn)(const RepeatedField<T>&,
+                                                   size_t, const CachedSize&)) {
+  size_t expected = 0;
+  for (T x : v) {
+    expected += scalar_fn(x);
+  }
+  constexpr size_t kTagSize = 2;
+  for (;;) {
+    EXPECT_EQ(expected, repeated_fn(v));
+    CachedSize cached;
+    cached.Set(42);
+    const size_t expected_packed =
+        expected == 0
+            ? 0
+            : kTagSize + WireFormatLite::LengthDelimitedSize(expected);
+    EXPECT_EQ(expected_packed, packed_fn(v, kTagSize, cached));
+    EXPECT_EQ(expected, cached.Get());
+    if (v.empty()) {
+      EXPECT_EQ(0, packed_fn(v, kTagSize, cached));
+      EXPECT_EQ(0, cached.Get());
+      break;
+    }
+    expected -= scalar_fn(v[v.size() - 1]);
+    v.RemoveLast();
+  }
+}
+
 TEST(RepeatedVarint, Int32) {
   RepeatedField<int32_t> v;
 
   // Insert -2^n, 2^n and 2^n-1.
-  for (int n = 0; n < 10; n++) {
-    v.Add(-(1 << n));
-    v.Add(1 << n);
-    v.Add((1 << n) - 1);
+  for (int n = 0; n < 32; n++) {
+    uint32_t bit = uint32_t{1} << n;
+    v.Add(static_cast<int32_t>(0u - bit));
+    v.Add(static_cast<int32_t>(bit));
+    v.Add(static_cast<int32_t>(bit - 1));
   }
 
   // Check consistency with the scalar Int32Size.
-  size_t expected = 0;
-  for (int i = 0; i < v.size(); i++) {
-    expected += WireFormatLite::Int32Size(v[i]);
-  }
-
-  EXPECT_EQ(expected, WireFormatLite::Int32Size(v));
+  ExpectRepeatedVarintSizes(v, &WireFormatLite::Int32Size,
+                            &WireFormatLite::Int32Size,
+                            &WireFormatLite::Int32SizeWithPackedTagSize);
 }
 
 TEST(RepeatedVarint, Int32Overflow) {
 #if defined(__aarch64__)
+#if !defined(__OPTIMIZE__) || !defined(__clang__)
   GTEST_SKIP() << "Skipping test on aarch64 (unvectorized loop times out)";
+#endif
+  if (internal::HasAnySanitizer()) {
+    GTEST_SKIP() << "Skipping test on aarch64 (sanitized loop times out)";
+  }
 #endif
   if (sizeof(size_t) < 8) {
     GTEST_SKIP() << "Skipping test on 32-bit platform";
@@ -92,111 +129,102 @@ TEST(RepeatedVarint, Int64) {
   RepeatedField<int64_t> v;
 
   // Insert -2^n, 2^n and 2^n-1.
-  for (int n = 0; n < 10; n++) {
-    v.Add(-(1 << n));
-    v.Add(1 << n);
-    v.Add((1 << n) - 1);
+  for (int n = 0; n < 64; n++) {
+    uint64_t bit = uint64_t{1} << n;
+    v.Add(static_cast<int64_t>(0u - bit));
+    v.Add(static_cast<int64_t>(bit));
+    v.Add(static_cast<int64_t>(bit - 1));
   }
 
   // Check consistency with the scalar Int64Size.
-  size_t expected = 0;
-  for (int i = 0; i < v.size(); i++) {
-    expected += WireFormatLite::Int64Size(v[i]);
-  }
-
-  EXPECT_EQ(expected, WireFormatLite::Int64Size(v));
+  ExpectRepeatedVarintSizes(v, &WireFormatLite::Int64Size,
+                            &WireFormatLite::Int64Size,
+                            &WireFormatLite::Int64SizeWithPackedTagSize);
 }
 
 TEST(RepeatedVarint, SInt32) {
   RepeatedField<int32_t> v;
 
   // Insert -2^n, 2^n and 2^n-1.
-  for (int n = 0; n < 10; n++) {
-    v.Add(-(1 << n));
-    v.Add(1 << n);
-    v.Add((1 << n) - 1);
+  for (int n = 0; n < 32; n++) {
+    uint32_t bit = uint32_t{1} << n;
+    v.Add(static_cast<int32_t>(0u - bit));
+    v.Add(static_cast<int32_t>(bit));
+    v.Add(static_cast<int32_t>(bit - 1));
   }
 
   // Check consistency with the scalar SInt32Size.
-  size_t expected = 0;
-  for (int i = 0; i < v.size(); i++) {
-    expected += WireFormatLite::SInt32Size(v[i]);
-  }
-
-  EXPECT_EQ(expected, WireFormatLite::SInt32Size(v));
+  ExpectRepeatedVarintSizes(v, &WireFormatLite::SInt32Size,
+                            &WireFormatLite::SInt32Size,
+                            &WireFormatLite::SInt32SizeWithPackedTagSize);
 }
 
 TEST(RepeatedVarint, SInt64) {
   RepeatedField<int64_t> v;
 
   // Insert -2^n, 2^n and 2^n-1.
-  for (int n = 0; n < 10; n++) {
-    v.Add(-(1 << n));
-    v.Add(1 << n);
-    v.Add((1 << n) - 1);
+  for (int n = 0; n < 64; n++) {
+    uint64_t bit = uint64_t{1} << n;
+    v.Add(static_cast<int64_t>(0u - bit));
+    v.Add(static_cast<int64_t>(bit));
+    v.Add(static_cast<int64_t>(bit - 1));
   }
 
   // Check consistency with the scalar SInt64Size.
-  size_t expected = 0;
-  for (int i = 0; i < v.size(); i++) {
-    expected += WireFormatLite::SInt64Size(v[i]);
-  }
-
-  EXPECT_EQ(expected, WireFormatLite::SInt64Size(v));
+  ExpectRepeatedVarintSizes(v, &WireFormatLite::SInt64Size,
+                            &WireFormatLite::SInt64Size,
+                            &WireFormatLite::SInt64SizeWithPackedTagSize);
 }
 
 TEST(RepeatedVarint, UInt32) {
   RepeatedField<uint32_t> v;
 
   // Insert 2^n and 2^n-1.
-  for (int n = 0; n < 10; n++) {
-    v.Add(1 << n);
-    v.Add((1 << n) - 1);
+  for (int n = 0; n < 32; n++) {
+    uint32_t bit = uint32_t{1} << n;
+    v.Add(bit);
+    v.Add(bit - 1);
   }
+  v.Add(~uint32_t{0});
 
   // Check consistency with the scalar UInt32Size.
-  size_t expected = 0;
-  for (int i = 0; i < v.size(); i++) {
-    expected += WireFormatLite::UInt32Size(v[i]);
-  }
-
-  EXPECT_EQ(expected, WireFormatLite::UInt32Size(v));
+  ExpectRepeatedVarintSizes(v, &WireFormatLite::UInt32Size,
+                            &WireFormatLite::UInt32Size,
+                            &WireFormatLite::UInt32SizeWithPackedTagSize);
 }
 
 TEST(RepeatedVarint, UInt64) {
   RepeatedField<uint64_t> v;
 
   // Insert 2^n and 2^n-1.
-  for (int n = 0; n < 10; n++) {
-    v.Add(1 << n);
-    v.Add((1 << n) - 1);
+  for (int n = 0; n < 64; n++) {
+    uint64_t bit = uint64_t{1} << n;
+    v.Add(bit);
+    v.Add(bit - 1);
   }
+  v.Add(~uint64_t{0});
 
   // Check consistency with the scalar UInt64Size.
-  size_t expected = 0;
-  for (int i = 0; i < v.size(); i++) {
-    expected += WireFormatLite::UInt64Size(v[i]);
-  }
-
-  EXPECT_EQ(expected, WireFormatLite::UInt64Size(v));
+  ExpectRepeatedVarintSizes(v, &WireFormatLite::UInt64Size,
+                            &WireFormatLite::UInt64Size,
+                            &WireFormatLite::UInt64SizeWithPackedTagSize);
 }
 
 TEST(RepeatedVarint, Enum) {
   RepeatedField<int> v;
 
-  // Insert 2^n and 2^n-1.
-  for (int n = 0; n < 10; n++) {
-    v.Add(1 << n);
-    v.Add((1 << n) - 1);
+  // Insert -2^n, 2^n and 2^n-1.
+  for (int n = 0; n < 32; n++) {
+    uint32_t bit = uint32_t{1} << n;
+    v.Add(static_cast<int>(0u - bit));
+    v.Add(static_cast<int>(bit));
+    v.Add(static_cast<int>(bit - 1));
   }
 
   // Check consistency with the scalar EnumSize.
-  size_t expected = 0;
-  for (int i = 0; i < v.size(); i++) {
-    expected += WireFormatLite::EnumSize(v[i]);
-  }
-
-  EXPECT_EQ(expected, WireFormatLite::EnumSize(v));
+  ExpectRepeatedVarintSizes(v, &WireFormatLite::EnumSize,
+                            &WireFormatLite::EnumSize,
+                            &WireFormatLite::EnumSizeWithPackedTagSize);
 }
 
 TEST(WireFormatTest, EnumsInSync) {

@@ -825,6 +825,17 @@ namespace internal {
 #define PROTOBUF_PRESERVE_ALL
 #endif  // PROTOBUF_PRESERVE_ALL
 
+#ifdef PROTOBUF_HAS_X86_LZCNT
+#error PROTOBUF_HAS_X86_LZCNT was previously defined
+#endif  // PROTOBUF_HAS_X86_LZCNT
+// MSVC does not define __LZCNT__, the nearest option that it interprets as
+// lzcnt availability is __AVX2__.
+#if defined(__LZCNT__) || defined(__AVX2__)
+#define PROTOBUF_HAS_X86_LZCNT 1
+#else  // !(defined(__LZCNT__) || defined(__AVX2__))
+#define PROTOBUF_HAS_X86_LZCNT 0
+#endif  // defined(__LZCNT__) || defined(__AVX2__)
+
 namespace google {
 namespace protobuf {
 namespace internal {
