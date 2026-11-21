@@ -440,7 +440,7 @@ public final class Descriptors {
       // Building descriptors involves two steps:  translating and linking.
       // In the translation step (implemented by FileDescriptor's
       // constructor), we build an object tree mirroring the
-      // FileDescriptorProto's tree and put all of the descriptors into the
+      // FileDescriptorProto's tree and put top-level and type descriptors into the
       // FileDescriptorTables's lookup tables.  In the linking step, we look up all
       // type references in the FileDescriptorTables, so that, for example, a
       // FieldDescriptor for an embedded message contains a pointer directly
@@ -700,6 +700,8 @@ public final class Descriptors {
       for (int i = 0; i < proto.getExtensionCount(); i++) {
         extensions[i] = new FieldDescriptor(proto.getExtension(i), this, null, i, true);
       }
+
+      tables.finishConstruction();
     }
 
     /** Create a placeholder FileDescriptor */
@@ -1117,12 +1119,18 @@ public final class Descriptors {
      * @return The field's descriptor, or {@code null} if not found.
      */
     public FieldDescriptor findFieldByName(final String name) {
-      final GenericDescriptor result = getFile().tables.findSymbol(fullName + '.' + name);
-      if (result instanceof FieldDescriptor) {
-        return (FieldDescriptor) result;
-      } else {
-        return null;
+      FieldDescriptor result = findByName(fields, name);
+      if (result != null) {
+        return result;
       }
+      // Callers also rely on resolving names qualified by nested types ("Nested.field")
+      // and extensions declared in this message scope.
+      int dot = name != null ? name.lastIndexOf('.') : -1;
+      if (dot != -1) {
+        Descriptor nested = findNestedTypeByName(name.substring(0, dot));
+        return nested != null ? nested.findFieldByName(name.substring(dot + 1)) : null;
+      }
+      return findByName(extensions, name);
     }
 
     /**
@@ -1137,12 +1145,7 @@ public final class Descriptors {
      * @return The oneof's descriptor, or {@code null} if not found.
      */
     public OneofDescriptor findOneofByName(final String name) {
-      final GenericDescriptor result = getFile().tables.findSymbol(fullName + '.' + name);
-      if (result instanceof OneofDescriptor) {
-        return (OneofDescriptor) result;
-      } else {
-        return null;
-      }
+      return findByName(oneofs, name);
     }
 
     /**
@@ -1486,8 +1489,14 @@ public final class Descriptors {
      * @see Descriptors.Descriptor#getFullName()
      */
     @Override
+    @SuppressWarnings("PatternMatchingInstanceof")
     public String getFullName() {
-      return fullName;
+      String result = fullName;
+      if (result == null) {
+        Descriptor scope = parent instanceof Descriptor ? (Descriptor) parent : null;
+        fullName = result = computeFullName(getFile(), scope, proto.getName());
+      }
+      return result;
     }
 
     /** Get the JSON name of this field. */
@@ -1524,7 +1533,7 @@ public final class Descriptors {
 
     @Override
     GenericDescriptor getParent() {
-      return parent;
+      return containingOneof != null ? containingOneof : parent;
     }
 
     /** Get the field's declared type. */
@@ -1768,7 +1777,7 @@ public final class Descriptors {
     public Descriptor getExtensionScope() {
       if (!isExtension()) {
         throw new UnsupportedOperationException(
-            String.format("This field is not an extension. (%s)", fullName));
+            String.format("This field is not an extension. (%s)", getFullName()));
       }
       return extensionScope;
     }
@@ -1777,7 +1786,7 @@ public final class Descriptors {
     public Descriptor getMessageType() {
       if (getJavaType() != JavaType.MESSAGE) {
         throw new UnsupportedOperationException(
-            String.format("This field is not of message type. (%s)", fullName));
+            String.format("This field is not of message type. (%s)", getFullName()));
       }
       return (Descriptor) typeDescriptor;
     }
@@ -1787,7 +1796,7 @@ public final class Descriptors {
     public EnumDescriptor getEnumType() {
       if (getJavaType() != JavaType.ENUM) {
         throw new UnsupportedOperationException(
-            String.format("This field is not of enum type. (%s)", fullName));
+            String.format("This field is not of enum type. (%s)", getFullName()));
       }
       return (EnumDescriptor) typeDescriptor;
     }
@@ -1854,7 +1863,7 @@ public final class Descriptors {
 
     private FieldDescriptorProto proto;
     private volatile FieldOptions options;
-    private final String fullName;
+    private volatile String fullName;
     private String jsonName;
     private final GenericDescriptor parent;
     private final Descriptor extensionScope;
@@ -2004,7 +2013,8 @@ public final class Descriptors {
         throws DescriptorValidationException {
       this.index = index;
       this.proto = proto;
-      fullName = computeFullName(file, parent, proto.getName());
+      this.parent = parent != null ? parent : checkNotNull(file);
+      this.extensionScope = isExtension ? parent : null;
 
       if (proto.hasType()) {
         type = Type.valueOf(proto.getType());
@@ -2022,15 +2032,6 @@ public final class Descriptors {
               this, "FieldDescriptorProto.extendee not set for extension field.");
         }
         containingType = null; // Will be filled in when cross-linking
-        if (parent != null) {
-          // Message scoped extension.
-          extensionScope = parent;
-          this.parent = parent;
-        } else {
-          // File scoped extension.
-          extensionScope = null;
-          this.parent = checkNotNull(file);
-        }
 
         if (proto.hasOneofIndex()) {
           throw new DescriptorValidationException(
@@ -2042,7 +2043,7 @@ public final class Descriptors {
           throw new DescriptorValidationException(
               this, "FieldDescriptorProto.extendee set for non-extension field.");
         }
-        containingType = parent;
+        containingType = checkNotNull(parent);
 
         if (proto.hasOneofIndex()) {
           if (proto.getOneofIndex() < 0
@@ -2053,15 +2054,16 @@ public final class Descriptors {
           }
           containingOneof = parent.getOneofs().get(proto.getOneofIndex());
           containingOneof.fieldCount++;
-          this.parent = checkNotNull(containingOneof);
         } else {
           containingOneof = null;
-          this.parent = checkNotNull(parent);
         }
-        extensionScope = null;
       }
 
-      file.tables.addSymbol(this);
+      if (parent == null) {
+        file.tables.addSymbol(this);
+      } else {
+        file.tables.checkSymbol(this, parent);
+      }
     }
 
     @SuppressWarnings("unchecked") // List<EnumValueDescriptor> guaranteed by protobuf runtime.
@@ -2543,12 +2545,7 @@ public final class Descriptors {
      * @return the value's descriptor, or {@code null} if not found
      */
     public EnumValueDescriptor findValueByName(final String name) {
-      final GenericDescriptor result = getFile().tables.findSymbol(fullName + '.' + name);
-      if (result instanceof EnumValueDescriptor) {
-        return (EnumValueDescriptor) result;
-      } else {
-        return null;
-      }
+      return findByName(values, name);
     }
 
     /**
@@ -2651,7 +2648,7 @@ public final class Descriptors {
 
       this.values = new EnumValueDescriptor[1];
       this.values[0] = new EnumValueDescriptor(this, 0);
-      this.valuesSortedByNumber = this.values.clone();
+      this.valuesSortedByNumber = this.values;
       this.distinctNumbers = 1;
 
       // Create a placeholder FileDescriptor to hold this message.
@@ -2683,22 +2680,31 @@ public final class Descriptors {
       }
 
       values = new EnumValueDescriptor[proto.getValueCount()];
+      boolean valuesSorted = true;
       for (int i = 0; i < proto.getValueCount(); i++) {
         values[i] = new EnumValueDescriptor(proto.getValue(i), this, i);
-      }
-      valuesSortedByNumber = values.clone();
-      Arrays.sort(valuesSortedByNumber, EnumValueDescriptor.BY_NUMBER);
-      // deduplicate
-      int j = 0;
-      for (int i = 1; i < proto.getValueCount(); i++) {
-        EnumValueDescriptor oldValue = valuesSortedByNumber[j];
-        EnumValueDescriptor newValue = valuesSortedByNumber[i];
-        if (oldValue.getNumber() != newValue.getNumber()) {
-          valuesSortedByNumber[++j] = newValue;
+        if (valuesSorted && i > 0 && values[i].getNumber() <= values[i - 1].getNumber()) {
+          valuesSorted = false;
         }
       }
-      this.distinctNumbers = j + 1;
-      Arrays.fill(valuesSortedByNumber, distinctNumbers, proto.getValueCount(), null);
+      if (valuesSorted) {
+        valuesSortedByNumber = values;
+        this.distinctNumbers = proto.getValueCount();
+      } else {
+        valuesSortedByNumber = values.clone();
+        Arrays.sort(valuesSortedByNumber, EnumValueDescriptor.BY_NUMBER);
+        // deduplicate
+        int j = 0;
+        for (int i = 1; i < proto.getValueCount(); i++) {
+          EnumValueDescriptor oldValue = valuesSortedByNumber[j];
+          EnumValueDescriptor newValue = valuesSortedByNumber[i];
+          if (oldValue.getNumber() != newValue.getNumber()) {
+            valuesSortedByNumber[++j] = newValue;
+          }
+        }
+        this.distinctNumbers = j + 1;
+        Arrays.fill(valuesSortedByNumber, distinctNumbers, proto.getValueCount(), null);
+      }
 
       file.tables.addSymbol(this);
     }
@@ -2783,7 +2789,11 @@ public final class Descriptors {
      */
     @Override
     public String getFullName() {
-      return fullName;
+      String result = fullName;
+      if (result == null) {
+        fullName = result = type.getFullName() + '.' + proto.getName();
+      }
+      return result;
     }
 
     /** Get the {@link FileDescriptor} containing this descriptor. */
@@ -2824,7 +2834,7 @@ public final class Descriptors {
     private final int index;
     private EnumValueDescriptorProto proto;
     private volatile EnumValueOptions options;
-    private final String fullName;
+    private volatile String fullName;
     private final EnumDescriptor type;
 
     private EnumValueDescriptor(
@@ -2833,8 +2843,7 @@ public final class Descriptors {
       this.index = index;
       this.proto = proto;
       this.type = parent;
-      this.fullName = parent.getFullName() + '.' + proto.getName();
-      type.getFile().tables.addSymbol(this);
+      type.getFile().tables.checkSymbol(this, parent);
     }
 
     // Create an unknown enum value.
@@ -2845,7 +2854,6 @@ public final class Descriptors {
       this.index = -1;
       this.proto = proto;
       this.type = parent;
-      this.fullName = parent.getFullName() + '.' + proto.getName();
 
       // Don't add this descriptor into tables.
     }
@@ -2949,12 +2957,7 @@ public final class Descriptors {
      * @return the method's descriptor, or {@code null} if not found
      */
     public MethodDescriptor findMethodByName(final String name) {
-      final GenericDescriptor result = file.tables.findSymbol(fullName + '.' + name);
-      if (result instanceof MethodDescriptor) {
-        return (MethodDescriptor) result;
-      } else {
-        return null;
-      }
+      return findByName(methods, name);
     }
 
     private final int index;
@@ -3037,7 +3040,11 @@ public final class Descriptors {
      */
     @Override
     public String getFullName() {
-      return fullName;
+      String result = fullName;
+      if (result == null) {
+        fullName = result = service.getFullName() + '.' + proto.getName();
+      }
+      return result;
     }
 
     /** Get the {@link FileDescriptor} containing this descriptor. */
@@ -3098,7 +3105,7 @@ public final class Descriptors {
     private final int index;
     private MethodDescriptorProto proto;
     private volatile MethodOptions options;
-    private final String fullName;
+    private volatile String fullName;
     private final ServiceDescriptor service;
 
     // Initialized during cross-linking.
@@ -3112,9 +3119,7 @@ public final class Descriptors {
       this.proto = proto;
       this.service = parent;
 
-      fullName = parent.getFullName() + '.' + proto.getName();
-
-      service.file.tables.addSymbol(this);
+      service.file.tables.checkSymbol(this, parent);
     }
 
     /** See {@link FileDescriptor#resolveAllFeatures}. */
@@ -3382,10 +3387,20 @@ public final class Descriptors {
       }
     }
 
+    private static final int LARGE_SCOPE_THRESHOLD = 32;
+
     private final Set<FileDescriptor> dependencies;
     private final boolean allowUnknownDependencies;
 
     private final Map<String, GenericDescriptor> descriptorsByName = new HashMap<>();
+
+    // Transient per-scope member maps for scopes exceeding LARGE_SCOPE_THRESHOLD, populated only
+    // during FileDescriptor construction and cleared once translation finishes.
+    private IdentityHashMap<GenericDescriptor, Map<String, GenericDescriptor>> largeScopeMembers;
+
+    void finishConstruction() {
+      largeScopeMembers = null;
+    }
 
     /** Find a generic descriptor by fully-qualified name. */
     GenericDescriptor findSymbol(final String fullName) {
@@ -3545,14 +3560,28 @@ public final class Descriptors {
      * error.
      */
     void addSymbol(final GenericDescriptor descriptor) throws DescriptorValidationException {
+      checkSymbol(descriptor, descriptor.getParent());
+      descriptorsByName.put(descriptor.getFullName(), descriptor);
+    }
+
+    /**
+     * Checks that a symbol's name is valid and does not collide with another symbol in the same
+     * scope or in the symbol table.
+     */
+    void checkSymbol(final GenericDescriptor descriptor, final GenericDescriptor scope)
+        throws DescriptorValidationException {
       validateSymbolName(descriptor);
 
-      final String fullName = descriptor.getFullName();
-
-      final GenericDescriptor old = descriptorsByName.put(fullName, descriptor);
+      GenericDescriptor old = findMember(scope, descriptor, /* addIfLarge= */ true);
+      if (old == null && !(scope instanceof FileDescriptor)) {
+        // Parent types construct their members before registering themselves in descriptorsByName,
+        // so scope.getFullName() is present here only if an earlier symbol or package shares it.
+        old =
+            findMember(
+                descriptorsByName.get(scope.getFullName()), descriptor, /* addIfLarge= */ false);
+      }
       if (old != null) {
-        descriptorsByName.put(fullName, old);
-
+        final String fullName = descriptor.getFullName();
         if (descriptor.getFile() == old.getFile()) {
           final int dotpos = fullName.lastIndexOf('.');
           if (dotpos == -1) {
@@ -3577,6 +3606,76 @@ public final class Descriptors {
                   + "\".");
         }
       }
+    }
+
+    @SuppressWarnings("PatternMatchingInstanceof")
+    private GenericDescriptor findMember(
+        GenericDescriptor scope, GenericDescriptor descriptor, boolean addIfLarge) {
+      if (scope instanceof FileDescriptor || scope instanceof PackageDescriptor) {
+        return descriptorsByName.get(descriptor.getFullName());
+      }
+      int memberCount = scopeMemberCount(scope);
+      if (memberCount > LARGE_SCOPE_THRESHOLD) {
+        if (largeScopeMembers == null) {
+          largeScopeMembers = new IdentityHashMap<>();
+        }
+        Map<String, GenericDescriptor> members = largeScopeMembers.get(scope);
+        if (members == null) {
+          members = new HashMap<>((int) ((float) memberCount / 0.75F + 1.0F));
+          largeScopeMembers.put(scope, members);
+        }
+        return addIfLarge
+            ? members.putIfAbsent(descriptor.getName(), descriptor)
+            : members.get(descriptor.getName());
+      }
+      String name = descriptor.getName();
+      if (scope instanceof Descriptor) {
+        Descriptor message = (Descriptor) scope;
+        GenericDescriptor result;
+        result = findByName(message.oneofs, name);
+        if (result != null) {
+          return result;
+        }
+        result = findByName(message.nestedTypes, name);
+        if (result != null) {
+          return result;
+        }
+        result = findByName(message.enumTypes, name);
+        if (result != null) {
+          return result;
+        }
+        result = findByName(message.fields, name);
+        if (result != null) {
+          return result;
+        }
+        return findByName(message.extensions, name);
+      }
+      if (scope instanceof EnumDescriptor) {
+        return ((EnumDescriptor) scope).findValueByName(name);
+      }
+      if (scope instanceof ServiceDescriptor) {
+        return ((ServiceDescriptor) scope).findMethodByName(name);
+      }
+      return null;
+    }
+
+    @SuppressWarnings("PatternMatchingInstanceof")
+    private static int scopeMemberCount(GenericDescriptor scope) {
+      if (scope instanceof Descriptor) {
+        DescriptorProto proto = ((Descriptor) scope).proto;
+        return proto.getOneofDeclCount()
+            + proto.getNestedTypeCount()
+            + proto.getEnumTypeCount()
+            + proto.getFieldCount()
+            + proto.getExtensionCount();
+      }
+      if (scope instanceof EnumDescriptor) {
+        return ((EnumDescriptor) scope).values.length;
+      }
+      if (scope instanceof ServiceDescriptor) {
+        return ((ServiceDescriptor) scope).methods.length;
+      }
+      return 0;
     }
 
     /**
@@ -3708,7 +3807,11 @@ public final class Descriptors {
 
     @Override
     public String getFullName() {
-      return fullName;
+      String result = fullName;
+      if (result == null) {
+        fullName = result = containingType.getFullName() + '.' + getName();
+      }
+      return result;
     }
 
     public Descriptor getContainingType() {
@@ -3770,23 +3873,38 @@ public final class Descriptors {
         final OneofDescriptorProto proto, final Descriptor parent, final int index)
         throws DescriptorValidationException {
       this.proto = proto;
-      fullName = computeFullName(null, parent, proto.getName());
       this.index = index;
 
       containingType = parent;
       fieldCount = 0;
 
-      parent.getFile().tables.addSymbol(this);
+      parent.getFile().tables.checkSymbol(this, parent);
     }
 
     private final int index;
     private OneofDescriptorProto proto;
     private volatile OneofOptions options;
-    private final String fullName;
+    private volatile String fullName;
     private final Descriptor containingType;
 
     private int fieldCount;
     private FieldDescriptor[] fields;
+  }
+
+  private static <T extends GenericDescriptor> T findByName(T[] members, String name) {
+    if (members == null) {
+      return null;
+    }
+    for (T member : members) {
+      // Stop at the first null slot when scanning a partially populated array during construction.
+      if (member == null) {
+        break;
+      }
+      if (member.getName().equals(name)) {
+        return member;
+      }
+    }
+    return null;
   }
 
   private static <T> T binarySearch(T[] array, int size, ToIntFunction<T> getter, int number) {
