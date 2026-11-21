@@ -9,29 +9,7 @@
 
 #import "GPBMessage.h"
 
-//%PDDM-DEFINE DECLARE_ARRAY_EXTRAS()
-//%ARRAY_INTERFACE_EXTRAS(Int32, int32_t)
-//%ARRAY_INTERFACE_EXTRAS(UInt32, uint32_t)
-//%ARRAY_INTERFACE_EXTRAS(Int64, int64_t)
-//%ARRAY_INTERFACE_EXTRAS(UInt64, uint64_t)
-//%ARRAY_INTERFACE_EXTRAS(Float, float)
-//%ARRAY_INTERFACE_EXTRAS(Double, double)
-//%ARRAY_INTERFACE_EXTRAS(Bool, BOOL)
-//%ARRAY_INTERFACE_EXTRAS(Enum, int32_t)
-
-//%PDDM-DEFINE ARRAY_INTERFACE_EXTRAS(NAME, TYPE)
-//%#pragma mark - NAME
-//%
-//%@interface GPB##NAME##Array () {
-//% @package
-//%  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
-//%}
-//%@end
-//%
-
-//%PDDM-EXPAND DECLARE_ARRAY_EXTRAS()
-// This block of code is generated, do not edit it directly.
-
+// @@protoc_objc_exemplar: GPBArray_PackagePrivate.h:array_extras(Int32)
 #pragma mark - Int32
 
 @interface GPBInt32Array () {
@@ -39,6 +17,10 @@
   GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
 }
 @end
+// @@protoc_objc_exemplar_end
+
+// @@protoc_objc_autogen: GPBArray_PackagePrivate.h:array_extras
+// This block of code is generated, do not edit it directly.
 
 #pragma mark - UInt32
 
@@ -95,8 +77,7 @@
   GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
 }
 @end
-
-//%PDDM-EXPAND-END DECLARE_ARRAY_EXTRAS()
+// @@protoc_objc_autogen_end
 
 #pragma mark - NSArray Subclass
 

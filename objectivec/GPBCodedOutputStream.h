@@ -147,10 +147,7 @@ __attribute__((objc_subclassing_restricted))
  **/
 - (void)writeRawPtr:(const void *)data offset:(size_t)offset length:(size_t)length;
 
-// Disable clang-format for the macros.
-// clang-format off
-
-//%PDDM-EXPAND _WRITE_DECLS()
+// @@protoc_objc_autogen: GPBCodedOutputStream.h:write_decls
 // This block of code is generated, do not edit it directly.
 
 /**
@@ -167,9 +164,7 @@ __attribute__((objc_subclassing_restricted))
  * @param values      The values to write out.
  * @param tag         The tag assigned to the values.
  **/
-- (void)writeDoubleArray:(int32_t)fieldNumber
-                  values:(GPBDoubleArray *)values
-                     tag:(uint32_t)tag;
+- (void)writeDoubleArray:(int32_t)fieldNumber values:(GPBDoubleArray *)values tag:(uint32_t)tag;
 /**
  * Write a double without any tag.
  *
@@ -191,9 +186,7 @@ __attribute__((objc_subclassing_restricted))
  * @param values      The values to write out.
  * @param tag         The tag assigned to the values.
  **/
-- (void)writeFloatArray:(int32_t)fieldNumber
-                 values:(GPBFloatArray *)values
-                    tag:(uint32_t)tag;
+- (void)writeFloatArray:(int32_t)fieldNumber values:(GPBFloatArray *)values tag:(uint32_t)tag;
 /**
  * Write a float without any tag.
  *
@@ -215,9 +208,7 @@ __attribute__((objc_subclassing_restricted))
  * @param values      The values to write out.
  * @param tag         The tag assigned to the values.
  **/
-- (void)writeUInt64Array:(int32_t)fieldNumber
-                  values:(GPBUInt64Array *)values
-                     tag:(uint32_t)tag;
+- (void)writeUInt64Array:(int32_t)fieldNumber values:(GPBUInt64Array *)values tag:(uint32_t)tag;
 /**
  * Write a uint64_t without any tag.
  *
@@ -239,9 +230,7 @@ __attribute__((objc_subclassing_restricted))
  * @param values      The values to write out.
  * @param tag         The tag assigned to the values.
  **/
-- (void)writeInt64Array:(int32_t)fieldNumber
-                 values:(GPBInt64Array *)values
-                    tag:(uint32_t)tag;
+- (void)writeInt64Array:(int32_t)fieldNumber values:(GPBInt64Array *)values tag:(uint32_t)tag;
 /**
  * Write a int64_t without any tag.
  *
@@ -263,9 +252,7 @@ __attribute__((objc_subclassing_restricted))
  * @param values      The values to write out.
  * @param tag         The tag assigned to the values.
  **/
-- (void)writeInt32Array:(int32_t)fieldNumber
-                 values:(GPBInt32Array *)values
-                    tag:(uint32_t)tag;
+- (void)writeInt32Array:(int32_t)fieldNumber values:(GPBInt32Array *)values tag:(uint32_t)tag;
 /**
  * Write a int32_t without any tag.
  *
@@ -287,9 +274,7 @@ __attribute__((objc_subclassing_restricted))
  * @param values      The values to write out.
  * @param tag         The tag assigned to the values.
  **/
-- (void)writeUInt32Array:(int32_t)fieldNumber
-                  values:(GPBUInt32Array *)values
-                     tag:(uint32_t)tag;
+- (void)writeUInt32Array:(int32_t)fieldNumber values:(GPBUInt32Array *)values tag:(uint32_t)tag;
 /**
  * Write a uint32_t without any tag.
  *
@@ -311,9 +296,7 @@ __attribute__((objc_subclassing_restricted))
  * @param values      The values to write out.
  * @param tag         The tag assigned to the values.
  **/
-- (void)writeFixed64Array:(int32_t)fieldNumber
-                   values:(GPBUInt64Array *)values
-                      tag:(uint32_t)tag;
+- (void)writeFixed64Array:(int32_t)fieldNumber values:(GPBUInt64Array *)values tag:(uint32_t)tag;
 /**
  * Write a uint64_t without any tag.
  *
@@ -335,9 +318,7 @@ __attribute__((objc_subclassing_restricted))
  * @param values      The values to write out.
  * @param tag         The tag assigned to the values.
  **/
-- (void)writeFixed32Array:(int32_t)fieldNumber
-                   values:(GPBUInt32Array *)values
-                      tag:(uint32_t)tag;
+- (void)writeFixed32Array:(int32_t)fieldNumber values:(GPBUInt32Array *)values tag:(uint32_t)tag;
 /**
  * Write a uint32_t without any tag.
  *
@@ -359,9 +340,7 @@ __attribute__((objc_subclassing_restricted))
  * @param values      The values to write out.
  * @param tag         The tag assigned to the values.
  **/
-- (void)writeSInt32Array:(int32_t)fieldNumber
-                  values:(GPBInt32Array *)values
-                     tag:(uint32_t)tag;
+- (void)writeSInt32Array:(int32_t)fieldNumber values:(GPBInt32Array *)values tag:(uint32_t)tag;
 /**
  * Write a int32_t without any tag.
  *
@@ -383,9 +362,7 @@ __attribute__((objc_subclassing_restricted))
  * @param values      The values to write out.
  * @param tag         The tag assigned to the values.
  **/
-- (void)writeSInt64Array:(int32_t)fieldNumber
-                  values:(GPBInt64Array *)values
-                     tag:(uint32_t)tag;
+- (void)writeSInt64Array:(int32_t)fieldNumber values:(GPBInt64Array *)values tag:(uint32_t)tag;
 /**
  * Write a int64_t without any tag.
  *
@@ -407,9 +384,7 @@ __attribute__((objc_subclassing_restricted))
  * @param values      The values to write out.
  * @param tag         The tag assigned to the values.
  **/
-- (void)writeSFixed64Array:(int32_t)fieldNumber
-                    values:(GPBInt64Array *)values
-                       tag:(uint32_t)tag;
+- (void)writeSFixed64Array:(int32_t)fieldNumber values:(GPBInt64Array *)values tag:(uint32_t)tag;
 /**
  * Write a int64_t without any tag.
  *
@@ -431,9 +406,7 @@ __attribute__((objc_subclassing_restricted))
  * @param values      The values to write out.
  * @param tag         The tag assigned to the values.
  **/
-- (void)writeSFixed32Array:(int32_t)fieldNumber
-                    values:(GPBInt32Array *)values
-                       tag:(uint32_t)tag;
+- (void)writeSFixed32Array:(int32_t)fieldNumber values:(GPBInt32Array *)values tag:(uint32_t)tag;
 /**
  * Write a int32_t without any tag.
  *
@@ -455,9 +428,7 @@ __attribute__((objc_subclassing_restricted))
  * @param values      The values to write out.
  * @param tag         The tag assigned to the values.
  **/
-- (void)writeBoolArray:(int32_t)fieldNumber
-                values:(GPBBoolArray *)values
-                   tag:(uint32_t)tag;
+- (void)writeBoolArray:(int32_t)fieldNumber values:(GPBBoolArray *)values tag:(uint32_t)tag;
 /**
  * Write a BOOL without any tag.
  *
@@ -479,9 +450,7 @@ __attribute__((objc_subclassing_restricted))
  * @param values      The values to write out.
  * @param tag         The tag assigned to the values.
  **/
-- (void)writeEnumArray:(int32_t)fieldNumber
-                values:(GPBEnumArray *)values
-                   tag:(uint32_t)tag;
+- (void)writeEnumArray:(int32_t)fieldNumber values:(GPBEnumArray *)values tag:(uint32_t)tag;
 /**
  * Write a int32_t without any tag.
  *
@@ -502,8 +471,7 @@ __attribute__((objc_subclassing_restricted))
  * @param fieldNumber The field number assigned to the values.
  * @param values      The values to write out.
  **/
-- (void)writeStringArray:(int32_t)fieldNumber
-                  values:(NSArray<NSString*> *)values;
+- (void)writeStringArray:(int32_t)fieldNumber values:(NSArray<NSString *> *)values;
 /**
  * Write a NSString without any tag.
  *
@@ -524,8 +492,7 @@ __attribute__((objc_subclassing_restricted))
  * @param fieldNumber The field number assigned to the values.
  * @param values      The values to write out.
  **/
-- (void)writeMessageArray:(int32_t)fieldNumber
-                   values:(NSArray<GPBMessage*> *)values;
+- (void)writeMessageArray:(int32_t)fieldNumber values:(NSArray<GPBMessage *> *)values;
 /**
  * Write a GPBMessage without any tag.
  *
@@ -546,8 +513,7 @@ __attribute__((objc_subclassing_restricted))
  * @param fieldNumber The field number assigned to the values.
  * @param values      The values to write out.
  **/
-- (void)writeBytesArray:(int32_t)fieldNumber
-                 values:(NSArray<NSData*> *)values;
+- (void)writeBytesArray:(int32_t)fieldNumber values:(NSArray<NSData *> *)values;
 /**
  * Write a NSData without any tag.
  *
@@ -561,28 +527,22 @@ __attribute__((objc_subclassing_restricted))
  * @param fieldNumber The field number assigned to the value.
  * @param value       The value to write out.
  **/
-- (void)writeGroup:(int32_t)fieldNumber
-             value:(GPBMessage *)value;
+- (void)writeGroup:(int32_t)fieldNumber value:(GPBMessage *)value;
 /**
  * Write an array of GPBMessage for the given field number.
  *
  * @param fieldNumber The field number assigned to the values.
  * @param values      The values to write out.
  **/
-- (void)writeGroupArray:(int32_t)fieldNumber
-                 values:(NSArray<GPBMessage*> *)values;
+- (void)writeGroupArray:(int32_t)fieldNumber values:(NSArray<GPBMessage *> *)values;
 /**
  * Write a GPBMessage without any tag (but does write the endGroup tag).
  *
  * @param fieldNumber The field number assigned to the value.
  * @param value       The value to write out.
  **/
-- (void)writeGroupNoTag:(int32_t)fieldNumber
-                  value:(GPBMessage *)value;
-
-//%PDDM-EXPAND-END _WRITE_DECLS()
-
-// clang-format on
+- (void)writeGroupNoTag:(int32_t)fieldNumber value:(GPBMessage *)value;
+// @@protoc_objc_autogen_end
 
 /**
 Write a MessageSet extension field to the stream. For historical reasons,
@@ -605,107 +565,3 @@ reasons, the wire format differs from normal fields.
 @end
 
 NS_ASSUME_NONNULL_END
-
-// Disable clang-format for the macros.
-// clang-format off
-
-// Write methods for types that can be in packed arrays.
-//%PDDM-DEFINE _WRITE_PACKABLE_DECLS(NAME, ARRAY_TYPE, TYPE)
-//%/**
-//% * Write a TYPE for the given field number.
-//% *
-//% * @param fieldNumber The field number assigned to the value.
-//% * @param value       The value to write out.
-//% **/
-//%- (void)write##NAME:(int32_t)fieldNumber value:(TYPE)value;
-//%/**
-//% * Write a packed array of TYPE for the given field number.
-//% *
-//% * @param fieldNumber The field number assigned to the values.
-//% * @param values      The values to write out.
-//% * @param tag         The tag assigned to the values.
-//% **/
-//%- (void)write##NAME##Array:(int32_t)fieldNumber
-//%       NAME$S     values:(GPB##ARRAY_TYPE##Array *)values
-//%       NAME$S        tag:(uint32_t)tag;
-//%/**
-//% * Write a TYPE without any tag.
-//% *
-//% * @param value The value to write out.
-//% **/
-//%- (void)write##NAME##NoTag:(TYPE)value;
-//%
-// Write methods for types that aren't in packed arrays.
-//%PDDM-DEFINE _WRITE_UNPACKABLE_DECLS(NAME, TYPE)
-//%/**
-//% * Write a TYPE for the given field number.
-//% *
-//% * @param fieldNumber The field number assigned to the value.
-//% * @param value       The value to write out.
-//% **/
-//%- (void)write##NAME:(int32_t)fieldNumber value:(TYPE *)value;
-//%/**
-//% * Write an array of TYPE for the given field number.
-//% *
-//% * @param fieldNumber The field number assigned to the values.
-//% * @param values      The values to write out.
-//% **/
-//%- (void)write##NAME##Array:(int32_t)fieldNumber
-//%           NAME$S values:(NSArray<##TYPE##*> *)values;
-//%/**
-//% * Write a TYPE without any tag.
-//% *
-//% * @param value The value to write out.
-//% **/
-//%- (void)write##NAME##NoTag:(TYPE *)value;
-//%
-// Special write methods for Groups.
-//%PDDM-DEFINE _WRITE_GROUP_DECLS(NAME, TYPE)
-//%/**
-//% * Write a TYPE for the given field number.
-//% *
-//% * @param fieldNumber The field number assigned to the value.
-//% * @param value       The value to write out.
-//% **/
-//%- (void)write##NAME:(int32_t)fieldNumber
-//%       NAME$S value:(TYPE *)value;
-//%/**
-//% * Write an array of TYPE for the given field number.
-//% *
-//% * @param fieldNumber The field number assigned to the values.
-//% * @param values      The values to write out.
-//% **/
-//%- (void)write##NAME##Array:(int32_t)fieldNumber
-//%           NAME$S values:(NSArray<##TYPE##*> *)values;
-//%/**
-//% * Write a TYPE without any tag (but does write the endGroup tag).
-//% *
-//% * @param fieldNumber The field number assigned to the value.
-//% * @param value       The value to write out.
-//% **/
-//%- (void)write##NAME##NoTag:(int32_t)fieldNumber
-//%            NAME$S value:(TYPE *)value;
-//%
-
-// One macro to hide it all up above.
-//%PDDM-DEFINE _WRITE_DECLS()
-//%_WRITE_PACKABLE_DECLS(Double, Double, double)
-//%_WRITE_PACKABLE_DECLS(Float, Float, float)
-//%_WRITE_PACKABLE_DECLS(UInt64, UInt64, uint64_t)
-//%_WRITE_PACKABLE_DECLS(Int64, Int64, int64_t)
-//%_WRITE_PACKABLE_DECLS(Int32, Int32, int32_t)
-//%_WRITE_PACKABLE_DECLS(UInt32, UInt32, uint32_t)
-//%_WRITE_PACKABLE_DECLS(Fixed64, UInt64, uint64_t)
-//%_WRITE_PACKABLE_DECLS(Fixed32, UInt32, uint32_t)
-//%_WRITE_PACKABLE_DECLS(SInt32, Int32, int32_t)
-//%_WRITE_PACKABLE_DECLS(SInt64, Int64, int64_t)
-//%_WRITE_PACKABLE_DECLS(SFixed64, Int64, int64_t)
-//%_WRITE_PACKABLE_DECLS(SFixed32, Int32, int32_t)
-//%_WRITE_PACKABLE_DECLS(Bool, Bool, BOOL)
-//%_WRITE_PACKABLE_DECLS(Enum, Enum, int32_t)
-//%_WRITE_UNPACKABLE_DECLS(String, NSString)
-//%_WRITE_UNPACKABLE_DECLS(Message, GPBMessage)
-//%_WRITE_UNPACKABLE_DECLS(Bytes, NSData)
-//%_WRITE_GROUP_DECLS(Group, GPBMessage)
-
-// clang-format on

@@ -179,58 +179,17 @@ GPB_INLINE BOOL GPBGetHasIvarField(GPBMessage *self, GPBFieldDescriptor *field) 
 
 #pragma clang diagnostic pop
 
-// Disable clang-format for the macros.
-// clang-format off
-
-//%PDDM-DEFINE GPB_IVAR_SET_DECL(NAME, TYPE)
-//%void GPBSet##NAME##IvarWithFieldPrivate(GPBMessage *self,
-//%            NAME$S                    GPBFieldDescriptor *field,
-//%            NAME$S                    TYPE value);
-//%PDDM-EXPAND GPB_IVAR_SET_DECL(Bool, BOOL)
+// @@protoc_objc_autogen: GPBUtilities_PackagePrivate.h:ivar_set_decls
 // This block of code is generated, do not edit it directly.
 
-void GPBSetBoolIvarWithFieldPrivate(GPBMessage *self,
-                                    GPBFieldDescriptor *field,
-                                    BOOL value);
-//%PDDM-EXPAND GPB_IVAR_SET_DECL(Int32, int32_t)
-// This block of code is generated, do not edit it directly.
-
-void GPBSetInt32IvarWithFieldPrivate(GPBMessage *self,
-                                     GPBFieldDescriptor *field,
-                                     int32_t value);
-//%PDDM-EXPAND GPB_IVAR_SET_DECL(UInt32, uint32_t)
-// This block of code is generated, do not edit it directly.
-
-void GPBSetUInt32IvarWithFieldPrivate(GPBMessage *self,
-                                      GPBFieldDescriptor *field,
-                                      uint32_t value);
-//%PDDM-EXPAND GPB_IVAR_SET_DECL(Int64, int64_t)
-// This block of code is generated, do not edit it directly.
-
-void GPBSetInt64IvarWithFieldPrivate(GPBMessage *self,
-                                     GPBFieldDescriptor *field,
-                                     int64_t value);
-//%PDDM-EXPAND GPB_IVAR_SET_DECL(UInt64, uint64_t)
-// This block of code is generated, do not edit it directly.
-
-void GPBSetUInt64IvarWithFieldPrivate(GPBMessage *self,
-                                      GPBFieldDescriptor *field,
-                                      uint64_t value);
-//%PDDM-EXPAND GPB_IVAR_SET_DECL(Float, float)
-// This block of code is generated, do not edit it directly.
-
-void GPBSetFloatIvarWithFieldPrivate(GPBMessage *self,
-                                     GPBFieldDescriptor *field,
-                                     float value);
-//%PDDM-EXPAND GPB_IVAR_SET_DECL(Double, double)
-// This block of code is generated, do not edit it directly.
-
-void GPBSetDoubleIvarWithFieldPrivate(GPBMessage *self,
-                                      GPBFieldDescriptor *field,
-                                      double value);
-//%PDDM-EXPAND-END (7 expansions)
-
-// clang-format on
+void GPBSetBoolIvarWithFieldPrivate(GPBMessage *self, GPBFieldDescriptor *field, BOOL value);
+void GPBSetInt32IvarWithFieldPrivate(GPBMessage *self, GPBFieldDescriptor *field, int32_t value);
+void GPBSetUInt32IvarWithFieldPrivate(GPBMessage *self, GPBFieldDescriptor *field, uint32_t value);
+void GPBSetInt64IvarWithFieldPrivate(GPBMessage *self, GPBFieldDescriptor *field, int64_t value);
+void GPBSetUInt64IvarWithFieldPrivate(GPBMessage *self, GPBFieldDescriptor *field, uint64_t value);
+void GPBSetFloatIvarWithFieldPrivate(GPBMessage *self, GPBFieldDescriptor *field, float value);
+void GPBSetDoubleIvarWithFieldPrivate(GPBMessage *self, GPBFieldDescriptor *field, double value);
+// @@protoc_objc_autogen_end
 
 void GPBSetEnumIvarWithFieldPrivate(GPBMessage *self, GPBFieldDescriptor *field, int32_t value);
 

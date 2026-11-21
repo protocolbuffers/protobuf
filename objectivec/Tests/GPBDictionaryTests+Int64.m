@@ -12,20 +12,13 @@
 #import "GPBTestUtilities.h"
 #import "objectivec/Tests/UnittestRuntimeProto2.pbobjc.h"
 
-// Disable clang-format for the macros.
-// clang-format off
-
-// Pull in the macros (using an external file because expanding all tests
-// in a single file makes a file that is failing to work with within Xcode.
-//%PDDM-IMPORT-DEFINES GPBDictionaryTests.pddm
-
-//%PDDM-EXPAND TEST_FOR_POD_KEY(Int64, int64_t, 21LL, 22LL, 23LL, 24LL)
+// @@protoc_objc_autogen: Tests/GPBDictionaryTests+Int64.m:dictionary_tests
 // This block of code is generated, do not edit it directly.
 
 // To let the testing macros work, add some extra methods to simplify things.
 @interface GPBInt64EnumDictionary (TestingTweak)
-- (instancetype)initWithEnums:(const int32_t [])values
-                      forKeys:(const int64_t [])keys
+- (instancetype)initWithEnums:(const int32_t[])values
+                      forKeys:(const int64_t[])keys
                         count:(NSUInteger)count;
 @end
 
@@ -42,8 +35,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 @implementation GPBInt64EnumDictionary (TestingTweak)
-- (instancetype)initWithEnums:(const int32_t [])values
-                      forKeys:(const int64_t [])keys
+- (instancetype)initWithEnums:(const int32_t[])values
+                      forKeys:(const int64_t[])keys
                         count:(NSUInteger)count {
   return [self initWithValidationFunction:TestingEnum_IsValidValue
                                 rawValues:values
@@ -51,7 +44,6 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
                                     count:count];
 }
 @end
-
 
 #pragma mark - Int64 -> UInt32
 
@@ -65,7 +57,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getUInt32:NULL forKey:21LL]);
-  [dict enumerateKeysAndUInt32sUsingBlock:^(__unused int64_t aKey, __unused uint32_t aValue, __unused BOOL *stop) {
+  [dict enumerateKeysAndUInt32sUsingBlock:^(__unused int64_t aKey, __unused uint32_t aValue,
+                                            __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
@@ -90,8 +83,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testBasics {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL };
-  const uint32_t kValues[] = { 100U, 101U, 102U };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL};
+  const uint32_t kValues[] = {100U, 101U, 102U};
   GPBInt64UInt32Dictionary *dict =
       [[GPBInt64UInt32Dictionary alloc] initWithUInt32s:kValues
                                                 forKeys:kKeys
@@ -135,7 +128,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndUInt32sUsingBlock:^(__unused int64_t aKey, __unused uint32_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndUInt32sUsingBlock:^(__unused int64_t aKey, __unused uint32_t aValue,
+                                            BOOL *stop) {
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -144,11 +138,11 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testEquality {
-  const int64_t kKeys1[] = { 21LL, 22LL, 23LL, 24LL };
-  const int64_t kKeys2[] = { 22LL, 21LL, 24LL };
-  const uint32_t kValues1[] = { 100U, 101U, 102U };
-  const uint32_t kValues2[] = { 100U, 103U, 102U };
-  const uint32_t kValues3[] = { 100U, 101U, 102U, 103U };
+  const int64_t kKeys1[] = {21LL, 22LL, 23LL, 24LL};
+  const int64_t kKeys2[] = {22LL, 21LL, 24LL};
+  const uint32_t kValues1[] = {100U, 101U, 102U};
+  const uint32_t kValues2[] = {100U, 103U, 102U};
+  const uint32_t kValues3[] = {100U, 101U, 102U, 103U};
   GPBInt64UInt32Dictionary *dict1 =
       [[GPBInt64UInt32Dictionary alloc] initWithUInt32s:kValues1
                                                 forKeys:kKeys1
@@ -198,8 +192,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testCopy {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const uint32_t kValues[] = { 100U, 101U, 102U, 103U };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const uint32_t kValues[] = {100U, 101U, 102U, 103U};
   GPBInt64UInt32Dictionary *dict =
       [[GPBInt64UInt32Dictionary alloc] initWithUInt32s:kValues
                                                 forKeys:kKeys
@@ -219,16 +213,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testDictionaryFromDictionary {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const uint32_t kValues[] = { 100U, 101U, 102U, 103U };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const uint32_t kValues[] = {100U, 101U, 102U, 103U};
   GPBInt64UInt32Dictionary *dict =
       [[GPBInt64UInt32Dictionary alloc] initWithUInt32s:kValues
                                                 forKeys:kKeys
                                                   count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
-  GPBInt64UInt32Dictionary *dict2 =
-      [[GPBInt64UInt32Dictionary alloc] initWithDictionary:dict];
+  GPBInt64UInt32Dictionary *dict2 = [[GPBInt64UInt32Dictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
@@ -246,8 +239,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   [dict setUInt32:100U forKey:21LL];
   XCTAssertEqual(dict.count, 1U);
 
-  const int64_t kKeys[] = { 22LL, 23LL, 24LL };
-  const uint32_t kValues[] = { 101U, 102U, 103U };
+  const int64_t kKeys[] = {22LL, 23LL, 24LL};
+  const uint32_t kValues[] = {101U, 102U, 103U};
   GPBInt64UInt32Dictionary *dict2 =
       [[GPBInt64UInt32Dictionary alloc] initWithUInt32s:kValues
                                                 forKeys:kKeys
@@ -274,8 +267,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testRemove {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const uint32_t kValues[] = { 100U, 101U, 102U, 103U };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const uint32_t kValues[] = {100U, 101U, 102U, 103U};
   GPBInt64UInt32Dictionary *dict =
       [[GPBInt64UInt32Dictionary alloc] initWithUInt32s:kValues
                                                 forKeys:kKeys
@@ -332,8 +325,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testInplaceMutation {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const uint32_t kValues[] = { 100U, 101U, 102U, 103U };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const uint32_t kValues[] = {100U, 101U, 102U, 103U};
   GPBInt64UInt32Dictionary *dict =
       [[GPBInt64UInt32Dictionary alloc] initWithUInt32s:kValues
                                                 forKeys:kKeys
@@ -384,8 +377,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertTrue([dict getUInt32:&value forKey:24LL]);
   XCTAssertEqual(value, 101U);
 
-  const int64_t kKeys2[] = { 22LL, 23LL };
-  const uint32_t kValues2[] = { 102U, 100U };
+  const int64_t kKeys2[] = {22LL, 23LL};
+  const uint32_t kValues2[] = {102U, 100U};
   GPBInt64UInt32Dictionary *dict2 =
       [[GPBInt64UInt32Dictionary alloc] initWithUInt32s:kValues2
                                                 forKeys:kKeys2
@@ -424,7 +417,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getInt32:NULL forKey:21LL]);
-  [dict enumerateKeysAndInt32sUsingBlock:^(__unused int64_t aKey, __unused int32_t aValue, __unused BOOL *stop) {
+  [dict enumerateKeysAndInt32sUsingBlock:^(__unused int64_t aKey, __unused int32_t aValue,
+                                           __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
@@ -449,8 +443,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testBasics {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL };
-  const int32_t kValues[] = { 200, 201, 202 };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL};
+  const int32_t kValues[] = {200, 201, 202};
   GPBInt64Int32Dictionary *dict =
       [[GPBInt64Int32Dictionary alloc] initWithInt32s:kValues
                                               forKeys:kKeys
@@ -494,7 +488,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndInt32sUsingBlock:^(__unused int64_t aKey, __unused int32_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndInt32sUsingBlock:^(__unused int64_t aKey, __unused int32_t aValue,
+                                           BOOL *stop) {
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -503,11 +498,11 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testEquality {
-  const int64_t kKeys1[] = { 21LL, 22LL, 23LL, 24LL };
-  const int64_t kKeys2[] = { 22LL, 21LL, 24LL };
-  const int32_t kValues1[] = { 200, 201, 202 };
-  const int32_t kValues2[] = { 200, 203, 202 };
-  const int32_t kValues3[] = { 200, 201, 202, 203 };
+  const int64_t kKeys1[] = {21LL, 22LL, 23LL, 24LL};
+  const int64_t kKeys2[] = {22LL, 21LL, 24LL};
+  const int32_t kValues1[] = {200, 201, 202};
+  const int32_t kValues2[] = {200, 203, 202};
+  const int32_t kValues3[] = {200, 201, 202, 203};
   GPBInt64Int32Dictionary *dict1 =
       [[GPBInt64Int32Dictionary alloc] initWithInt32s:kValues1
                                               forKeys:kKeys1
@@ -557,8 +552,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testCopy {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const int32_t kValues[] = { 200, 201, 202, 203 };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const int32_t kValues[] = {200, 201, 202, 203};
   GPBInt64Int32Dictionary *dict =
       [[GPBInt64Int32Dictionary alloc] initWithInt32s:kValues
                                               forKeys:kKeys
@@ -578,16 +573,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testDictionaryFromDictionary {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const int32_t kValues[] = { 200, 201, 202, 203 };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const int32_t kValues[] = {200, 201, 202, 203};
   GPBInt64Int32Dictionary *dict =
       [[GPBInt64Int32Dictionary alloc] initWithInt32s:kValues
                                               forKeys:kKeys
                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
-  GPBInt64Int32Dictionary *dict2 =
-      [[GPBInt64Int32Dictionary alloc] initWithDictionary:dict];
+  GPBInt64Int32Dictionary *dict2 = [[GPBInt64Int32Dictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
@@ -605,8 +599,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   [dict setInt32:200 forKey:21LL];
   XCTAssertEqual(dict.count, 1U);
 
-  const int64_t kKeys[] = { 22LL, 23LL, 24LL };
-  const int32_t kValues[] = { 201, 202, 203 };
+  const int64_t kKeys[] = {22LL, 23LL, 24LL};
+  const int32_t kValues[] = {201, 202, 203};
   GPBInt64Int32Dictionary *dict2 =
       [[GPBInt64Int32Dictionary alloc] initWithInt32s:kValues
                                               forKeys:kKeys
@@ -633,8 +627,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testRemove {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const int32_t kValues[] = { 200, 201, 202, 203 };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const int32_t kValues[] = {200, 201, 202, 203};
   GPBInt64Int32Dictionary *dict =
       [[GPBInt64Int32Dictionary alloc] initWithInt32s:kValues
                                               forKeys:kKeys
@@ -691,8 +685,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testInplaceMutation {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const int32_t kValues[] = { 200, 201, 202, 203 };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const int32_t kValues[] = {200, 201, 202, 203};
   GPBInt64Int32Dictionary *dict =
       [[GPBInt64Int32Dictionary alloc] initWithInt32s:kValues
                                               forKeys:kKeys
@@ -743,8 +737,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertTrue([dict getInt32:&value forKey:24LL]);
   XCTAssertEqual(value, 201);
 
-  const int64_t kKeys2[] = { 22LL, 23LL };
-  const int32_t kValues2[] = { 202, 200 };
+  const int64_t kKeys2[] = {22LL, 23LL};
+  const int32_t kValues2[] = {202, 200};
   GPBInt64Int32Dictionary *dict2 =
       [[GPBInt64Int32Dictionary alloc] initWithInt32s:kValues2
                                               forKeys:kKeys2
@@ -783,7 +777,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getUInt64:NULL forKey:21LL]);
-  [dict enumerateKeysAndUInt64sUsingBlock:^(__unused int64_t aKey, __unused uint64_t aValue, __unused BOOL *stop) {
+  [dict enumerateKeysAndUInt64sUsingBlock:^(__unused int64_t aKey, __unused uint64_t aValue,
+                                            __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
@@ -808,8 +803,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testBasics {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL };
-  const uint64_t kValues[] = { 300U, 301U, 302U };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL};
+  const uint64_t kValues[] = {300U, 301U, 302U};
   GPBInt64UInt64Dictionary *dict =
       [[GPBInt64UInt64Dictionary alloc] initWithUInt64s:kValues
                                                 forKeys:kKeys
@@ -853,7 +848,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndUInt64sUsingBlock:^(__unused int64_t aKey, __unused uint64_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndUInt64sUsingBlock:^(__unused int64_t aKey, __unused uint64_t aValue,
+                                            BOOL *stop) {
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -862,11 +858,11 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testEquality {
-  const int64_t kKeys1[] = { 21LL, 22LL, 23LL, 24LL };
-  const int64_t kKeys2[] = { 22LL, 21LL, 24LL };
-  const uint64_t kValues1[] = { 300U, 301U, 302U };
-  const uint64_t kValues2[] = { 300U, 303U, 302U };
-  const uint64_t kValues3[] = { 300U, 301U, 302U, 303U };
+  const int64_t kKeys1[] = {21LL, 22LL, 23LL, 24LL};
+  const int64_t kKeys2[] = {22LL, 21LL, 24LL};
+  const uint64_t kValues1[] = {300U, 301U, 302U};
+  const uint64_t kValues2[] = {300U, 303U, 302U};
+  const uint64_t kValues3[] = {300U, 301U, 302U, 303U};
   GPBInt64UInt64Dictionary *dict1 =
       [[GPBInt64UInt64Dictionary alloc] initWithUInt64s:kValues1
                                                 forKeys:kKeys1
@@ -916,8 +912,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testCopy {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const uint64_t kValues[] = { 300U, 301U, 302U, 303U };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const uint64_t kValues[] = {300U, 301U, 302U, 303U};
   GPBInt64UInt64Dictionary *dict =
       [[GPBInt64UInt64Dictionary alloc] initWithUInt64s:kValues
                                                 forKeys:kKeys
@@ -937,16 +933,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testDictionaryFromDictionary {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const uint64_t kValues[] = { 300U, 301U, 302U, 303U };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const uint64_t kValues[] = {300U, 301U, 302U, 303U};
   GPBInt64UInt64Dictionary *dict =
       [[GPBInt64UInt64Dictionary alloc] initWithUInt64s:kValues
                                                 forKeys:kKeys
                                                   count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
-  GPBInt64UInt64Dictionary *dict2 =
-      [[GPBInt64UInt64Dictionary alloc] initWithDictionary:dict];
+  GPBInt64UInt64Dictionary *dict2 = [[GPBInt64UInt64Dictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
@@ -964,8 +959,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   [dict setUInt64:300U forKey:21LL];
   XCTAssertEqual(dict.count, 1U);
 
-  const int64_t kKeys[] = { 22LL, 23LL, 24LL };
-  const uint64_t kValues[] = { 301U, 302U, 303U };
+  const int64_t kKeys[] = {22LL, 23LL, 24LL};
+  const uint64_t kValues[] = {301U, 302U, 303U};
   GPBInt64UInt64Dictionary *dict2 =
       [[GPBInt64UInt64Dictionary alloc] initWithUInt64s:kValues
                                                 forKeys:kKeys
@@ -992,8 +987,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testRemove {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const uint64_t kValues[] = { 300U, 301U, 302U, 303U };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const uint64_t kValues[] = {300U, 301U, 302U, 303U};
   GPBInt64UInt64Dictionary *dict =
       [[GPBInt64UInt64Dictionary alloc] initWithUInt64s:kValues
                                                 forKeys:kKeys
@@ -1050,8 +1045,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testInplaceMutation {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const uint64_t kValues[] = { 300U, 301U, 302U, 303U };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const uint64_t kValues[] = {300U, 301U, 302U, 303U};
   GPBInt64UInt64Dictionary *dict =
       [[GPBInt64UInt64Dictionary alloc] initWithUInt64s:kValues
                                                 forKeys:kKeys
@@ -1102,8 +1097,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertTrue([dict getUInt64:&value forKey:24LL]);
   XCTAssertEqual(value, 301U);
 
-  const int64_t kKeys2[] = { 22LL, 23LL };
-  const uint64_t kValues2[] = { 302U, 300U };
+  const int64_t kKeys2[] = {22LL, 23LL};
+  const uint64_t kValues2[] = {302U, 300U};
   GPBInt64UInt64Dictionary *dict2 =
       [[GPBInt64UInt64Dictionary alloc] initWithUInt64s:kValues2
                                                 forKeys:kKeys2
@@ -1142,7 +1137,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getInt64:NULL forKey:21LL]);
-  [dict enumerateKeysAndInt64sUsingBlock:^(__unused int64_t aKey, __unused int64_t aValue, __unused BOOL *stop) {
+  [dict enumerateKeysAndInt64sUsingBlock:^(__unused int64_t aKey, __unused int64_t aValue,
+                                           __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
@@ -1167,8 +1163,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testBasics {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL };
-  const int64_t kValues[] = { 400, 401, 402 };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL};
+  const int64_t kValues[] = {400, 401, 402};
   GPBInt64Int64Dictionary *dict =
       [[GPBInt64Int64Dictionary alloc] initWithInt64s:kValues
                                               forKeys:kKeys
@@ -1212,7 +1208,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndInt64sUsingBlock:^(__unused int64_t aKey, __unused int64_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndInt64sUsingBlock:^(__unused int64_t aKey, __unused int64_t aValue,
+                                           BOOL *stop) {
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -1221,11 +1218,11 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testEquality {
-  const int64_t kKeys1[] = { 21LL, 22LL, 23LL, 24LL };
-  const int64_t kKeys2[] = { 22LL, 21LL, 24LL };
-  const int64_t kValues1[] = { 400, 401, 402 };
-  const int64_t kValues2[] = { 400, 403, 402 };
-  const int64_t kValues3[] = { 400, 401, 402, 403 };
+  const int64_t kKeys1[] = {21LL, 22LL, 23LL, 24LL};
+  const int64_t kKeys2[] = {22LL, 21LL, 24LL};
+  const int64_t kValues1[] = {400, 401, 402};
+  const int64_t kValues2[] = {400, 403, 402};
+  const int64_t kValues3[] = {400, 401, 402, 403};
   GPBInt64Int64Dictionary *dict1 =
       [[GPBInt64Int64Dictionary alloc] initWithInt64s:kValues1
                                               forKeys:kKeys1
@@ -1275,8 +1272,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testCopy {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const int64_t kValues[] = { 400, 401, 402, 403 };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const int64_t kValues[] = {400, 401, 402, 403};
   GPBInt64Int64Dictionary *dict =
       [[GPBInt64Int64Dictionary alloc] initWithInt64s:kValues
                                               forKeys:kKeys
@@ -1296,16 +1293,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testDictionaryFromDictionary {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const int64_t kValues[] = { 400, 401, 402, 403 };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const int64_t kValues[] = {400, 401, 402, 403};
   GPBInt64Int64Dictionary *dict =
       [[GPBInt64Int64Dictionary alloc] initWithInt64s:kValues
                                               forKeys:kKeys
                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
-  GPBInt64Int64Dictionary *dict2 =
-      [[GPBInt64Int64Dictionary alloc] initWithDictionary:dict];
+  GPBInt64Int64Dictionary *dict2 = [[GPBInt64Int64Dictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
@@ -1323,8 +1319,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   [dict setInt64:400 forKey:21LL];
   XCTAssertEqual(dict.count, 1U);
 
-  const int64_t kKeys[] = { 22LL, 23LL, 24LL };
-  const int64_t kValues[] = { 401, 402, 403 };
+  const int64_t kKeys[] = {22LL, 23LL, 24LL};
+  const int64_t kValues[] = {401, 402, 403};
   GPBInt64Int64Dictionary *dict2 =
       [[GPBInt64Int64Dictionary alloc] initWithInt64s:kValues
                                               forKeys:kKeys
@@ -1351,8 +1347,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testRemove {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const int64_t kValues[] = { 400, 401, 402, 403 };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const int64_t kValues[] = {400, 401, 402, 403};
   GPBInt64Int64Dictionary *dict =
       [[GPBInt64Int64Dictionary alloc] initWithInt64s:kValues
                                               forKeys:kKeys
@@ -1409,8 +1405,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testInplaceMutation {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const int64_t kValues[] = { 400, 401, 402, 403 };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const int64_t kValues[] = {400, 401, 402, 403};
   GPBInt64Int64Dictionary *dict =
       [[GPBInt64Int64Dictionary alloc] initWithInt64s:kValues
                                               forKeys:kKeys
@@ -1461,8 +1457,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertTrue([dict getInt64:&value forKey:24LL]);
   XCTAssertEqual(value, 401);
 
-  const int64_t kKeys2[] = { 22LL, 23LL };
-  const int64_t kValues2[] = { 402, 400 };
+  const int64_t kKeys2[] = {22LL, 23LL};
+  const int64_t kValues2[] = {402, 400};
   GPBInt64Int64Dictionary *dict2 =
       [[GPBInt64Int64Dictionary alloc] initWithInt64s:kValues2
                                               forKeys:kKeys2
@@ -1501,7 +1497,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getBool:NULL forKey:21LL]);
-  [dict enumerateKeysAndBoolsUsingBlock:^(__unused int64_t aKey, __unused BOOL aValue, __unused BOOL *stop) {
+  [dict enumerateKeysAndBoolsUsingBlock:^(__unused int64_t aKey, __unused BOOL aValue,
+                                          __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
@@ -1526,8 +1523,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testBasics {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL };
-  const BOOL kValues[] = { YES, YES, NO };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL};
+  const BOOL kValues[] = {YES, YES, NO};
   GPBInt64BoolDictionary *dict =
       [[GPBInt64BoolDictionary alloc] initWithBools:kValues
                                             forKeys:kKeys
@@ -1580,11 +1577,11 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testEquality {
-  const int64_t kKeys1[] = { 21LL, 22LL, 23LL, 24LL };
-  const int64_t kKeys2[] = { 22LL, 21LL, 24LL };
-  const BOOL kValues1[] = { YES, YES, NO };
-  const BOOL kValues2[] = { YES, NO, NO };
-  const BOOL kValues3[] = { YES, YES, NO, NO };
+  const int64_t kKeys1[] = {21LL, 22LL, 23LL, 24LL};
+  const int64_t kKeys2[] = {22LL, 21LL, 24LL};
+  const BOOL kValues1[] = {YES, YES, NO};
+  const BOOL kValues2[] = {YES, NO, NO};
+  const BOOL kValues3[] = {YES, YES, NO, NO};
   GPBInt64BoolDictionary *dict1 =
       [[GPBInt64BoolDictionary alloc] initWithBools:kValues1
                                             forKeys:kKeys1
@@ -1634,8 +1631,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testCopy {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const BOOL kValues[] = { YES, YES, NO, NO };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const BOOL kValues[] = {YES, YES, NO, NO};
   GPBInt64BoolDictionary *dict =
       [[GPBInt64BoolDictionary alloc] initWithBools:kValues
                                             forKeys:kKeys
@@ -1655,16 +1652,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testDictionaryFromDictionary {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const BOOL kValues[] = { YES, YES, NO, NO };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const BOOL kValues[] = {YES, YES, NO, NO};
   GPBInt64BoolDictionary *dict =
       [[GPBInt64BoolDictionary alloc] initWithBools:kValues
                                             forKeys:kKeys
                                               count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
-  GPBInt64BoolDictionary *dict2 =
-      [[GPBInt64BoolDictionary alloc] initWithDictionary:dict];
+  GPBInt64BoolDictionary *dict2 = [[GPBInt64BoolDictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
@@ -1682,8 +1678,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   [dict setBool:YES forKey:21LL];
   XCTAssertEqual(dict.count, 1U);
 
-  const int64_t kKeys[] = { 22LL, 23LL, 24LL };
-  const BOOL kValues[] = { YES, NO, NO };
+  const int64_t kKeys[] = {22LL, 23LL, 24LL};
+  const BOOL kValues[] = {YES, NO, NO};
   GPBInt64BoolDictionary *dict2 =
       [[GPBInt64BoolDictionary alloc] initWithBools:kValues
                                             forKeys:kKeys
@@ -1710,8 +1706,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testRemove {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const BOOL kValues[] = { YES, YES, NO, NO };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const BOOL kValues[] = {YES, YES, NO, NO};
   GPBInt64BoolDictionary *dict =
       [[GPBInt64BoolDictionary alloc] initWithBools:kValues
                                             forKeys:kKeys
@@ -1768,8 +1764,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testInplaceMutation {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const BOOL kValues[] = { YES, YES, NO, NO };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const BOOL kValues[] = {YES, YES, NO, NO};
   GPBInt64BoolDictionary *dict =
       [[GPBInt64BoolDictionary alloc] initWithBools:kValues
                                             forKeys:kKeys
@@ -1820,8 +1816,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertTrue([dict getBool:&value forKey:24LL]);
   XCTAssertEqual(value, YES);
 
-  const int64_t kKeys2[] = { 22LL, 23LL };
-  const BOOL kValues2[] = { NO, YES };
+  const int64_t kKeys2[] = {22LL, 23LL};
+  const BOOL kValues2[] = {NO, YES};
   GPBInt64BoolDictionary *dict2 =
       [[GPBInt64BoolDictionary alloc] initWithBools:kValues2
                                             forKeys:kKeys2
@@ -1860,7 +1856,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getFloat:NULL forKey:21LL]);
-  [dict enumerateKeysAndFloatsUsingBlock:^(__unused int64_t aKey, __unused float aValue, __unused BOOL *stop) {
+  [dict enumerateKeysAndFloatsUsingBlock:^(__unused int64_t aKey, __unused float aValue,
+                                           __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
@@ -1885,8 +1882,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testBasics {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL };
-  const float kValues[] = { 500.f, 501.f, 502.f };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL};
+  const float kValues[] = {500.f, 501.f, 502.f};
   GPBInt64FloatDictionary *dict =
       [[GPBInt64FloatDictionary alloc] initWithFloats:kValues
                                               forKeys:kKeys
@@ -1930,20 +1927,21 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndFloatsUsingBlock:^(__unused int64_t aKey, __unused float aValue, BOOL *stop) {
-    if (idx == 1) *stop = YES;
-    XCTAssertNotEqual(idx, 2U);
-    ++idx;
-  }];
+  [dict
+      enumerateKeysAndFloatsUsingBlock:^(__unused int64_t aKey, __unused float aValue, BOOL *stop) {
+        if (idx == 1) *stop = YES;
+        XCTAssertNotEqual(idx, 2U);
+        ++idx;
+      }];
   [dict release];
 }
 
 - (void)testEquality {
-  const int64_t kKeys1[] = { 21LL, 22LL, 23LL, 24LL };
-  const int64_t kKeys2[] = { 22LL, 21LL, 24LL };
-  const float kValues1[] = { 500.f, 501.f, 502.f };
-  const float kValues2[] = { 500.f, 503.f, 502.f };
-  const float kValues3[] = { 500.f, 501.f, 502.f, 503.f };
+  const int64_t kKeys1[] = {21LL, 22LL, 23LL, 24LL};
+  const int64_t kKeys2[] = {22LL, 21LL, 24LL};
+  const float kValues1[] = {500.f, 501.f, 502.f};
+  const float kValues2[] = {500.f, 503.f, 502.f};
+  const float kValues3[] = {500.f, 501.f, 502.f, 503.f};
   GPBInt64FloatDictionary *dict1 =
       [[GPBInt64FloatDictionary alloc] initWithFloats:kValues1
                                               forKeys:kKeys1
@@ -1993,8 +1991,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testCopy {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const float kValues[] = { 500.f, 501.f, 502.f, 503.f };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const float kValues[] = {500.f, 501.f, 502.f, 503.f};
   GPBInt64FloatDictionary *dict =
       [[GPBInt64FloatDictionary alloc] initWithFloats:kValues
                                               forKeys:kKeys
@@ -2014,16 +2012,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testDictionaryFromDictionary {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const float kValues[] = { 500.f, 501.f, 502.f, 503.f };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const float kValues[] = {500.f, 501.f, 502.f, 503.f};
   GPBInt64FloatDictionary *dict =
       [[GPBInt64FloatDictionary alloc] initWithFloats:kValues
                                               forKeys:kKeys
                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
-  GPBInt64FloatDictionary *dict2 =
-      [[GPBInt64FloatDictionary alloc] initWithDictionary:dict];
+  GPBInt64FloatDictionary *dict2 = [[GPBInt64FloatDictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
@@ -2041,8 +2038,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   [dict setFloat:500.f forKey:21LL];
   XCTAssertEqual(dict.count, 1U);
 
-  const int64_t kKeys[] = { 22LL, 23LL, 24LL };
-  const float kValues[] = { 501.f, 502.f, 503.f };
+  const int64_t kKeys[] = {22LL, 23LL, 24LL};
+  const float kValues[] = {501.f, 502.f, 503.f};
   GPBInt64FloatDictionary *dict2 =
       [[GPBInt64FloatDictionary alloc] initWithFloats:kValues
                                               forKeys:kKeys
@@ -2069,8 +2066,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testRemove {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const float kValues[] = { 500.f, 501.f, 502.f, 503.f };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const float kValues[] = {500.f, 501.f, 502.f, 503.f};
   GPBInt64FloatDictionary *dict =
       [[GPBInt64FloatDictionary alloc] initWithFloats:kValues
                                               forKeys:kKeys
@@ -2127,8 +2124,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testInplaceMutation {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const float kValues[] = { 500.f, 501.f, 502.f, 503.f };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const float kValues[] = {500.f, 501.f, 502.f, 503.f};
   GPBInt64FloatDictionary *dict =
       [[GPBInt64FloatDictionary alloc] initWithFloats:kValues
                                               forKeys:kKeys
@@ -2179,8 +2176,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertTrue([dict getFloat:&value forKey:24LL]);
   XCTAssertEqual(value, 501.f);
 
-  const int64_t kKeys2[] = { 22LL, 23LL };
-  const float kValues2[] = { 502.f, 500.f };
+  const int64_t kKeys2[] = {22LL, 23LL};
+  const float kValues2[] = {502.f, 500.f};
   GPBInt64FloatDictionary *dict2 =
       [[GPBInt64FloatDictionary alloc] initWithFloats:kValues2
                                               forKeys:kKeys2
@@ -2219,7 +2216,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getDouble:NULL forKey:21LL]);
-  [dict enumerateKeysAndDoublesUsingBlock:^(__unused int64_t aKey, __unused double aValue, __unused BOOL *stop) {
+  [dict enumerateKeysAndDoublesUsingBlock:^(__unused int64_t aKey, __unused double aValue,
+                                            __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
@@ -2244,8 +2242,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testBasics {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL };
-  const double kValues[] = { 600., 601., 602. };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL};
+  const double kValues[] = {600., 601., 602.};
   GPBInt64DoubleDictionary *dict =
       [[GPBInt64DoubleDictionary alloc] initWithDoubles:kValues
                                                 forKeys:kKeys
@@ -2289,7 +2287,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndDoublesUsingBlock:^(__unused int64_t aKey, __unused double aValue, BOOL *stop) {
+  [dict enumerateKeysAndDoublesUsingBlock:^(__unused int64_t aKey, __unused double aValue,
+                                            BOOL *stop) {
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -2298,11 +2297,11 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testEquality {
-  const int64_t kKeys1[] = { 21LL, 22LL, 23LL, 24LL };
-  const int64_t kKeys2[] = { 22LL, 21LL, 24LL };
-  const double kValues1[] = { 600., 601., 602. };
-  const double kValues2[] = { 600., 603., 602. };
-  const double kValues3[] = { 600., 601., 602., 603. };
+  const int64_t kKeys1[] = {21LL, 22LL, 23LL, 24LL};
+  const int64_t kKeys2[] = {22LL, 21LL, 24LL};
+  const double kValues1[] = {600., 601., 602.};
+  const double kValues2[] = {600., 603., 602.};
+  const double kValues3[] = {600., 601., 602., 603.};
   GPBInt64DoubleDictionary *dict1 =
       [[GPBInt64DoubleDictionary alloc] initWithDoubles:kValues1
                                                 forKeys:kKeys1
@@ -2352,8 +2351,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testCopy {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const double kValues[] = { 600., 601., 602., 603. };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const double kValues[] = {600., 601., 602., 603.};
   GPBInt64DoubleDictionary *dict =
       [[GPBInt64DoubleDictionary alloc] initWithDoubles:kValues
                                                 forKeys:kKeys
@@ -2373,16 +2372,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testDictionaryFromDictionary {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const double kValues[] = { 600., 601., 602., 603. };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const double kValues[] = {600., 601., 602., 603.};
   GPBInt64DoubleDictionary *dict =
       [[GPBInt64DoubleDictionary alloc] initWithDoubles:kValues
                                                 forKeys:kKeys
                                                   count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
-  GPBInt64DoubleDictionary *dict2 =
-      [[GPBInt64DoubleDictionary alloc] initWithDictionary:dict];
+  GPBInt64DoubleDictionary *dict2 = [[GPBInt64DoubleDictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
@@ -2400,8 +2398,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   [dict setDouble:600. forKey:21LL];
   XCTAssertEqual(dict.count, 1U);
 
-  const int64_t kKeys[] = { 22LL, 23LL, 24LL };
-  const double kValues[] = { 601., 602., 603. };
+  const int64_t kKeys[] = {22LL, 23LL, 24LL};
+  const double kValues[] = {601., 602., 603.};
   GPBInt64DoubleDictionary *dict2 =
       [[GPBInt64DoubleDictionary alloc] initWithDoubles:kValues
                                                 forKeys:kKeys
@@ -2428,8 +2426,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testRemove {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const double kValues[] = { 600., 601., 602., 603. };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const double kValues[] = {600., 601., 602., 603.};
   GPBInt64DoubleDictionary *dict =
       [[GPBInt64DoubleDictionary alloc] initWithDoubles:kValues
                                                 forKeys:kKeys
@@ -2486,8 +2484,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testInplaceMutation {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const double kValues[] = { 600., 601., 602., 603. };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const double kValues[] = {600., 601., 602., 603.};
   GPBInt64DoubleDictionary *dict =
       [[GPBInt64DoubleDictionary alloc] initWithDoubles:kValues
                                                 forKeys:kKeys
@@ -2538,8 +2536,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertTrue([dict getDouble:&value forKey:24LL]);
   XCTAssertEqual(value, 601.);
 
-  const int64_t kKeys2[] = { 22LL, 23LL };
-  const double kValues2[] = { 602., 600. };
+  const int64_t kKeys2[] = {22LL, 23LL};
+  const double kValues2[] = {602., 600.};
   GPBInt64DoubleDictionary *dict2 =
       [[GPBInt64DoubleDictionary alloc] initWithDoubles:kValues2
                                                 forKeys:kKeys2
@@ -2578,7 +2576,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getEnum:NULL forKey:21LL]);
-  [dict enumerateKeysAndEnumsUsingBlock:^(__unused int64_t aKey, __unused int32_t aValue, __unused BOOL *stop) {
+  [dict enumerateKeysAndEnumsUsingBlock:^(__unused int64_t aKey, __unused int32_t aValue,
+                                          __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
@@ -2603,8 +2602,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testBasics {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL };
-  const int32_t kValues[] = { 700, 701, 702 };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL};
+  const int32_t kValues[] = {700, 701, 702};
   GPBInt64EnumDictionary *dict =
       [[GPBInt64EnumDictionary alloc] initWithEnums:kValues
                                             forKeys:kKeys
@@ -2648,7 +2647,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndEnumsUsingBlock:^(__unused int64_t aKey, __unused int32_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndEnumsUsingBlock:^(__unused int64_t aKey, __unused int32_t aValue,
+                                          BOOL *stop) {
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -2657,11 +2657,11 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testEquality {
-  const int64_t kKeys1[] = { 21LL, 22LL, 23LL, 24LL };
-  const int64_t kKeys2[] = { 22LL, 21LL, 24LL };
-  const int32_t kValues1[] = { 700, 701, 702 };
-  const int32_t kValues2[] = { 700, 703, 702 };
-  const int32_t kValues3[] = { 700, 701, 702, 703 };
+  const int64_t kKeys1[] = {21LL, 22LL, 23LL, 24LL};
+  const int64_t kKeys2[] = {22LL, 21LL, 24LL};
+  const int32_t kValues1[] = {700, 701, 702};
+  const int32_t kValues2[] = {700, 703, 702};
+  const int32_t kValues3[] = {700, 701, 702, 703};
   GPBInt64EnumDictionary *dict1 =
       [[GPBInt64EnumDictionary alloc] initWithEnums:kValues1
                                             forKeys:kKeys1
@@ -2711,8 +2711,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testCopy {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const int32_t kValues[] = { 700, 701, 702, 703 };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const int32_t kValues[] = {700, 701, 702, 703};
   GPBInt64EnumDictionary *dict =
       [[GPBInt64EnumDictionary alloc] initWithEnums:kValues
                                             forKeys:kKeys
@@ -2732,16 +2732,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testDictionaryFromDictionary {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const int32_t kValues[] = { 700, 701, 702, 703 };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const int32_t kValues[] = {700, 701, 702, 703};
   GPBInt64EnumDictionary *dict =
       [[GPBInt64EnumDictionary alloc] initWithEnums:kValues
                                             forKeys:kKeys
                                               count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
-  GPBInt64EnumDictionary *dict2 =
-      [[GPBInt64EnumDictionary alloc] initWithDictionary:dict];
+  GPBInt64EnumDictionary *dict2 = [[GPBInt64EnumDictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
@@ -2759,8 +2758,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   [dict setEnum:700 forKey:21LL];
   XCTAssertEqual(dict.count, 1U);
 
-  const int64_t kKeys[] = { 22LL, 23LL, 24LL };
-  const int32_t kValues[] = { 701, 702, 703 };
+  const int64_t kKeys[] = {22LL, 23LL, 24LL};
+  const int32_t kValues[] = {701, 702, 703};
   GPBInt64EnumDictionary *dict2 =
       [[GPBInt64EnumDictionary alloc] initWithEnums:kValues
                                             forKeys:kKeys
@@ -2787,8 +2786,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testRemove {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const int32_t kValues[] = { 700, 701, 702, 703 };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const int32_t kValues[] = {700, 701, 702, 703};
   GPBInt64EnumDictionary *dict =
       [[GPBInt64EnumDictionary alloc] initWithEnums:kValues
                                             forKeys:kKeys
@@ -2845,8 +2844,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testInplaceMutation {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const int32_t kValues[] = { 700, 701, 702, 703 };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const int32_t kValues[] = {700, 701, 702, 703};
   GPBInt64EnumDictionary *dict =
       [[GPBInt64EnumDictionary alloc] initWithEnums:kValues
                                             forKeys:kKeys
@@ -2897,8 +2896,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertTrue([dict getEnum:&value forKey:24LL]);
   XCTAssertEqual(value, 701);
 
-  const int64_t kKeys2[] = { 22LL, 23LL };
-  const int32_t kValues2[] = { 702, 700 };
+  const int64_t kKeys2[] = {22LL, 23LL};
+  const int32_t kValues2[] = {702, 700};
   GPBInt64EnumDictionary *dict2 =
       [[GPBInt64EnumDictionary alloc] initWithEnums:kValues2
                                             forKeys:kKeys2
@@ -2933,8 +2932,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 @implementation GPBInt64EnumDictionaryUnknownEnumTests
 
 - (void)testRawBasics {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL };
-  const int32_t kValues[] = { 700, 801, 702 };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL};
+  const int32_t kValues[] = {700, 801, 702};
   GPBInt64EnumDictionary *dict =
       [[GPBInt64EnumDictionary alloc] initWithValidationFunction:TestingEnum_IsValidValue
                                                        rawValues:kValues
@@ -3005,7 +3004,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndRawValuesUsingBlock:^(__unused int64_t aKey, __unused int32_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndRawValuesUsingBlock:^(__unused int64_t aKey, __unused int32_t aValue,
+                                              BOOL *stop) {
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -3014,11 +3014,11 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testEqualityWithUnknowns {
-  const int64_t kKeys1[] = { 21LL, 22LL, 23LL, 24LL };
-  const int64_t kKeys2[] = { 22LL, 21LL, 24LL };
-  const int32_t kValues1[] = { 700, 801, 702 };  // Unknown
-  const int32_t kValues2[] = { 700, 803, 702 };  // Unknown
-  const int32_t kValues3[] = { 700, 801, 702, 803 };  // Unknowns
+  const int64_t kKeys1[] = {21LL, 22LL, 23LL, 24LL};
+  const int64_t kKeys2[] = {22LL, 21LL, 24LL};
+  const int32_t kValues1[] = {700, 801, 702};       // Unknown
+  const int32_t kValues2[] = {700, 803, 702};       // Unknown
+  const int32_t kValues3[] = {700, 801, 702, 803};  // Unknowns
   GPBInt64EnumDictionary *dict1 =
       [[GPBInt64EnumDictionary alloc] initWithValidationFunction:TestingEnum_IsValidValue
                                                        rawValues:kValues1
@@ -3073,8 +3073,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testCopyWithUnknowns {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const int32_t kValues[] = { 700, 801, 702, 803 };  // Unknown
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const int32_t kValues[] = {700, 801, 702, 803};  // Unknown
   GPBInt64EnumDictionary *dict =
       [[GPBInt64EnumDictionary alloc] initWithValidationFunction:TestingEnum_IsValidValue
                                                        rawValues:kValues
@@ -3095,8 +3095,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testDictionaryFromDictionary {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const int32_t kValues[] = { 700, 801, 702, 803 };  // Unknowns
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const int32_t kValues[] = {700, 801, 702, 803};  // Unknowns
   GPBInt64EnumDictionary *dict =
       [[GPBInt64EnumDictionary alloc] initWithValidationFunction:TestingEnum_IsValidValue
                                                        rawValues:kValues
@@ -3104,8 +3104,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
                                                            count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
-  GPBInt64EnumDictionary *dict2 =
-      [[GPBInt64EnumDictionary alloc] initWithDictionary:dict];
+  GPBInt64EnumDictionary *dict2 = [[GPBInt64EnumDictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
@@ -3128,12 +3127,12 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   [dict setRawValue:801 forKey:22LL];  // Unknown
   XCTAssertEqual(dict.count, 1U);
 
-  const int64_t kKeys[] = { 21LL, 23LL, 24LL };
-  const int32_t kValues[] = { 700, 702, 803 };  // Unknown
+  const int64_t kKeys[] = {21LL, 23LL, 24LL};
+  const int32_t kValues[] = {700, 702, 803};  // Unknown
   GPBInt64EnumDictionary *dict2 =
       [[GPBInt64EnumDictionary alloc] initWithEnums:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+                                            forKeys:kKeys
+                                              count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict2);
   [dict addRawEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 4U);
@@ -3162,8 +3161,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testUnknownRemove {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const int32_t kValues[] = { 700, 801, 702, 803 };  // Unknowns
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const int32_t kValues[] = {700, 801, 702, 803};  // Unknowns
   GPBInt64EnumDictionary *dict =
       [[GPBInt64EnumDictionary alloc] initWithValidationFunction:TestingEnum_IsValidValue
                                                        rawValues:kValues
@@ -3221,8 +3220,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testInplaceMutationUnknowns {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const int32_t kValues[] = { 700, 801, 702, 803 };  // Unknowns
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const int32_t kValues[] = {700, 801, 702, 803};  // Unknowns
   GPBInt64EnumDictionary *dict =
       [[GPBInt64EnumDictionary alloc] initWithValidationFunction:TestingEnum_IsValidValue
                                                        rawValues:kValues
@@ -3290,8 +3289,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertTrue([dict getEnum:&value forKey:24LL]);
   XCTAssertEqual(value, 700);
 
-  const int64_t kKeys2[] = { 22LL, 23LL };
-  const int32_t kValues2[] = { 702, 801 };  // Unknown
+  const int64_t kKeys2[] = {22LL, 23LL};
+  const int32_t kValues2[] = {702, 801};  // Unknown
   GPBInt64EnumDictionary *dict2 =
       [[GPBInt64EnumDictionary alloc] initWithValidationFunction:TestingEnum_IsValidValue
                                                        rawValues:kValues2
@@ -3318,8 +3317,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testCopyUnknowns {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const int32_t kValues[] = { 700, 801, 702, 803 };
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const int32_t kValues[] = {700, 801, 702, 803};
   GPBInt64EnumDictionary *dict =
       [[GPBInt64EnumDictionary alloc] initWithValidationFunction:TestingEnum_IsValidValue
                                                        rawValues:kValues
@@ -3350,24 +3349,25 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 @implementation GPBInt64ObjectDictionaryTests
 
 - (void)testEmpty {
-  GPBInt64ObjectDictionary<NSString*> *dict = [[GPBInt64ObjectDictionary alloc] init];
+  GPBInt64ObjectDictionary<NSString *> *dict = [[GPBInt64ObjectDictionary alloc] init];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertNil([dict objectForKey:21LL]);
-  [dict enumerateKeysAndObjectsUsingBlock:^(__unused int64_t aKey, __unused NSString* aObject, __unused BOOL *stop) {
+  [dict enumerateKeysAndObjectsUsingBlock:^(__unused int64_t aKey, __unused NSString *aObject,
+                                            __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
 }
 
 - (void)testOne {
-  GPBInt64ObjectDictionary<NSString*> *dict = [[GPBInt64ObjectDictionary alloc] init];
+  GPBInt64ObjectDictionary<NSString *> *dict = [[GPBInt64ObjectDictionary alloc] init];
   [dict setObject:@"abc" forKey:21LL];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   XCTAssertEqualObjects([dict objectForKey:21LL], @"abc");
   XCTAssertNil([dict objectForKey:22LL]);
-  [dict enumerateKeysAndObjectsUsingBlock:^(int64_t aKey, NSString* aObject, BOOL *stop) {
+  [dict enumerateKeysAndObjectsUsingBlock:^(int64_t aKey, NSString *aObject, BOOL *stop) {
     XCTAssertEqual(aKey, 21LL);
     XCTAssertEqualObjects(aObject, @"abc");
     XCTAssertNotEqual(stop, NULL);
@@ -3376,9 +3376,9 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testBasics {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL };
-  const NSString* kObjects[] = { @"abc", @"def", @"ghi" };
-  GPBInt64ObjectDictionary<NSString*> *dict =
+  const int64_t kKeys[] = {21LL, 22LL, 23LL};
+  const NSString *kObjects[] = {@"abc", @"def", @"ghi"};
+  GPBInt64ObjectDictionary<NSString *> *dict =
       [[GPBInt64ObjectDictionary alloc] initWithObjects:kObjects
                                                 forKeys:kKeys
                                                   count:GPBARRAYSIZE(kObjects)];
@@ -3391,8 +3391,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   __block NSUInteger idx = 0;
   int64_t *seenKeys = malloc(3 * sizeof(int64_t));
-  NSString* *seenObjects = malloc(3 * sizeof(NSString*));
-  [dict enumerateKeysAndObjectsUsingBlock:^(int64_t aKey, NSString* aObject, BOOL *stop) {
+  NSString **seenObjects = malloc(3 * sizeof(NSString *));
+  [dict enumerateKeysAndObjectsUsingBlock:^(int64_t aKey, NSString *aObject, BOOL *stop) {
     XCTAssertLessThan(idx, 3U);
     seenKeys[idx] = aKey;
     seenObjects[idx] = aObject;
@@ -3414,7 +3414,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndObjectsUsingBlock:^(__unused int64_t aKey, __unused NSString* aObject, BOOL *stop) {
+  [dict enumerateKeysAndObjectsUsingBlock:^(__unused int64_t aKey, __unused NSString *aObject,
+                                            BOOL *stop) {
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -3423,32 +3424,32 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testEquality {
-  const int64_t kKeys1[] = { 21LL, 22LL, 23LL, 24LL };
-  const int64_t kKeys2[] = { 22LL, 21LL, 24LL };
-  const NSString* kObjects1[] = { @"abc", @"def", @"ghi" };
-  const NSString* kObjects2[] = { @"abc", @"jkl", @"ghi" };
-  const NSString* kObjects3[] = { @"abc", @"def", @"ghi", @"jkl" };
-  GPBInt64ObjectDictionary<NSString*> *dict1 =
+  const int64_t kKeys1[] = {21LL, 22LL, 23LL, 24LL};
+  const int64_t kKeys2[] = {22LL, 21LL, 24LL};
+  const NSString *kObjects1[] = {@"abc", @"def", @"ghi"};
+  const NSString *kObjects2[] = {@"abc", @"jkl", @"ghi"};
+  const NSString *kObjects3[] = {@"abc", @"def", @"ghi", @"jkl"};
+  GPBInt64ObjectDictionary<NSString *> *dict1 =
       [[GPBInt64ObjectDictionary alloc] initWithObjects:kObjects1
                                                 forKeys:kKeys1
                                                   count:GPBARRAYSIZE(kObjects1)];
   XCTAssertNotNil(dict1);
-  GPBInt64ObjectDictionary<NSString*> *dict1prime =
+  GPBInt64ObjectDictionary<NSString *> *dict1prime =
       [[GPBInt64ObjectDictionary alloc] initWithObjects:kObjects1
                                                 forKeys:kKeys1
                                                   count:GPBARRAYSIZE(kObjects1)];
   XCTAssertNotNil(dict1prime);
-  GPBInt64ObjectDictionary<NSString*> *dict2 =
+  GPBInt64ObjectDictionary<NSString *> *dict2 =
       [[GPBInt64ObjectDictionary alloc] initWithObjects:kObjects2
                                                 forKeys:kKeys1
                                                   count:GPBARRAYSIZE(kObjects2)];
   XCTAssertNotNil(dict2);
-  GPBInt64ObjectDictionary<NSString*> *dict3 =
+  GPBInt64ObjectDictionary<NSString *> *dict3 =
       [[GPBInt64ObjectDictionary alloc] initWithObjects:kObjects1
                                                 forKeys:kKeys2
                                                   count:GPBARRAYSIZE(kObjects1)];
   XCTAssertNotNil(dict3);
-  GPBInt64ObjectDictionary<NSString*> *dict4 =
+  GPBInt64ObjectDictionary<NSString *> *dict4 =
       [[GPBInt64ObjectDictionary alloc] initWithObjects:kObjects3
                                                 forKeys:kKeys1
                                                   count:GPBARRAYSIZE(kObjects3)];
@@ -3477,15 +3478,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testCopy {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const NSString* kObjects[] = { @"abc", @"def", @"ghi", @"jkl" };
-  GPBInt64ObjectDictionary<NSString*> *dict =
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const NSString *kObjects[] = {@"abc", @"def", @"ghi", @"jkl"};
+  GPBInt64ObjectDictionary<NSString *> *dict =
       [[GPBInt64ObjectDictionary alloc] initWithObjects:kObjects
                                                 forKeys:kKeys
                                                   count:GPBARRAYSIZE(kObjects)];
   XCTAssertNotNil(dict);
 
-  GPBInt64ObjectDictionary<NSString*> *dict2 = [dict copy];
+  GPBInt64ObjectDictionary<NSString *> *dict2 = [dict copy];
   XCTAssertNotNil(dict2);
 
   // Should be new object but equal.
@@ -3498,15 +3499,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testDictionaryFromDictionary {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const NSString* kObjects[] = { @"abc", @"def", @"ghi", @"jkl" };
-  GPBInt64ObjectDictionary<NSString*> *dict =
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const NSString *kObjects[] = {@"abc", @"def", @"ghi", @"jkl"};
+  GPBInt64ObjectDictionary<NSString *> *dict =
       [[GPBInt64ObjectDictionary alloc] initWithObjects:kObjects
                                                 forKeys:kKeys
                                                   count:GPBARRAYSIZE(kObjects)];
   XCTAssertNotNil(dict);
 
-  GPBInt64ObjectDictionary<NSString*> *dict2 =
+  GPBInt64ObjectDictionary<NSString *> *dict2 =
       [[GPBInt64ObjectDictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
@@ -3518,16 +3519,16 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testAdds {
-  GPBInt64ObjectDictionary<NSString*> *dict = [[GPBInt64ObjectDictionary alloc] init];
+  GPBInt64ObjectDictionary<NSString *> *dict = [[GPBInt64ObjectDictionary alloc] init];
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
   [dict setObject:@"abc" forKey:21LL];
   XCTAssertEqual(dict.count, 1U);
 
-  const int64_t kKeys[] = { 22LL, 23LL, 24LL };
-  const NSString* kObjects[] = { @"def", @"ghi", @"jkl" };
-  GPBInt64ObjectDictionary<NSString*> *dict2 =
+  const int64_t kKeys[] = {22LL, 23LL, 24LL};
+  const NSString *kObjects[] = {@"def", @"ghi", @"jkl"};
+  GPBInt64ObjectDictionary<NSString *> *dict2 =
       [[GPBInt64ObjectDictionary alloc] initWithObjects:kObjects
                                                 forKeys:kKeys
                                                   count:GPBARRAYSIZE(kObjects)];
@@ -3544,9 +3545,9 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testRemove {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const NSString* kObjects[] = { @"abc", @"def", @"ghi", @"jkl" };
-  GPBInt64ObjectDictionary<NSString*> *dict =
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const NSString *kObjects[] = {@"abc", @"def", @"ghi", @"jkl"};
+  GPBInt64ObjectDictionary<NSString *> *dict =
       [[GPBInt64ObjectDictionary alloc] initWithObjects:kObjects
                                                 forKeys:kKeys
                                                   count:GPBARRAYSIZE(kObjects)];
@@ -3585,9 +3586,9 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testInplaceMutation {
-  const int64_t kKeys[] = { 21LL, 22LL, 23LL, 24LL };
-  const NSString* kObjects[] = { @"abc", @"def", @"ghi", @"jkl" };
-  GPBInt64ObjectDictionary<NSString*> *dict =
+  const int64_t kKeys[] = {21LL, 22LL, 23LL, 24LL};
+  const NSString *kObjects[] = {@"abc", @"def", @"ghi", @"jkl"};
+  GPBInt64ObjectDictionary<NSString *> *dict =
       [[GPBInt64ObjectDictionary alloc] initWithObjects:kObjects
                                                 forKeys:kKeys
                                                   count:GPBARRAYSIZE(kObjects)];
@@ -3612,9 +3613,9 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertEqualObjects([dict objectForKey:23LL], @"ghi");
   XCTAssertEqualObjects([dict objectForKey:24LL], @"def");
 
-  const int64_t kKeys2[] = { 22LL, 23LL };
-  const NSString* kObjects2[] = { @"ghi", @"abc" };
-  GPBInt64ObjectDictionary<NSString*> *dict2 =
+  const int64_t kKeys2[] = {22LL, 23LL};
+  const NSString *kObjects2[] = {@"ghi", @"abc"};
+  GPBInt64ObjectDictionary<NSString *> *dict2 =
       [[GPBInt64ObjectDictionary alloc] initWithObjects:kObjects2
                                                 forKeys:kKeys2
                                                   count:GPBARRAYSIZE(kObjects2)];
@@ -3631,6 +3632,4 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 @end
-
-//%PDDM-EXPAND-END TEST_FOR_POD_KEY(Int64, int64_t, 21LL, 22LL, 23LL, 24LL)
-
+// @@protoc_objc_autogen_end

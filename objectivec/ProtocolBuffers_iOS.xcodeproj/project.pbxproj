@@ -202,7 +202,6 @@
 		F4353D1E1AB88243005A6198 /* GPBDescriptorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBDescriptorTests.m; sourceTree = "<group>"; };
 		F4353D241ABB156F005A6198 /* GPBDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPBDictionary.h; sourceTree = "<group>"; };
 		F4353D251ABB156F005A6198 /* GPBDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBDictionary.m; sourceTree = "<group>"; };
-		F4353D3A1AC06F31005A6198 /* GPBDictionaryTests.pddm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = GPBDictionaryTests.pddm; sourceTree = "<group>"; };
 		F4353D3B1AC06F31005A6198 /* GPBDictionaryTests+Bool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GPBDictionaryTests+Bool.m"; sourceTree = "<group>"; };
 		F4353D3C1AC06F31005A6198 /* GPBDictionaryTests+Int32.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GPBDictionaryTests+Int32.m"; sourceTree = "<group>"; };
 		F4353D3D1AC06F31005A6198 /* GPBDictionaryTests+Int64.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GPBDictionaryTests+Int64.m"; sourceTree = "<group>"; };
@@ -501,7 +500,6 @@
 				5102DABB1891A052002037B6 /* GPBConcurrencyTests.m */,
 				F4353D1E1AB88243005A6198 /* GPBDescriptorTests.m */,
 				F4C4B9E51E1D97BB00D3B61D /* GPBDictionaryTests.m */,
-				F4353D3A1AC06F31005A6198 /* GPBDictionaryTests.pddm */,
 				F4353D3B1AC06F31005A6198 /* GPBDictionaryTests+Bool.m */,
 				F4353D3C1AC06F31005A6198 /* GPBDictionaryTests+Int32.m */,
 				F4353D3D1AC06F31005A6198 /* GPBDictionaryTests+Int64.m */,
