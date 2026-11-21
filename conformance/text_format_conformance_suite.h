@@ -8,8 +8,10 @@
 #ifndef GOOGLE_PROTOBUF_CONFORMANCE_TEXT_FORMAT_CONFORMANCE_SUITE_H__
 #define GOOGLE_PROTOBUF_CONFORMANCE_TEXT_FORMAT_CONFORMANCE_SUITE_H__
 
+#include <functional>
 #include <string>
 
+#include "absl/strings/string_view.h"
 #include "conformance/conformance_test.h"
 #include "google/protobuf/message.h"
 
@@ -45,12 +47,14 @@ class TextFormatConformanceTestSuiteImpl {
   using ConformanceRequestSetting =
       TextFormatConformanceTestSuite::ConformanceRequestSetting;
   using ConformanceLevel = TextFormatConformanceTestSuite::ConformanceLevel;
+  using Validator = std::function<bool(absl::string_view)>;
   constexpr static ConformanceLevel RECOMMENDED = ConformanceLevel::RECOMMENDED;
   constexpr static ConformanceLevel REQUIRED = ConformanceLevel::REQUIRED;
 
   void RunAllTests();
 
   void RunDelimitedTests();
+  void RunEdition2026Tests();
   void RunGroupTests();
   void RunAnyTests();
   void RunOpenEnumTests();
@@ -63,6 +67,10 @@ class TextFormatConformanceTestSuiteImpl {
                                           ConformanceLevel level,
                                           const std::string& input_text,
                                           const std::string& expected_text);
+  void RunValidTextFormatTestWithValidator(const std::string& test_name,
+                                           ConformanceLevel level,
+                                           const std::string& input_text,
+                                           const Validator& validator);
   void RunValidUnknownTextFormatTest(const std::string& test_name,
                                      const Message& message);
   void RunValidTextFormatTestWithMessage(const std::string& test_name,
