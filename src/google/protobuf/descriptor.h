@@ -2396,6 +2396,12 @@ class PROTOBUF_EXPORT DescriptorPool {
     //
     // Not owned; must remain valid for the lifetime of this pool.
     ErrorCollector* error_collector = nullptr;
+
+    // If true, BuildFile*() may be called concurrently with other BuildFile*()
+    // and Find*By*() calls. Setup/configuration methods (such as
+    // AllowUnknownDependencies() or Enforce*()) are not synchronized and must
+    // still only be called before concurrent use.
+    bool thread_safe = false;
   };
 
   // Constructs a DescriptorPool configured by options.
@@ -2932,7 +2938,7 @@ class PROTOBUF_EXPORT DescriptorPool {
 #endif  // SWIG
 
   // Mutex which must be locked while accessing tables_ if a fallback database
-  // is present.
+  // is present or thread-safety is enabled.
   absl::Mutex* mutex() const;
 
   void AssertHeld() const;
@@ -2953,6 +2959,8 @@ class PROTOBUF_EXPORT DescriptorPool {
   // we'd like to keep out of the header.
   class Tables;
   std::unique_ptr<Tables> tables_;
+
+  bool thread_safe_ = false;
 
   bool enforce_dependencies_ = true;
   bool lazily_build_dependencies_ = false;
