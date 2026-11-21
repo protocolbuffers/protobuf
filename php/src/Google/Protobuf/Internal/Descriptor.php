@@ -162,6 +162,24 @@ class Descriptor
 
     public static function buildFromProto($proto, $file_proto, $containing, $custom_json_names = [])
     {
+        $edition = FileDescriptor::resolveEdition($file_proto);
+        return self::buildWithFeatures(
+            $proto,
+            $file_proto,
+            $containing,
+            $custom_json_names,
+            FileDescriptor::fileFeatures($file_proto, $edition),
+            $edition);
+    }
+
+    private static function buildWithFeatures(
+        $proto,
+        $file_proto,
+        $containing,
+        $custom_json_names,
+        FeatureSet $parent_features,
+        int $edition
+    ) {
         $desc = new Descriptor();
 
         $message_name_without_package  = "";
@@ -182,16 +200,43 @@ class Descriptor
         $desc->setClass($classname);
         $desc->setLegacyClass($legacy_classname);
         $desc->setPreviouslyUnreservedClass($previous_classname);
-        $desc->setOptions($proto->getOptions());
+        $options = $proto->getOptions();
+        $desc->setOptions($options);
 
+        $features = FileDescriptor::resolveFeatures(
+            $parent_features,
+            $options !== null ? $options->getFeatures() : null
+        );
+
+        $oneof_protos = $proto->getOneofDecl();
         foreach ($proto->getField() as $field_proto) {
-            $desc->addField(FieldDescriptor::buildFromProto($field_proto));
+            $field_parent_features = $features;
+            if ($field_proto->hasOneofIndex()) {
+                $oneof_proto = $oneof_protos[$field_proto->getOneofIndex()];
+                $oneof_options = $oneof_proto->getOptions();
+                if ($oneof_options !== null && $oneof_options->hasFeatures()) {
+                    $field_parent_features = FileDescriptor::resolveFeatures(
+                        $features,
+                        $oneof_options->getFeatures()
+                    );
+                }
+            }
+            $desc->addField(FieldDescriptor::buildWithFeatures(
+                $field_proto,
+                $field_parent_features,
+                $edition
+            ));
         }
 
         // Handle nested types.
         foreach ($proto->getNestedType() as $nested_proto) {
-            $desc->addNestedType(Descriptor::buildFromProto(
-              $nested_proto, $file_proto, $message_name_without_package, $custom_json_names));
+            $desc->addNestedType(self::buildWithFeatures(
+              $nested_proto,
+              $file_proto,
+              $message_name_without_package,
+              $custom_json_names,
+              $features,
+              $edition));
         }
 
         // Handle nested enum.
@@ -202,7 +247,7 @@ class Descriptor
 
         // Handle oneof fields.
         $index = 0;
-        foreach ($proto->getOneofDecl() as $oneof_proto) {
+        foreach ($oneof_protos as $oneof_proto) {
             $desc->addOneofDecl(
                 OneofDescriptor::buildFromProto($oneof_proto, $desc, $index));
             $index++;

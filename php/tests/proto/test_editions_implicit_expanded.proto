@@ -1,0 +1,22 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2023";
+
+package presence_packing_editions;
+
+option features.field_presence = IMPLICIT;
+option features.repeated_field_encoding = EXPANDED;
+
+message TestEditionsImplicitAndExpandedFile {
+  int32 inherited_implicit_int32 = 1;
+  int32 overridden_explicit_int32 = 2 [features.field_presence = EXPLICIT];
+  repeated int32 inherited_expanded_int32 = 3;
+  repeated int32 overridden_packed_int32 = 4 [
+    features.repeated_field_encoding = PACKED
+  ];
+}
