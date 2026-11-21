@@ -232,10 +232,10 @@ static const char* PyUpb_UnknownFieldSet_Build(PyUpb_UnknownFieldSet* self,
       goto err;
     }
     assert(data);
-    PyObject* field = PyObject_CallFunction(s->unknown_field_type, "iiN",
+    PyObject* field = PyObject_CallFunction(s->unknown_field_type, "iiO",
                                             field_number, wire_type, data);
+    Py_DECREF(data);
     if (!field) {
-      Py_DECREF(data);
       goto err;
     }
     bool appended = PyList_Append(self->fields, field) != -1;
