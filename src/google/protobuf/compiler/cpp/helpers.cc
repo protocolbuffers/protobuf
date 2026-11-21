@@ -1047,15 +1047,24 @@ absl::optional<float> GetPresenceProbability(const FieldDescriptor* field,
   return absl::nullopt;
 }
 
+
+absl::optional<float> GetPresenceProbability(const FieldDescriptor* field,
+                                             const Options& options,
+                                             PresenceType presence_type) {
+  return absl::nullopt;
+}
+
 absl::optional<float> GetFieldGroupPresenceProbability(
-    const std::vector<const FieldDescriptor*>& fields, const Options& options) {
+    const std::vector<const FieldDescriptor*>& fields, const Options& options,
+    PresenceType presence_type) {
   ABSL_DCHECK(!fields.empty());
   if (!IsProfileDriven(options)) return absl::nullopt;
 
   double all_absent_probability = 1.0;
 
   for (const auto* field : fields) {
-    absl::optional<float> probability = GetPresenceProbability(field, options);
+    absl::optional<float> probability =
+        GetPresenceProbability(field, options, presence_type);
     if (!probability) {
       return absl::nullopt;
     }

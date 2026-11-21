@@ -173,8 +173,8 @@ TEST(PartitionToMinimizeExpectedBranchesTest,
 
   // Without a profile, default presence probability is 0.0 (absence 1.0), so
   // batching all fields together costs 1.0 expected branch check.
-  std::vector<FieldChunk> partitioned =
-      PartitionToMinimizeExpectedBranches(chunk, Options{});
+  std::vector<FieldChunk> partitioned = PartitionToMinimizeExpectedBranches(
+      chunk, Options{}, PresenceType::kSerialize);
 
   std::vector<std::vector<int>> expected = {{0, 1, 2, 3}};
   EXPECT_EQ(ExtractBatchFieldIndices(partitioned), expected);
