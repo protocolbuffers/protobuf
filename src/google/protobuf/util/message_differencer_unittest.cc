@@ -2514,6 +2514,409 @@ TEST(MessageDifferencerTest, RepeatedFieldMapTest_CustomIndexMapKeyComparator) {
       output);
 }
 
+TEST(MessageDifferencerTest,
+     RepeatedFieldMapTest_HashIndexedDuplicateKeysAndIgnoredKey) {
+  proto2_unittest::TestDiffMessage msg1;
+  proto2_unittest::TestDiffMessage msg2;
+  for (int i = 0; i < 10; ++i) {
+    proto2_unittest::TestDiffMessage::Item* item1 = msg1.add_item();
+    item1->set_a(i);
+    item1->set_b(absl::StrCat("val_", i));
+  }
+  proto2_unittest::TestDiffMessage::Item* dup1_a = msg1.add_item();
+  dup1_a->set_a(100);
+  dup1_a->set_b("dup_first");
+  proto2_unittest::TestDiffMessage::Item* dup1_b = msg1.add_item();
+  dup1_b->set_a(100);
+  dup1_b->set_b("dup_second");
+
+  proto2_unittest::TestDiffMessage::Item* dup2_a = msg2.add_item();
+  dup2_a->set_a(100);
+  dup2_a->set_b("dup_second");
+  proto2_unittest::TestDiffMessage::Item* dup2_b = msg2.add_item();
+  dup2_b->set_a(100);
+  dup2_b->set_b("dup_first");
+  for (int i = 9; i >= 0; --i) {
+    proto2_unittest::TestDiffMessage::Item* item2 = msg2.add_item();
+    item2->set_a(i);
+    item2->set_b(absl::StrCat("val_", i));
+  }
+
+  util::MessageDifferencer differencer;
+  differencer.TreatAsMap(GetFieldDescriptor(msg1, "item"),
+                         GetFieldDescriptor(msg1, "item.a"));
+  differencer.set_report_moves(false);
+  std::string output;
+  differencer.ReportDifferencesToString(&output);
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+  EXPECT_EQ(
+      "modified: item[10].b -> item[0].b: \"dup_first\" -> \"dup_second\"\n"
+      "modified: item[11].b -> item[1].b: \"dup_second\" -> \"dup_first\"\n",
+      output);
+
+  // Swap msg2 duplicate values so FIFO order matches msg1.
+  msg2.mutable_item(0)->set_b("dup_first");
+  msg2.mutable_item(1)->set_b("dup_second");
+  output.clear();
+  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+  EXPECT_EQ("", output);
+
+  // Verify IgnoreField on the map key still pairs by key while ignoring the key
+  // during value comparison.
+  differencer.IgnoreField(GetFieldDescriptor(msg1, "item.a"));
+  differencer.set_report_ignores(false);
+  output.clear();
+  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+  EXPECT_EQ("", output);
+}
+
+TEST(MessageDifferencerTest,
+     RepeatedFieldMapTest_HashIndexedMultipleFieldPathsPresence) {
+  proto2_unittest::TestDiffMessage msg1;
+  proto2_unittest::TestDiffMessage msg2;
+  // Populate >= 10 elements in reversed order so hash indexing runs, with one
+  // element missing intermediate message `m` and another having empty `m {}`.
+  for (int i = 0; i < 10; ++i) {
+    proto2_unittest::TestField* f1 = msg1.add_rm();
+    f1->set_b(i);
+    f1->mutable_m()->set_a(i + 1);
+  }
+  proto2_unittest::TestField* absent_m = msg1.add_rm();
+  absent_m->set_b(99);
+  absent_m->set_c(10);
+
+  proto2_unittest::TestField* empty_m = msg2.add_rm();
+  empty_m->set_b(99);
+  empty_m->mutable_m();  // Present intermediate message with default a = 0.
+  empty_m->set_c(10);
+  for (int i = 9; i >= 0; --i) {
+    proto2_unittest::TestField* f2 = msg2.add_rm();
+    f2->set_b(i);
+    f2->mutable_m()->set_a(i + 1);
+  }
+
+  util::MessageDifferencer differencer;
+  differencer.TreatAsMapWithMultipleFieldPathsAsKey(
+      GetFieldDescriptor(msg1, "rm"),
+      {{GetFieldDescriptor(msg1, "rm.m"), GetFieldDescriptor(msg1, "rm.m.a")},
+       {GetFieldDescriptor(msg1, "rm.b")}});
+  differencer.set_report_moves(false);
+  std::string output;
+  differencer.ReportDifferencesToString(&output);
+  // `absent_m` (no `m`) must not match `empty_m` (`m {}` present).
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+  EXPECT_EQ(
+      "added: rm[0]: { c: 10 b: 99 m { } }\n"
+      "deleted: rm[10]: { c: 10 b: 99 }\n",
+      output);
+}
+
+TEST(MessageDifferencerTest,
+     RepeatedFieldMapTest_HashIndexedProtoMapWithReporter) {
+  proto2_unittest::TestDiffMessage msg1;
+  proto2_unittest::TestDiffMessage msg2;
+  proto2_unittest::TestDiffMessage::Item* item1 = msg1.add_item();
+  proto2_unittest::TestDiffMessage::Item* item2 = msg2.add_item();
+  for (int i = 0; i < 14; ++i) {
+    (*item1->mutable_mp())[absl::StrCat("key_", i)] = i;
+    (*item2->mutable_mp())[absl::StrCat("key_", 13 - i)] = 13 - i;
+  }
+  (*item2->mutable_mp())["key_5"] = 500;
+  (*item1->mutable_mp())["key_deleted"] = 88;
+  (*item2->mutable_mp())["key_added"] = 99;
+  // Sync both maps to repeated fields in opposite insertion order so prefix
+  // matching breaks early and `MapEntryKeyComparator::AppendMapKey` runs.
+  (void)item1->GetReflection()->FieldSize(*item1,
+                                          GetFieldDescriptor(*item1, "mp"));
+  (void)item2->GetReflection()->FieldSize(*item2,
+                                          GetFieldDescriptor(*item2, "mp"));
+
+  util::MessageDifferencer differencer;
+  std::string diff;
+  differencer.ReportDifferencesToString(&diff);
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+  EXPECT_THAT(diff, HasSubstr("modified: item[0].mp[key_5]: 5 -> 500\n"));
+  EXPECT_THAT(diff, HasSubstr("added: item[0].mp[key_added]: 99\n"));
+  EXPECT_THAT(diff, HasSubstr("deleted: item[0].mp[key_deleted]: 88\n"));
+}
+
+TEST(MessageDifferencerTest,
+     RepeatedFieldMapTest_HashIndexedUnsetVsDefaultScalarKeyModes) {
+  auto build_pair = [](int count) {
+    proto2_unittest::TestDiffMessage msg1;
+    proto2_unittest::TestDiffMessage msg2;
+    // Element 0 in msg1 has unset `a` (default 0); matching element in msg2 is
+    // placed at the end with explicit `a: 0` so prefix matching stops at 0.
+    proto2_unittest::TestDiffMessage::Item* unset_key = msg1.add_item();
+    unset_key->set_b("zero_payload");
+    for (int i = 1; i < count; ++i) {
+      proto2_unittest::TestDiffMessage::Item* it = msg1.add_item();
+      it->set_a(i);
+      it->set_b(absl::StrCat("v_", i));
+    }
+    for (int i = count - 1; i >= 1; --i) {
+      proto2_unittest::TestDiffMessage::Item* it = msg2.add_item();
+      it->set_a(i);
+      it->set_b(absl::StrCat("v_", i));
+    }
+    proto2_unittest::TestDiffMessage::Item* explicit_zero = msg2.add_item();
+    explicit_zero->set_a(0);
+    explicit_zero->set_b("zero_payload");
+    return std::make_pair(msg1, msg2);
+  };
+
+  auto [small1, small2] = build_pair(2);   // Pairwise IsMatch (< 8 threshold)
+  auto [large1, large2] = build_pair(12);  // Hash-indexed (>= 8 threshold)
+
+  for (auto mode : {util::MessageDifferencer::EQUAL,
+                    util::MessageDifferencer::EQUIVALENT}) {
+    for (bool ignore_key : {false, true}) {
+      util::MessageDifferencer diff_small;
+      util::MessageDifferencer diff_large;
+      for (util::MessageDifferencer* d : {&diff_small, &diff_large}) {
+        d->set_message_field_comparison(mode);
+        d->TreatAsMap(GetFieldDescriptor(small1, "item"),
+                      GetFieldDescriptor(small1, "item.a"));
+        d->set_report_moves(false);
+        d->set_report_ignores(false);
+        if (ignore_key) {
+          d->IgnoreField(GetFieldDescriptor(small1, "item.a"));
+        }
+      }
+      std::string out_small;
+      std::string out_large;
+      diff_small.ReportDifferencesToString(&out_small);
+      diff_large.ReportDifferencesToString(&out_large);
+      const bool eq_small = diff_small.Compare(small1, small2);
+      const bool eq_large = diff_large.Compare(large1, large2);
+      const bool expected_eq =
+          (mode == util::MessageDifferencer::EQUIVALENT) || ignore_key;
+      EXPECT_EQ(expected_eq, eq_small);
+      EXPECT_EQ(eq_small, eq_large);
+      if (expected_eq) {
+        EXPECT_EQ("", out_small);
+        EXPECT_EQ("", out_large);
+      } else {
+        EXPECT_EQ("added: item[1].a: 0\n", out_small);
+        EXPECT_EQ("added: item[11].a: 0\n", out_large);
+      }
+    }
+  }
+}
+
+TEST(MessageDifferencerTest,
+     RepeatedFieldMapTest_CustomKeyComparatorPrefixAndCursorFallback) {
+  proto2_unittest::TestDiffMessage msg1;
+  proto2_unittest::TestDiffMessage msg2;
+  // First 4 elements match at the same index (exercising prefix loop); next 10
+  // elements are reversed (exercising custom comparator fallback + cursor).
+  for (int i = 1; i <= 4; ++i) {
+    proto2_unittest::TestDiffMessage::Item* item1 = msg1.add_item();
+    item1->add_ra(2);
+    item1->add_ra(i);
+    item1->set_b(absl::StrCat("prefix_", i));
+    proto2_unittest::TestDiffMessage::Item* item2 = msg2.add_item();
+    item2->add_ra(i);
+    item2->add_ra(2);
+    item2->set_b(absl::StrCat("prefix_", i));
+  }
+  for (int i = 5; i <= 14; ++i) {
+    proto2_unittest::TestDiffMessage::Item* item1 = msg1.add_item();
+    item1->add_ra(3);
+    item1->add_ra(i);
+    item1->set_b(absl::StrCat("suffix_", i));
+  }
+  for (int i = 14; i >= 5; --i) {
+    proto2_unittest::TestDiffMessage::Item* item2 = msg2.add_item();
+    item2->add_ra(i);
+    item2->add_ra(3);
+    item2->set_b(i == 14 ? "mutated_14" : absl::StrCat("suffix_", i));
+  }
+
+  ValueProductMapKeyComparator key_comparator;
+  util::MessageDifferencer differencer;
+  differencer.TreatAsMapUsingKeyComparator(GetFieldDescriptor(msg1, "item"),
+                                           &key_comparator);
+  differencer.IgnoreField(GetFieldDescriptor(msg1, "item.ra"));
+  differencer.set_report_moves(false);
+  differencer.set_report_ignores(false);
+  std::string output;
+  differencer.ReportDifferencesToString(&output);
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+  EXPECT_EQ(
+      "modified: item[13].b -> item[4].b: \"suffix_14\" -> \"mutated_14\"\n",
+      output);
+}
+
+TEST(MessageDifferencerTest,
+     RepeatedFieldMapTest_HashIndexedNoReporterEarlyReturn) {
+  proto2_unittest::TestDiffMessage msg1;
+  proto2_unittest::TestDiffMessage msg2;
+  for (int i = 0; i < 12; ++i) {
+    proto2_unittest::TestDiffMessage::Item* item1 = msg1.add_item();
+    item1->set_a(i);
+    item1->set_b(absl::StrCat("val_", i));
+    proto2_unittest::TestDiffMessage::Item* item2 = msg2.add_item();
+    item2->set_a(11 - i);
+    item2->set_b(absl::StrCat("val_", 11 - i));
+  }
+
+  util::MessageDifferencer differencer;
+  differencer.TreatAsMap(GetFieldDescriptor(msg1, "item"),
+                         GetFieldDescriptor(msg1, "item.a"));
+  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+
+  // Unmatched key with reporter_ == nullptr triggers immediate early return.
+  msg1.mutable_item(5)->set_a(999);
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+
+  // Matching keys with differing payload and reporter_ == nullptr.
+  msg1.mutable_item(5)->set_a(5);
+  msg2.mutable_item(0)->set_b("mutated");
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+}
+
+TEST(MessageDifferencerTest,
+     RepeatedFieldMapTest_CustomKeyComparatorOverridesPriorTreatAsMap) {
+  proto2_unittest::TestDiffMessage msg1;
+  proto2_unittest::TestDiffMessage msg2;
+  for (int i = 0; i < 12; ++i) {
+    proto2_unittest::TestDiffMessage::Item* item1 = msg1.add_item();
+    item1->set_a(100 + i);
+    item1->add_ra(2);
+    item1->add_ra(i + 1);
+    item1->set_b(absl::StrCat("v_", i));
+    const int rev = 11 - i;
+    proto2_unittest::TestDiffMessage::Item* item2 = msg2.add_item();
+    item2->set_a(200 + rev);
+    item2->add_ra(rev + 1);
+    item2->add_ra(2);
+    item2->set_b(absl::StrCat("v_", rev));
+  }
+
+  ValueProductMapKeyComparator product_comparator;
+  util::MessageDifferencer differencer;
+  const FieldDescriptor* item_field = GetFieldDescriptor(msg1, "item");
+  differencer.TreatAsMap(item_field, GetFieldDescriptor(msg1, "item.a"));
+  differencer.TreatAsMapUsingKeyComparator(item_field, &product_comparator);
+  differencer.IgnoreField(GetFieldDescriptor(msg1, "item.a"));
+  differencer.IgnoreField(GetFieldDescriptor(msg1, "item.ra"));
+  differencer.set_report_moves(false);
+  differencer.set_report_ignores(false);
+  std::string output;
+  differencer.ReportDifferencesToString(&output);
+  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+  EXPECT_EQ("", output);
+}
+
+class MapKeyIgnoreCriteria : public util::MessageDifferencer::IgnoreCriteria {
+ public:
+  explicit MapKeyIgnoreCriteria(const FieldDescriptor* key_field)
+      : key_field_(key_field) {}
+  bool IsIgnored(const Message& /*message1*/, const Message& /*message2*/,
+                 const FieldDescriptor* field,
+                 const std::vector<util::MessageDifferencer::SpecificField>&
+                 /*parent_fields*/) override {
+    return field == key_field_;
+  }
+
+ private:
+  const FieldDescriptor* key_field_;
+};
+
+TEST(MessageDifferencerTest,
+     RepeatedFieldMapTest_ProtoMapIgnoredKeyAndCriteriaFallback) {
+  proto2_unittest::TestDiffMessage msg1;
+  proto2_unittest::TestDiffMessage msg2;
+  proto2_unittest::TestDiffMessage::Item* item1 = msg1.add_item();
+  proto2_unittest::TestDiffMessage::Item* item2 = msg2.add_item();
+  for (int i = 0; i < 12; ++i) {
+    (*item1->mutable_mp())[absl::StrCat("left_", i)] = 100 + i;
+    (*item2->mutable_mp())[absl::StrCat("right_", 11 - i)] = 100 + (11 - i);
+  }
+  const FieldDescriptor* mp_field = GetFieldDescriptor(*item1, "mp");
+  const FieldDescriptor* map_key_field = mp_field->message_type()->map_key();
+  (void)item1->GetReflection()->FieldSize(*item1, mp_field);
+  (void)item2->GetReflection()->FieldSize(*item2, mp_field);
+
+  // Fallback via IgnoreField(map_key) treats map entries as a set of values.
+  for (bool use_criteria : {false, true}) {
+    util::MessageDifferencer differencer;
+    if (use_criteria) {
+      differencer.AddIgnoreCriteria(
+          std::make_unique<MapKeyIgnoreCriteria>(map_key_field));
+    } else {
+      differencer.IgnoreField(map_key_field);
+    }
+    differencer.set_report_moves(false);
+    differencer.set_report_ignores(false);
+    std::string diff;
+    differencer.ReportDifferencesToString(&diff);
+    EXPECT_TRUE(differencer.Compare(msg1, msg2));
+    EXPECT_EQ("", diff);
+  }
+}
+
+class CaseInsensitiveStringFieldComparator
+    : public util::SimpleFieldComparator {
+ public:
+  ComparisonResult Compare(const Message& message_1, const Message& message_2,
+                           const FieldDescriptor* field, int index_1,
+                           int index_2,
+                           const util::FieldContext* field_context) override {
+    if (!field->is_repeated() &&
+        field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
+      std::string s1 = message_1.GetReflection()->GetString(message_1, field);
+      std::string s2 = message_2.GetReflection()->GetString(message_2, field);
+      if (s1.size() != s2.size()) return DIFFERENT;
+      for (size_t i = 0; i < s1.size(); ++i) {
+        char c1 = (s1[i] >= 'A' && s1[i] <= 'Z')
+                      ? static_cast<char>(s1[i] + ('a' - 'A'))
+                      : s1[i];
+        char c2 = (s2[i] >= 'A' && s2[i] <= 'Z')
+                      ? static_cast<char>(s2[i] + ('a' - 'A'))
+                      : s2[i];
+        if (c1 != c2) return DIFFERENT;
+      }
+      return SAME;
+    }
+    return SimpleCompare(message_1, message_2, field, index_1, index_2,
+                         field_context);
+  }
+};
+
+TEST(MessageDifferencerTest,
+     RepeatedFieldMapTest_CustomFieldComparatorBaseFallback) {
+  proto2_unittest::TestDiffMessage msg1;
+  proto2_unittest::TestDiffMessage msg2;
+  for (int i = 0; i < 12; ++i) {
+    proto2_unittest::TestDiffMessage::Item* item1 = msg1.add_item();
+    item1->set_b(absl::StrCat("Key_", i));
+    item1->set_a(100 + i);
+    const int rev = 11 - i;
+    proto2_unittest::TestDiffMessage::Item* item2 = msg2.add_item();
+    item2->set_b(absl::StrCat("KEY_", rev));
+    item2->set_a(100 + rev);
+  }
+
+  CaseInsensitiveStringFieldComparator ci_comparator;
+  util::MessageDifferencer differencer;
+  differencer.set_field_comparator(
+      static_cast<util::FieldComparator*>(&ci_comparator));
+  differencer.TreatAsMap(GetFieldDescriptor(msg1, "item"),
+                         GetFieldDescriptor(msg1, "item.b"));
+  differencer.set_report_moves(false);
+  std::string output;
+  differencer.ReportDifferencesToString(&output);
+  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+  EXPECT_EQ("", output);
+
+  msg2.mutable_item(0)->set_a(999);
+  output.clear();
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+  EXPECT_EQ("modified: item[11].a -> item[0].a: 111 -> 999\n", output);
+}
+
 TEST(MessageDifferencerTest, RepeatedFieldSetTest_Subset) {
   proto2_unittest::TestDiffMessage msg1;
   proto2_unittest::TestDiffMessage msg2;

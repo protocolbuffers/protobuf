@@ -758,6 +758,9 @@ class PROTOBUF_EXPORT MessageDifferencer {
     bool IsMatch(
         const Message& message1, const Message& message2, int unpacked_any,
         const std::vector<SpecificField>& parent_fields) const override;
+    bool CanHashKey(const FieldDescriptor* repeated_field) const;
+    void AppendMapKey(const Message& message, const FieldDescriptor* key_field,
+                      std::string* key) const;
 
    private:
     MessageDifferencer* message_differencer_;
@@ -866,8 +869,8 @@ class PROTOBUF_EXPORT MessageDifferencer {
   bool IsMatch(const FieldDescriptor* repeated_field,
                const MapKeyComparator* key_comparator, const Message* message1,
                const Message* message2, int unpacked_any,
-               const std::vector<SpecificField>& parent_fields,
-               Reporter* reporter, int index1, int index2);
+               std::vector<SpecificField>* parent_fields, Reporter* reporter,
+               int index1, int index2);
 
   // Returns true when this repeated field has been configured to be treated
   // as a Set / SmartSet / SmartList.
@@ -912,12 +915,34 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // This method returns false if the match failed. However, it doesn't mean
   // that the comparison succeeds when this method returns true (you need to
   // double-check in this case).
-  bool MatchRepeatedFieldIndices(
-      const Message& message1, const Message& message2, int unpacked_any,
+  bool MatchRepeatedFieldIndices(const Message& message1,
+                                 const Message& message2, int unpacked_any,
+                                 const FieldDescriptor* repeated_field,
+                                 const MapKeyComparator* key_comparator,
+                                 std::vector<SpecificField>* parent_fields,
+                                 std::vector<int>* match_list1,
+                                 std::vector<int>* match_list2);
+
+  // Returns true when `key_comparator` is a built-in comparator (`TreatAsMap*`
+  // or proto `map<K, V>`) whose keys can be matched by exact byte equality.
+  bool CanHashBuiltinMapKey(const FieldDescriptor* repeated_field,
+                            const MapKeyComparator* key_comparator) const;
+
+  // Appends a canonical in-process byte key for `message`.
+  // REQUIRES: `CanHashBuiltinMapKey(repeated_field, key_comparator)` is true.
+  void AppendBuiltinMapKey(const FieldDescriptor* repeated_field,
+                           const MapKeyComparator* key_comparator,
+                           const Message& message, std::string* key) const;
+
+  // Attempts O(N) hash-indexed matching on [start_offset..count) for built-in
+  // map key comparators. Returns true if hash matching handled the suffix
+  // (setting `*matched_all`), or false to fall back to pairwise `IsMatch()`.
+  bool TryMatchRepeatedFieldIndicesByKeyHash(
+      const Message& message1, const Message& message2,
       const FieldDescriptor* repeated_field,
-      const MapKeyComparator* key_comparator,
-      const std::vector<SpecificField>& parent_fields,
-      std::vector<int>* match_list1, std::vector<int>* match_list2);
+      const MapKeyComparator* key_comparator, int start_offset,
+      Reporter* reporter, std::vector<int>* match_list1,
+      std::vector<int>* match_list2, bool* matched_all);
 
   // Checks if index is equal to new_index in all the specific fields.
   static bool CheckPathChanged(const std::vector<SpecificField>& parent_fields);
@@ -957,6 +982,9 @@ class PROTOBUF_EXPORT MessageDifferencer {
   std::vector<MapKeyComparator*> owned_key_comparators_;
   absl::flat_hash_map<const FieldDescriptor*, const MapKeyComparator*>
       map_field_key_comparator_;
+  absl::flat_hash_map<const FieldDescriptor*,
+                      const MultipleFieldsMapKeyComparator*>
+      multifield_key_comparator_;
   MapEntryKeyComparator map_entry_key_comparator_;
   std::vector<std::unique_ptr<IgnoreCriteria>> ignore_criteria_;
 
