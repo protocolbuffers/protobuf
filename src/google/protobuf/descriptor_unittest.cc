@@ -64,6 +64,7 @@
 #include "google/protobuf/descriptor_test_utils.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/feature_resolver.h"
+#include "google/protobuf/generated_enum_reflection.h"
 #include "google/protobuf/internal_feature_helper.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/tokenizer.h"
@@ -1471,6 +1472,10 @@ class DescriptorTest : public testing::Test {
     return desc->FindValueByNumberCreatingIfUnknown(number);
   }
 
+  const std::string* GetEnumValueNames(const EnumDescriptor* desc) {
+    return desc->GetEnumValueNames();
+  }
+
   DescriptorPool pool_;
 
   const FileDescriptor* foo_file_;
@@ -1916,6 +1921,194 @@ TEST_F(DescriptorTest, AbslStringifyWorks) {
   EXPECT_THAT(absl::StrFormat("%v", *foo_), HasSubstr(foo_->name()));
 }
 
+TEST_F(DescriptorTest, EnumValueNamesAndLazyStringStability) {
+  DescriptorPool pool;
+  pool.AllowUnknownDependencies();
+  FileDescriptorProto file;
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "enum_names.proto"
+        package: "pkg.sub"
+        enum_type {
+          name: "TopEnum"
+          options { allow_alias: true }
+          value { name: "TOP_ZERO" number: 0 }
+          value { name: "TOP_ALIAS" number: 0 }
+          value { name: "TOP_LONG_ENUM_VALUE_NAME_EXCEEDING_SSO" number: 1000 }
+        }
+        message_type {
+          name: "Holder"
+          enum_type {
+            name: "NestedEnum"
+            value { name: "NESTED_ONE" number: 1 }
+          }
+          field {
+            name: "missing_pkg_enum"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: ".missing.pkg.UnknownEnum"
+          }
+          field {
+            name: "missing_root_enum"
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: ".RootUnknownEnum"
+          }
+        }
+      )pb",
+      &file));
+  const FileDescriptor* built = pool.BuildFile(file);
+  ASSERT_NE(built, nullptr);
+
+  const EnumDescriptor* top = built->enum_type(0);
+  EXPECT_EQ(top->value(0)->full_name(), "pkg.sub.TOP_ZERO");
+  EXPECT_EQ(top->value(1)->full_name(), "pkg.sub.TOP_ALIAS");
+  EXPECT_EQ(top->value(2)->full_name(),
+            "pkg.sub.TOP_LONG_ENUM_VALUE_NAME_EXCEEDING_SSO");
+  const std::string& first_ref = internal::NameOfEnum(top, 0);
+  const std::string& long_ref = internal::NameOfEnum(top, 1000);
+  EXPECT_EQ(first_ref, "TOP_ZERO");
+  EXPECT_EQ(long_ref, "TOP_LONG_ENUM_VALUE_NAME_EXCEEDING_SSO");
+  EXPECT_EQ(GetEnumValueNames(top)[1], "TOP_ALIAS");
+  EXPECT_EQ(&internal::NameOfEnum(top, 0), &first_ref);
+  EXPECT_EQ(&internal::NameOfEnum(top, 1000), &long_ref);
+
+  const EnumDescriptor* nested = built->message_type(0)->enum_type(0);
+  EXPECT_EQ(nested->value(0)->full_name(), "pkg.sub.Holder.NESTED_ONE");
+  EXPECT_EQ(internal::NameOfEnum(nested, 1), "NESTED_ONE");
+
+  const EnumDescriptor* pkg_ph = built->message_type(0)->field(0)->enum_type();
+  EXPECT_EQ(pkg_ph->value(0)->full_name(), "missing.pkg.PLACEHOLDER_VALUE");
+  EXPECT_EQ(GetEnumValueNames(pkg_ph)[0], "PLACEHOLDER_VALUE");
+
+  const EnumDescriptor* root_ph = built->message_type(0)->field(1)->enum_type();
+  EXPECT_EQ(root_ph->value(0)->full_name(), "PLACEHOLDER_VALUE");
+  EXPECT_EQ(GetEnumValueNames(root_ph)[0], "PLACEHOLDER_VALUE");
+
+  FileDescriptorProto global_file;
+  global_file.set_name("global_enum.proto");
+  EnumDescriptorProto* global_enum = global_file.add_enum_type();
+  global_enum->set_name("GlobalEnum");
+  EnumValueDescriptorProto* global_val = global_enum->add_value();
+  global_val->set_name("GLOBAL_ZERO");
+  global_val->set_number(0);
+  const FileDescriptor* global_fd = pool.BuildFile(global_file);
+  ASSERT_NE(global_fd, nullptr);
+  EXPECT_EQ(global_fd->enum_type(0)->value(0)->full_name(), "GLOBAL_ZERO");
+  EXPECT_EQ(internal::NameOfEnum(global_fd->enum_type(0), 0), "GLOBAL_ZERO");
+
+  const EnumValueDescriptor* synthetic =
+      FindValueByNumberCreatingIfUnknown(top, 42);
+  EXPECT_EQ(synthetic->name(), "UNKNOWN_ENUM_VALUE_TopEnum_42");
+  EXPECT_EQ(synthetic->full_name(),
+            "pkg.sub.TopEnum.UNKNOWN_ENUM_VALUE_TopEnum_42");
+}
+
+TEST_F(DescriptorTest, EnumValueNamesFallbackBoundariesAndConcurrency) {
+  DescriptorPool pool;
+  pool.AllowUnknownDependencies();
+  auto build_enum = [&pool](absl::string_view file_name, absl::string_view pkg,
+                            absl::string_view enum_name,
+                            absl::string_view value_name) {
+    FileDescriptorProto proto;
+    proto.set_name(file_name);
+    if (!pkg.empty()) proto.set_package(pkg);
+    EnumDescriptorProto* e = proto.add_enum_type();
+    e->set_name(enum_name);
+    EnumValueDescriptorProto* v = e->add_value();
+    v->set_name(value_name);
+    v->set_number(0);
+    return pool.BuildFile(proto);
+  };
+
+  // Synthetic full_name exact uint16_t::max() (65535) vs 65536 boundary.
+  const std::string fit_full_enum(32755, 'A');
+  const FileDescriptor* f1 = build_enum("f1.proto", "pk", fit_full_enum, "V1");
+  ASSERT_NE(f1, nullptr);
+  const EnumValueDescriptor* s1 =
+      FindValueByNumberCreatingIfUnknown(f1->enum_type(0), 7);
+  const std::string s1_name =
+      absl::StrCat("UNKNOWN_ENUM_VALUE_", fit_full_enum, "_7");
+  EXPECT_EQ(s1->name(), s1_name);
+  EXPECT_EQ(s1->full_name(), absl::StrCat("pk.", fit_full_enum, ".", s1_name));
+
+  const std::string drop_scope_enum(32757, 'B');
+  const FileDescriptor* f2 = build_enum("f2.proto", "", drop_scope_enum, "V2");
+  ASSERT_NE(f2, nullptr);
+  const EnumValueDescriptor* s2 =
+      FindValueByNumberCreatingIfUnknown(f2->enum_type(0), 7);
+  const std::string s2_name =
+      absl::StrCat("UNKNOWN_ENUM_VALUE_", drop_scope_enum, "_7");
+  EXPECT_EQ(s2->name(), s2_name);
+  EXPECT_EQ(s2->full_name(), s2_name);
+
+  // Synthetic name exact uint16_t::max() (65535) vs 65536 boundary.
+  const std::string fit_name_enum(65514, 'C');
+  const FileDescriptor* f3 = build_enum("f3.proto", "", fit_name_enum, "V3");
+  ASSERT_NE(f3, nullptr);
+  const EnumValueDescriptor* s3 =
+      FindValueByNumberCreatingIfUnknown(f3->enum_type(0), 7);
+  const std::string s3_name =
+      absl::StrCat("UNKNOWN_ENUM_VALUE_", fit_name_enum, "_7");
+  EXPECT_EQ(s3->name(), s3_name);
+  EXPECT_EQ(s3->full_name(), s3_name);
+
+  const FileDescriptor* f4 =
+      build_enum("f4.proto", "", std::string(65515, 'D'), "V4");
+  ASSERT_NE(f4, nullptr);
+  const EnumValueDescriptor* s4 =
+      FindValueByNumberCreatingIfUnknown(f4->enum_type(0), 7);
+  EXPECT_EQ(s4->name(), "unknown");
+  EXPECT_EQ(s4->full_name(), "unknown");
+
+  // Placeholder package exact 65535 vs 65536 full_name boundary.
+  const std::string fit_pkg(65517, 'p');
+  FileDescriptorProto ph_proto;
+  ph_proto.set_name("ph_bounds.proto");
+  DescriptorProto* holder = ph_proto.add_message_type();
+  holder->set_name("M");
+  FieldDescriptorProto* pf1 = holder->add_field();
+  pf1->set_name("fit");
+  pf1->set_number(1);
+  pf1->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  pf1->set_type(FieldDescriptorProto::TYPE_ENUM);
+  pf1->set_type_name(absl::StrCat(".", fit_pkg, ".E1"));
+  FieldDescriptorProto* pf2 = holder->add_field();
+  pf2->set_name("over");
+  pf2->set_number(2);
+  pf2->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  pf2->set_type(FieldDescriptorProto::TYPE_ENUM);
+  pf2->set_type_name(absl::StrCat(".", std::string(65518, 'q'), ".E2"));
+  const FileDescriptor* ph_fd = pool.BuildFile(ph_proto);
+  ASSERT_NE(ph_fd, nullptr);
+  const EnumValueDescriptor* pv1 =
+      ph_fd->message_type(0)->field(0)->enum_type()->value(0);
+  const EnumValueDescriptor* pv2 =
+      ph_fd->message_type(0)->field(1)->enum_type()->value(0);
+  EXPECT_EQ(pv1->name(), "PLACEHOLDER_VALUE");
+  EXPECT_EQ(pv1->full_name(), absl::StrCat(fit_pkg, ".PLACEHOLDER_VALUE"));
+  EXPECT_EQ(pv2->name(), "PLACEHOLDER_VALUE");
+  EXPECT_EQ(pv2->full_name(), "PLACEHOLDER_VALUE");
+
+  // Concurrent first-call lazy memoization returns one stable address.
+  const EnumDescriptor* race_enum = f1->enum_type(0);
+  const std::string* ptrs[4] = {};
+  std::thread t0([&] { ptrs[0] = &internal::NameOfEnum(race_enum, 0); });
+  std::thread t1([&] { ptrs[1] = &internal::NameOfEnum(race_enum, 0); });
+  std::thread t2([&] { ptrs[2] = &internal::NameOfEnum(race_enum, 0); });
+  std::thread t3([&] { ptrs[3] = &internal::NameOfEnum(race_enum, 0); });
+  t0.join();
+  t1.join();
+  t2.join();
+  t3.join();
+  EXPECT_EQ(*ptrs[0], "V1");
+  EXPECT_EQ(ptrs[1], ptrs[0]);
+  EXPECT_EQ(ptrs[2], ptrs[0]);
+  EXPECT_EQ(ptrs[3], ptrs[0]);
+}
+
 
 static void ExtendStringTo(std::string* str, int size) {
   ABSL_CHECK_LE(str->size(), size);
@@ -2109,6 +2302,25 @@ TEST_F(DescriptorTest, AllSymbolNamesHaveLengthLimits) {
   TestBuildFileOnNameLimits(
       proto, proto.mutable_enum_type(0)->mutable_value(0)->mutable_name(),
       kNamesImplLimit - proto.package().size() - 1, "Name too long");
+  // EnumValueDescriptor::full_name (nested in message)
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        package: "Package"
+                        message_type {
+                          name: "Message"
+                          enum_type {
+                            name: "Enum"
+                            value { name: "VALUE" number: 1 }
+                          }
+                        })pb");
+  TestBuildFileOnNameLimits(proto,
+                            proto.mutable_message_type(0)
+                                ->mutable_enum_type(0)
+                                ->mutable_value(0)
+                                ->mutable_name(),
+                            kNamesImplLimit -
+                                proto.message_type(0).name().size() -
+                                proto.package().size() - 2,
+                            "Name too long");
   // ServiceDescriptor::full_name
   proto = MakeFile(R"pb(name: "foo.proto"
                         package: "Package"

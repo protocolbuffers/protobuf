@@ -219,7 +219,8 @@ bool ParseNamedEnum(const EnumDescriptor* PROTOBUF_NONNULL descriptor,
 const std::string& NameOfEnum(const EnumDescriptor* PROTOBUF_NONNULL descriptor,
                               int value) {
   const EnumValueDescriptor* d = descriptor->FindValueByNumber(value);
-  return (d == nullptr ? GetEmptyString() : internal::NameOfEnumAsString(d));
+  return d == nullptr ? GetEmptyString()
+                      : internal::EnumValueNames(descriptor)[d->index()];
 }
 
 // Internal helper routine for NameOfDenseEnum in the header file.
@@ -232,12 +233,15 @@ const std::string** MakeDenseEnumCache(const EnumDescriptor* desc, int min_val,
   auto* str_ptrs =
       new const std::string*[static_cast<size_t>(max_val - min_val + 1)]();
   const int count = desc->value_count();
-  for (int i = 0; i < count; ++i) {
-    const int num = desc->value(i)->number();
-    if (str_ptrs[num - min_val] == nullptr) {
-      // Don't over-write an existing entry, because in case of duplication, the
-      // first one wins.
-      str_ptrs[num - min_val] = &internal::NameOfEnumAsString(desc->value(i));
+  if (count > 0) {
+    const std::string* names = internal::EnumValueNames(desc);
+    for (int i = 0; i < count; ++i) {
+      const int num = desc->value(i)->number();
+      if (str_ptrs[num - min_val] == nullptr) {
+        // Don't over-write an existing entry, because in case of duplication,
+        // the first one wins.
+        str_ptrs[num - min_val] = &names[i];
+      }
     }
   }
   // Change any unfilled entries to point to the empty string.
