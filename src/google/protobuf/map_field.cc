@@ -152,8 +152,7 @@ MapFieldBase::ReflectionPayload& MapFieldBase::PayloadSlow() const {
         std::memory_order_relaxed);
 
     const auto* prototype = MessageGlobalsBase::ToDefaultInstance<Message>(p);
-    auto* payload =
-        Arena::Create<ReflectionPayload>(arena(), arena(), prototype);
+    auto* payload = Arena::Create<ReflectionPayload>(arena(), prototype);
 
     auto new_p = ToTaggedPtr(payload);
     if (globals_or_payload_.compare_exchange_strong(
