@@ -14,6 +14,8 @@ pub mod text;
 pub mod wire;
 
 #[cfg(not(bzl))]
+pub mod json;
+#[cfg(not(bzl))]
 pub mod reflection;
 
 #[cfg(test)]

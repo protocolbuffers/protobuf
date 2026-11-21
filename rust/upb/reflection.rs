@@ -86,7 +86,7 @@ impl DefPool {
 
     /// Returns the internal NonNull representation of the pool.
     #[inline]
-    pub(crate) fn raw(&self) -> RawDefPool {
+    pub fn raw(&self) -> RawDefPool {
         self.raw
     }
 }
@@ -143,6 +143,7 @@ pub unsafe fn text_encode<'pool, T>(
         // - `buf` is a mutable slice, so `buf.as_mut_ptr()` is writable for `buf.len()` bytes.
         unsafe { upb_TextEncode(msg, def_raw, ext_pool_raw, options, buf.as_mut_ptr(), buf.len()) }
     })
+    .expect("upb_TextEncode should never fail")
 }
 
 fn copy_slice_or_null<T: Copy>(arena: &Arena, slice: &[T]) -> *const T {
