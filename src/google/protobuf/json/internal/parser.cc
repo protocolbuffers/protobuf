@@ -39,8 +39,10 @@
 #include "google/protobuf/json/internal/descriptor_traits.h"
 #include "google/protobuf/json/internal/lexer.h"
 #include "google/protobuf/json/internal/parser_traits.h"
+#include "google/protobuf/json/internal/status_macros.h"
 #include "google/protobuf/json/internal/zero_copy_buffered_stream.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/util/type_resolver.h"
 #include "google/protobuf/stubs/status_macros.h"
 
@@ -1097,8 +1099,9 @@ PROTOBUF_NOINLINE absl::Status ParseAny(JsonLexer& lex,
     return Traits::NewDynamic(
         Traits::MustHaveField(desc, 2), type_url->ToString(), msg,
         [&](const Desc<Traits>& desc, Msg<Traits>& msg) {
-          auto pop = any_lex.path().Push("<any>", FieldDescriptor::TYPE_MESSAGE,
-                                         Traits::TypeName(desc));
+          auto pop = any_lex.path().Push([&desc](auto f) {
+            f("<any>", FieldDescriptor::TYPE_MESSAGE, Traits::TypeName(desc));
+          });
           return ParseMessage<Traits>(any_lex, desc, msg,
                                       /*any_reparse=*/true);
         });
@@ -1125,96 +1128,113 @@ PROTOBUF_NOINLINE absl::Status ParseListValue(JsonLexer& lex,
                                               Msg<Traits>& msg);
 
 template <typename Traits>
+PROTOBUF_NOINLINE absl::Status ParseValueNull(JsonLexer& lex,
+                                              const Desc<Traits>& desc,
+                                              Msg<Traits>& msg) {
+  auto field = Traits::MustHaveField(desc, 1);
+  auto pop = lex.path().Push([field](auto f) {
+    f(Traits::FieldName(field), Traits::FieldType(field),
+      Traits::FieldTypeName(field));
+  });
+
+  RETURN_IF_ERROR(lex.Expect("null"));
+  Traits::SetEnum(field, msg, 0);
+  return absl::OkStatus();
+}
+
+template <typename Traits>
+PROTOBUF_NOINLINE absl::Status ParseValueNumber(JsonLexer& lex,
+                                                const Desc<Traits>& desc,
+                                                Msg<Traits>& msg) {
+  auto field = Traits::MustHaveField(desc, 2);
+  auto pop = lex.path().Push([field](auto f) {
+    f(Traits::FieldName(field), Traits::FieldType(field),
+      Traits::FieldTypeName(field));
+  });
+
+  auto number = lex.ParseNumber();
+  RETURN_IF_ERROR(number.status());
+  Traits::SetDouble(field, msg, number->value);
+  return absl::OkStatus();
+}
+
+template <typename Traits>
+PROTOBUF_NOINLINE absl::Status ParseValueString(JsonLexer& lex,
+                                                const Desc<Traits>& desc,
+                                                Msg<Traits>& msg) {
+  auto field = Traits::MustHaveField(desc, 3);
+  auto pop = lex.path().Push([field](auto f) {
+    f(Traits::FieldName(field), Traits::FieldType(field),
+      Traits::FieldTypeName(field));
+  });
+
+  auto str = lex.ParseUtf8();
+  RETURN_IF_ERROR(str.status());
+  Traits::SetString(field, msg, std::move(str->value.ToString()));
+  return absl::OkStatus();
+}
+
+template <typename Traits>
+PROTOBUF_NOINLINE absl::Status ParseValueBool(JsonLexer& lex,
+                                              const Desc<Traits>& desc,
+                                              Msg<Traits>& msg, bool value) {
+  auto field = Traits::MustHaveField(desc, 4);
+  auto pop = lex.path().Push([field](auto f) {
+    f(Traits::FieldName(field), Traits::FieldType(field),
+      Traits::FieldTypeName(field));
+  });
+
+  // "Quoted" bools, including non-standard Abseil Atob bools, are not
+  // supported, because all strings are treated as genuine JSON strings.
+  RETURN_IF_ERROR(lex.Expect(value ? "true" : "false"));
+  Traits::SetBool(field, msg, value);
+  return absl::OkStatus();
+}
+
+template <typename Traits>
 PROTOBUF_NOINLINE absl::Status ParseValue(JsonLexer& lex,
                                           const Desc<Traits>& desc,
                                           Msg<Traits>& msg) {
-  auto kind = lex.PeekKind();
-  RETURN_IF_ERROR(kind.status());
+  PB_DEFINE_OR_RETURN(kind, lex.PeekKind());
   // NOTE: The field numbers 1 through 6 are the numbers of the oneof fields
   // in google.protobuf.Value. Conformance tests verify the correctness of
   // these numbers.
-  switch (*kind) {
-    case JsonLexer::kNull: {
-      auto field = Traits::MustHaveField(desc, 1);
-      auto pop =
-          lex.path().Push(Traits::FieldName(field), Traits::FieldType(field),
-                          Traits::FieldTypeName(field));
-
-      RETURN_IF_ERROR(lex.Expect("null"));
-      Traits::SetEnum(field, msg, 0);
-      break;
-    }
-    case JsonLexer::kNum: {
-      auto field = Traits::MustHaveField(desc, 2);
-      auto pop =
-          lex.path().Push(Traits::FieldName(field), Traits::FieldType(field),
-                          Traits::FieldTypeName(field));
-
-      auto number = lex.ParseNumber();
-      RETURN_IF_ERROR(number.status());
-      Traits::SetDouble(field, msg, number->value);
-      break;
-    }
-    case JsonLexer::kStr: {
-      auto field = Traits::MustHaveField(desc, 3);
-      auto pop =
-          lex.path().Push(Traits::FieldName(field), Traits::FieldType(field),
-                          Traits::FieldTypeName(field));
-
-      auto str = lex.ParseUtf8();
-      RETURN_IF_ERROR(str.status());
-      Traits::SetString(field, msg, std::move(str->value.ToString()));
-      break;
-    }
+  switch (kind) {
+    case JsonLexer::kNull:
+      return ParseValueNull<Traits>(lex, desc, msg);
+    case JsonLexer::kNum:
+      return ParseValueNumber<Traits>(lex, desc, msg);
+    case JsonLexer::kStr:
+      return ParseValueString<Traits>(lex, desc, msg);
     case JsonLexer::kFalse:
-    case JsonLexer::kTrue: {
-      auto field = Traits::MustHaveField(desc, 4);
-      auto pop =
-          lex.path().Push(Traits::FieldName(field), Traits::FieldType(field),
-                          Traits::FieldTypeName(field));
-
-      // "Quoted" bools, including non-standard Abseil Atob bools, are not
-      // supported, because all strings are treated as genuine JSON strings.
-      if (*kind == JsonLexer::kTrue) {
-        RETURN_IF_ERROR(lex.Expect("true"));
-        Traits::SetBool(field, msg, true);
-      } else {
-        RETURN_IF_ERROR(lex.Expect("false"));
-        Traits::SetBool(field, msg, false);
-      }
-      break;
-    }
-    case JsonLexer::kObj: {
-      auto field = Traits::MustHaveField(desc, 5);
-      auto pop =
-          lex.path().Push(Traits::FieldName(field), Traits::FieldType(field),
-                          Traits::FieldTypeName(field));
-
-      return Traits::NewMsg(field, msg, [&](auto& desc, auto& msg) {
-        return ParseStructValue<Traits>(lex, desc, msg);
-      });
-    }
+    case JsonLexer::kTrue:
+      return ParseValueBool<Traits>(lex, desc, msg, kind == JsonLexer::kTrue);
+    case JsonLexer::kObj:
     case JsonLexer::kArr: {
-      auto field = Traits::MustHaveField(desc, 6);
-      auto pop =
-          lex.path().Push(Traits::FieldName(field), Traits::FieldType(field),
-                          Traits::FieldTypeName(field));
+      bool is_obj = kind == JsonLexer::kObj;
+      auto field = Traits::MustHaveField(desc, is_obj ? 5 : 6);
+      auto pop = lex.path().Push([field](auto f) {
+        f(Traits::FieldName(field), Traits::FieldType(field),
+          Traits::FieldTypeName(field));
+      });
 
-      return Traits::NewMsg(field, msg, [&](auto& desc, auto& msg) {
-        return ParseListValue<Traits>(lex, desc, msg);
+      return Traits::NewMsg(field, msg, [&lex, is_obj](auto& desc, auto& msg) {
+        return is_obj ? ParseStructValue<Traits>(lex, desc, msg)
+                      : ParseListValue<Traits>(lex, desc, msg);
       });
     }
   }
-
-  return absl::OkStatus();
+  internal::Unreachable();
 }
 
 template <typename Traits>
 absl::Status ParseStructValue(JsonLexer& lex, const Desc<Traits>& desc,
                               Msg<Traits>& msg) {
   auto entry_field = Traits::MustHaveField(desc, 1);
-  auto pop = lex.path().Push("<struct>", FieldDescriptor::TYPE_MESSAGE,
-                             Traits::FieldTypeName(entry_field));
+  auto pop = lex.path().Push([entry_field](auto f) {
+    f("<struct>", FieldDescriptor::TYPE_MESSAGE,
+      Traits::FieldTypeName(entry_field));
+  });
 
   // Parsing a map does the right thing: Struct has a single map<string,
   // Value> field; keys are correctly parsed as strings, and the values
@@ -1228,8 +1248,10 @@ template <typename Traits>
 absl::Status ParseListValue(JsonLexer& lex, const Desc<Traits>& desc,
                             Msg<Traits>& msg) {
   auto entry_field = Traits::MustHaveField(desc, 1);
-  auto pop = lex.path().Push("<list>", FieldDescriptor::TYPE_MESSAGE,
-                             Traits::FieldTypeName(entry_field));
+  auto pop = lex.path().Push([entry_field](auto f) {
+    f("<list>", FieldDescriptor::TYPE_MESSAGE,
+      Traits::FieldTypeName(entry_field));
+  });
 
   // Parsing an array does the right thing: see the analogous comment in
   // ParseStructValue.
@@ -1267,8 +1289,9 @@ absl::Status ParseField(JsonLexer& lex, const Desc<Traits>& desc,
     return lex.SkipValue();
   }
 
-  auto pop = lex.path().Push(name, Traits::FieldType(*field),
-                             Traits::FieldTypeName(*field));
+  auto pop = lex.path().Push([name, field](auto f) {
+    f(name, Traits::FieldType(*field), Traits::FieldTypeName(*field));
+  });
 
   // Any `null` values eagerly no-op, except for exactly the special cases of
   // google.protobuf.Value message and google.protobuf.NullValue enum.

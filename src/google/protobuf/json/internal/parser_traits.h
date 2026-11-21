@@ -30,6 +30,7 @@
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/json/internal/descriptor_traits.h"
+#include "google/protobuf/json/internal/status_macros.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/stubs/status_macros.h"
 
@@ -150,7 +151,7 @@ struct ParseProto2Descriptor : Proto2Descriptor {
           DynamicMessageFactory factory;
           std::unique_ptr<Message> dynamic(factory.GetPrototype(&desc)->New());
           Msg wrapper(dynamic.get());
-          RETURN_IF_ERROR(body(desc, wrapper));
+          PB_RETURN_IF_ERROR(body(desc, wrapper));
 
           if (f->is_repeated()) {
             msg.impl_->msg->GetReflection()->AddString(
@@ -247,6 +248,7 @@ struct ParseProto2Descriptor : Proto2Descriptor {
 struct ParseProto3Type : Proto3Type {
   class Msg {
    public:
+    Msg() : impl_(std::make_unique<Impl>(nullptr)) {}
     explicit Msg(io::ZeroCopyOutputStream* stream)
         : impl_(std::make_unique<Impl>(stream)) {}
 
@@ -254,7 +256,12 @@ struct ParseProto3Type : Proto3Type {
     friend ParseProto3Type;
     // Use pImpl to reduce stack usage.
     struct Impl {
-      Impl(io::ZeroCopyOutputStream* zs) : stream(zs) {}
+      explicit Impl(io::ZeroCopyOutputStream* zs)
+          : stream(zs ? zs : &sstream) {}
+      // Declaration order matters: `stream` writes into `&sstream`/`&out` when
+      // `zs == nullptr`, so `stream` must be destroyed before `sstream`/`out`.
+      std::string out;
+      io::StringOutputStream sstream{&out};
       io::CodedOutputStream stream;
       absl::flat_hash_set<int32_t> parsed_oneofs_indices;
       absl::flat_hash_set<int32_t> parsed_fields;
@@ -300,20 +307,20 @@ struct ParseProto3Type : Proto3Type {
           if (f->proto().kind() == google::protobuf::Field::TYPE_GROUP) {
             msg.impl_->stream.WriteTag(f->proto().number() << 3 |
                                        WireFormatLite::WIRETYPE_START_GROUP);
-            RETURN_IF_ERROR(body(desc, msg));
+            PB_RETURN_IF_ERROR(body(desc, msg));
             msg.impl_->stream.WriteTag(f->proto().number() << 3 |
                                        WireFormatLite::WIRETYPE_END_GROUP);
             return absl::OkStatus();
           }
 
-          std::string out;
-          io::StringOutputStream stream(&out);
-          Msg new_msg(&stream);
-          RETURN_IF_ERROR(body(desc, new_msg));
+          Msg new_msg;
+          PB_RETURN_IF_ERROR(body(desc, new_msg));
 
           new_msg.impl_->stream.Trim();  // Should probably be called "Flush()".
-          absl::string_view written = absl::string_view(out).substr(
-              0, static_cast<size_t>(new_msg.impl_->stream.ByteCount()));
+          absl::string_view written =
+              absl::string_view(new_msg.impl_->out)
+                  .substr(0, static_cast<size_t>(
+                                 new_msg.impl_->stream.ByteCount()));
           SetString(f, msg, written);
           return absl::OkStatus();
         });

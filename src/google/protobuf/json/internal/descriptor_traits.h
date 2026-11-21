@@ -30,6 +30,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/json/internal/lexer.h"
+#include "google/protobuf/json/internal/status_macros.h"
 #include "google/protobuf/json/internal/untyped_message.h"
 #include "google/protobuf/json_enumvalue_options.pb.h"
 #include "google/protobuf/stubs/status_macros.h"
@@ -592,9 +593,8 @@ struct Proto3Type {
   template <typename F>
   static absl::Status WithDynamicType(const Desc& desc,
                                       const std::string& type_url, F body) {
-    auto dyn_desc = desc.pool()->FindMessage(type_url);
-    RETURN_IF_ERROR(dyn_desc.status());
-    return body(**dyn_desc);
+    PB_DEFINE_OR_RETURN(dyn_desc, desc.pool()->FindMessage(type_url));
+    return body(*dyn_desc);
   }
 };
 }  // namespace json_internal
