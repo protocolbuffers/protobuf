@@ -5474,6 +5474,7 @@ TEST(CustomOptions, OptionsWithIncompatibleDescriptors) {
   EXPECT_TRUE(pool.BuildFile(file_proto) == nullptr);
 }
 
+
 // Test that FileDescriptor::DebugString() formats custom options correctly.
 TEST(CustomOptions, DebugString) {
   DescriptorPool pool;
