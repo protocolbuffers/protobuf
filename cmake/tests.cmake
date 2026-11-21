@@ -39,8 +39,24 @@ foreach(proto_file ${tests_protos})
     OUT_VAR pb_generated_files
     IMPORT_DIRS ${protobuf_SOURCE_DIR}/src ${protobuf_SOURCE_DIR}/java/core/src/main/resources
   )
+  if(proto_file STREQUAL "${protobuf_SOURCE_DIR}/src/google/protobuf/any_test.proto")
+    list(GET pb_generated_files 0 generated_file)
+    get_filename_component(generated_dir ${generated_file} DIRECTORY)
+    file(RELATIVE_PATH generated_dir ${protobuf_BINARY_DIR} ${generated_dir})
+    if(NOT generated_dir STREQUAL "google/protobuf")
+      message(FATAL_ERROR "protobuf_generate did not prioritize IMPORT_DIRS over CMAKE_CURRENT_SOURCE_DIR")
+    endif()
+  endif()
   set(tests_proto_files ${tests_proto_files} ${pb_generated_files})
 endforeach(proto_file)
+
+protobuf_generate(
+  PROTOS ${protobuf_SOURCE_DIR}/benchmarks/empty.proto
+  LANGUAGE cpp
+  OUT_VAR pb_generated_files
+  IMPORT_DIRS ${protobuf_SOURCE_DIR}/src
+)
+set(tests_proto_files ${tests_proto_files} ${pb_generated_files})
 
 set(common_test_files
   ${test_util_hdrs}

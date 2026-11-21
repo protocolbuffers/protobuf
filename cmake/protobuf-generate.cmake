@@ -96,6 +96,13 @@ function(protobuf_generate)
     endif()
   endforeach()
 
+  if(NOT protobuf_generate_APPEND_PATH)
+    list(FIND _protobuf_include_path ${CMAKE_CURRENT_SOURCE_DIR} _contains_already)
+    if(${_contains_already} EQUAL -1)
+      list(APPEND _protobuf_include_path -I ${CMAKE_CURRENT_SOURCE_DIR})
+    endif()
+  endif()
+
   if(NOT _protobuf_include_path)
     set(_protobuf_include_path -I ${CMAKE_CURRENT_SOURCE_DIR})
   endif()
