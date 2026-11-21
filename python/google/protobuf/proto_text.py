@@ -85,6 +85,7 @@ def parse(
     allow_field_number: bool = False,
     descriptor_pool: Optional[DescriptorPool] = None,
     allow_unknown_field: bool = False,
+    max_recursion_depth: int = 100,
 ) -> Message:
   """Parses a text representation of a protocol message into a message.
 
@@ -99,6 +100,9 @@ def parse(
     allow_unknown_field: if True, skip over unknown field and keep parsing.
       Avoid to use this option if possible. It may hide some errors (e.g.
       spelling error on field name)
+    max_recursion_depth: max recursion depth of text format message to be
+      deserialized. Text format messages over this depth will fail to be
+      deserialized. Default value is 100.
 
   Returns:
     Message: A new message passed from text.
@@ -114,5 +118,6 @@ def parse(
       allow_field_number=allow_field_number,
       descriptor_pool=descriptor_pool,
       allow_unknown_field=allow_unknown_field,
+      max_recursion_depth=max_recursion_depth,
   )
   return new_message

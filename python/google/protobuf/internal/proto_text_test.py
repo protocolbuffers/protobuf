@@ -11,6 +11,7 @@
 import unittest
 
 from google.protobuf import proto_text
+from google.protobuf import text_format
 
 from absl.testing import parameterized
 from google.protobuf import unittest_pb2
@@ -30,6 +31,33 @@ class ProtoTextTest(unittest.TestCase):
     text = 'optional_int32: 123'
     msg = proto_text.parse(message_module.TestAllTypes, text)
     self.assertEqual(123, msg.optional_int32)  # pyrefly: ignore[missing-attribute]
+
+  def test_parse_max_recursion_depth(self, message_module):
+    text = 'child { child { child {} } }'
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        'Message too deep. Max recursion depth is 3',
+        proto_text.parse,
+        message_module.NestedTestAllTypes,
+        text,
+        max_recursion_depth=3,
+    )
+    msg = proto_text.parse(
+        message_module.NestedTestAllTypes, text, max_recursion_depth=4
+    )
+    self.assertTrue(msg.HasField('child'))
+
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        'Message too deep. Max recursion depth is 100',
+        proto_text.parse,
+        message_module.NestedTestAllTypes,
+        'child {' * 100 + '}' * 100,
+    )
+    msg = proto_text.parse(
+        message_module.NestedTestAllTypes, 'child {' * 99 + '}' * 99
+    )
+    self.assertTrue(msg.HasField('child'))
 
 
 if __name__ == '__main__':

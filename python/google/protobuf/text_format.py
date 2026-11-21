@@ -1431,10 +1431,22 @@ class _Parser(object):
       tokenizer.Consume('{')
       delimiter = '}'
 
-    while not tokenizer.LookingAt('>') and not tokenizer.LookingAt('}'):
-      self._SkipField(tokenizer, immediate_message_type)
-
-    tokenizer.Consume(delimiter)
+    self.recursion_depth += 1
+    try:
+      if (
+          self.max_recursion_depth is not None
+          and self.recursion_depth > self.max_recursion_depth
+      ):
+        raise ParseError(
+            'Message too deep. Max recursion depth is {0}'.format(
+                self.max_recursion_depth
+            )
+        )
+      while not tokenizer.LookingAt('>') and not tokenizer.LookingAt('}'):
+        self._SkipField(tokenizer, immediate_message_type)
+      tokenizer.Consume(delimiter)
+    finally:
+      self.recursion_depth -= 1
 
   def _SkipFieldValue(self, tokenizer):
     """Skips over a field value.

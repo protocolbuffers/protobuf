@@ -853,6 +853,47 @@ class TextFormatParserTests(TextFormatBase):
         max_recursion_depth=4,
     )
 
+  def testParseUnknownFieldRecursionDepthLimit(self, message_module):
+    deep_unknown = 'unknown { a { b {} } }'
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        'Message too deep. Max recursion depth is 3',
+        text_format.Parse,
+        deep_unknown,
+        message_module.TestAllTypes(),
+        allow_unknown_field=True,
+        max_recursion_depth=3,
+    )
+    text_format.Parse(
+        deep_unknown,
+        message_module.TestAllTypes(),
+        allow_unknown_field=True,
+        max_recursion_depth=4,
+    )
+    text_format.Parse(
+        'a {} b {} c {}',
+        message_module.TestAllTypes(),
+        allow_unknown_field=True,
+        max_recursion_depth=2,
+    )
+
+    deep_repeated_unknown = 'unknown: [{ a: [{ b: [{}] }] }]'
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        'Message too deep. Max recursion depth is 3',
+        text_format.Parse,
+        deep_repeated_unknown,
+        message_module.TestAllTypes(),
+        allow_unknown_field=True,
+        max_recursion_depth=3,
+    )
+    text_format.Parse(
+        deep_repeated_unknown,
+        message_module.TestAllTypes(),
+        allow_unknown_field=True,
+        max_recursion_depth=4,
+    )
+
   def testParseDefaultBehaviorRemainsUnbounded(self, message_module):
     del message_module
     message = descriptor_pb2.DescriptorProto()
@@ -2162,6 +2203,24 @@ class Proto2Tests(TextFormatBase):
         text_format.Parse,
         text,
         message,
+    )
+
+  def testParseUnknownExtensionRecursionDepthLimit(self):
+    deep_unknown_ext = '[unknown.ext] { a { b {} } }'
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        'Message too deep. Max recursion depth is 3',
+        text_format.Parse,
+        deep_unknown_ext,
+        unittest_pb2.TestAllExtensions(),
+        allow_unknown_extension=True,
+        max_recursion_depth=3,
+    )
+    text_format.Parse(
+        deep_unknown_ext,
+        unittest_pb2.TestAllExtensions(),
+        allow_unknown_extension=True,
+        max_recursion_depth=4,
     )
 
   def testParseGroupNotClosed(self):
