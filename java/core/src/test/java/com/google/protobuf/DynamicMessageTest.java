@@ -433,6 +433,31 @@ public class DynamicMessageTest {
   }
 
   @Test
+  public void serialize_lazyFieldInNonMessageSetExtension() throws Exception {
+    ExtensionRegistry registry = ExtensionRegistry.newInstance();
+    registry.add(UnittestProto.optionalNestedMessageExtension);
+    FieldDescriptor ext = UnittestProto.optionalNestedMessageExtension.getDescriptor();
+    NestedMessage nested = NestedMessage.newBuilder().setBb(42).build();
+    ByteString suboptimal = nested.toByteString().concat(nested.toByteString());
+
+    DynamicMessage message =
+        DynamicMessage.newBuilder(TestAllExtensions.getDescriptor())
+            .setField(
+                ext,
+                new InternalLazyField(
+                    DynamicMessage.getDefaultInstance(NestedMessage.getDescriptor()),
+                    registry,
+                    suboptimal))
+            .build();
+
+    DynamicMessage roundtripped =
+        DynamicMessage.newBuilder(TestAllExtensions.getDescriptor())
+            .mergeFrom(message.toByteString(), registry)
+            .build();
+    assertThat(roundtripped.getField(ext)).isEqualTo(nested);
+  }
+
+  @Test
   public void hashCode_matchesGeneratedMessage_defaultInstanceWithImplicitPresence() {
     UnittestProto3.TestAllTypes proto3Default = UnittestProto3.TestAllTypes.getDefaultInstance();
     assertThat(

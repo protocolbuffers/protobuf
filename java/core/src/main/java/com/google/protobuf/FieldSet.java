@@ -572,6 +572,9 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
           fields.put(descriptor, builder.build());
         } else {
           descriptor.internalMergeFrom(value, otherValue);
+          if (hasLazyField) {
+            fields.put(descriptor, value);
+          }
         }
       }
     } else {
@@ -702,7 +705,11 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
         output.writeGroupNoTag((MessageLite) value);
         break;
       case MESSAGE:
-        output.writeMessageNoTag((MessageLite) value);
+        if (value instanceof InternalLazyField) {
+          output.writeBytesNoTag(((InternalLazyField) value).toByteString());
+        } else {
+          output.writeMessageNoTag((MessageLite) value);
+        }
         break;
       case STRING:
         if (value instanceof ByteString) {
@@ -780,11 +787,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
         }
       }
     } else {
-      if (value instanceof InternalLazyField) {
-        writeElement(output, type, number, ((InternalLazyField) value).getValue());
-      } else {
-        writeElement(output, type, number, value);
-      }
+      writeElement(output, type, number, value);
     }
   }
 
