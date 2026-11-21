@@ -741,7 +741,7 @@ class _Parser(object):
                     )
                 )
               self._ConvertAndAppendScalar(
-                  message, field, item, '{0}.{1}[{2}]'.format(path, name, index)
+                  message, field, item, f'{path}.{name}[{index}]'
               )
         elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
           sub_message = _GetFieldOrExtension(message, field)
