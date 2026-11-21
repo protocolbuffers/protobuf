@@ -20887,6 +20887,66 @@ upb_MethodDef* _upb_MethodDefs_New(
 
 #endif /* UPB_REFLECTION_METHOD_DEF_INTERNAL_H_ */
 
+#ifndef UPB_UTIL_DEF_TO_PROTO_H_
+#define UPB_UTIL_DEF_TO_PROTO_H_
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Must be last
+
+// Functions for converting defs back to the equivalent descriptor proto.
+// Ultimately the goal is that a round-trip proto->def->proto is lossless.  Each
+// function returns a new proto created in arena `a`, or NULL if memory
+// allocation failed.
+UPB_NODISCARD google_protobuf_DescriptorProto* upb_MessageDef_ToProto(
+    const upb_MessageDef* m, upb_Arena* a);
+UPB_NODISCARD google_protobuf_EnumDescriptorProto* upb_EnumDef_ToProto(
+    const upb_EnumDef* e, upb_Arena* a);
+UPB_NODISCARD google_protobuf_EnumValueDescriptorProto* upb_EnumValueDef_ToProto(
+    const upb_EnumValueDef* e, upb_Arena* a);
+UPB_NODISCARD google_protobuf_FieldDescriptorProto* upb_FieldDef_ToProto(
+    const upb_FieldDef* f, upb_Arena* a);
+UPB_NODISCARD google_protobuf_OneofDescriptorProto* upb_OneofDef_ToProto(
+    const upb_OneofDef* o, upb_Arena* a);
+UPB_NODISCARD google_protobuf_FileDescriptorProto* upb_FileDef_ToProto(
+    const upb_FileDef* f, upb_Arena* a);
+UPB_NODISCARD google_protobuf_MethodDescriptorProto* upb_MethodDef_ToProto(
+    const upb_MethodDef* m, upb_Arena* a);
+UPB_NODISCARD google_protobuf_ServiceDescriptorProto* upb_ServiceDef_ToProto(
+    const upb_ServiceDef* s, upb_Arena* a);
+
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#endif /* UPB_UTIL_DEF_TO_PROTO_H_ */
+
+// IWYU pragma: private, include "upb/reflection/def.h"
+
+#ifndef UPB_REFLECTION_ENUM_RESERVED_RANGE_H_
+#define UPB_REFLECTION_ENUM_RESERVED_RANGE_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int32_t upb_EnumReservedRange_Start(const upb_EnumReservedRange* r);
+int32_t upb_EnumReservedRange_End(const upb_EnumReservedRange* r);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_ENUM_RESERVED_RANGE_H_ */
+
 /*
  * Internal implementation details of the decoder that are shared between
  * decode.c and decode_fast.c.

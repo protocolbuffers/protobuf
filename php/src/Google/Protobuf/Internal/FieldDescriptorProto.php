@@ -239,7 +239,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function getLabel()
     {
-        return isset($this->label) ? $this->label : 0;
+        return isset($this->label) ? $this->label : 1;
     }
 
     public function hasLabel()
@@ -274,7 +274,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function getType()
     {
-        return isset($this->type) ? $this->type : 0;
+        return isset($this->type) ? $this->type : 1;
     }
 
     public function hasType()

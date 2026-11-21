@@ -303,8 +303,9 @@ std::string DefaultForFieldWithPresence(const FieldDescriptor* field) {
     case FieldDescriptor::TYPE_SINT32:
     case FieldDescriptor::TYPE_FIXED32:
     case FieldDescriptor::TYPE_SFIXED32:
-    case FieldDescriptor::TYPE_ENUM:
       return "0";
+    case FieldDescriptor::TYPE_ENUM:
+      return absl::StrCat(field->default_value_enum()->number());
     case FieldDescriptor::TYPE_DOUBLE:
     case FieldDescriptor::TYPE_FLOAT:
       return "0.0";
@@ -705,11 +706,6 @@ std::string BinaryToPhpString(absl::string_view src) {
 
 bool GenerateField(const FieldDescriptor* field, io::Printer* printer,
                    const Options& options, std::string* error) {
-  if (!options.is_descriptor && field->is_required()) {
-    *error = absl::StrCat("Can't generate PHP code for required field ",
-                          field->full_name(), ".\n");
-    return false;
-  }
   if (field->type() == FieldDescriptor::TYPE_GROUP) {
     *error = absl::StrCat("Can't generate PHP code for group field ",
                           field->full_name(),
@@ -1424,14 +1420,6 @@ void GenerateMetadataFile(const FileDescriptor* file, const Options& options,
 bool GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
                       const Options& options,
                       GeneratorContext* generator_context, std::string* error) {
-  if (!options.is_descriptor && en->is_closed()) {
-    *error = absl::StrCat("Can't generate PHP code for closed enum ",
-                          en->full_name(),
-                          ".  Please use either proto3 or editions without "
-                          "`enum_type = CLOSED`.\n");
-    return false;
-  }
-
   std::string filename = GeneratedClassFileName(en, options);
   std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
