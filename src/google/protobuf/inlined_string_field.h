@@ -169,14 +169,6 @@ class PROTOBUF_EXPORT InlinedStringField {
                                                   InlinedStringField* rhs,
                                                   Arena* arena);
 
-  // Frees storage (if not on an arena).
-  PROTOBUF_NDEBUG_INLINE void Destroy(Arena* arena) {
-    if (arena == nullptr) {
-      DestroyNoArena();
-    }
-  }
-  PROTOBUF_NDEBUG_INLINE void DestroyNoArena();
-
   // Clears content, but keeps allocated std::string, to avoid the overhead of
   // heap operations. After this returns, the content (as seen by the user) will
   // always be the empty std::string.
@@ -288,12 +280,6 @@ inline void InlinedStringField::SetAllocatedNoArena(std::string* value) {
     get_mutable()->assign(std::move(*value));
     delete value;
   }
-}
-
-inline void InlinedStringField::DestroyNoArena() {
-  // This is invoked from the generated message's ArenaDtor, which is used to
-  // clean up objects not allocated on the Arena.
-  this->~InlinedStringField();
 }
 
 inline void InlinedStringField::SetNoArena(absl::string_view value) {
