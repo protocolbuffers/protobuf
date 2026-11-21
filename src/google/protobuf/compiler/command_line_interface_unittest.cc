@@ -64,8 +64,9 @@
 #include "google/protobuf/compiler/test_plugin_paths.h"
 #endif  // GOOGLE_PROTOBUF_USE_BAZEL_GENERATED_PLUGIN_PATHS
 
-#ifdef _WIN32
 #include "google/protobuf/compiler/subprocess.h"
+
+#ifdef _WIN32
 #include "google/protobuf/io/io_win32.h"
 #endif
 
@@ -103,7 +104,9 @@ std::string JoinPaths(absl::Span<const absl::string_view> paths) {
   return absl::StrJoin(paths, kPathSeparator);
 }
 
-std::string CreatePluginArg() {
+// Returns the path to the test_plugin binary, or an empty string if it cannot
+// be found.
+std::string TestPluginPath() {
   std::string plugin_path;
 #ifdef GOOGLE_PROTOBUF_TEST_PLUGIN_PATH
   plugin_path = GOOGLE_PROTOBUF_TEST_PLUGIN_PATH;
@@ -142,6 +145,12 @@ std::string CreatePluginArg() {
         << plugin_path;
     return "";
   }
+  return plugin_path;
+}
+
+std::string CreatePluginArg() {
+  std::string plugin_path = TestPluginPath();
+  if (plugin_path.empty()) return "";
   return absl::StrCat("--plugin=prefix-gen-plug=", plugin_path);
 }
 
@@ -1429,6 +1438,183 @@ TEST_F(CommandLineInterfaceTest, AllowDotDotInFilenameWithFlag) {
       "--proto_path=$tmpdir foo.proto");
 
   ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, RejectInvalidImportPath) {
+  CreateTempDir("google");
+  CreateTempFile("google/protobuf';puts 'INJECTED';#.proto",
+                 "syntax = \"proto3\";\n"
+                 "message Dep {}\n");
+  CreateTempFile("main.proto",
+                 "syntax = \"proto3\";\n"
+                 "import \"google/protobuf';puts 'INJECTED';#.proto\";\n"
+                 "message Main {}\n");
+
+  RunProtoc(
+      "protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir main.proto");
+
+  ExpectErrorSubstring("Invalid character \"'\" in file path.");
+}
+
+TEST_F(CommandLineInterfaceTest, RejectInvalidInputFilePath) {
+  CreateTempFile("bad'name.proto",
+                 "syntax = \"proto3\";\n"
+                 "message Bad {}\n");
+
+  RunProtoc(
+      "protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir $tmpdir/bad'name.proto");
+
+  ExpectErrorSubstring("Invalid character \"'\" in file path.");
+}
+
+TEST_F(CommandLineInterfaceTest, DescriptorSetInRejectsInvalidFilePaths) {
+  // Descriptors from --descriptor_set_in bypass the parser and
+  // DiskSourceTree, so file names must be validated before any generator runs.
+  FileDescriptorSet file_descriptor_set;
+  FileDescriptorProto* dep = file_descriptor_set.add_file();
+  dep->set_name("../../evil.proto");
+  FileDescriptorProto* main_file = file_descriptor_set.add_file();
+  main_file->set_name("main.proto");
+  main_file->add_dependency(dep->name());
+  WriteDescriptorSet("main.bin", &file_descriptor_set);
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--descriptor_set_in=$tmpdir/main.bin main.proto");
+
+  ExpectErrorSubstring(
+      "main.proto: Import \"../../evil.proto\": File path must not contain "
+      "\"..\" path segments.");
+}
+
+TEST_F(CommandLineInterfaceTest, RejectsInvalidImportOfOptionImport) {
+  // Option imports of the files being compiled, and their transitive imports,
+  // are emitted into plugin requests, dependency manifests, and descriptor
+  // sets, so their names must be validated too.
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("evil;x.proto", R"schema(
+      syntax = "proto2";
+      package evil;
+      message E { optional int32 a = 1; }
+  )schema");
+  CreateTempFile("options.proto", R"schema(
+      syntax = "proto2";
+      package test;
+      import "google/protobuf/descriptor.proto";
+      import "evil;x.proto";
+      extend google.protobuf.FileOptions { optional evil.E opt = 99990; }
+  )schema");
+  CreateTempFile("foo.proto", R"schema(
+      edition = "2024";
+      import option "options.proto";
+      option (test.opt).a = 1;
+  )schema");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
+      "--dependency_out=$tmpdir/manifest foo.proto --experimental_editions");
+
+  ExpectErrorSubstring(
+      "options.proto: Import \"evil;x.proto\": Invalid character ';' in file "
+      "path.");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       DescriptorSetInRejectsInvalidImportOfOptionImport) {
+  FileDescriptorSet file_descriptor_set;
+  FileDescriptorProto::descriptor()->file()->CopyTo(
+      file_descriptor_set.add_file());
+  FileDescriptorProto* evil = file_descriptor_set.add_file();
+  evil->set_name("../../evil.proto");
+  FileDescriptorProto* file = file_descriptor_set.add_file();
+  file->set_name("foo.proto");
+  file->add_dependency(file_descriptor_set.file(0).name());
+  file->add_dependency(evil->name());
+  DescriptorProto* message = file->add_message_type();
+  message->set_name("Foo");
+  FieldDescriptorProto* field = message->add_extension();
+  field->set_type(FieldDescriptorProto::TYPE_STRING);
+  field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  field->set_name("ext");
+  field->set_number(1234567);
+  field->set_extendee(".google.protobuf.FileOptions");
+  WriteDescriptorSet("foo.bin", &file_descriptor_set);
+
+  CreateTempFile("bar.proto", R"schema(
+      edition = "2024";
+      import option "foo.proto";
+      option (Foo.ext) = "hello";
+  )schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--descriptor_set_in=$tmpdir/foo.bin bar.proto");
+
+  ExpectErrorSubstring(
+      "foo.proto: Import \"../../evil.proto\": File path must not contain "
+      "\"..\" path segments.");
+}
+
+// protoc validates file paths before it ever invokes a plugin, so the tests
+// below bypass protoc and send a CodeGeneratorRequest directly to test_plugin,
+// as an arbitrary plugin host could. This exercises the validation performed
+// on the plugin side by PluginMain().
+CodeGeneratorResponse RunTestPlugin(const CodeGeneratorRequest& request) {
+  std::string plugin_path = TestPluginPath();
+  ABSL_CHECK(!plugin_path.empty()) << "test_plugin not found";
+  Subprocess subprocess;
+  subprocess.Start(plugin_path, Subprocess::EXACT_NAME);
+  CodeGeneratorResponse response;
+  std::string error;
+  EXPECT_TRUE(subprocess.Communicate(request, &response, &error)) << error;
+  return response;
+}
+
+TEST(PluginMainTest, GeneratesCodeForValidFilePaths) {
+  // Establishes that test_plugin produces output for a valid request, so the
+  // absence of output in the tests below shows that the generator never ran.
+  CodeGeneratorRequest request;
+  FileDescriptorProto* dep = request.add_proto_file();
+  dep->set_name("foo/dep.proto");
+  FileDescriptorProto* main_file = request.add_proto_file();
+  main_file->set_name("foo/main.proto");
+  main_file->add_dependency(dep->name());
+  request.add_file_to_generate("foo/main.proto");
+
+  CodeGeneratorResponse response = RunTestPlugin(request);
+  EXPECT_EQ(response.error(), "");
+  EXPECT_GT(response.file_size(), 0);
+}
+
+TEST(PluginMainTest, RejectsInvalidFilePathsBeforeInvokingGenerator) {
+  CodeGeneratorRequest request;
+  FileDescriptorProto* dep = request.add_proto_file();
+  dep->set_name("../../evil.proto");
+  FileDescriptorProto* main_file = request.add_proto_file();
+  main_file->set_name("main.proto");
+  main_file->add_dependency(dep->name());
+  request.add_file_to_generate("main.proto");
+
+  CodeGeneratorResponse response = RunTestPlugin(request);
+  EXPECT_THAT(
+      response.error(),
+      testing::HasSubstr("../../evil.proto: File path must not contain"));
+  EXPECT_EQ(response.file_size(), 0);
+}
+
+TEST(PluginMainTest, RejectsInvalidPathInFileNotToGenerate) {
+  // Every file in the request reaches the plugin, whether or not it is
+  // reachable from file_to_generate.
+  CodeGeneratorRequest request;
+  request.add_proto_file()->set_name("main.proto");
+  request.add_proto_file()->set_name("unrelated;rm -rf.proto");
+  request.add_file_to_generate("main.proto");
+
+  CodeGeneratorResponse response = RunTestPlugin(request);
+  EXPECT_THAT(
+      response.error(),
+      testing::HasSubstr("unrelated;rm -rf.proto: Invalid character ';'"));
+  EXPECT_EQ(response.file_size(), 0);
 }
 
 TEST_F(CommandLineInterfaceTest, GeneratorParameters) {

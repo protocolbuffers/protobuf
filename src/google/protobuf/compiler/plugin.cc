@@ -145,6 +145,7 @@ bool GenerateCode(const CodeGeneratorRequest& request,
   absl::Status status = pool.SetFeatureSetDefaults(std::move(defaults).value());
   ABSL_CHECK(status.ok()) << status.message();
 
+  std::vector<const FileDescriptor*> all_files;
   for (int i = 0; i < request.proto_file_size(); i++) {
     FileDescriptorProto file_proto = request.proto_file(i);
     if (generator.StripDefaultJsonName()) {
@@ -155,6 +156,7 @@ bool GenerateCode(const CodeGeneratorRequest& request,
       // BuildFile() already wrote an error message.
       return false;
     }
+    all_files.push_back(file);
   }
 
   std::vector<const FileDescriptor*> parsed_files;
@@ -174,7 +176,12 @@ bool GenerateCode(const CodeGeneratorRequest& request,
 
 
   std::string error;
-  bool succeeded = generator.GenerateAll(parsed_files, request.parameter(),
+  // The request may come from any plugin host, not just protoc, so validate
+  // the name of every file it contains (not just those to generate) before the
+  // generator embeds them in generated code or paths.
+  bool succeeded = ::google::protobuf::internal::ValidateFilePathsForCodeGeneration(
+                       all_files, &error) &&
+                   generator.GenerateAll(parsed_files, request.parameter(),
                                          &context, &error);
 
   response->set_supported_features(generator.GetSupportedFeatures());

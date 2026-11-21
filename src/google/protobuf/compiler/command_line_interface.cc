@@ -1658,6 +1658,19 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     return 1;
   }
 
+  // File names end up in generated code, output paths, and dependency
+  // manifests, and descriptors from --descriptor_set_in bypass the checks in
+  // the parser and DiskSourceTree, so validate them once here for every
+  // generator.
+  {
+    std::string error;
+    if (!::google::protobuf::internal::ValidateFilePathsForCodeGeneration(parsed_files,
+                                                                &error)) {
+      std::cerr << error << std::endl;
+      return 1;
+    }
+  }
+
   bool validation_error = false;  // Defer exiting so we log more warnings.
 
   for (auto& file : parsed_files) {

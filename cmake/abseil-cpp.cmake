@@ -61,6 +61,7 @@ else()
     absl::bind_front
     absl::bits
     absl::btree
+    absl::charset
     absl::cleanup
     absl::cord
     absl::core_headers
