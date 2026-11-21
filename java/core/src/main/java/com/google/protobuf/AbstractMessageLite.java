@@ -265,8 +265,11 @@ public abstract class AbstractMessageLite<
     static final class LimitedInputStream extends FilterInputStream {
       private int limit;
 
-      LimitedInputStream(InputStream in, int limit) {
+      LimitedInputStream(InputStream in, int limit) throws InvalidProtocolBufferException {
         super(in);
+        if (limit < 0) {
+          throw InvalidProtocolBufferException.negativeSize();
+        }
         this.limit = limit;
       }
 
@@ -321,9 +324,6 @@ public abstract class AbstractMessageLite<
         return false;
       }
       final int size = CodedInputStream.readRawVarint32(firstByte, input);
-      if (size < 0) {
-        throw InvalidProtocolBufferException.negativeSize();
-      }
       final InputStream limitedInput = new LimitedInputStream(input, size);
       mergeFrom(limitedInput, extensionRegistry);
       return true;

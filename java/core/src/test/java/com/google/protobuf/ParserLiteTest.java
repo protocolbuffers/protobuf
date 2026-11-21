@@ -9,6 +9,7 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.assertThrows;
 
 import com.google.protobuf.UnittestLite.TestAllExtensionsLite;
 import com.google.protobuf.UnittestLite.TestAllTypesLite;
@@ -118,6 +119,39 @@ public class ParserLiteTest {
             packedMessage
                 .getParserForType()
                 .parseDelimitedFrom(input, TestUtilLite.getExtensionRegistryLite()));
+  }
+
+  @Test
+  public void testParseDelimitedFromLite_negativeSize() {
+    byte[] negativeDelimited =
+        new byte[] {(byte) 0x80, (byte) 0x80, (byte) 0x80, (byte) 0x80, 0x08, 0x08, 0x01};
+    String expectedMsg = InvalidProtocolBufferException.negativeSize().getMessage();
+
+    InvalidProtocolBufferException e1 =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> TestAllTypesLite.parseDelimitedFrom(new ByteArrayInputStream(negativeDelimited)));
+    assertThat(e1).hasMessageThat().isEqualTo(expectedMsg);
+
+    InvalidProtocolBufferException e2 =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () ->
+                TestAllTypesLite.parser()
+                    .parsePartialDelimitedFrom(
+                        new ByteArrayInputStream(negativeDelimited),
+                        ExtensionRegistryLite.getGeneratedRegistry()));
+    assertThat(e2).hasMessageThat().isEqualTo(expectedMsg);
+
+    InvalidProtocolBufferException e3 =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () ->
+                TestAllTypesLite.newBuilder()
+                    .mergeDelimitedFrom(
+                        new ByteArrayInputStream(negativeDelimited),
+                        ExtensionRegistryLite.getGeneratedRegistry()));
+    assertThat(e3).hasMessageThat().isEqualTo(expectedMsg);
   }
 
   /** Helper method for {@link #testParsingMergeLite()}. */
