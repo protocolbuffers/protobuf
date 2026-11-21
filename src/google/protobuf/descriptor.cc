@@ -2321,8 +2321,11 @@ namespace {
 
 
 EncodedDescriptorDatabase* GeneratedDatabase() {
-  static auto generated_database =
-      internal::OnShutdownDelete(new EncodedDescriptorDatabase());
+  static auto generated_database = internal::OnShutdownDelete([] {
+    auto* db = new EncodedDescriptorDatabase();
+    db->SetLazySymbolIndexing(true);
+    return db;
+  }());
   return generated_database;
 }
 
@@ -2385,6 +2388,29 @@ void DescriptorPool::InternalAddGeneratedFile(
   // or deadlock.
   absl::MutexLockMaybe lock(internal_generated_pool()->mutex());
   ABSL_CHECK(GeneratedDatabase()->Add(encoded_file_descriptor, size));
+}
+
+void DescriptorPool::InternalAddGeneratedFile(
+    const void* encoded_file_descriptor, int size, absl::string_view filename,
+    const void* encoded_symbol_descriptor, int symbol_size) {
+  absl::MutexLockMaybe lock(internal_generated_pool()->mutex());
+  static const int kMode = []() {
+    const char* env = std::getenv("PROTOBUF_LAZY_PROTODESC_COLD");
+    if (env != nullptr && std::strcmp(env, "0") == 0) return 0;
+    if (env != nullptr && std::strcmp(env, "1") == 0) return 1;
+    return 2;
+  }();
+  if (kMode == 0) {
+    GeneratedDatabase()->SetLazySymbolIndexing(false);
+    ABSL_CHECK(GeneratedDatabase()->Add(encoded_file_descriptor, size));
+  } else if (kMode == 1) {
+    ABSL_CHECK(
+        GeneratedDatabase()->Add(encoded_file_descriptor, size, filename));
+  } else {
+    ABSL_CHECK(GeneratedDatabase()->Add(encoded_file_descriptor, size, filename,
+                                        encoded_symbol_descriptor,
+                                        symbol_size));
+  }
 }
 
 

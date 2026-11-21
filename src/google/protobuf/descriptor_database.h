@@ -356,7 +356,7 @@ class PROTOBUF_EXPORT SimpleThreadSafeDescriptorDatabase
 // SimpleDescriptorDatabase.
 class PROTOBUF_EXPORT EncodedDescriptorDatabase : public DescriptorDatabase {
  public:
-  EncodedDescriptorDatabase();
+  explicit EncodedDescriptorDatabase(bool lazy_symbol_indexing = false);
   EncodedDescriptorDatabase(const EncodedDescriptorDatabase&) = delete;
   EncodedDescriptorDatabase& operator=(const EncodedDescriptorDatabase&) =
       delete;
@@ -369,10 +369,32 @@ class PROTOBUF_EXPORT EncodedDescriptorDatabase : public DescriptorDatabase {
   // if the bytes are not a valid FileDescriptorProto or if the file conflicted
   // with a file already in the database.
   bool Add(const void* PROTOBUF_NONNULL encoded_file_descriptor, int size);
+  bool Add(const void* PROTOBUF_NONNULL encoded_file_descriptor, int size,
+           absl::string_view filename,
+           const void* PROTOBUF_NULLABLE encoded_symbol_descriptor = nullptr,
+           int symbol_size = 0);
+
+  struct RegisteredFileEntry {
+    absl::string_view filename;
+    const void* PROTOBUF_NONNULL encoded_file_descriptor;
+    int size;
+    const void* PROTOBUF_NULLABLE encoded_symbol_descriptor;
+    int symbol_size;
+  };
+  void GetRegisteredFileEntries(
+      std::vector<RegisteredFileEntry>* PROTOBUF_NONNULL output) const;
 
   // Like Add(), but makes a copy of the data, so that the caller does not
   // need to keep it around.
   bool AddCopy(const void* PROTOBUF_NONNULL encoded_file_descriptor, int size);
+  bool AddCopy(const void* PROTOBUF_NONNULL encoded_file_descriptor, int size,
+               absl::string_view filename);
+
+  // When enabled, symbols and extensions are indexed lazily on first query
+  // (e.g. FindFileContainingSymbol or FindFileContainingExtension) rather than
+  // eagerly during Add().
+  void SetLazySymbolIndexing(bool lazy);
+  bool lazy_symbol_indexing() const { return lazy_symbol_indexing_; }
 
   // Like FindFileContainingSymbol but returns only the name of the file.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindNameOfFileContainingSymbol(
@@ -400,6 +422,7 @@ class PROTOBUF_EXPORT EncodedDescriptorDatabase : public DescriptorDatabase {
   // cleaner header.
   std::unique_ptr<DescriptorIndex> index_;
   std::vector<void*> files_to_delete_;
+  bool lazy_symbol_indexing_ = false;
 
   // If encoded_file.first is non-nullptr, parse the data into *output and
   // return true, otherwise return false.

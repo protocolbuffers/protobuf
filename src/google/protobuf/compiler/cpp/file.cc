@@ -1161,57 +1161,114 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   std::string file_data;
   ABSL_CHECK(file_proto.SerializeToString(&file_data));
 
-  auto desc_name = UniqueName("descriptor_table_protodef", file_, options_);
-  p->Emit(
-      {{"desc_name", desc_name},
-       {"encoded_file_proto",
-        [&] {
-          if (options_.strip_nonfunctional_codegen) {
-            p->Emit(R"cc("")cc");
-            return;
-          }
+  auto emit_encoded_bytes = [&](absl::string_view data) {
+    if (options_.strip_nonfunctional_codegen || data.empty()) {
+      p->Emit(R"cc("")cc");
+      return;
+    }
 
-          absl::string_view data = file_data;
-          if (data.size() <= 65535) {
-            static constexpr size_t kBytesPerLine = 40;
-            while (!data.empty()) {
-              auto to_write = std::min(kBytesPerLine, data.size());
-              auto chunk = data.substr(0, to_write);
-              data = data.substr(to_write);
+    if (data.size() <= 65535) {
+      static constexpr size_t kBytesPerLine = 40;
+      while (!data.empty()) {
+        auto to_write = std::min(kBytesPerLine, data.size());
+        auto chunk = data.substr(0, to_write);
+        data = data.substr(to_write);
 
-              p->Emit({{"text", EscapeTrigraphs(absl::CEscape(chunk))}}, R"cc(
-                "$text$"
-              )cc");
-            }
-            return;
-          }
+        p->Emit({{"text", EscapeTrigraphs(absl::CEscape(chunk))}}, R"cc(
+          "$text$"
+        )cc");
+      }
+      return;
+    }
 
-          // Workaround for MSVC: "Error C1091: compiler limit: string exceeds
-          // 65535 bytes in length". Declare a static array of chars rather than
-          // use a string literal. Only write 25 bytes per line.
-          static constexpr size_t kBytesPerLine = 25;
-          while (!data.empty()) {
-            auto to_write = std::min(kBytesPerLine, data.size());
-            auto chunk = data.substr(0, to_write);
-            data = data.substr(to_write);
+    // Workaround for MSVC: "Error C1091: compiler limit: string exceeds
+    // 65535 bytes in length". Declare a static array of chars rather than
+    // use a string literal. Only write 25 bytes per line.
+    static constexpr size_t kBytesPerLine = 25;
+    while (!data.empty()) {
+      auto to_write = std::min(kBytesPerLine, data.size());
+      auto chunk = data.substr(0, to_write);
+      data = data.substr(to_write);
 
-            std::string line;
-            for (char c : chunk) {
-              absl::StrAppend(&line, "'",
-                              absl::CEscape(absl::string_view(&c, 1)), "', ");
-            }
+      std::string line;
+      for (char c : chunk) {
+        absl::StrAppend(&line, "'", absl::CEscape(absl::string_view(&c, 1)),
+                        "', ");
+      }
 
-            p->Emit({{"line", line}}, R"cc(
-              $line$
-            )cc");
-          }
-        }}},
-      R"cc(
-        ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
-        const char $desc_name$[] = {
-            $encoded_file_proto$,
-        };
+      p->Emit({{"line", line}}, R"cc(
+        $line$
       )cc");
+    }
+  };
+
+  auto desc_name = UniqueName("descriptor_table_protodef", file_, options_);
+  p->Emit({{"desc_name", desc_name},
+           {"encoded_file_proto", [&] { emit_encoded_bytes(file_data); }}},
+          R"cc(
+            ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold)
+            const char $desc_name$[] = {
+                $encoded_file_proto$,
+            };
+          )cc");
+
+  const bool emit_symbol_table = !options_.opensource_runtime;
+  std::string sym_data;
+  std::string sym_desc_name = "nullptr";
+  if (emit_symbol_table) {
+    auto copy_nested_extensions = [](auto& self, const DescriptorProto& src,
+                                     DescriptorProto* dst) -> bool {
+      bool added = false;
+      for (const auto& ext : src.extension()) {
+        auto* out_ext = dst->add_extension();
+        if (ext.has_name()) out_ext->set_name(ext.name());
+        if (ext.has_number()) out_ext->set_number(ext.number());
+        if (ext.has_extendee()) out_ext->set_extendee(ext.extendee());
+        added = true;
+      }
+      for (const auto& nested : src.nested_type()) {
+        DescriptorProto nested_copy;
+        if (self(self, nested, &nested_copy)) {
+          *dst->add_nested_type() = std::move(nested_copy);
+          added = true;
+        }
+      }
+      return added;
+    };
+
+    FileDescriptorProto sym_proto;
+    if (file_proto.has_package()) {
+      sym_proto.set_package(file_proto.package());
+    }
+    for (const auto& msg : file_proto.message_type()) {
+      auto* out_msg = sym_proto.add_message_type();
+      if (msg.has_name()) out_msg->set_name(msg.name());
+      copy_nested_extensions(copy_nested_extensions, msg, out_msg);
+    }
+    for (const auto& en : file_proto.enum_type()) {
+      auto* out_en = sym_proto.add_enum_type();
+      if (en.has_name()) out_en->set_name(en.name());
+    }
+    for (const auto& ext : file_proto.extension()) {
+      auto* out_ext = sym_proto.add_extension();
+      if (ext.has_name()) out_ext->set_name(ext.name());
+      if (ext.has_number()) out_ext->set_number(ext.number());
+      if (ext.has_extendee()) out_ext->set_extendee(ext.extendee());
+    }
+    for (const auto& svc : file_proto.service()) {
+      auto* out_svc = sym_proto.add_service();
+      if (svc.has_name()) out_svc->set_name(svc.name());
+    }
+    ABSL_CHECK(sym_proto.SerializeToString(&sym_data));
+    sym_desc_name = UniqueName("descriptor_table_symdef", file_, options_);
+    p->Emit({{"sym_desc_name", sym_desc_name},
+             {"encoded_sym_proto", [&] { emit_encoded_bytes(sym_data); }}},
+            R"cc(
+              const char $sym_desc_name$[] = {
+                  $encoded_sym_proto$,
+              };
+            )cc");
+  }
 
   CrossFileReferences refs;
   GetCrossFileReferencesForFile(file_, &refs);
@@ -1261,6 +1318,17 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
                            : absl::StrCat(p->LookupVar("desc_table"), "_deps")},
           {"num_deps", num_deps},
           {"num_msgs", message_generators_.size()},
+          {"sym_fields",
+           [&] {
+             if (!emit_symbol_table) return;
+             p->Emit(
+                 {{"sym_name", sym_desc_name},
+                  {"sym_len",
+                   options_.strip_nonfunctional_codegen ? 0 : sym_data.size()}},
+                 R"cc(
+                   $sym_name$, $sym_len$,
+                 )cc");
+           }},
       },
       R"cc(
         static ::absl::once_flag $desc_table$_once;
@@ -1279,6 +1347,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
             $tablename$::offsets,
             $file_level_enum_descriptors$,
             $file_level_service_descriptors$,
+            $sym_fields$,
         };
       )cc");
 

@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstring>
 #include <memory>
 #include <string>
 #include <thread>  // NOLINT
@@ -639,6 +640,125 @@ TEST(EncodedDescriptorDatabaseExtraTest,
   FileDescriptorProto found_final;
   EXPECT_TRUE(db.FindFileContainingExtension("app.Target", 123, &found_final));
   EXPECT_EQ(found_final.name(), "good.proto");
+}
+
+TEST(EncodedDescriptorDatabaseExtraTest, LazySymbolIndexing) {
+  FileDescriptorProto file1;
+  file1.set_name("pkg/file1.proto");
+  file1.set_package("pkg");
+  file1.add_message_type()->set_name("Msg1");
+  auto* ext1 = file1.add_extension();
+  ext1->set_name("ext1");
+  ext1->set_extendee(".pkg.Target");
+  ext1->set_number(101);
+  std::string data1 = file1.SerializeAsString();
+
+  FileDescriptorProto file2;
+  file2.set_name("pkg/file2.proto");
+  file2.set_package("pkg");
+  file2.add_message_type()->set_name("Msg2");
+  auto* ext2 = file2.add_extension();
+  ext2->set_name("ext2");
+  ext2->set_extendee(".pkg.Target");
+  ext2->set_number(102);
+  std::string data2 = file2.SerializeAsString();
+
+  EncodedDescriptorDatabase db;
+  db.SetLazySymbolIndexing(true);
+  EXPECT_TRUE(db.lazy_symbol_indexing());
+
+  EXPECT_TRUE(db.Add(data1.data(), static_cast<int>(data1.size())));
+  EXPECT_TRUE(
+      db.Add(data2.data(), static_cast<int>(data2.size()), "pkg/file2.proto"));
+
+  // 1. Find by filename works without indexing symbols.
+  FileDescriptorProto found1;
+  EXPECT_TRUE(db.FindFileByName("pkg/file1.proto", &found1));
+  EXPECT_EQ(found1.name(), "pkg/file1.proto");
+  EXPECT_EQ(found1.message_type(0).name(), "Msg1");
+
+  FileDescriptorProto found2;
+  EXPECT_TRUE(db.FindFileByName("pkg/file2.proto", &found2));
+  EXPECT_EQ(found2.name(), "pkg/file2.proto");
+  EXPECT_EQ(found2.message_type(0).name(), "Msg2");
+
+  std::vector<std::string> all_files;
+  EXPECT_TRUE(db.FindAllFileNames(&all_files));
+  EXPECT_THAT(all_files, testing::UnorderedElementsAre("pkg/file1.proto",
+                                                       "pkg/file2.proto"));
+
+  // 2. FindFileContainingSymbol lazily indexes and resolves symbols.
+  FileDescriptorProto found_sym;
+  EXPECT_TRUE(db.FindFileContainingSymbol("pkg.Msg2", &found_sym));
+  EXPECT_EQ(found_sym.name(), "pkg/file2.proto");
+
+  // 3. FindFileContainingExtension lazily indexes and resolves extensions.
+  FileDescriptorProto found_ext;
+  EXPECT_TRUE(db.FindFileContainingExtension("pkg.Target", 101, &found_ext));
+  EXPECT_EQ(found_ext.name(), "pkg/file1.proto");
+
+  std::vector<int> ext_numbers;
+  EXPECT_TRUE(db.FindAllExtensionNumbers("pkg.Target", &ext_numbers));
+  EXPECT_THAT(ext_numbers, testing::UnorderedElementsAre(101, 102));
+
+  // 4. Adding duplicate file fails at Add time even with lazy indexing.
+  EXPECT_FALSE(db.Add(data1.data(), static_cast<int>(data1.size())));
+
+  // 5. Malformed or truncated filename prefixes are rejected safely.
+  EXPECT_FALSE(db.Add("\x0a", 1));
+  EXPECT_FALSE(db.Add("\x0a\x80", 2));
+  EXPECT_FALSE(db.Add("\x0a\x80\x80\x80\x80\x08", 6));
+}
+
+TEST(EncodedDescriptorDatabaseExtraTest,
+     LazySymbolIndexingWithCompactSymbolDescriptor) {
+  FileDescriptorProto full_file;
+  full_file.set_name("pkg/compact.proto");
+  full_file.set_package("pkg");
+  auto* msg = full_file.add_message_type();
+  msg->set_name("CompactMsg");
+  auto* field = msg->add_field();
+  field->set_name("payload");
+  field->set_number(1);
+  field->set_type(FieldDescriptorProto::TYPE_STRING);
+  auto* ext = full_file.add_extension();
+  ext->set_name("compact_ext");
+  ext->set_extendee(".pkg.Target");
+  ext->set_number(202);
+  std::string full_data = full_file.SerializeAsString();
+
+  FileDescriptorProto sym_file;
+  sym_file.set_package("pkg");
+  sym_file.add_message_type()->set_name("CompactMsg");
+  auto* sym_ext = sym_file.add_extension();
+  sym_ext->set_name("compact_ext");
+  sym_ext->set_extendee(".pkg.Target");
+  sym_ext->set_number(202);
+  std::string sym_data = sym_file.SerializeAsString();
+
+  // Poison a copy of full_data to verify that EnsureSymbolsIndexed() and
+  // missed symbol/extension queries only read sym_data and never parse
+  // full_data until a matching lookup returns the file.
+  std::string poisoned_full_data(full_data.size(), '\xff');
+
+  EncodedDescriptorDatabase db(/*lazy_symbol_indexing=*/true);
+  EXPECT_TRUE(db.Add(
+      poisoned_full_data.data(), static_cast<int>(poisoned_full_data.size()),
+      "pkg/compact.proto", sym_data.data(), static_cast<int>(sym_data.size())));
+
+  FileDescriptorProto dummy;
+  EXPECT_FALSE(db.FindFileContainingSymbol("pkg.NonExistent", &dummy));
+
+  std::vector<int> ext_numbers;
+  EXPECT_TRUE(db.FindAllExtensionNumbers("pkg.Target", &ext_numbers));
+  EXPECT_THAT(ext_numbers, ElementsAre(202));
+
+  // Restore valid full_data before resolving a matching symbol or file.
+  std::memcpy(poisoned_full_data.data(), full_data.data(), full_data.size());
+  FileDescriptorProto found;
+  EXPECT_TRUE(db.FindFileContainingSymbol("pkg.CompactMsg", &found));
+  EXPECT_EQ(found.name(), "pkg/compact.proto");
+  EXPECT_EQ(found.message_type(0).field(0).name(), "payload");
 }
 
 TEST(SimpleDescriptorDatabaseExtraTest, FindAllFileNames) {
