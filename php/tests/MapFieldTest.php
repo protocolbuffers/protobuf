@@ -5,6 +5,7 @@ require_once('test_util.php');
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\MapField;
+use Google\Protobuf\Internal\RepeatedField;
 use Foo\TestMessage;
 use Foo\TestMessage\Sub;
 
@@ -569,6 +570,80 @@ class MapFieldTest extends TestBase {
         $this->assertFalse(
             new MapField(GPBType::INT32, GPBType::MESSAGE, TestMessage::class) ==
             new MapField(GPBType::INT32, GPBType::MESSAGE, Sub::class));
+    }
+
+    public function testEqualityWithOtherTypes()
+    {
+        $map = new MapField(GPBType::INT32, GPBType::INT32);
+        $map[1] = 2;
+
+        $this->assertFalse($map == null);
+        $this->assertFalse(null == $map);
+        $this->assertTrue($map != null);
+        $this->assertTrue(null != $map);
+
+        $this->assertTrue($map == true);
+        $this->assertTrue(true == $map);
+        $this->assertFalse($map == false);
+        $this->assertFalse(false == $map);
+        $this->assertFalse($map != true);
+        $this->assertTrue($map != false);
+
+        $this->assertFalse($map == '');
+        $this->assertFalse('' == $map);
+        $this->assertFalse($map == 'foo');
+        $this->assertFalse('foo' == $map);
+        $this->assertTrue($map != 'foo');
+
+        $this->assertFalse($map == []);
+        $this->assertFalse([] == $map);
+        $this->assertFalse($map == [1 => 2]);
+        $this->assertFalse([1 => 2] == $map);
+        $this->assertTrue($map != []);
+
+        $std = new \stdClass();
+        $this->assertFalse($map == $std);
+        $this->assertFalse($std == $map);
+        $this->assertTrue($map != $std);
+        $this->assertTrue($std != $map);
+
+        $msg = new TestMessage();
+        $this->assertFalse($map == $msg);
+        $this->assertFalse($msg == $map);
+        $this->assertTrue($map != $msg);
+
+        $arr = new RepeatedField(GPBType::INT32);
+        $this->assertFalse($map == $arr);
+        $this->assertFalse($arr == $map);
+        $this->assertTrue($map != $arr);
+
+        $this->assertFalse(in_array($map, ['foo', [], $std, $msg, $arr]));
+
+        $notices = 0;
+        set_error_handler(function ($errno, $errstr) use (&$notices) {
+            if ($errno === E_NOTICE) {
+                $notices++;
+                return true;
+            }
+            return false;
+        });
+        try {
+            $this->assertFalse($map == 0);
+            $this->assertFalse(0 == $map);
+            $this->assertTrue($map == 1);
+            $this->assertTrue(1 == $map);
+            $this->assertFalse($map == 5);
+            $this->assertFalse(5 == $map);
+            $this->assertTrue($map != 5);
+            $this->assertTrue(5 != $map);
+            $this->assertTrue($map == 1.0);
+            $this->assertTrue(1.0 == $map);
+            $this->assertFalse($map == 1.5);
+            $this->assertFalse(1.5 == $map);
+        } finally {
+            restore_error_handler();
+        }
+        $this->assertSame(12, $notices);
     }
 
     #########################################################
