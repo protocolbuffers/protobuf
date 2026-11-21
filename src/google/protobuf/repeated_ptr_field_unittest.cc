@@ -42,6 +42,7 @@
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
+#include "google/protobuf/unknown_field_set.h"
 
 
 // Must be included last.
@@ -360,20 +361,37 @@ TEST_F(RepeatedPtrFieldTest, DestroyErroneousIncorrectElement) {
 }
 
 TEST_F(RepeatedPtrFieldTest, DestroyErroneousMixedElements) {
-#if defined(NDEBUG) || !defined(PROTOBUF_CUSTOM_VTABLE)
-  GTEST_SKIP() << "The `DCHECK` is disabled in release builds / "
-                  "!PROTOBUF_CUSTOM_VTABLE.";
+#if !defined(PROTOBUF_CUSTOM_VTABLE) || !defined(GTEST_HAS_DEATH_TEST)
+  GTEST_SKIP() << "!PROTOBUF_CUSTOM_VTABLE || !GTEST_HAS_DEATH_TEST";
 #else
-  auto destroy_heterogenous_repeated_field = []() {
-    RepeatedPtrField<google::protobuf::MessageLite> field;
-    field.AddAllocated(new TestAllTypes);
-    field.AddAllocated(new proto2_unittest::NestedTestAllTypes);
-  };
-  // The destructor of `RepeatedPtrField` verifies that all elements are of the
-  // same type if the element type is `Message` or `MessageLite`.
-  ASSERT_DEATH(destroy_heterogenous_repeated_field(),
-               "Type mismatch in RepeatedPtrField");
+  RepeatedPtrField<google::protobuf::MessageLite> field;
+  field.AddAllocated(new proto2_unittest::ForeignMessage);
+  auto* second = new TestAllTypes;
+  second->set_optional_string("second element string longer than SSO buffer");
+  EXPECT_DEBUG_DEATH(
+      { field.AddAllocated(second); }, "Type mismatch in RepeatedPtrField");
 #endif
+}
+
+TEST_F(RepeatedPtrFieldTest, DestroyErroneousMixedElementsLite) {
+#if !defined(PROTOBUF_CUSTOM_VTABLE) || !defined(GTEST_HAS_DEATH_TEST)
+  GTEST_SKIP() << "!PROTOBUF_CUSTOM_VTABLE || !GTEST_HAS_DEATH_TEST";
+#else
+  RepeatedPtrField<google::protobuf::Message> field;
+  field.AddAllocated(new proto2_unittest::ForeignMessage);
+  auto* second = new TestAllTypes;
+  second->set_optional_string("second element string longer than SSO buffer");
+  EXPECT_DEBUG_DEATH(
+      { field.AddAllocated(second); }, "Type mismatch in RepeatedPtrField");
+#endif
+}
+
+TEST_F(RepeatedPtrFieldTest, DestroyElementsWithUnknownFields) {
+  RepeatedPtrField<google::protobuf::MessageLite> field;
+  auto* first = new TestAllTypes;
+  first->mutable_unknown_fields()->AddVarint(999999, 1);
+  field.AddAllocated(first);
+  field.AddAllocated(new TestAllTypes);
 }
 
 namespace {

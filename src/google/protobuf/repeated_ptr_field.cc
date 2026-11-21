@@ -17,6 +17,7 @@
 #include <cstring>
 #include <limits>
 #include <string>
+#include <type_traits>
 
 #include "absl/base/optimization.h"
 #include "absl/base/prefetch.h"
@@ -142,8 +143,11 @@ void RepeatedPtrFieldBase::DebugAssertAllSameType(
   }
 }
 
-void RepeatedPtrFieldBase::DestroyMessageLites(
-    const ClassDataPrefix* class_data) {
+template <typename ClassDataT>
+PROTOBUF_ALWAYS_INLINE void RepeatedPtrFieldBase::DestroyMessageLitesImpl(
+    const ClassDataT* class_data) {
+  static_assert(std::is_same_v<ClassDataT, ClassDataPrefix> ||
+                std::is_same_v<ClassDataT, ClassData>);
   ABSL_DCHECK(NeedsDestroy());
   ABSL_DCHECK_EQ(GetArena(), nullptr);
 
@@ -158,6 +162,12 @@ void RepeatedPtrFieldBase::DestroyMessageLites(
       absl::PrefetchToLocalCacheNta(elems[i + 5]);
     }
     auto* ptr = cast<H>(elems[i]);
+    if constexpr (std::is_same_v<ClassDataT, ClassData>) {
+      if (ABSL_PREDICT_FALSE(ptr->class_data() != class_data)) {
+        ptr->DeleteInstance();
+        continue;
+      }
+    }
     destroy(*ptr);
     internal::SizedDelete(ptr, allocation_size);
   }
@@ -165,18 +175,22 @@ void RepeatedPtrFieldBase::DestroyMessageLites(
     internal::SizedDelete(rep(), Capacity() * sizeof(void*) + kRepHeaderSize);
   }
 }
+
+void RepeatedPtrFieldBase::DestroyMessageLites(
+    const ClassDataPrefix* class_data) {
+  PROTOBUF_ALWAYS_INLINE_CALL DestroyMessageLitesImpl(class_data);
+}
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
 void RepeatedPtrFieldBase::DestroyProtos() {
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   if (allocated_size() > 0) {
     using H = GenericTypeHandler<MessageLite>;
-    const auto* first = cast<H>(elements()[0]);
+    const ClassData* class_data = cast<H>(elements()[0])->GetClassData();
 #ifndef NDEBUG
-    DebugAssertAllSameType(first->GetClassData());
+    DebugAssertAllSameType(class_data);
 #endif
-    const ClassDataPrefix* class_data = first->GetClassDataPrefix();
-    PROTOBUF_ALWAYS_INLINE_CALL DestroyMessageLites(class_data);
+    PROTOBUF_ALWAYS_INLINE_CALL DestroyMessageLitesImpl(class_data);
   } else if (!using_sso()) {
     internal::SizedDelete(rep(), Capacity() * sizeof(void*) + kRepHeaderSize);
   }
