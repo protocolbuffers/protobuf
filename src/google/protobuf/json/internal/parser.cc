@@ -745,7 +745,10 @@ absl::Status ParseMapEntry(JsonLexer& lex, Field<Traits> map_field,
                            LocationWith<MaybeOwnedString>& key) {
   bool is_map_of_enums = false;
   RETURN_IF_ERROR(Traits::WithFieldType(
-      map_field, [&is_map_of_enums](const Desc<Traits>& desc) {
+      map_field, [&lex, &is_map_of_enums](const Desc<Traits>& desc) {
+        if (!Traits::IsMapEntry(desc)) {
+          return lex.Invalid("invalid map entry type");
+        }
         is_map_of_enums = Traits::FieldType(Traits::ValueField(desc)) ==
                           FieldDescriptor::TYPE_ENUM;
         return absl::OkStatus();

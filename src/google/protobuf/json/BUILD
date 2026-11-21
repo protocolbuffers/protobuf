@@ -226,6 +226,7 @@ cc_library(
         ":lexer",
         ":untyped_message",
         "//:type_cc_proto",
+        "//:wrappers_cc_proto",
         "//src/google/protobuf",
         "//src/google/protobuf:json_enumvalue_options_cc_proto",
         "//src/google/protobuf:port",

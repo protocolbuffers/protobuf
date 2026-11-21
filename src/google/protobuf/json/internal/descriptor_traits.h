@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "google/protobuf/type.pb.h"
+#include "google/protobuf/wrappers.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/algorithm/container.h"
 #include "absl/container/flat_hash_map.h"
@@ -189,6 +190,14 @@ struct Proto2Descriptor {
   static Field KeyField(const Desc& d) { return d.map_key(); }
 
   static Field ValueField(const Desc& d) { return d.map_value(); }
+
+  // Matches the preconditions of Descriptor::map_key() and map_value(), plus
+  // field numbers 1 and 2 per the map_entry layout (also enforced by
+  // DescriptorBuilder::ValidateMapEntry).
+  static bool IsMapEntry(const Desc& d) {
+    return d.options().map_entry() && d.field_count() == 2 &&
+           d.field(0)->number() == 1 && d.field(1)->number() == 2;
+  }
 
   static size_t FieldCount(const Desc& d) { return d.field_count(); }
 
@@ -425,6 +434,15 @@ struct Proto3Type {
 
   static Field ValueField(const Desc& d) { return &d.FieldsByIndex()[1]; }
 
+  // Only check the 2-field (1, 2) layout expected by KeyField/ValueField rather
+  // than full map_entry spec rules: type.proto is discouraged as a schema
+  // format (see type.proto) and runtime schemas are treated as trusted input
+  // (see SECURITY.md).
+  static bool IsMapEntry(const Desc& d) {
+    return d.proto().fields_size() == 2 && d.proto().fields(0).number() == 1 &&
+           d.proto().fields(1).number() == 2;
+  }
+
   static size_t FieldCount(const Desc& d) { return d.proto().fields_size(); }
 
   static Field FieldByIndex(const Desc& d, size_t idx) {
@@ -482,11 +500,18 @@ struct Proto3Type {
     if (f->proto().kind() != google::protobuf::Field::TYPE_MESSAGE) {
       return false;
     }
+    if (!IsRepeated(f)) {
+      return false;
+    }
 
     bool value = false;
     (void)WithFieldType(f, [&value](const Desc& desc) {
       value = absl::c_any_of(desc.proto().options(), [&](auto& option) {
-        return option.name() == "map_entry";
+        if (option.name() != "map_entry") {
+          return false;
+        }
+        google::protobuf::BoolValue map_entry;
+        return option.value().UnpackTo(&map_entry) && map_entry.value();
       });
       return absl::OkStatus();
     });

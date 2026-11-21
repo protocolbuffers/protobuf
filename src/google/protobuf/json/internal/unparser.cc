@@ -422,6 +422,9 @@ absl::Status WriteMap(JsonWriter& writer, const Msg<Traits>& msg,
           Traits::GetMessage(field, msg, i);
       RETURN_IF_ERROR(entry.status());
       const Desc<Traits>& type = Traits::GetDesc(**entry);
+      if (!Traits::IsMapEntry(type)) {
+        return absl::InvalidArgumentError("invalid map entry type");
+      }
 
       auto is_empty = IsEmptyValue<Traits>(**entry, Traits::ValueField(type));
       RETURN_IF_ERROR(is_empty.status());
