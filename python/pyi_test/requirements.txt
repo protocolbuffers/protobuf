@@ -1,0 +1,7 @@
+ast-serialize==0.6.0
+librt==0.13.0
+mypy==2.2.0
+mypy_extensions==1.1.0
+pathspec==1.1.1
+tomli==2.4.1
+typing_extensions==4.15.0
