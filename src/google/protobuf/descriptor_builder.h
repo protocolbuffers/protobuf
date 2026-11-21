@@ -281,7 +281,7 @@ class DescriptorBuilder {
   // package to the symbol table (e.g. AddPackage("foo.bar", ...) will add
   // "foo.bar" and "foo" to the table).
   void AddPackage(absl::string_view name, const Message& proto,
-                  FileDescriptor* file, bool toplevel);
+                  FileDescriptor* file);
 
   // Checks that the symbol name contains only alphanumeric characters and
   // underscores.  Records an error otherwise.
