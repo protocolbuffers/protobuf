@@ -20,6 +20,8 @@ import option "google/protobuf/unittest_custom_options_unlinked.proto";
 option (proto2_unittest.file_opt1) = 1;
 option (proto2_unittest_unlinked.file_opt1) = 1;
 
+option (proto2_unittest.NestedOptionType.nested_extension) = 4;
+
 message TestMessage {
   option (proto2_unittest.message_opt1) = 2;
   option (proto2_unittest_unlinked.message_opt1) = 2;

@@ -40,6 +40,12 @@ public final class ImportOptionTest {
         .isEqualTo(2);
     assertThat(fieldDescriptor.getOptions().getExtension(UnittestCustomOptions.fieldOpt1))
         .isEqualTo(3);
+    // Extension declared in a nested class is resolved by binary class name.
+    assertThat(
+            fileDescriptor
+                .getOptions()
+                .getExtension(UnittestCustomOptions.NestedOptionType.nestedExtension))
+        .isEqualTo(4);
 
     // Options from import option that are not linked in should be in unknown fields.
     assertThat(unknownFieldsFile.getField(7736975).getVarintList()).containsExactly(1L);
