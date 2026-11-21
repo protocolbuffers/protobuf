@@ -61,7 +61,7 @@ TEST_F(PhpGeneratorTest, Proto2File) {
   ExpectNoErrors();
 }
 
-TEST_F(PhpGeneratorTest, RequiredFieldError) {
+TEST_F(PhpGeneratorTest, RequiredFieldAllowed) {
   CreateTempFile("foo.proto",
                  R"schema(
     syntax = "proto2";
@@ -72,8 +72,7 @@ TEST_F(PhpGeneratorTest, RequiredFieldError) {
   RunProtoc(
       "protocol_compiler --proto_path=$tmpdir --php_out=$tmpdir foo.proto");
 
-  ExpectErrorSubstring(
-      "Can't generate PHP code for required field FooBar.foo_message");
+  ExpectNoErrors();
 }
 
 TEST_F(PhpGeneratorTest, GroupFieldError) {
@@ -92,18 +91,18 @@ TEST_F(PhpGeneratorTest, GroupFieldError) {
   ExpectErrorSubstring("Can't generate PHP code for group field Foo.bar");
 }
 
-TEST_F(PhpGeneratorTest, ClosedEnumError) {
+TEST_F(PhpGeneratorTest, ClosedEnumAllowed) {
   CreateTempFile("foo.proto",
                  R"schema(
     syntax = "proto2";
     enum Foo {
-      BAR = 0;
+      BAR = 1;
     })schema");
 
   RunProtoc(
       "protocol_compiler --proto_path=$tmpdir --php_out=$tmpdir foo.proto");
 
-  ExpectErrorSubstring("Can't generate PHP code for closed enum Foo");
+  ExpectNoErrors();
 }
 
 TEST_F(PhpGeneratorTest, ImportPublic) {

@@ -1,0 +1,47 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2023";
+
+package presence_packing_editions;
+
+option features.enum_type = OPEN;
+
+enum EditionsOpenEnum {
+  EDITIONS_OPEN_UNKNOWN = 0;
+  EDITIONS_OPEN_FIRST = 1;
+}
+
+message TestEditionsPresencePacking {
+  int32 explicit_int32 = 1;
+  int64 explicit_int64 = 2;
+  int32 implicit_int32 = 3 [features.field_presence = IMPLICIT];
+  int32 default_int32 = 5 [default = 99];
+  EditionsOpenEnum explicit_enum = 6;
+
+  repeated int32 repeated_default = 10;
+  repeated int32 repeated_expanded = 11 [
+    features.repeated_field_encoding = EXPANDED
+  ];
+  repeated int32 repeated_deprecated = 12 [deprecated = true];
+
+  oneof choice {
+    int32 oneof_int32 = 20;
+    string oneof_string = 21;
+  }
+
+  message NestedMessage {
+    int32 inherited_explicit_int32 = 1;
+    int32 overridden_implicit_int32 = 2 [features.field_presence = IMPLICIT];
+    repeated int32 inherited_packed_int32 = 3;
+    repeated int32 overridden_expanded_int32 = 4 [
+      features.repeated_field_encoding = EXPANDED
+    ];
+  }
+
+  NestedMessage nested = 30;
+}
