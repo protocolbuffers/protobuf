@@ -57,6 +57,9 @@ function(protobuf_configure_target target)
         target_compile_definitions("${target}" PRIVATE -DHAVE_ZLIB)
     endif ()
 
+    if (HAVE_GETEXECPATH)
+        target_compile_definitions("${target}" PRIVATE -DHAVE_GETEXECPATH)
+    endif ()
 
 endfunction ()
 
