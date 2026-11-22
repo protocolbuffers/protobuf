@@ -29,7 +29,7 @@ upb_DecodeFast_GrowResult upb_DecodeFast_GrowArray(upb_Decoder* d,
   const char* old_start = upb_Array_MutableDataPtr(arr);
   UPB_ASSERT(old_start != NULL && dst != NULL && (const char*)dst >= old_start);
   size_t size = (size_t)((const char*)dst - old_start) / valbytes;
-  arr->UPB_PRIVATE(size) = size;
+  UPB_PRIVATE(_upb_Array_SetSize)(arr, size);
   size_t new_size;
   if (UPB_UNLIKELY(
           upb_AddOverflow(size, (size_t)1, &new_size) ||

@@ -95,6 +95,54 @@ UPB_API_INLINE void* upb_Array_MutableDataPtr(struct upb_Array* array) {
   return (void*)upb_Array_DataPtr(array);
 }
 
+// All access to `size` and `capacity` goes through these functions. The getters
+// tell the optimizer about the invariants that the setters maintain.
+
+// Returns the number of elements in the array. This never exceeds the
+// capacity, and their size in bytes always fits in a size_t.
+UPB_FORCEINLINE size_t
+UPB_PRIVATE(_upb_Array_GetSize)(const struct upb_Array* array) {
+  const size_t size = array->UPB_ONLYBITS(size);
+  UPB_ASSUME(size <= array->UPB_PRIVATE(capacity));
+  UPB_ASSUME(size <= (SIZE_MAX >> UPB_PRIVATE(_upb_Array_ElemSizeLg2)(array)));
+  return size;
+}
+
+// Returns the number of elements the array has room for. Their size in bytes
+// always fits in a size_t.
+UPB_FORCEINLINE size_t
+UPB_PRIVATE(_upb_Array_GetCapacity)(const struct upb_Array* array) {
+  const size_t capacity = array->UPB_PRIVATE(capacity);
+  UPB_ASSUME(capacity <=
+             (SIZE_MAX >> UPB_PRIVATE(_upb_Array_ElemSizeLg2)(array)));
+  return capacity;
+}
+
+// Sets the number of elements in the array, which must not exceed its
+// capacity.
+UPB_FORCEINLINE void UPB_PRIVATE(_upb_Array_SetSize)(struct upb_Array* array,
+                                                     size_t size) {
+  UPB_ASSERT(size <= UPB_PRIVATE(_upb_Array_GetCapacity)(array));
+  array->UPB_ONLYBITS(size) = size;
+}
+
+// Sets the number of elements the array has room for, which must not be less
+// than its size. The size of that many elements in bytes must fit in a size_t.
+UPB_FORCEINLINE void UPB_PRIVATE(_upb_Array_SetCapacity)(
+    struct upb_Array* array, size_t capacity) {
+  UPB_ASSERT(capacity >= array->UPB_ONLYBITS(size));
+  UPB_ASSERT(capacity <=
+             (SIZE_MAX >> UPB_PRIVATE(_upb_Array_ElemSizeLg2)(array)));
+  array->UPB_PRIVATE(capacity) = capacity;
+}
+
+// Initializes a new array to be empty, with room for `capacity` elements.
+UPB_FORCEINLINE void UPB_PRIVATE(_upb_Array_Init)(struct upb_Array* array,
+                                                  size_t capacity) {
+  array->UPB_ONLYBITS(size) = 0;
+  UPB_PRIVATE(_upb_Array_SetCapacity)(array, capacity);
+}
+
 UPB_NODISCARD UPB_INLINE struct upb_Array* UPB_PRIVATE(
     _upb_Array_NewMaybeAllowSlow)(upb_Arena* arena, size_t init_capacity,
                                   int elem_size_lg2, bool allow_slow) {
@@ -125,8 +173,7 @@ UPB_NODISCARD UPB_INLINE struct upb_Array* UPB_PRIVATE(
         }
         UPB_PRIVATE(_upb_Array_SetTaggedPtr)(array, data,
                                              (size_t)elem_size_lg2);
-        array->UPB_ONLYBITS(size) = 0;
-        array->UPB_PRIVATE(capacity) = pool_bytes >> elem_size_lg2;
+        UPB_PRIVATE(_upb_Array_Init)(array, pool_bytes >> elem_size_lg2);
         return array;
       }
     }
@@ -140,8 +187,7 @@ UPB_NODISCARD UPB_INLINE struct upb_Array* UPB_PRIVATE(
   if (!array) return NULL;
   UPB_PRIVATE(_upb_Array_SetTaggedPtr)
   (array, UPB_PTR_AT(array, array_size, void), (size_t)elem_size_lg2);
-  array->UPB_ONLYBITS(size) = 0;
-  array->UPB_PRIVATE(capacity) = init_capacity;
+  UPB_PRIVATE(_upb_Array_Init)(array, init_capacity);
   return array;
 }
 
@@ -168,11 +214,12 @@ UPB_NODISCARD UPB_FORCEINLINE bool UPB_PRIVATE(_upb_Array_TryFastRealloc)(
   const size_t max_bytes =
       SIZE_MAX - (UPB_MALLOC_ALIGN - 1) - UPB_PRIVATE(kUpb_Asan_GuardSize);
   if (UPB_UNLIKELY(capacity > max_bytes >> elem_size_lg2)) return false;
-  size_t old_bytes = array->UPB_PRIVATE(capacity) << elem_size_lg2;
+  size_t old_bytes = UPB_PRIVATE(_upb_Array_GetCapacity)(array)
+                     << elem_size_lg2;
   size_t new_bytes = capacity << elem_size_lg2;
   UPB_ASSUME(new_bytes > old_bytes);
   if (!upb_Arena_TryExtend(arena, array, old_bytes, new_bytes)) return false;
-  array->UPB_PRIVATE(capacity) = capacity;
+  UPB_PRIVATE(_upb_Array_SetCapacity)(array, capacity);
   return true;
 }
 
@@ -180,7 +227,7 @@ UPB_NODISCARD UPB_API_INLINE bool upb_Array_Reserve(struct upb_Array* array,
                                                     size_t size,
                                                     upb_Arena* arena) {
   UPB_ASSERT(!upb_Array_IsFrozen(array));
-  if (array->UPB_PRIVATE(capacity) < size)
+  if (UPB_PRIVATE(_upb_Array_GetCapacity)(array) < size)
     return UPB_PRIVATE(_upb_Array_Realloc)(array, size, arena);
   return true;
 }
@@ -189,10 +236,10 @@ UPB_NODISCARD UPB_API_INLINE bool upb_Array_Reserve(struct upb_Array* array,
 UPB_NODISCARD UPB_INLINE bool UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
     struct upb_Array* array, size_t size, upb_Arena* arena) {
   UPB_ASSERT(!upb_Array_IsFrozen(array));
-  UPB_ASSERT(size <= array->UPB_ONLYBITS(size) ||
+  UPB_ASSERT(size <= UPB_PRIVATE(_upb_Array_GetSize)(array) ||
              arena);  // Allow NULL arena when shrinking.
   if (!upb_Array_Reserve(array, size, arena)) return false;
-  array->UPB_ONLYBITS(size) = size;
+  UPB_PRIVATE(_upb_Array_SetSize)(array, size);
   return true;
 }
 
@@ -203,18 +250,18 @@ UPB_INLINE void UPB_PRIVATE(_upb_Array_Set)(struct upb_Array* array, size_t i,
                                             const void* data,
                                             size_t elem_size) {
   UPB_ASSERT(!upb_Array_IsFrozen(array));
-  UPB_ASSERT(i < array->UPB_ONLYBITS(size));
+  UPB_ASSERT(i < UPB_PRIVATE(_upb_Array_GetSize)(array));
   UPB_ASSERT(elem_size == 1U << UPB_PRIVATE(_upb_Array_ElemSizeLg2)(array));
   char* arr_data = (char*)upb_Array_MutableDataPtr(array);
   memcpy(arr_data + (i * elem_size), data, elem_size);
 }
 
 UPB_API_INLINE size_t upb_Array_Size(const struct upb_Array* arr) {
-  return arr->UPB_ONLYBITS(size);
+  return UPB_PRIVATE(_upb_Array_GetSize)(arr);
 }
 
 UPB_API_INLINE size_t upb_Array_Capacity(const struct upb_Array* arr) {
-  return arr->UPB_PRIVATE(capacity);
+  return UPB_PRIVATE(_upb_Array_GetCapacity)(arr);
 }
 
 #ifdef __cplusplus
