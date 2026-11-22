@@ -14142,9 +14142,9 @@ TEST_F(FeaturesTest, FieldCppStringType) {
             }
           }
           extendee: "Foo"
-        }
+        } $1
       )pb",
-      ""
+      "", ""
   );
   const FileDescriptor* file = BuildFile(file_contents);
   const Descriptor* message = file->message_type(0);
@@ -14163,6 +14163,7 @@ TEST_F(FeaturesTest, FieldCppStringType) {
             FieldDescriptor::CppStringType::kString);
 
 }
+
 
 TEST_F(FeaturesTest, FieldCppRepeatedType) {
   BuildDescriptorMessagesInTestPool();

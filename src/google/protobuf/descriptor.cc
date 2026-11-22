@@ -9238,6 +9238,7 @@ bool IsStringFieldWithPrivatizedAccessors(const FieldDescriptor& field) {
     return true;
   }
 
+
   return false;
 }
 
