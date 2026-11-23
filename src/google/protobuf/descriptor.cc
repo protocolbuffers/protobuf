@@ -118,7 +118,7 @@ using ::google::protobuf::internal::ToJsonName;
 
 namespace {
 
-constexpr int kPackageLimit = 100;
+constexpr int kPackageLimit = 64;
 
 #ifdef PROTOBUF_UNSAFE_DISABLE_MAX_FIELD_COUNT_CHECK
 constexpr int kMaxFieldsPerMessage = std::numeric_limits<int32_t>::max();

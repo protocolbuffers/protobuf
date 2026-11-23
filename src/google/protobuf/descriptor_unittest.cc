@@ -17079,6 +17079,29 @@ TEST_F(ValidationErrorTest, PackageTooLong) {
       "aaaaaaaa: NAME: Package name is too long\n");
 }
 
+TEST_F(DescriptorTest, PackagePeriodLimit) {
+  auto dotted_pkg = [](int dots) {
+    std::string pkg = "a";
+    for (int i = 0; i < dots; ++i) {
+      absl::StrAppend(&pkg, ".a");
+    }
+    return pkg;
+  };
+
+  DescriptorPool pool;
+  FileDescriptorProto ok_pkg;
+  ok_pkg.set_name("ok_pkg.proto");
+  ok_pkg.set_package(dotted_pkg(64));
+  EXPECT_NE(pool.BuildFile(ok_pkg), nullptr);
+
+  FileDescriptorProto too_deep;
+  too_deep.set_name("too_deep.proto");
+  too_deep.set_package(dotted_pkg(65));
+  MockErrorCollector errors;
+  EXPECT_EQ(pool.BuildFileCollectingErrors(too_deep, &errors), nullptr);
+  EXPECT_THAT(errors.text_, HasSubstr("Exceeds Maximum Package Depth"));
+}
+
 TEST_F(ValidationErrorTest, TooManyFieldsInMessage) {
   FileDescriptorProto file = ParseTextOrDie(R"pb(
     name: "foo.proto"
