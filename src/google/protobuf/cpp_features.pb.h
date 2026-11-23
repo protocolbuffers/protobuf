@@ -54,7 +54,7 @@ PROTOBUF_EXPORT extern const uint32_t CppFeatures_StringType_internal_data_[];
 class CppFeatures;
 struct CppFeaturesGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const CppFeaturesGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) CppFeatures_globals_;
+    CppFeatures_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 }  // namespace pb
 namespace google {
 namespace protobuf {

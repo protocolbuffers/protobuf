@@ -138,8 +138,7 @@ static_assert(alignof(JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal) ==
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal
-        PROTOBUF_ALIGNAS(
-            ::_pbi::kClassDataAlignment) JavaFeatures_NestInFileClassFeature_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+        JavaFeatures_NestInFileClassFeature_globals_ alignas(::_pbi::kClassDataAlignment) PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class JavaFeatures::_Internal {
  public:
   using HasBits = decltype(::std::declval<JavaFeatures>()._impl_._has_bits_);
@@ -281,8 +280,7 @@ static_assert(alignof(JavaFeaturesGlobalsTypeInternal) ==
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const JavaFeaturesGlobalsTypeInternal
-        PROTOBUF_ALIGNAS(
-            ::_pbi::kClassDataAlignment) JavaFeatures_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+        JavaFeatures_globals_ alignas(::_pbi::kClassDataAlignment) PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 }  // namespace pb
 static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
     file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[2];

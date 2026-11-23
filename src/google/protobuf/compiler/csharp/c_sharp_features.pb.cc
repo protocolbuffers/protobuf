@@ -149,8 +149,7 @@ static_assert(alignof(CSharpFeaturesGlobalsTypeInternal) ==
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CSharpFeaturesGlobalsTypeInternal
-        PROTOBUF_ALIGNAS(
-            ::_pbi::kClassDataAlignment) CSharpFeatures_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+        CSharpFeatures_globals_ alignas(::_pbi::kClassDataAlignment) PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 }  // namespace pb
 static constexpr const ::_pb::EnumDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
     file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fcsharp_2fc_5fsharp_5ffeatures_2eproto = nullptr;

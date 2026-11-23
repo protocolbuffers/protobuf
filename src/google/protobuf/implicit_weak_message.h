@@ -37,8 +37,8 @@ namespace protobuf {
 namespace internal {
 
 struct ImplicitWeakMessageDefaultType;
-extern ImplicitWeakMessageDefaultType PROTOBUF_ALIGNAS(kClassDataAlignment)
-    implicit_weak_message_globals;
+extern ImplicitWeakMessageDefaultType implicit_weak_message_globals alignas(
+    kClassDataAlignment);
 
 // An implementation of MessageLite that treats all data as unknown. This type
 // acts as a placeholder for an implicit weak field in the case where the true

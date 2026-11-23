@@ -50,7 +50,7 @@ namespace file {
 class CppFileOptions;
 struct CppFileOptionsGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const CppFileOptionsGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) CppFileOptions_globals_;
+    CppFileOptions_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 }  // namespace file
 }  // namespace pb
 namespace google {
