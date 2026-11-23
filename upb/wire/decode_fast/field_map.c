@@ -19,6 +19,7 @@
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/internal/sub.h"
 #include "upb/mini_table/message.h"
+#include "upb/port/overflow.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/cardinality.h"
 #include "upb/wire/decode_fast/combinations.h"
@@ -425,14 +426,15 @@ void upb_DecodeFast_Map(upb_Decoder* d, const char** ptr, upb_Message* msg,
   size_t estimated_entries =
       upb_DecodeFast_EstimateMapSize(d, *ptr, expected, tagsize);
   if (estimated_entries > 0) {
+    size_t new_size;
     // The map's table discriminator is derived from the same entry MiniTable
     // that selected this parser, so it always agrees with our compile-time
     // is_str_map. Place the assume immediately before _upb_Map_Size() with no
     // intervening memory writes so EarlyCSE folds the strtable/inttable branch.
     UPB_ASSUME(map_ctx.map->UPB_PRIVATE(is_strtable) == is_str_map);
-    if (UPB_UNLIKELY(!_upb_Map_Reserve(
-            map_ctx.map, _upb_Map_Size(map_ctx.map) + estimated_entries,
-            &d->arena))) {
+    if (UPB_UNLIKELY(upb_AddOverflow(_upb_Map_Size(map_ctx.map),
+                                     estimated_entries, &new_size) ||
+                     !_upb_Map_Reserve(map_ctx.map, new_size, &d->arena))) {
       d->depth += depth_cost;
       UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_OutOfMemory, next);
       return;

@@ -18,6 +18,7 @@
 #include "upb/message/internal/types.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/message.h"
+#include "upb/port/overflow.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/combinations.h"
 #include "upb/wire/decode_fast/data.h"
@@ -256,9 +257,13 @@ bool upb_DecodeFast_ArrayReserve(upb_Decoder* d, upb_Array* arr,
   UPB_ASSERT(arr);
 
   size_t existing = upb_Array_Size(arr);
-  if (upb_Array_Reserve(arr, existing + elems, &d->arena)) return true;
+  size_t new_size;
+  if (UPB_UNLIKELY(upb_AddOverflow(existing, (size_t)elems, &new_size) ||
+                   !upb_Array_Reserve(arr, new_size, &d->arena))) {
+    return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_OutOfMemory, next);
+  }
 
-  return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_OutOfMemory, next);
+  return true;
 }
 
 UPB_FORCEINLINE

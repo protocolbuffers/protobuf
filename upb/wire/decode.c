@@ -35,6 +35,7 @@
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
+#include "upb/port/overflow.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/constants.h"
 #include "upb/wire/internal/decoder.h"
@@ -89,10 +90,13 @@ enum {
 #define OP_VARPCK_LG2(n) (n + 9) /* n in [0, 2, 3] => op in [9, 11, 12] */
 
 static bool _upb_Decoder_Reserve(upb_Decoder* d, upb_Array* arr, size_t elem) {
-  bool need_realloc =
-      arr->UPB_PRIVATE(capacity) - arr->UPB_PRIVATE(size) < elem;
-  if (need_realloc && !UPB_PRIVATE(_upb_Array_Realloc)(
-                          arr, arr->UPB_PRIVATE(size) + elem, &d->arena)) {
+  size_t new_size;
+  if (UPB_UNLIKELY(upb_AddOverflow(arr->UPB_PRIVATE(size), elem, &new_size))) {
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
+  }
+  bool need_realloc = arr->UPB_PRIVATE(capacity) < new_size;
+  if (need_realloc &&
+      !UPB_PRIVATE(_upb_Array_Realloc)(arr, new_size, &d->arena)) {
     upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
   }
   return need_realloc;
