@@ -227,8 +227,9 @@ bool ValueEq(upb_MessageValue val1, upb_MessageValue val2, TypeInfo type) {
     case kUpb_CType_String:
     case kUpb_CType_Bytes:
       return val1.str_val.size == val2.str_val.size &&
-             memcmp(val1.str_val.data, val2.str_val.data, val1.str_val.size) ==
-                 0;
+             (!val1.str_val.size ||
+              memcmp(val1.str_val.data, val2.str_val.data,
+                     val1.str_val.size) == 0);
     case kUpb_CType_Message:
       return MessageEq(val1.msg_val, val2.msg_val, type.desc->msgdef);
     default:

@@ -29,8 +29,9 @@ bool shared_Msgval_IsEqual(upb_MessageValue val1, upb_MessageValue val2,
     case kUpb_CType_String:
     case kUpb_CType_Bytes:
       return val1.str_val.size == val2.str_val.size &&
-             memcmp(val1.str_val.data, val2.str_val.data, val1.str_val.size) ==
-                 0;
+             (!val1.str_val.size ||
+              memcmp(val1.str_val.data, val2.str_val.data, val1.str_val.size) ==
+                  0);
     case kUpb_CType_Message: {
       const upb_MiniTable* m = upb_MessageDef_MiniTable(msgdef);
       const int options = 0;
@@ -59,6 +60,7 @@ uint64_t shared_Msgval_GetHash(upb_MessageValue val, upb_CType type,
       return _upb_Hash(&val, 8, seed);
     case kUpb_CType_String:
     case kUpb_CType_Bytes:
+      if (!val.str_val.size) return _upb_Hash("", 0, seed);
       return _upb_Hash(val.str_val.data, val.str_val.size, seed);
     case kUpb_CType_Message:
       return shared_Message_Hash(val.msg_val, msgdef, seed, status);
