@@ -148,22 +148,31 @@ void RepeatedPtrFieldBase::DestroyMessageLites(
   ABSL_DCHECK_EQ(GetArena(), nullptr);
 
   using H = GenericTypeHandler<MessageLite>;
-  const int n = allocated_size();
-  ABSL_DCHECK_LE(n, Capacity());
-  void** elems = elements();
   void (*destroy)(MessageLite&) = class_data->destroy_message;
   const size_t allocation_size = class_data->allocation_size();
-  for (int i = 0; i < n; i++) {
-    if (i + 5 < n) {
-      absl::PrefetchToLocalCacheNta(elems[i + 5]);
-    }
+  if (using_sso()) {
+    auto* ptr = cast<H>(tagged_rep_or_elem_);
+    destroy(*ptr);
+    internal::SizedDelete(ptr, allocation_size);
+    return;
+  }
+  Rep* r = rep();
+  const int n = r->allocated_size;
+  ABSL_DCHECK_LE(n, r->capacity);
+  void** elems = r->elements;
+  int i = 0;
+  for (; i < n - 5; i++) {
+    absl::PrefetchToLocalCacheNta(elems[i + 5]);
     auto* ptr = cast<H>(elems[i]);
     destroy(*ptr);
     internal::SizedDelete(ptr, allocation_size);
   }
-  if (!using_sso()) {
-    internal::SizedDelete(rep(), Capacity() * sizeof(void*) + kRepHeaderSize);
+  for (; i < n; i++) {
+    auto* ptr = cast<H>(elems[i]);
+    destroy(*ptr);
+    internal::SizedDelete(ptr, allocation_size);
   }
+  internal::SizedDelete(r, r->capacity * sizeof(void*) + kRepHeaderSize);
 }
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
