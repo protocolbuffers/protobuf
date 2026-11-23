@@ -59,7 +59,7 @@ jobs:
           #   targets: //java/... //compatibility/... //src/google/protobuf/compiler:protoc_aarch64_test
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.name }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v7
