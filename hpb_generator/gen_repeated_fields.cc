@@ -277,7 +277,7 @@ void WriteRepeatedStringAccessor(const google::protobuf::Descriptor* desc,
       R"cc(
         $cpp_const_type$ $class_name$::$field_name$(size_t index) const {
           size_t len;
-          auto* ptr = $upb_msg_name$_mutable_$upbc_name$(msg_, &len);
+          auto* ptr = $upb_msg_name$_$upbc_name$(msg_, &len);
           assert(index < len);
           return hpb::interop::upb::FromUpbStringView(*(ptr + index));
         }
@@ -362,7 +362,7 @@ void WriteRepeatedScalarAccessor(const google::protobuf::Descriptor* desc,
       R"cc(
         $cpp_const_type$ $class_name$::$field_name$(size_t index) const {
           size_t len;
-          auto* ptr = $upb_msg_name$_mutable_$upbc_name$(msg_, &len);
+          auto* ptr = $upb_msg_name$_$upbc_name$(msg_, &len);
           assert(index < len);
           return *(ptr + index);
         }

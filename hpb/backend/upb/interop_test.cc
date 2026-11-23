@@ -7,9 +7,12 @@
 
 #include "hpb/backend/upb/interop.h"
 
+#include <cstddef>
 #include <string>
 
 #include <gtest/gtest.h>
+#include "hpb_generator/tests/child_model.hpb.h"
+#include "hpb_generator/tests/child_model.upb.h"
 #include "hpb_generator/tests/test_model.hpb.h"
 #include "hpb_generator/tests/test_model.upb.h"
 #include "hpb_generator/tests/test_model.upb_minitable.h"
@@ -122,6 +125,46 @@ TEST(CppGeneratedCode, NonmatchingMinitablesExplode) {
                                                   different_minitable, arena);
       },
       "Check failed: minitable == internal::AssociatedUpbTypes<T>::kMiniTable");
+  upb_Arena_Free(arena);
+}
+
+TEST(CppGeneratedCode, FrozenMessageConstRepeatedGetters) {
+  upb_Arena* arena = upb_Arena_New();
+  hpb_unittest_TestModel* msg = hpb_unittest_TestModel_new(arena);
+  ASSERT_NE(msg, nullptr);
+  ASSERT_TRUE(hpb_unittest_TestModel_add_value_array(msg, 42, arena));
+  ASSERT_TRUE(hpb_unittest_TestModel_add_repeated_string(
+      msg, hpb::interop::upb::CopyToUpbStringView("hello", arena), arena));
+  hpb_unittest_ChildModel1* child =
+      hpb_unittest_TestModel_add_child_models(msg, arena);
+  ASSERT_NE(child, nullptr);
+  hpb_unittest_ChildModel1_set_child_str1(
+      child, hpb::interop::upb::CopyToUpbStringView("child", arena));
+
+  upb_Message* upb_msg = reinterpret_cast<upb_Message*>(msg);
+  upb_Message_Freeze(upb_msg, &hpb_0unittest__TestModel_msg_init);
+  ASSERT_TRUE(upb_Message_IsFrozen(upb_msg));
+
+  TestModel::CProxy const_handle =
+      hpb::interop::upb::MakeCHandle<TestModel>(msg, arena);
+  EXPECT_EQ(const_handle.value_array_size(), 1);
+  EXPECT_EQ(const_handle.value_array(0), 42);
+  EXPECT_EQ(const_handle.value_array()[0], 42);
+  EXPECT_EQ(const_handle.repeated_string_size(), 1);
+  EXPECT_EQ(const_handle.repeated_string(0), "hello");
+  EXPECT_EQ(const_handle.repeated_string()[0], "hello");
+  EXPECT_EQ(const_handle.child_models_size(), 1);
+  EXPECT_EQ(const_handle.child_models(0)->child_str1(), "child");
+  EXPECT_EQ(const_handle.child_models()[0].child_str1(), "child");
+
+#if defined(GTEST_HAS_DEATH_TEST) && !defined(NDEBUG)
+  size_t len = 0;
+  EXPECT_DEATH((void)hpb_unittest_TestModel_mutable_value_array(msg, &len),
+               "upb_Array_IsFrozen");
+  EXPECT_DEATH((void)hpb_unittest_TestModel_mutable_repeated_string(msg, &len),
+               "upb_Array_IsFrozen");
+#endif
+
   upb_Arena_Free(arena);
 }
 

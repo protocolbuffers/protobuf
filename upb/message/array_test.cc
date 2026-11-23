@@ -152,3 +152,23 @@ TEST(ArrayTest, MemoryPooling) {
   size_t diff = space_after_arr3 - space_after;
   EXPECT_LT(diff, 100);
 }
+
+TEST(ArrayTest, MutableDataPtrFrozenAborts) {
+  upb::Arena arena;
+  upb_Array* array = upb_Array_New(arena.ptr(), kUpb_CType_Int32);
+  ASSERT_NE(array, nullptr);
+
+  upb_MessageValue mv;
+  mv.int32_val = 42;
+  ASSERT_TRUE(upb_Array_Append(array, mv, arena.ptr()));
+
+  upb_Array_Freeze(array, /*m=*/nullptr);
+  EXPECT_TRUE(upb_Array_IsFrozen(array));
+  const auto* data = static_cast<const int32_t*>(upb_Array_DataPtr(array));
+  ASSERT_NE(data, nullptr);
+  EXPECT_EQ(data[0], 42);
+
+#if defined(GTEST_HAS_DEATH_TEST) && !defined(NDEBUG)
+  EXPECT_DEATH((void)upb_Array_MutableDataPtr(array), "upb_Array_IsFrozen");
+#endif
+}
