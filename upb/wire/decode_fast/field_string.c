@@ -28,16 +28,20 @@ bool upb_DecodeFast_SingleStringAlias(upb_Decoder* d, const char** ptr,
   UPB_UNUSED(ctx);
   bool validate_utf8 = type == kUpb_DecodeFast_String;
   upb_StringView* sv = dst;
+  upb_StringView tmp;
   int size;
 
   if (!upb_DecodeFast_DecodeSize(d, ptr, &size, next)) return false;
 
-  *ptr = upb_EpsCopyInputStream_ReadStringAlwaysAlias(EPS(d), *ptr, size, sv);
+  *ptr = upb_EpsCopyInputStream_ReadStringAlwaysAlias(EPS(d), *ptr, size, &tmp);
 
-  if (validate_utf8 && !utf8_range_IsValid(sv->data, sv->size)) {
+  if (validate_utf8 && !utf8_range_IsValid(tmp.data, tmp.size)) {
     return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_BadUtf8, next);
   }
 
+  // Commit only after validation. For scalar fields `dst` is the message's own
+  // slot, so storing earlier would leave a rejected string in the message.
+  *sv = tmp;
   return true;
 }
 

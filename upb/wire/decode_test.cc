@@ -3073,6 +3073,56 @@ TEST(DecodeTest, FailedOneofStringLeavesPreviousMember) {
   }
 }
 
+// With kUpb_DecodeOption_AliasString, a scalar string that fails UTF-8
+// validation must not be stored in the message: the field keeps its previous
+// value and does not refer to the rejected input.
+TEST(DecodeTest, AliasedScalarStringWithBadUtf8LeavesValueUnchanged) {
+  Arena mt_arena;
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::String>(
+      1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+#if UPB_FASTTABLE
+  ASSERT_TRUE(MiniTable::HasFastTableEntry(mt, field));
+#endif
+  const std::string kValid = ToBinaryPayload(
+      wire_types::WireMessage{{1, wire_types::Delimited("abc")}});
+  const std::string kBadUtf8 = ToBinaryPayload(
+      wire_types::WireMessage{{1, wire_types::Delimited("ab\xff")}});
+
+  for (absl::string_view initial :
+       {absl::string_view(""), absl::string_view("abc")}) {
+    for (int base_options : GetDecodeOptionsToTest()) {
+      const int alias_options = base_options | kUpb_DecodeOption_AliasString;
+      SCOPED_TRACE(
+          absl::StrCat("initial=", initial, " options=", alias_options));
+      Arena arena;
+      upb_Message* msg = upb_Message_New(mt, arena.ptr());
+      if (!initial.empty()) {
+        // Decoded without aliasing, so the initial value lives in the arena.
+        ASSERT_EQ(upb_Decode(kValid.data(), kValid.size(), msg, mt, nullptr,
+                             base_options, arena.ptr()),
+                  kUpb_DecodeStatus_Ok);
+      }
+      upb_StringView before = upb_Message_GetString(
+          msg, field, upb_StringView_FromDataAndSize(nullptr, 0));
+
+      // Alias a heap copy of the bad payload and free it before reading the
+      // field back: the field must not refer to it.
+      auto bad_buf = std::make_unique<char[]>(kBadUtf8.size());
+      memcpy(bad_buf.get(), kBadUtf8.data(), kBadUtf8.size());
+      EXPECT_EQ(upb_Decode(bad_buf.get(), kBadUtf8.size(), msg, mt, nullptr,
+                           alias_options, arena.ptr()),
+                kUpb_DecodeStatus_BadUtf8);
+      bad_buf.reset();
+
+      upb_StringView after = upb_Message_GetString(
+          msg, field, upb_StringView_FromDataAndSize(nullptr, 0));
+      EXPECT_EQ(after.data, before.data);
+      EXPECT_EQ(after.size, before.size);
+      EXPECT_EQ(absl::string_view(after.data, after.size), initial);
+    }
+  }
+}
+
 }  // namespace
 
 }  // namespace test

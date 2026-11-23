@@ -29,7 +29,9 @@ extern "C" {
 // LINT.IfChange
 enum {
   /* If set, strings and unknown fields will alias the input buffer instead of
-   * copying into the arena. */
+   * copying into the arena. The input buffer must then outlive the message,
+   * even if decoding fails: fields decoded before the failure still alias it.
+   */
   kUpb_DecodeOption_AliasString = 1,
 
   /* If set, the parse will return failure if any message is missing any
@@ -66,7 +68,7 @@ enum {
    * If set, the fasttable decoder will not be used. */
   kUpb_DecodeOption_DisableFastTable = 16,
 };
-// LINT.ThenChange(rust/upb/wire.rs:decode_status)
+// LINT.ThenChange(rust/upb/wire.rs:decode_option)
 
 UPB_INLINE uint32_t upb_DecodeOptions_MaxDepth(uint16_t depth) {
   return (uint32_t)depth << 16;
