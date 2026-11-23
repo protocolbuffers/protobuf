@@ -102,6 +102,7 @@ UPB_INLINE void UPB_PRIVATE(upb_MiniTable_CheckInvariants)(
     const struct upb_MiniTable* mt) {
   UPB_STATIC_ASSERT(UPB_MALLOC_ALIGN >= kUpb_Message_Align, "Under aligned");
   UPB_STATIC_ASSERT(kUpb_Message_Align >= UPB_ALIGN_OF(void*), "Under aligned");
+  UPB_ASSERT(mt->UPB_PRIVATE(size) >= kUpb_Message_Align);
   UPB_ASSERT(mt->UPB_PRIVATE(size) % kUpb_Message_Align == 0);
 }
 

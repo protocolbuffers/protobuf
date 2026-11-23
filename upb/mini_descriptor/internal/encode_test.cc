@@ -289,6 +289,90 @@ TEST_P(MiniTableTest, SizeOverflow) {
   ASSERT_EQ(nullptr, table2) << status.error_message();
 }
 
+TEST_P(MiniTableTest, SizeAlignmentBoundaryAccepted) {
+  // The largest 8-byte aligned size representable in uint16_t is 65528.
+  constexpr uint16_t kMaxAlignedSize = UINT16_MAX - (kUpb_Message_Align - 1);
+  struct Case {
+    upb_FieldType type;
+    uint32_t field_count;
+    uint32_t field_size;
+  };
+  const Case cases[] = {
+      // 8 + 16379 * 4 = 65524 -> aligns up to 65528.
+      {kUpb_FieldType_Int32, 16379, 4},
+      // 8 + 16380 * 4 = 65528 -> already aligned.
+      {kUpb_FieldType_Int32, 16380, 4},
+      // 8 + 65519 * 1 = 65527 -> aligns up to 65528.
+      {kUpb_FieldType_Bool, 65519, 1},
+      // 8 + 65520 * 1 = 65528 -> already aligned.
+      {kUpb_FieldType_Bool, 65520, 1},
+  };
+
+  for (const Case& tc : cases) {
+    SCOPED_TRACE(testing::Message()
+                 << "type=" << tc.type << " field_count=" << tc.field_count);
+    upb::Arena arena;
+    upb::MtDataEncoder e;
+    ASSERT_TRUE(e.StartMessage(0));
+    for (uint32_t i = 1; i <= tc.field_count; ++i) {
+      ASSERT_TRUE(e.PutField(tc.type, i, kUpb_FieldModifier_IsProto3Singular));
+    }
+    upb::Status status;
+    upb_MiniTable* table =
+        _upb_MiniTable_Build(e.data().data(), e.data().size(), GetParam(),
+                             arena.ptr(), status.ptr());
+    ASSERT_NE(nullptr, table) << status.error_message();
+    EXPECT_EQ(kMaxAlignedSize, table->UPB_PRIVATE(size));
+    const upb_MiniTableField* last =
+        upb_MiniTable_GetFieldByIndex(table, tc.field_count - 1);
+    EXPECT_LE(last->UPB_PRIVATE(offset) + tc.field_size,
+              table->UPB_PRIVATE(size));
+  }
+}
+
+TEST_P(MiniTableTest, SizeAlignmentOverflow) {
+  // Unaligned sizes in [65529, 65535] fit in uint16_t before alignment, but
+  // aligning up to kUpb_Message_Align (8) yields 65536, which must be rejected
+  // instead of wrapping uint16_t size to 0.
+  struct Case {
+    upb_FieldType type;
+    uint32_t field_count;
+    uint64_t field_modifiers;
+  };
+  const Case cases[] = {
+      // 8 + 16381 * 4 = 65532 -> aligns to 65536.
+      {kUpb_FieldType_Int32, 16381, kUpb_FieldModifier_IsProto3Singular},
+      // 8 + ceil(15884 / 8) = 1994, aligned to 4 = 1996; 1996 + 15884 * 4 =
+      // 65532 -> aligns to 65536 (proto2 optional fields with hasbits).
+      {kUpb_FieldType_Int32, 15884, 0},
+      // 8 + 65521 * 1 = 65529 -> smallest size that aligns to 65536.
+      {kUpb_FieldType_Bool, 65521, kUpb_FieldModifier_IsProto3Singular},
+      // 8 + 65527 * 1 = 65535 -> largest uint16_t size; aligns to 65536.
+      {kUpb_FieldType_Bool, 65527, kUpb_FieldModifier_IsProto3Singular},
+  };
+
+  for (const Case& tc : cases) {
+    SCOPED_TRACE(testing::Message()
+                 << "type=" << tc.type << " field_count=" << tc.field_count
+                 << " modifiers=" << tc.field_modifiers);
+    upb::Arena arena;
+    upb::MtDataEncoder e;
+    ASSERT_TRUE(e.StartMessage(0));
+    for (uint32_t i = 1; i <= tc.field_count; ++i) {
+      ASSERT_TRUE(e.PutField(tc.type, i, tc.field_modifiers));
+    }
+    upb::Status status;
+    upb_MiniTable* table =
+        _upb_MiniTable_Build(e.data().data(), e.data().size(), GetParam(),
+                             arena.ptr(), status.ptr());
+    EXPECT_EQ(nullptr, table);
+    EXPECT_FALSE(status.ok());
+    EXPECT_NE(std::string_view(status.error_message())
+                  .find("Message size exceeded maximum size"),
+              std::string_view::npos);
+  }
+}
+
 TEST_P(MiniTableTest, PresenceOverflow) {
   // Each hasbit field consumes one int16_t presence index. A message with more
   // presence fields than fit in that index must be rejected instead of
