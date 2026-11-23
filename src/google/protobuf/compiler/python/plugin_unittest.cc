@@ -304,6 +304,77 @@ TEST_P(PythonGeneratorTest, PublicImportDiamondCopiesAliasesOnce) {
       << consumer_py;
 }
 
+constexpr char kGenericServicesProto[] = R"schema(
+    syntax = "proto2";
+    package foo;
+    option py_generic_services = true;
+    message Foo {}
+    service TestService {
+      rpc Method(Foo) returns (Foo);
+    })schema";
+
+TEST_P(PythonGeneratorTest, GenericServicesDefault) {
+  CreateTempFile("foo.proto", kGenericServicesProto);
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --python_out=$tmpdir "
+      "--python_opt=pyi_out foo.proto");
+
+  ExpectWarningSubstring("Generic services");
+  ExpectFileContentNotContainsSubstring("foo_pb2.py",
+                                        "_builder.BuildServices(");
+  ExpectFileContentNotContainsSubstring("foo_pb2.pyi", "_service.service");
+}
+
+TEST_P(PythonGeneratorTest, GenericServicesRequireFileOption) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {}
+    service TestService {
+      rpc Method(Foo) returns (Foo);
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --python_out=$tmpdir "
+      "--python_opt=pyi_out,allow_legacy_generic_services foo.proto");
+
+  ExpectNoErrors();
+  ExpectFileContentNotContainsSubstring("foo_pb2.py",
+                                        "_builder.BuildServices(");
+  ExpectFileContentNotContainsSubstring("foo_pb2.pyi", "_service.service");
+}
+
+TEST_P(PythonGeneratorTest, GenericServicesGeneratedWithLegacyOption) {
+  CreateTempFile("foo.proto", kGenericServicesProto);
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --python_out=$tmpdir "
+      "--python_opt=pyi_out,allow_legacy_generic_services foo.proto");
+
+  ExpectWarningSubstring("Generic services");
+  ExpectFileContentContainsSubstring("foo_pb2.py", "_builder.BuildServices(");
+  ExpectFileContentContainsSubstring("foo_pb2.pyi",
+                                     "class TestService(_service.service)");
+}
+
+TEST_P(PythonGeneratorTest, PyiLegacyGenericServicesOptionIsPerRun) {
+  RegisterGenerator("--pyi_out", std::make_unique<PyiGenerator>(),
+                    "Python pyi test generator");
+  CreateTempFile("foo.proto", kGenericServicesProto);
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--pyi_out=allow_legacy_generic_services:$tmpdir foo.proto");
+  ExpectFileContentContainsSubstring("foo_pb2.pyi",
+                                     "class TestService(_service.service)");
+
+  // The generator instance is reused, so the option must not carry over.
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --pyi_out=$tmpdir foo.proto");
+  ExpectFileContentNotContainsSubstring("foo_pb2.pyi", "_service.service");
+}
+
 INSTANTIATE_TEST_SUITE_P(PythonGeneratorTest, PythonGeneratorTest,
                          testing::Bool());
 
