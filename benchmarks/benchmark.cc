@@ -35,6 +35,7 @@
 #include "upb/json/decode.h"
 #include "upb/json/encode.h"
 #include "upb/mem/arena.h"
+#include "upb/message/copy.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
@@ -388,6 +389,98 @@ BENCHMARK_TEMPLATE(BM_SerializeDescriptor_Upb, CompiledIn, UseArena);
 BENCHMARK_TEMPLATE(BM_SerializeDescriptor_Upb, CompiledIn, InitBlock);
 BENCHMARK_TEMPLATE(BM_SerializeDescriptor_Upb, Parsed, UseArena);
 BENCHMARK_TEMPLATE(BM_SerializeDescriptor_Upb, Parsed, InitBlock);
+
+enum DepthLimit {
+  NoDepthLimit,
+  WithDepthLimit,
+};
+
+constexpr int kDeepCopyMaxDepth = 100;
+
+static upb_Message* DecodeFileDescriptor(const upb_MiniTable* mt,
+                                         upb_Arena* arena) {
+  upb_Message* msg = upb_Message_New(mt, arena);
+  upb_DecodeStatus status =
+      upb_Decode(descriptor.data, descriptor.size, msg, mt, nullptr, 0, arena);
+  ABSL_CHECK(status == kUpb_DecodeStatus_Ok);
+  return msg;
+}
+
+template <MinitableMode MMode, ArenaMode AMode, DepthLimit DLimit>
+static void BM_DeepClone_Upb_FileDesc(benchmark::State& state) {
+  upb::DefPool defpool;
+  const upb_MiniTable* mt = GetFileDescriptorMiniTable(MMode, &defpool);
+
+  upb_Arena* src_arena = upb_Arena_New();
+  upb_Message* src = DecodeFileDescriptor(mt, src_arena);
+
+  for (auto _ : state) {
+    upb_Arena* dst_arena = AMode == InitBlock
+                               ? upb_Arena_Init(buf, sizeof(buf), nullptr)
+                               : upb_Arena_New();
+    upb_Message* clone = DLimit == NoDepthLimit
+                             ? upb_Message_DeepClone(src, mt, dst_arena)
+                             : upb_Message_DeepCloneWithMaxDepth(
+                                   src, mt, dst_arena, kDeepCopyMaxDepth);
+    ABSL_CHECK(clone != nullptr);
+    benchmark::DoNotOptimize(clone);
+    upb_Arena_Free(dst_arena);
+  }
+  // Report throughput against encoded wire size to match parse/serialize.
+  state.SetBytesProcessed(state.iterations() * descriptor.size);
+  upb_Arena_Free(src_arena);
+}
+BENCHMARK_TEMPLATE(BM_DeepClone_Upb_FileDesc, CompiledIn, UseArena,
+                   NoDepthLimit);
+BENCHMARK_TEMPLATE(BM_DeepClone_Upb_FileDesc, CompiledIn, UseArena,
+                   WithDepthLimit);
+BENCHMARK_TEMPLATE(BM_DeepClone_Upb_FileDesc, CompiledIn, InitBlock,
+                   NoDepthLimit);
+BENCHMARK_TEMPLATE(BM_DeepClone_Upb_FileDesc, CompiledIn, InitBlock,
+                   WithDepthLimit);
+BENCHMARK_TEMPLATE(BM_DeepClone_Upb_FileDesc, Parsed, UseArena, NoDepthLimit);
+BENCHMARK_TEMPLATE(BM_DeepClone_Upb_FileDesc, Parsed, UseArena, WithDepthLimit);
+BENCHMARK_TEMPLATE(BM_DeepClone_Upb_FileDesc, Parsed, InitBlock, NoDepthLimit);
+BENCHMARK_TEMPLATE(BM_DeepClone_Upb_FileDesc, Parsed, InitBlock,
+                   WithDepthLimit);
+
+template <MinitableMode MMode, ArenaMode AMode, DepthLimit DLimit>
+static void BM_DeepCopy_Upb_FileDesc(benchmark::State& state) {
+  upb::DefPool defpool;
+  const upb_MiniTable* mt = GetFileDescriptorMiniTable(MMode, &defpool);
+
+  upb_Arena* src_arena = upb_Arena_New();
+  upb_Message* src = DecodeFileDescriptor(mt, src_arena);
+  upb_Message* dst = upb_Message_New(mt, src_arena);
+
+  for (auto _ : state) {
+    upb_Arena* dst_arena = AMode == InitBlock
+                               ? upb_Arena_Init(buf, sizeof(buf), nullptr)
+                               : upb_Arena_New();
+    bool ok = DLimit == NoDepthLimit
+                  ? upb_Message_DeepCopy(dst, src, mt, dst_arena)
+                  : upb_Message_DeepCopyWithMaxDepth(dst, src, mt, dst_arena,
+                                                     kDeepCopyMaxDepth);
+    ABSL_CHECK(ok);
+    benchmark::DoNotOptimize(dst);
+    upb_Arena_Free(dst_arena);
+  }
+  // Report throughput against encoded wire size to match parse/serialize.
+  state.SetBytesProcessed(state.iterations() * descriptor.size);
+  upb_Arena_Free(src_arena);
+}
+BENCHMARK_TEMPLATE(BM_DeepCopy_Upb_FileDesc, CompiledIn, UseArena,
+                   NoDepthLimit);
+BENCHMARK_TEMPLATE(BM_DeepCopy_Upb_FileDesc, CompiledIn, UseArena,
+                   WithDepthLimit);
+BENCHMARK_TEMPLATE(BM_DeepCopy_Upb_FileDesc, CompiledIn, InitBlock,
+                   NoDepthLimit);
+BENCHMARK_TEMPLATE(BM_DeepCopy_Upb_FileDesc, CompiledIn, InitBlock,
+                   WithDepthLimit);
+BENCHMARK_TEMPLATE(BM_DeepCopy_Upb_FileDesc, Parsed, UseArena, NoDepthLimit);
+BENCHMARK_TEMPLATE(BM_DeepCopy_Upb_FileDesc, Parsed, UseArena, WithDepthLimit);
+BENCHMARK_TEMPLATE(BM_DeepCopy_Upb_FileDesc, Parsed, InitBlock, NoDepthLimit);
+BENCHMARK_TEMPLATE(BM_DeepCopy_Upb_FileDesc, Parsed, InitBlock, WithDepthLimit);
 
 static absl::string_view UpbJsonEncode(upb_benchmark_FileDescriptorProto* proto,
                                        const upb_MessageDef* md,
