@@ -377,6 +377,41 @@ upb_MiniTable* CreateMapEntryMiniTableOld(upb_Arena* arena) {
   return table;
 }
 
+TEST(GeneratedCode, DoesNotPromoteUnknownMessageWithWrongWireType) {
+  // Regression test: an unknown field whose wire type does not match the
+  // schema type (a varint where a message is expected) must be rejected with
+  // a parse error.  Previously the varint value was used as the sub-message
+  // length, letting upb_Decode() read past the end of the unknown region.
+  upb_Arena* arena = upb_Arena_New();
+  upb_MiniTable* mini_table = CreateMiniTableWithEmptySubTablesOld(arena);
+  upb_Message* msg = _upb_Message_New(mini_table, arena);
+
+  // Field 5 (optional message child) encoded as a varint:
+  // 0x28: tag (5 << 3) | kUpb_WireType_Varint; 0xC0 0x84 0x3D: 1,000,000.
+  static const char serialized[] = {
+      static_cast<char>(0x28), static_cast<char>(0xc0),
+      static_cast<char>(0x84), static_cast<char>(0x3d),
+  };
+  upb_DecodeStatus decode_status = upb_Decode(serialized, sizeof(serialized),
+                                              msg, mini_table, nullptr, 0, arena);
+  EXPECT_EQ(decode_status, kUpb_DecodeStatus_Ok);
+  // The mismatched wire type is stored verbatim in the unknown set.
+  EXPECT_EQ(sizeof(serialized), GetUnknownLength(msg));
+
+  // Link the sub table, then attempt to promote.  This must fail with a
+  // parse error rather than decoding 1,000,000 bytes past the region.
+  EXPECT_TRUE(upb_MiniTable_SetSubMessage(
+      mini_table,
+      (upb_MiniTableField*)upb_MiniTable_GetFieldByIndex(mini_table, 1),
+      &upb_0test__ModelWithExtensions_msg_init));
+  upb_UnknownToMessageRet promote_result =
+      upb_MiniTable_PromoteUnknownToMessage(
+          msg, mini_table, upb_MiniTable_GetFieldByIndex(mini_table, 1),
+          &upb_0test__ModelWithExtensions_msg_init, 0, arena);
+  EXPECT_EQ(promote_result.status, kUpb_UnknownToMessage_ParseError);
+  upb_Arena_Free(arena);
+}
+
 TEST(GeneratedCode, PromoteUnknownMessageOld) {
   upb_Arena* arena = upb_Arena_New();
   upb_test_ModelWithSubMessages* input_msg =
