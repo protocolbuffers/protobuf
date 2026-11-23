@@ -220,6 +220,21 @@ std::string MismatchedWireTypeField(
       tag(field_number, WireFormatLite::WIRETYPE_LENGTH_DELIMITED), delim("a"));
 }
 
+// Encodes `field_number` with wire type WIRETYPE_FIXED64 using an 8-byte
+// payload starting with `entry_field_data` and padded to 8 bytes.
+std::string Fixed64WrongTagTypeField(int field_number,
+                                     absl::string_view entry_field_data) {
+  ABSL_CHECK_LE(entry_field_data.size(), 6u);
+  const int padding_varint_extra_bytes =
+      static_cast<int>(8 - entry_field_data.size() - 2);
+  const std::string payload =
+      absl::StrCat(entry_field_data, tag(3, WireFormatLite::WIRETYPE_VARINT),
+                   longvarint(0, padding_varint_extra_bytes));
+  ABSL_CHECK_EQ(payload.size(), 8u);
+  return absl::StrCat(tag(field_number, WireFormatLite::WIRETYPE_FIXED64),
+                      payload);
+}
+
 bool IsProto3Default(FieldDescriptor::Type type,
                      const std::string& binary_data) {
   switch (type) {
@@ -1821,6 +1836,46 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
           tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
           delim(absl::StrCat(good_key_data,
                              MismatchedWireTypeField(2, value_wire_type)))));
+
+  // Map entry key or value encoded with a FIXED64 wrong tag type.
+  RunMapEntryWireTypeMismatchTest(
+      absl::StrCat("ValidDataMap", key_type_name, value_type_name,
+                   ".MapEntryKeyWrongTagType"),
+      absl::StrCat(
+          tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+          delim(absl::StrCat(Fixed64WrongTagTypeField(1, good_key_data),
+                             good_value_data))));
+  RunMapEntryWireTypeMismatchTest(
+      absl::StrCat("ValidDataMap", key_type_name, value_type_name,
+                   ".MapEntryValueWrongTagType"),
+      absl::StrCat(
+          tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+          delim(absl::StrCat(good_key_data,
+                             Fixed64WrongTagTypeField(2, good_value_data)))));
+
+  if (key_type == FieldDescriptor::TYPE_INT32 &&
+      value_type == FieldDescriptor::TYPE_INT32) {
+    // Map entry key encoded with FIXED32 or LENGTH_DELIMITED wrong tag type.
+    const std::string fixed32_wrong_tag_entry =
+        absl::StrCat(tag(1, WireFormatLite::WIRETYPE_FIXED32),
+                     tag(1, WireFormatLite::WIRETYPE_VARINT), varint(5),
+                     tag(2, WireFormatLite::WIRETYPE_VARINT), varint(7));
+    RunMapEntryWireTypeMismatchTest(
+        "ValidDataMap.INT32.INT32.MapEntryWrongTagTypeFixed32",
+        absl::StrCat(
+            tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+            delim(fixed32_wrong_tag_entry)));
+
+    const std::string length_delimited_payload = absl::StrCat(
+        varint(5), tag(2, WireFormatLite::WIRETYPE_VARINT), varint(7),
+        tag(3, WireFormatLite::WIRETYPE_VARINT), longvarint(0, 3));
+    ABSL_CHECK_EQ(length_delimited_payload.size(), 8u);
+    RunMapEntryWireTypeMismatchTest(
+        "ValidDataMap.INT32.INT32.MapEntryWrongTagTypeLengthDelimited",
+        absl::StrCat(
+            tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+            delim(len(1, length_delimited_payload))));
+  }
 }
 
 template <typename MessageType>
@@ -2524,6 +2579,8 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
                                  FieldDescriptor::TYPE_BOOL);
     TestMapEntryWireTypeMismatch(FieldDescriptor::TYPE_STRING,
                                  FieldDescriptor::TYPE_STRING);
+    TestMapEntryWireTypeMismatch(FieldDescriptor::TYPE_STRING,
+                                 FieldDescriptor::TYPE_ENUM);
     TestMapEntryWireTypeMismatch(FieldDescriptor::TYPE_STRING,
                                  FieldDescriptor::TYPE_MESSAGE);
 
