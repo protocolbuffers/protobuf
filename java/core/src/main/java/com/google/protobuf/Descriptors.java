@@ -2111,7 +2111,10 @@ public final class Descriptors {
           state = redactionState;
           if (state == null) {
             FieldOptions options = getOptions();
-            state = RedactionState.of(options.getDebugRedact());
+            // The raw payload of an unexpanded google.protobuf.Any may contain sensitive data, so
+            // treat it as if it were marked debug_redact=true.
+            boolean isAnyValue = getFullName().equals("google.protobuf.Any.value");
+            state = RedactionState.of(options.getDebugRedact() || isAnyValue);
             // Check if the FieldOptions contain any enums that are marked as debug_redact=true,
             // either directly or indirectly via a message option.
             for (Map.Entry<Descriptors.FieldDescriptor, Object> entry :
