@@ -119,7 +119,7 @@ class GPBUtil
                 $var = intval($var);
             } else {
                 if (is_float($var) ||
-                    is_integer($var) ||
+                    is_int($var) ||
                     (is_string($var) &&
                          bccomp($var, "9223372036854774784") < 0)) {
                     $var = number_format($var, 0, ".", "");
