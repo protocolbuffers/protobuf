@@ -33,6 +33,7 @@ import com.google.protobuf.JavaFeaturesProto.JavaFeatures;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -3375,9 +3376,18 @@ public final class Descriptors {
 
     /** Find and put public dependencies of the file into dependencies set. */
     private void importPublicDependencies(final FileDescriptor file) {
-      for (FileDescriptor dependency : file.getPublicDependencies()) {
-        if (dependencies.add(dependency)) {
-          importPublicDependencies(dependency);
+      if (file.publicDependencies.length == 0) {
+        return; // Avoid allocating a stack in the common case.
+      }
+      // Use an explicit stack rather than recursion, so that a long chain of public imports can't
+      // overflow the call stack.
+      ArrayDeque<FileDescriptor> pending = new ArrayDeque<>();
+      pending.push(file);
+      while (!pending.isEmpty()) {
+        for (FileDescriptor dependency : pending.pop().publicDependencies) {
+          if (dependencies.add(dependency)) {
+            pending.push(dependency);
+          }
         }
       }
     }

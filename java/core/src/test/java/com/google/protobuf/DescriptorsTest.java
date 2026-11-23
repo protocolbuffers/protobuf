@@ -56,6 +56,8 @@ import protobuf_unittest.UnittestProto3Extensions.Proto3FileExtensions;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -1184,6 +1186,60 @@ public class DescriptorsTest {
         assertThat(field.getEnumType().getFile().getPackage().equals("a.b.c.d.bar.shared"))
             .isTrue();
       }
+    }
+
+    @Test
+    public void testDeepPublicDependencyChain() throws Exception {
+      FileDescriptor file =
+          FileDescriptor.buildFrom(
+              FileDescriptorProto.newBuilder()
+                  .setName("leaf.proto")
+                  .setPackage("chain")
+                  .addMessageType(DescriptorProto.newBuilder().setName("Leaf"))
+                  .build(),
+              new FileDescriptor[0]);
+      // Building a chain of public imports is quadratic, so this chain is shorter than the others.
+      for (int i = 0; i < 2000; i++) {
+        file =
+            FileDescriptor.buildFrom(
+                FileDescriptorProto.newBuilder()
+                    .setName("public_import_" + i + ".proto")
+                    .addDependency(file.getName())
+                    .addPublicDependency(0)
+                    .build(),
+                new FileDescriptor[] {file});
+      }
+      FileDescriptorProto topProto =
+          FileDescriptorProto.newBuilder()
+              .setName("top.proto")
+              .addDependency(file.getName())
+              .addMessageType(
+                  DescriptorProto.newBuilder()
+                      .setName("Top")
+                      .addField(
+                          FieldDescriptorProto.newBuilder()
+                              .setName("leaf")
+                              .setNumber(1)
+                              .setTypeName(".chain.Leaf")))
+              .build();
+      FileDescriptor[] topDependencies = {file};
+
+      // top.proto can only see leaf.proto through the whole chain of public imports.
+      FileDescriptor top =
+          startWithSmallStack(() -> FileDescriptor.buildFrom(topProto, topDependencies)).get();
+
+      Descriptor leaf = top.findMessageTypeByName("Top").findFieldByName("leaf").getMessageType();
+      assertThat(leaf.getFile().getName()).isEqualTo("leaf.proto");
+    }
+
+    /**
+     * Starts {@code callable} on a thread that requests a small stack, which recursion over a long
+     * import chain would overflow. The JVM may round the size up to a platform minimum.
+     */
+    private static <T> FutureTask<T> startWithSmallStack(Callable<T> callable) {
+      FutureTask<T> task = new FutureTask<>(callable);
+      new Thread(null, task, "small-stack", 128 * 1024).start();
+      return task;
     }
 
     @Test

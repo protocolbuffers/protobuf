@@ -9,9 +9,11 @@ package com.google.protobuf;
 
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
+import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -120,11 +122,35 @@ public class TypeRegistry {
       if (!files.add(file.getFullName())) {
         return;
       }
-      for (FileDescriptor dependency : file.getDependencies()) {
-        addFile(dependency);
+      // Walk the dependencies depth-first with an explicit stack rather than recursion, so that a
+      // long chain of imports can't overflow the call stack. Each file's types are added after
+      // those of its dependencies.
+      ArrayDeque<FileFrame> stack = new ArrayDeque<>();
+      stack.push(new FileFrame(file));
+      while (!stack.isEmpty()) {
+        FileFrame frame = stack.peek();
+        if (frame.dependencies.hasNext()) {
+          FileDescriptor dependency = frame.dependencies.next();
+          if (files.add(dependency.getFullName())) {
+            stack.push(new FileFrame(dependency));
+          }
+        } else {
+          stack.pop();
+          for (Descriptor message : frame.file.getMessageTypes()) {
+            addMessage(message);
+          }
+        }
       }
-      for (Descriptor message : file.getMessageTypes()) {
-        addMessage(message);
+    }
+
+    /** A file whose dependencies are being walked by {@link #addFile}. */
+    private static final class FileFrame {
+      final FileDescriptor file;
+      final Iterator<FileDescriptor> dependencies;
+
+      FileFrame(FileDescriptor file) {
+        this.file = file;
+        this.dependencies = file.getDependencies().iterator();
       }
     }
 
