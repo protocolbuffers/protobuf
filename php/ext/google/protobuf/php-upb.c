@@ -13033,6 +13033,13 @@ static void upb_MtDecoder_CalculateAlignments(upb_MtDecoder* d) {
       base += upb_MtDecoder_SizeOfRep(rep, d->platform) * count;
     }
   }
+  // Since messages are always allocated on arenas, we can save repeatedly
+  // realigning by doing alignment at minitable construction time. We don't want
+  // to align to UPB_MALLOC_ALIGN because it can change with sanitizers, and if
+  // we're generating code we don't want to calculate size differently depending
+  // on the proto compiler's host or build configuration.
+  base = UPB_ALIGN_UP(base, kUpb_Message_Align);
+
   static const size_t max = UINT16_MAX;
   if (base > max) {
     upb_MdDecoder_ErrorJmp(
@@ -13120,14 +13127,6 @@ static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
       f = &d->fields[next_offset - kOneofBase];
     }
   }
-
-  // Since messages are always allocated on arenas, we can save repeatedly
-  // realigning by doing alignment at minitable construction time. We don't want
-  // to align to UPB_MALLOC_ALIGN because it can change with sanitizers, and if
-  // we're generating code we don't want to calculate size differently depending
-  // on the proto compiler's host or build configuration.
-  d->table.UPB_PRIVATE(size) =
-      UPB_ALIGN_UP(d->table.UPB_PRIVATE(size), kUpb_Message_Align);
 }
 
 static void upb_MtDecoder_ValidateEntryField(upb_MtDecoder* d,
