@@ -49,39 +49,39 @@ namespace protobuf {
 class BoolValue;
 struct BoolValueGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const BoolValueGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) BoolValue_globals_;
+    BoolValue_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class BytesValue;
 struct BytesValueGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const BytesValueGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) BytesValue_globals_;
+    BytesValue_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class DoubleValue;
 struct DoubleValueGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const DoubleValueGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) DoubleValue_globals_;
+    DoubleValue_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class FloatValue;
 struct FloatValueGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const FloatValueGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) FloatValue_globals_;
+    FloatValue_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class Int32Value;
 struct Int32ValueGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const Int32ValueGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) Int32Value_globals_;
+    Int32Value_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class Int64Value;
 struct Int64ValueGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const Int64ValueGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) Int64Value_globals_;
+    Int64Value_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class StringValue;
 struct StringValueGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const StringValueGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) StringValue_globals_;
+    StringValue_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class UInt32Value;
 struct UInt32ValueGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const UInt32ValueGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) UInt32Value_globals_;
+    UInt32Value_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class UInt64Value;
 struct UInt64ValueGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const UInt64ValueGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) UInt64Value_globals_;
+    UInt64Value_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 template <>
 internal::GeneratedMessageTraitsT<&::google::protobuf::BoolValue_globals_>
     internal::MessageTraitsImpl::value<::google::protobuf::BoolValue>;

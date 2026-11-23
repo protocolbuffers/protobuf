@@ -168,8 +168,7 @@ static_assert(alignof(MixinGlobalsTypeInternal) ==
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const MixinGlobalsTypeInternal
-        PROTOBUF_ALIGNAS(
-            ::_pbi::kClassDataAlignment) Mixin_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+        Mixin_globals_ alignas(::_pbi::kClassDataAlignment) PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class Method::_Internal {
  public:
   using HasBits = decltype(::std::declval<Method>()._impl_._has_bits_);
@@ -345,8 +344,7 @@ static_assert(alignof(MethodGlobalsTypeInternal) ==
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const MethodGlobalsTypeInternal
-        PROTOBUF_ALIGNAS(
-            ::_pbi::kClassDataAlignment) Method_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+        Method_globals_ alignas(::_pbi::kClassDataAlignment) PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class Api::_Internal {
  public:
   using HasBits = decltype(::std::declval<Api>()._impl_._has_bits_);
@@ -530,8 +528,7 @@ static_assert(alignof(ApiGlobalsTypeInternal) ==
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ApiGlobalsTypeInternal
-        PROTOBUF_ALIGNAS(
-            ::_pbi::kClassDataAlignment) Api_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+        Api_globals_ alignas(::_pbi::kClassDataAlignment) PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 }  // namespace protobuf
 }  // namespace google
 static constexpr const ::_pb::EnumDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE

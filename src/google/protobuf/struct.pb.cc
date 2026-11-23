@@ -160,8 +160,7 @@ static_assert(alignof(ListValueGlobalsTypeInternal) ==
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ListValueGlobalsTypeInternal
-        PROTOBUF_ALIGNAS(
-            ::_pbi::kClassDataAlignment) ListValue_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+        ListValue_globals_ alignas(::_pbi::kClassDataAlignment) PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class Struct::_Internal {
  public:
   using HasBits = decltype(::std::declval<Struct>()._impl_._has_bits_);
@@ -281,8 +280,7 @@ static_assert(alignof(StructGlobalsTypeInternal) ==
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const StructGlobalsTypeInternal
-        PROTOBUF_ALIGNAS(
-            ::_pbi::kClassDataAlignment) Struct_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+        Struct_globals_ alignas(::_pbi::kClassDataAlignment) PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct_FieldsEntry_DoNotUse final
     : public ::google::protobuf::internal::MapEntry<::std::string, ::google::protobuf::Message,
                              ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
@@ -427,8 +425,7 @@ static_assert(alignof(Struct_FieldsEntry_DoNotUseGlobalsTypeInternal) ==
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Struct_FieldsEntry_DoNotUseGlobalsTypeInternal
-        PROTOBUF_ALIGNAS(
-            ::_pbi::kClassDataAlignment) Struct_FieldsEntry_DoNotUse_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+        Struct_FieldsEntry_DoNotUse_globals_ alignas(::_pbi::kClassDataAlignment) PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 class Value::_Internal {
  public:
   static constexpr ::int32_t kOneofCaseOffset =
@@ -554,8 +551,7 @@ static_assert(alignof(ValueGlobalsTypeInternal) ==
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ValueGlobalsTypeInternal
-        PROTOBUF_ALIGNAS(
-            ::_pbi::kClassDataAlignment) Value_globals_ PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
+        Value_globals_ alignas(::_pbi::kClassDataAlignment) PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 }  // namespace protobuf
 }  // namespace google
 static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL

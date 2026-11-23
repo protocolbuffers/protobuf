@@ -49,7 +49,7 @@ namespace protobuf {
 class Duration;
 struct DurationGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const DurationGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) Duration_globals_;
+    Duration_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 template <>
 internal::GeneratedMessageTraitsT<&::google::protobuf::Duration_globals_>
     internal::MessageTraitsImpl::value<::google::protobuf::Duration>;

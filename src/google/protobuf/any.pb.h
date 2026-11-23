@@ -49,7 +49,7 @@ namespace protobuf {
 class Any;
 struct AnyGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const AnyGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) Any_globals_;
+    Any_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 template <>
 internal::GeneratedMessageTraitsT<&::google::protobuf::Any_globals_>
     internal::MessageTraitsImpl::value<::google::protobuf::Any>;

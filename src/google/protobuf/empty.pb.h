@@ -50,7 +50,7 @@ namespace protobuf {
 class Empty;
 struct EmptyGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const EmptyGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) Empty_globals_;
+    Empty_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 template <>
 internal::GeneratedMessageTraitsT<&::google::protobuf::Empty_globals_>
     internal::MessageTraitsImpl::value<::google::protobuf::Empty>;

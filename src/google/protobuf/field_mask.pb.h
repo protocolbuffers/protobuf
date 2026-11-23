@@ -49,7 +49,7 @@ namespace protobuf {
 class FieldMask;
 struct FieldMaskGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const FieldMaskGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) FieldMask_globals_;
+    FieldMask_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 template <>
 internal::GeneratedMessageTraitsT<&::google::protobuf::FieldMask_globals_>
     internal::MessageTraitsImpl::value<::google::protobuf::FieldMask>;

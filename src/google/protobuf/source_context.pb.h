@@ -49,7 +49,7 @@ namespace protobuf {
 class SourceContext;
 struct SourceContextGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const SourceContextGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) SourceContext_globals_;
+    SourceContext_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 template <>
 internal::GeneratedMessageTraitsT<&::google::protobuf::SourceContext_globals_>
     internal::MessageTraitsImpl::value<::google::protobuf::SourceContext>;

@@ -56,19 +56,19 @@ PROTOBUF_EXPORT extern const uint32_t NullValue_internal_data_[];
 class ListValue;
 struct ListValueGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const ListValueGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) ListValue_globals_;
+    ListValue_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class Struct;
 struct StructGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const StructGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) Struct_globals_;
+    Struct_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class Struct_FieldsEntry_DoNotUse;
 struct Struct_FieldsEntry_DoNotUseGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const Struct_FieldsEntry_DoNotUseGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) Struct_FieldsEntry_DoNotUse_globals_;
+    Struct_FieldsEntry_DoNotUse_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class Value;
 struct ValueGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const ValueGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) Value_globals_;
+    Value_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 template <>
 internal::EnumTraitsT<::google::protobuf::NullValue_internal_data_>
     internal::EnumTraitsImpl::value<::google::protobuf::NullValue>;

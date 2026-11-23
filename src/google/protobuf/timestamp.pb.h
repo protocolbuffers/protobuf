@@ -49,7 +49,7 @@ namespace protobuf {
 class Timestamp;
 struct TimestampGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const TimestampGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) Timestamp_globals_;
+    Timestamp_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 template <>
 internal::GeneratedMessageTraitsT<&::google::protobuf::Timestamp_globals_>
     internal::MessageTraitsImpl::value<::google::protobuf::Timestamp>;

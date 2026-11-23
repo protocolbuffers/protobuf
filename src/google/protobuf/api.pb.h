@@ -51,15 +51,15 @@ namespace protobuf {
 class Api;
 struct ApiGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const ApiGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) Api_globals_;
+    Api_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class Method;
 struct MethodGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const MethodGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) Method_globals_;
+    Method_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class Mixin;
 struct MixinGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const MixinGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) Mixin_globals_;
+    Mixin_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 template <>
 internal::GeneratedMessageTraitsT<&::google::protobuf::Api_globals_>
     internal::MessageTraitsImpl::value<::google::protobuf::Api>;

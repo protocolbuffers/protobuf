@@ -58,23 +58,23 @@ PROTOBUF_EXPORT extern const uint32_t Syntax_internal_data_[];
 class Enum;
 struct EnumGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const EnumGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) Enum_globals_;
+    Enum_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class EnumValue;
 struct EnumValueGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const EnumValueGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) EnumValue_globals_;
+    EnumValue_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class Field;
 struct FieldGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const FieldGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) Field_globals_;
+    Field_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class Option;
 struct OptionGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const OptionGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) Option_globals_;
+    Option_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 class Type;
 struct TypeGlobalsTypeInternal;
 PROTOBUF_EXPORT extern const TypeGlobalsTypeInternal
-    PROTOBUF_ALIGNAS(::google::protobuf::internal::kClassDataAlignment) Type_globals_;
+    Type_globals_ alignas(::google::protobuf::internal::kClassDataAlignment);
 template <>
 internal::EnumTraitsT<::google::protobuf::Field_Cardinality_internal_data_>
     internal::EnumTraitsImpl::value<::google::protobuf::Field_Cardinality>;
