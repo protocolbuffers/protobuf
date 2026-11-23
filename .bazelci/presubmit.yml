@@ -18,4 +18,82 @@ tasks:
     - '@com_google_protobuf//:protoc'
     - '@com_google_protobuf//:test_messages_proto2_cc_proto'
     - '@com_google_protobuf//:test_messages_proto3_cc_proto'
+    test_targets:
+    - '//...'
 # LINT.ThenChange(<ROOT_DIR>/.bcr/presubmit.yml)
+
+  test_linux:
+    name: "Run tests"
+    platform: ubuntu2404
+    bazel: ${{ bazel }}
+    test_flags:
+    # Avoid breaking on new compiler warnings from Bazel CI image updates.
+    - '--copt=-Wno-error'
+    - '--//python:use_hermetic_python=true'
+    - '--@rules_python//python/config_settings:python_version=3.11'
+    test_targets:
+    - '//bazel/...'
+    - '//conformance:conformance_framework_tests'
+    - '//editions/...'
+    - '//hpb/...'
+    - '//hpb_generator/...'
+    - '//java/...'
+    - '//pkg/...'
+    - '//python/...'
+    - '//src/...'
+    - '//third_party/utf8_range/...'
+    - '//upb/...'
+    - '//upb_generator/...'
+
+  test_macos:
+    name: "Run tests"
+    platform: macos_arm64
+    bazel: ${{ bazel }}
+    test_flags:
+    # Avoid breaking on new compiler warnings from Bazel CI image updates.
+    - '--copt=-Wno-error'
+    - '--//python:use_hermetic_python=true'
+    - '--@rules_python//python/config_settings:python_version=3.11'
+    test_targets:
+    - '//bazel/...'
+    # Uses GNU tar --delete, which BSD tar on macOS does not support.
+    - '-//.github:release_prep_test'
+    - '//conformance:conformance_framework_tests'
+    - '//editions/...'
+    - '//hpb/...'
+    - '//hpb_generator/...'
+    - '//java/...'
+    - '//pkg/...'
+    - '//python/...'
+    - '//src/...'
+    - '//third_party/utf8_range/...'
+    - '//upb/...'
+    - '//upb_generator/...'
+
+  test_windows:
+    name: "Run tests"
+    platform: windows
+    bazel: ${{ bazel }}
+    test_targets:
+    - '//bazel/...'
+    - '//conformance:conformance_framework_tests'
+    - '//editions/...'
+    - '//hpb/...'
+    - '//hpb_generator/...'
+    # Exclude v25 compatibility tests (com_google_protobuf_v25 fails to build with Windows clang-cl).
+    - '//java/core:core_tests'
+    - '//java/core:lite_tests'
+    - '//java/internal/...'
+    - '//java/kotlin/...'
+    - '//java/kotlin-lite/...'
+    - '//java/lite/...'
+    - '//java/util/...'
+    - '//pkg/...'
+    - '//src/...'
+    # Exclude //third_party/utf8_range/fuzz (rules_fuzzing fails to build with Windows clang-cl).
+    - '//third_party/utf8_range:utf8_validity_test'
+    - '//upb/...'
+    # Requires --windows_enable_symlinks for Python venvs.
+    - '-//upb/mini_table:debug_string_staleness_test_fasttable'
+    - '-//upb/mini_table:debug_string_staleness_test_standard'
+    - '//upb_generator/...'
