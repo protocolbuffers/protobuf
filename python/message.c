@@ -298,7 +298,6 @@ static PyObject* PyUpb_Message_New(PyObject* cls, PyObject* unused_args,
   return ret;
 
 err2:
-  Py_DECREF(msg->arena);
 err1:
   Py_DECREF(msg);
   return NULL;
