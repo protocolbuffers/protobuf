@@ -1340,6 +1340,9 @@ static VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
   VALUE ret;
   if (size >= sizeof(buf)) {
     char* buf2 = malloc(size + 1);
+    if (!buf2) {
+      rb_raise(rb_eNoMemError, "failed to allocate buffer for JSON encoding");
+    }
     upb_JsonEncode(msg->msg, msg->msgdef, pool, options, buf2, size + 1,
                    &status);
     ret = rb_str_new(buf2, size);
