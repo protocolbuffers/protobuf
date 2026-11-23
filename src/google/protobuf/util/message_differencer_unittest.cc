@@ -4324,7 +4324,7 @@ TEST(AnyTest, UnpackAnyDisabledComparesRawBytes) {
   proto2_unittest::TestAny m1, m2;
   m1.mutable_any_value()->set_type_url(
       "type.googleapis.com/proto2_unittest.TestField");
-  m1.mutable_any_value()->set_value(absl::string_view("\x08\x01", 2));
+  m1.mutable_any_value()->set_value("\x08\x01");
   m2.mutable_any_value()->set_type_url(
       "type.googleapis.com/proto2_unittest.TestField");
   m2.mutable_any_value()->set_value(absl::string_view("\x08\x00\x08\x01", 4));
