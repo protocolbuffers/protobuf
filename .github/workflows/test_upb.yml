@@ -237,7 +237,7 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         python-version: ["3.10", "3.14"]  # oldest + newest versions
-    runs-on: ubuntu-24.04,
+    runs-on: ubuntu-24.04
     if: ${{ github.event_name != 'pull_request_target' }}
     steps:
       - name: Download Wheels
