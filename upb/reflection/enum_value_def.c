@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
@@ -84,6 +85,10 @@ const char* upb_EnumValueDef_FullName(const upb_EnumValueDef* v) {
   return v->full_name;
 }
 
+const char* _upb_EnumValueDef_CustomJsonName(const upb_EnumValueDef* v) {
+  return v->json_name;
+}
+
 const char* upb_EnumValueDef_JsonName(const upb_EnumValueDef* v) {
   return v->json_name ? v->json_name : upb_EnumValueDef_Name(v);
 }
@@ -102,14 +107,22 @@ uint32_t upb_EnumValueDef_Index(const upb_EnumValueDef* v) {
 static const char* _upb_EnumValueDef_ExtractJsonName(
     upb_DefBuilder* ctx, const upb_EnumValueDef* v) {
   if (!upb_EnumValueDef_HasOptions(v)) return NULL;
-  const google_protobuf_EnumValueOptions* opts = (const google_protobuf_EnumValueOptions*)v->opts;
+  const google_protobuf_EnumValueOptions* opts =
+      (const google_protobuf_EnumValueOptions*)v->opts;
   if (!pb_enumvalue_has_json(opts)) return NULL;
   const pb_enumvalue_JsonEnumValueOptions* json_opts = pb_enumvalue_json(opts);
   if (!json_opts || !pb_enumvalue_JsonEnumValueOptions_has_string(json_opts)) {
     return NULL;
   }
   upb_StringView str = pb_enumvalue_JsonEnumValueOptions_string(json_opts);
-  return upb_strdup2(str.data, str.size, ctx->arena);
+  if (str.size > 0 && memchr(str.data, '\0', str.size) != NULL) {
+    _upb_DefBuilder_Errf(
+        ctx, "custom json_name for enum value (%s) cannot contain NUL",
+        upb_EnumValueDef_FullName(v));
+  }
+  char* ret = upb_strdup2(str.data, str.size, ctx->arena);
+  if (!ret) _upb_DefBuilder_OomErr(ctx);
+  return ret;
 }
 
 static void create_enumvaldef(upb_DefBuilder* ctx, const char* prefix,
