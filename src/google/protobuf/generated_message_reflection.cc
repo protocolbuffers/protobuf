@@ -1477,6 +1477,27 @@ bool Reflection::HasField(const Message& message,
 
 void Reflection::UnsafeArenaSwap(Message* lhs, Message* rhs) const {
   ABSL_DCHECK_EQ(lhs->GetArena(), rhs->GetArena());
+  // Both messages must be of the type this reflection is for. Without this
+  // check, InternalSwap would apply this type's field layout, has-bits,
+  // metadata, and extension sets to a foreign message, corrupting it (or
+  // crashing) in Release, where the arena DCHECK above is compiled out.
+  // TODO: Other Reflection methods should probably check this too.
+  ABSL_CHECK_EQ(lhs->GetReflection(), this)
+      << "First argument to UnsafeArenaSwap() (of type \""
+      << lhs->GetDescriptor()->full_name()
+      << "\") is not compatible with this reflection object (which is for type "
+         "\""
+      << descriptor_->full_name()
+      << "\").  Note that the exact same class is required; not just the same "
+         "descriptor.";
+  ABSL_CHECK_EQ(rhs->GetReflection(), this)
+      << "Second argument to UnsafeArenaSwap() (of type \""
+      << rhs->GetDescriptor()->full_name()
+      << "\") is not compatible with this reflection object (which is for type "
+         "\""
+      << descriptor_->full_name()
+      << "\").  Note that the exact same class is required; not just the same "
+         "descriptor.";
   InternalSwap(lhs, rhs);
 }
 
