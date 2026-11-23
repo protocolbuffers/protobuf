@@ -69,6 +69,7 @@
 #include "google/protobuf/any.h"
 #include "google/protobuf/cpp_edition_defaults.h"
 #include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/cpp_file_options.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_builder.h"
 #include "google/protobuf/descriptor_database.h"
@@ -2346,7 +2347,7 @@ DescriptorPool* DescriptorPool::internal_generated_pool() {
 
 const DescriptorPool* DescriptorPool::generated_pool() {
   const DescriptorPool* pool = internal_generated_pool();
-  // Ensure that descriptor.proto and cpp_features.proto get registered in the
+  // Ensure that lazily-initialized bootstrap protos get registered in the
   // generated pool. They're special cases because they're included in the full
   // runtime. We have to avoid registering it pre-main, because we need to
   // ensure that the linker --gc-sections step can strip out the full runtime if
@@ -2355,6 +2356,8 @@ const DescriptorPool* DescriptorPool::generated_pool() {
   (void)DescriptorProto::descriptor();
   // TODO: Remove this suppression.
   (void)pb::CppFeatures::descriptor();
+  (void)pb::file::CppFileOptions::descriptor();
+  (void)pb::enumvalue::JsonEnumValueOptions::descriptor();
   return pool;
 }
 

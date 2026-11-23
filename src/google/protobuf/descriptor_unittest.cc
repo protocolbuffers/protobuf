@@ -15987,6 +15987,18 @@ TEST_F(DescriptorPoolFeaturesTest,
   EXPECT_TRUE(DescriptorPool::generated_pool()->ResolvesFeaturesFor(pb::cpp));
 }
 
+TEST(GeneratedDescriptorPoolTest,
+     RegistersAllLazilyInitializedBootstrapProtos) {
+  const DescriptorPool* pool = DescriptorPool::generated_pool();
+  EXPECT_NE(pool->FindMessageTypeByName("pb.CppFeatures"), nullptr);
+  EXPECT_NE(pool->FindExtensionByName("pb.cpp"), nullptr);
+  EXPECT_NE(pool->FindMessageTypeByName("pb.file.CppFileOptions"), nullptr);
+  EXPECT_NE(pool->FindExtensionByName("pb.file.cpp"), nullptr);
+  EXPECT_NE(pool->FindMessageTypeByName("pb.enumvalue.JsonEnumValueOptions"),
+            nullptr);
+  EXPECT_NE(pool->FindExtensionByName("pb.enumvalue.json"), nullptr);
+}
+
 TEST_F(DescriptorPoolFeaturesTest,
        ResolvesFeaturesForBeforeSetFeatureSetDefaults) {
   SimpleDescriptorDatabase database;
