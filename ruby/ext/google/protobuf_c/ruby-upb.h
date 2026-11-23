@@ -2326,6 +2326,7 @@ UPB_API_INLINE const void* upb_Array_DataPtr(const struct upb_Array* array) {
 }
 
 UPB_API_INLINE void* upb_Array_MutableDataPtr(struct upb_Array* array) {
+  UPB_ASSERT(!upb_Array_IsFrozen(array));
   return (void*)upb_Array_DataPtr(array);
 }
 
