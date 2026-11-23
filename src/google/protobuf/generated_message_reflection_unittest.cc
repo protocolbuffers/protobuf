@@ -1599,6 +1599,28 @@ TEST(GeneratedMessageReflectionTest, SwapFieldsForeignFieldCheck) {
                "Field does not match message type");
 }
 
+TEST(GeneratedMessageReflectionTest, UnsafeArenaSwapForeignMessageCheck) {
+  unittest::TestAllTypes message;
+  unittest::ForeignMessage foreign;
+  const Reflection* reflection = message.GetReflection();
+
+  // Swapping messages of different types through one type's reflection must
+  // fail: InternalSwap applies this type's field layout, has-bits, metadata,
+  // and extension sets to both messages, so a foreign message would be
+  // corrupted (or crash the process) instead of being swapped.
+  EXPECT_DEATH(reflection->UnsafeArenaSwap(&message, &foreign),
+               "Second argument to UnsafeArenaSwap");
+  EXPECT_DEATH(reflection->UnsafeArenaSwap(&foreign, &message),
+               "First argument to UnsafeArenaSwap");
+
+  // Same-type swaps still work.
+  unittest::TestAllTypes other;
+  message.set_optional_int32(42);
+  reflection->UnsafeArenaSwap(&message, &other);
+  EXPECT_EQ(0, message.optional_int32());
+  EXPECT_EQ(42, other.optional_int32());
+}
+
 TEST(GeneratedMessageReflectionTest, OneofForeignDescriptorCheck) {
   unittest::TestAllTypes message1;
   const Reflection* reflection = message1.GetReflection();
