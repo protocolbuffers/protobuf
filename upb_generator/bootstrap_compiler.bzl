@@ -149,24 +149,38 @@ def _stage0_proto_staleness_test(name, src_files, src_rules, strip_prefix, third
         tags = ["manual"],
     )
 
-def _generate_stage1_proto(name, src_files, src_rules, generator, kwargs):
-    native.genrule(
-        name = "gen_{}_{}_stage1".format(name, generator),
-        srcs = src_rules,
-        outs = _generated_hdrs_and_srcs(src_files, "stage1", generator),
-        cmd = _extra_proto_path_setup +
-              "$(location " + _protoc + ") " +
-              "--plugin=protoc-gen-" + generator +
-              "=$(location " + _upbc(generator, 0) + ") " + _extra_proto_path +
-              "--" + generator + "_out=bootstrap_stage=1:$(RULEDIR)/stage1 " +
-              " ".join(src_files),
-        visibility = _bootstrap_visibility,
-        tools = [
-            _protoc,
-            _upbc(generator, 0),
-        ],
-        **kwargs
+def _stage1_proto_impl(ctx):
+    generator = ctx.attr.generator
+
+    # The generated files live under stage1/ in this rule's output package.
+    package_dir = ctx.outputs.outs[0].path.removesuffix(ctx.attr.outs[0].name)
+    args = ctx.actions.args()
+    args.add(ctx.executable.plugin, format = "--plugin=protoc-gen-" + generator + "=%s")
+
+    args.add("-I" + ctx.file._descriptor.dirname + "/../..")
+    args.add("--" + generator + "_out=bootstrap_stage=1:" + package_dir + "stage1")
+    args.add_all(ctx.attr.proto_names)
+    ctx.actions.run(
+        executable = ctx.executable._protoc,
+        tools = [ctx.attr.plugin[DefaultInfo].files_to_run],
+        inputs = ctx.files.srcs + [ctx.file._descriptor],
+        outputs = ctx.outputs.outs,
+        arguments = [args],
+        mnemonic = "GenUpbStage1",
     )
+
+_stage1_proto = rule(
+    implementation = _stage1_proto_impl,
+    attrs = {
+        "generator": attr.string(mandatory = True),
+        "outs": attr.output_list(mandatory = True),
+        "plugin": attr.label(cfg = "exec", executable = True, mandatory = True),
+        "proto_names": attr.string_list(mandatory = True),
+        "srcs": attr.label_list(allow_files = [".proto"]),
+        "_descriptor": attr.label(default = "//:descriptor_proto_srcs", allow_single_file = True),
+        "_protoc": attr.label(default = _protoc, cfg = "exec", executable = True),
+    },
+)
 
 def _cmake_staleness_test(name, src_files, proto_lib_deps, **kwargs):
     upb_minitable_proto_library(
@@ -251,8 +265,17 @@ def bootstrap_upb_proto_library(
     )
 
     # Generate stage1 protos (C API and MiniTables) using stage0 compiler.
-    _generate_stage1_proto(name, src_files, src_rules, "upb", kwargs)
-    _generate_stage1_proto(name, src_files, src_rules, "upb_minitable", kwargs)
+    for generator in ["upb", "upb_minitable"]:
+        _stage1_proto(
+            name = "gen_{}_{}_stage1".format(name, generator),
+            srcs = src_rules,
+            outs = _generated_hdrs_and_srcs(src_files, "stage1", generator),
+            generator = generator,
+            plugin = _upbc(generator, 0),
+            proto_names = src_files,
+            visibility = _bootstrap_visibility,
+            **kwargs
+        )
     _c_library_with_default_copts(
         name = name + "_minitable_stage1",
         srcs = _generated_files(src_files, "stage1", "upb_minitable", "c"),
