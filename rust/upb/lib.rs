@@ -13,8 +13,14 @@ pub use arena::Arena;
 mod associated_mini_table;
 pub use associated_mini_table::{AssociatedMiniTable, AssociatedMiniTableEnum};
 
+mod encode_string;
+pub use encode_string::{encode_to_string_with, EncodeError};
+
+mod status;
+pub use status::Status;
+
 mod text;
-pub use text::{debug_string, encode_to_string_with, TextEncodeOptions};
+pub use text::{debug_string, TextEncodeOptions};
 
 mod message;
 pub use message::MessagePtr;
@@ -31,6 +37,8 @@ extern crate sys;
 #[path = "sys/lib.rs"]
 mod sys;
 
+#[cfg(not(bzl))]
+pub mod json;
 #[cfg(not(bzl))]
 pub mod reflection;
 
@@ -69,5 +77,5 @@ pub use sys::mini_table::mini_table::{
     upb_MiniTable, upb_MiniTableEnum, upb_MiniTableEnum_Build, upb_MiniTableExtension,
     upb_MiniTableExtension_Build, upb_MiniTableExtension_SetSubEnum,
     upb_MiniTableExtension_SetSubMessage, upb_MiniTable_Build, upb_MiniTable_Link,
-    upb_MiniTable_SubMessage, upb_Status, RawMiniTable, RawMiniTableEnum, RawMiniTableExtension,
+    upb_MiniTable_SubMessage, RawMiniTable, RawMiniTableEnum, RawMiniTableExtension,
 };

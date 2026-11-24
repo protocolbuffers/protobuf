@@ -11,6 +11,7 @@ mod sys {
 
 use core::ptr::NonNull;
 use std::ffi::c_uchar;
+use sys::base::status::upb_Status;
 use sys::mem::arena::RawArena;
 use sys::opaque_pointee::opaque_pointee;
 
@@ -49,10 +50,6 @@ pub type RawMiniTableField = NonNull<upb_MiniTableField>;
 
 opaque_pointee!(upb_MiniTableExtension);
 pub type RawMiniTableExtension = NonNull<upb_MiniTableExtension>;
-
-// We could represent this type in Rust, but for now we treat it as opaque since
-// we are not currently using it.
-opaque_pointee!(upb_Status);
 
 #[allow(unused)] // FFI
 unsafe extern "C" {
@@ -143,10 +140,9 @@ unsafe extern "C" {
     ///
     /// # Safety
     /// - `m` must be valid to deref
-    /// - `sub_tables` must point to a valid array of `sub_table_count` pointers
-    ///   to `upb_MiniTable`
-    /// - `sub_enums` must point to a valid array of `sub_enums_count` pointers
-    ///   to `upb_MiniTableEnum`.
+    /// - `sub_tables` must point to a valid array of `sub_table_count` pointers to `upb_MiniTable`
+    /// - `sub_enums` must point to a valid array of `sub_enums_count` pointers to
+    ///   `upb_MiniTableEnum`.
     /// - This must only be called once for a given MiniTable.
     pub fn upb_MiniTable_Link(
         m: RawMiniTable,

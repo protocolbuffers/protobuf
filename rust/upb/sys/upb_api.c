@@ -11,6 +11,7 @@
 #define UPB_BUILD_API
 
 // go/keep-sorted start
+#include "upb/base/status.h"             // IWYU pragma: keep
 #include "upb/mem/arena.h"               // IWYU pragma: keep
 #include "upb/message/accessors.h"       // IWYU pragma: keep
 #include "upb/message/array.h"           // IWYU pragma: keep

@@ -16,6 +16,7 @@ rust_library(
     srcs = [
         "base/ctype.rs",
         "base/mod.rs",
+        "base/status.rs",
         "base/string_view.rs",
         "lib.rs",
         "mem/arena.rs",
@@ -42,6 +43,23 @@ rust_library(
 )
 
 rust_library(
+    name = "json",
+    srcs = [
+        "json/mod.rs",
+        "json/test_helpers.rs",
+    ],
+    crate_root = "json/mod.rs",
+    edition = "2024",
+    rustc_flags = ["--cfg=bzl"],
+    visibility = ["//rust/upb:__subpackages__"],
+    deps = [
+        ":reflection",
+        ":sys",
+        "//upb/json",
+    ],
+)
+
+rust_library(
     name = "reflection",
     srcs = [
         "reflection/def_pool.rs",
@@ -60,6 +78,16 @@ rust_library(
         "//upb/reflection",
         "//upb/reflection:def_pool_init",
         "//upb/text",
+    ],
+)
+
+rust_test(
+    name = "sys_json_test",
+    crate = ":json",
+    edition = "2024",
+    rustc_flags = ["--cfg=bzl"],
+    deps = [
+        "@crate_index//:googletest",
     ],
 )
 
@@ -87,6 +115,7 @@ cc_library(
     name = "upb_c_api",
     srcs = ["upb_api.c"],
     deps = [
+        "//upb/base",
         "//upb/mem",
         "//upb/message",
         "//upb/message:compare",

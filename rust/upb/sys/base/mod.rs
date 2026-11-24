@@ -6,4 +6,5 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 pub mod ctype;
+pub mod status;
 pub mod string_view;
