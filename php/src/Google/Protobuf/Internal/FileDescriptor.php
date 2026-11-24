@@ -11,6 +11,8 @@ namespace Google\Protobuf\Internal;
 
 class FileDescriptor
 {
+    private const MAX_PACKAGE_NAME_LENGTH = 511;
+    private const MAX_PACKAGE_PERIODS = 64;
 
     private $package;
     private $message_type = [];
@@ -48,8 +50,22 @@ class FileDescriptor
 
     public static function buildFromProto($proto, $custom_json_names = [])
     {
+        $package = $proto->getPackage();
+        if (strlen($package) > self::MAX_PACKAGE_NAME_LENGTH) {
+            throw new \Exception(
+                'Package name exceeds maximum length of '
+                . self::MAX_PACKAGE_NAME_LENGTH . ' bytes.'
+            );
+        }
+        if (substr_count($package, '.') > self::MAX_PACKAGE_PERIODS) {
+            throw new \Exception(
+                'Package name exceeds maximum of '
+                . self::MAX_PACKAGE_PERIODS . ' periods.'
+            );
+        }
+
         $file = new FileDescriptor();
-        $file->setPackage($proto->getPackage());
+        $file->setPackage($package);
         foreach ($proto->getMessageType() as $message_proto) {
             $file->addMessageType(Descriptor::buildFromProto(
                 $message_proto, $proto, "", $custom_json_names));
