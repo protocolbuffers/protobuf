@@ -804,6 +804,37 @@ void BinaryAndJsonConformanceSuite::RunMessageSetTests() {
             })pb"
       // clang-format on
   );
+
+  // MessageSet items missing their closing END_GROUP tag must fail to parse,
+  // including when type_id and message are both present or when followed by a
+  // complete item (whose START_GROUP(1)...END_GROUP(1) skips as an unknown
+  // nested group inside the unclosed outer item).
+  ExpectParseFailureForProto<TestAllTypesProto2>(
+      len(500, tag(1, WireFormatLite::WIRETYPE_START_GROUP)),
+      "InvalidMessageSetEncoding.TruncatedEmptyItem", REQUIRED);
+  ExpectParseFailureForProto<TestAllTypesProto2>(
+      len(500, absl::StrCat(
+                   tag(1, WireFormatLite::WIRETYPE_START_GROUP),
+                   field(2, WireFormatLite::WIRETYPE_VARINT, varint(4135312)))),
+      "InvalidMessageSetEncoding.TruncatedItemAfterTypeId", REQUIRED);
+  ExpectParseFailureForProto<TestAllTypesProto2>(
+      len(500,
+          absl::StrCat(
+              tag(1, WireFormatLite::WIRETYPE_START_GROUP),
+              field(2, WireFormatLite::WIRETYPE_VARINT, varint(4135312)),
+              len(3, field(9, WireFormatLite::WIRETYPE_VARINT, varint(99))))),
+      "InvalidMessageSetEncoding.TruncatedItemCompletePayload", REQUIRED);
+  ExpectParseFailureForProto<TestAllTypesProto2>(
+      len(500, absl::StrCat(
+                   tag(1, WireFormatLite::WIRETYPE_START_GROUP),
+                   field(2, WireFormatLite::WIRETYPE_VARINT, varint(1547769)),
+                   len(3, len(25, "foo")),
+                   group(1, absl::StrCat(
+                                field(2, WireFormatLite::WIRETYPE_VARINT,
+                                      varint(4135312)),
+                                len(3, field(9, WireFormatLite::WIRETYPE_VARINT,
+                                             varint(99))))))),
+      "InvalidMessageSetEncoding.TruncatedItemFollowedByValidItem", REQUIRED);
 }
 
 void BinaryAndJsonConformanceSuite::RunRecursionLimitTests() {
@@ -2148,6 +2179,39 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnmatchedGroup() {
       absl::StrCat(tag(1, WireFormatLite::WIRETYPE_START_GROUP),
                    len(2, "hello world")),
       "UnmatchedStartGroupWithData", REQUIRED);
+  ExpectParseFailureForProto(
+      absl::StrCat(tag(201, WireFormatLite::WIRETYPE_START_GROUP),
+                   field(202, WireFormatLite::WIRETYPE_VARINT, varint(5))),
+      "UnmatchedStartGroupWithValidField", REQUIRED);
+  ExpectParseFailureForProto(
+      absl::StrCat(tag(1234, WireFormatLite::WIRETYPE_START_GROUP),
+                   field(1, WireFormatLite::WIRETYPE_VARINT, varint(5))),
+      "UnmatchedStartGroupUnknownWithValidField", REQUIRED);
+  // Outer group missing its END_GROUP after skipping an inner unknown group
+  // that uses the same field number.
+  ExpectParseFailureForProto(
+      absl::StrCat(
+          tag(201, WireFormatLite::WIRETYPE_START_GROUP),
+          group(201, field(202, WireFormatLite::WIRETYPE_VARINT, varint(5)))),
+      "UnmatchedStartGroupNestedSameFieldNumber", REQUIRED);
+  ExpectParseFailureForProto(
+      absl::StrCat(
+          tag(1234, WireFormatLite::WIRETYPE_START_GROUP),
+          group(1234, field(1, WireFormatLite::WIRETYPE_VARINT, varint(5)))),
+      "UnmatchedStartGroupUnknownNestedSameFieldNumber", REQUIRED);
+  // Non-empty groups truncated by an enclosing length-delimited submessage
+  // boundary rather than outer stream EOF.
+  ExpectParseFailureForProto(
+      len(18,
+          absl::StrCat(tag(201, WireFormatLite::WIRETYPE_START_GROUP),
+                       field(1, WireFormatLite::WIRETYPE_VARINT, varint(5)))),
+      "UnmatchedStartGroupWithValidFieldNestedLen", REQUIRED);
+  ExpectParseFailureForProto(
+      len(18,
+          len(2, absl::StrCat(
+                     tag(201, WireFormatLite::WIRETYPE_START_GROUP),
+                     field(202, WireFormatLite::WIRETYPE_VARINT, varint(5))))),
+      "UnmatchedStartGroupInSubmessage", REQUIRED);
 
   ExpectParseFailureForProto(
       absl::StrCat(tag(201, WireFormatLite::WIRETYPE_START_GROUP),
