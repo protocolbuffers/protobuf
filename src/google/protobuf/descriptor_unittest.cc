@@ -1277,17 +1277,20 @@ TEST(PublicImportClosureTest, LazyDependenciesResolveOnDemandAndHandleCycles) {
 
 TEST(PublicImportClosureTest, DeepChainDoesNotOverflowStack) {
   constexpr int kChainLength = 4000;
-  DescriptorPool pool;
-  const FileDescriptor* prev = nullptr;
+  SimpleDescriptorDatabase db;
   for (int i = 0; i < kChainLength; ++i) {
     std::string name = absl::StrCat("f", i, ".proto");
-    FileDescriptorProto proto =
-        prev == nullptr
-            ? MakeFileDescriptorProtoWithImports(name, {})
-            : MakeFileDescriptorProtoWithImports(name, {prev->name()});
-    prev = pool.BuildFile(proto);
-    ASSERT_NE(prev, nullptr);
+    db.Add(i == 0 ? MakeFileDescriptorProtoWithImports(name, {})
+                  : MakeFileDescriptorProtoWithImports(
+                        name, {absl::StrCat("f", i - 1, ".proto")}));
   }
+  // Build lazily: eager BuildFile() records each file's full transitive public
+  // import closure, which makes constructing a long chain quadratic.
+  DescriptorPool pool(&db);
+  pool.InternalSetLazilyBuildDependencies();
+  const FileDescriptor* prev =
+      pool.FindFileByName(absl::StrCat("f", kChainLength - 1, ".proto"));
+  ASSERT_NE(prev, nullptr);
 
   std::vector<const FileDescriptor*> closure;
   closure = prev->GetPublicImportClosure();
