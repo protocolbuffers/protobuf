@@ -1623,6 +1623,91 @@ public class DescriptorsTest {
       assertThat(Proto3FileExtensions.singularInt.getDescriptor().hasPresence()).isTrue();
       assertThat(Proto3FileExtensions.repeatedInt.getDescriptor().hasPresence()).isFalse();
     }
+
+    @Test
+    public void testPackageNameLengthLimit() throws Exception {
+      String okLen = repeatChar('a', 511);
+      assertThat(
+              FileDescriptor.buildFrom(
+                  FileDescriptorProto.newBuilder()
+                      .setName("ok_len.proto")
+                      .setPackage(okLen)
+                      .build(),
+                  new FileDescriptor[0]))
+          .isNotNull();
+
+      FileDescriptorProto longPkgProto =
+          FileDescriptorProto.newBuilder().setName("long.proto").setPackage(okLen + "a").build();
+      DescriptorValidationException err =
+          assertThrows(
+              DescriptorValidationException.class,
+              () -> FileDescriptor.buildFrom(longPkgProto, new FileDescriptor[0]));
+      assertThat(err).hasMessageThat().contains("exceeds limit of 511 characters");
+    }
+
+    @Test
+    public void testPackageNamePeriodLimit() throws Exception {
+      String okDots = dottedPackage(64);
+      assertThat(
+              FileDescriptor.buildFrom(
+                  FileDescriptorProto.newBuilder()
+                      .setName("ok_dots.proto")
+                      .setPackage(okDots)
+                      .build(),
+                  new FileDescriptor[0]))
+          .isNotNull();
+
+      FileDescriptorProto deepPkgProto =
+          FileDescriptorProto.newBuilder()
+              .setName("deep.proto")
+              .setPackage(dottedPackage(65))
+              .build();
+      DescriptorValidationException err =
+          assertThrows(
+              DescriptorValidationException.class,
+              () -> FileDescriptor.buildFrom(deepPkgProto, new FileDescriptor[0]));
+      assertThat(err).hasMessageThat().contains("exceeds limit of 64 periods");
+    }
+
+    @Test
+    public void testPackageNameLimitsPlaceholderTypeName() throws Exception {
+      FileDescriptorProto placeholderProto =
+          FileDescriptorProto.newBuilder()
+              .setName("placeholder.proto")
+              .addMessageType(
+                  DescriptorProto.newBuilder()
+                      .setName("Holder")
+                      .addField(
+                          FieldDescriptorProto.newBuilder()
+                              .setName("f")
+                              .setNumber(1)
+                              .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                              .setType(FieldDescriptorProto.Type.TYPE_MESSAGE)
+                              .setTypeName("." + dottedPackage(65) + ".Missing")))
+              .build();
+      DescriptorValidationException err =
+          assertThrows(
+              DescriptorValidationException.class,
+              () -> FileDescriptor.buildFrom(placeholderProto, new FileDescriptor[0], true));
+      assertThat(err).hasMessageThat().contains("exceeds limit of 64 periods");
+    }
+
+    private static String repeatChar(char c, int count) {
+      StringBuilder sb = new StringBuilder(count);
+      for (int i = 0; i < count; i++) {
+        sb.append(c);
+      }
+      return sb.toString();
+    }
+
+    private static String dottedPackage(int periods) {
+      StringBuilder sb = new StringBuilder(periods * 2 + 1);
+      sb.append('a');
+      for (int i = 0; i < periods; i++) {
+        sb.append(".a");
+      }
+      return sb.toString();
+    }
   }
 
   public static class FeatureInheritanceTest {

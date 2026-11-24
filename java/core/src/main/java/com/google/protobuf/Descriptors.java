@@ -67,6 +67,8 @@ import java.util.logging.Logger;
 @CheckReturnValue
 public final class Descriptors {
   private static final Logger logger = Logger.getLogger(Descriptors.class.getName());
+  private static final int MAX_PACKAGE_NAME_LENGTH = 511;
+  private static final int MAX_PACKAGE_PERIODS = 64;
   private static final int[] EMPTY_INT_ARRAY = new int[0];
   private static final Descriptor[] EMPTY_DESCRIPTORS = new Descriptor[0];
   private static final FieldDescriptor[] EMPTY_FIELD_DESCRIPTORS = new FieldDescriptor[0];
@@ -3641,12 +3643,34 @@ public final class Descriptors {
      */
     void addPackage(final String fullName, final FileDescriptor file)
         throws DescriptorValidationException {
+      if (fullName.length() > MAX_PACKAGE_NAME_LENGTH) {
+        throw new DescriptorValidationException(
+            file,
+            "Package name is too long (exceeds limit of "
+                + MAX_PACKAGE_NAME_LENGTH
+                + " characters).");
+      }
+      int periods = 0;
+      for (int i = 0; i < fullName.length(); i++) {
+        if (fullName.charAt(i) == '.' && ++periods > MAX_PACKAGE_PERIODS) {
+          throw new DescriptorValidationException(
+              file,
+              "Package name has too many components (exceeds limit of "
+                  + MAX_PACKAGE_PERIODS
+                  + " periods).");
+        }
+      }
+      addPackageInternal(fullName, file);
+    }
+
+    private void addPackageInternal(final String fullName, final FileDescriptor file)
+        throws DescriptorValidationException {
       final int dotpos = fullName.lastIndexOf('.');
       final String name;
       if (dotpos == -1) {
         name = fullName;
       } else {
-        addPackage(fullName.substring(0, dotpos), file);
+        addPackageInternal(fullName.substring(0, dotpos), file);
         name = fullName.substring(dotpos + 1);
       }
 
