@@ -35,9 +35,13 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstddef>
+#include <cstdint>
 #include <iterator>
+#include <limits>
 #include <memory>
 #include <sstream>
+#include <string>
 #include <thread>
 #include <utility>
 #include <vector>
