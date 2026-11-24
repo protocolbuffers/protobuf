@@ -267,6 +267,64 @@ static void PyUpb_DescriptorPool_TryLoadAllExtensions(
 
 bool PyUpb_DescriptorPool_CheckNoDatabase(PyObject* _self) { return true; }
 
+static PyObject* PyUpb_DescriptorPool_SerializeFileProto(PyObject* file_desc) {
+  if (!PyUpb_Message_Verify(file_desc)) return NULL;
+  const upb_MessageDef* m = PyUpb_Message_GetMsgdef(file_desc);
+  const char* file_proto_name =
+      PYUPB_DESCRIPTOR_PROTO_PACKAGE ".FileDescriptorProto";
+  if (strcmp(upb_MessageDef_FullName(m), file_proto_name) != 0) {
+    return PyErr_Format(PyExc_TypeError, "Can only add FileDescriptorProto");
+  }
+  PyObject* subargs = PyTuple_New(0);
+  if (!subargs) return NULL;
+  PyObject* serialized =
+      PyUpb_Message_SerializeToString(file_desc, subargs, NULL);
+  Py_DECREF(subargs);
+  return serialized;
+}
+
+static google_protobuf_FileDescriptorProto* PyUpb_DescriptorPool_ParseSerializedFile(
+    PyObject* serialized_pb, upb_Arena* arena) {
+  char* buf;
+  Py_ssize_t size;
+  if (PyBytes_AsStringAndSize(serialized_pb, &buf, &size) < 0) {
+    return NULL;
+  }
+
+  google_protobuf_FileDescriptorProto* proto =
+      google_protobuf_FileDescriptorProto_parse(buf, size, arena);
+  if (!proto) {
+    PyErr_SetString(PyExc_TypeError, "Couldn't parse file content!");
+    return NULL;
+  }
+
+  upb_StringView name = google_protobuf_FileDescriptorProto_name(proto);
+  if (!upb_StringView_IsEqual(
+          name, upb_StringView_FromString("google/protobuf/descriptor.proto"))
+  ) {
+    // Ensure descriptor_pb2 is imported at AddSerializedFile time (matching
+    // pure Python) so subsequent GetOptions()/GetFeatures() calls do not
+    // trigger lazy imports at runtime.
+    if (!PyUpb_ImportDescriptorModule()) return NULL;
+  }
+  return proto;
+}
+
+static bool PyUpb_DescriptorPool_FileEqualsExisting(
+    const upb_FileDef* file, google_protobuf_FileDescriptorProto* proto,
+    upb_Arena* arena, bool* equal) {
+  google_protobuf_FileDescriptorProto* existing = upb_FileDef_ToProto(file, arena);
+  if (!existing) {
+    PyErr_SetNone(PyExc_MemoryError);
+    return false;
+  }
+  const upb_MessageDef* m = PyUpb_DescriptorPool_GetFileProtoDef();
+  const int options = kUpb_CompareOption_IncludeUnknownFields;
+  *equal = upb_Message_IsEqualByDef(UPB_UPCAST(proto), UPB_UPCAST(existing), m,
+                                    options);
+  return true;
+}
+
 static bool PyUpb_DescriptorPool_LoadDependentFiles(
     PyUpb_DescriptorPool* self, google_protobuf_FileDescriptorProto* proto) {
   size_t n;
@@ -293,43 +351,21 @@ static PyObject* PyUpb_DescriptorPool_DoAddSerializedFile(
   if (!arena) PYUPB_RETURN_OOM;
   PyObject* result = NULL;
 
-  char* buf;
-  Py_ssize_t size;
-  if (PyBytes_AsStringAndSize(serialized_pb, &buf, &size) < 0) {
-    goto done;
-  }
-
   google_protobuf_FileDescriptorProto* proto =
-      google_protobuf_FileDescriptorProto_parse(buf, size, arena);
-  if (!proto) {
-    PyErr_SetString(PyExc_TypeError, "Couldn't parse file content!");
-    goto done;
-  }
+      PyUpb_DescriptorPool_ParseSerializedFile(serialized_pb, arena);
+  if (!proto) goto done;
 
   upb_StringView name = google_protobuf_FileDescriptorProto_name(proto);
-  if (!upb_StringView_IsEqual(
-          name, upb_StringView_FromString("google/protobuf/descriptor.proto"))
-  ) {
-    // Ensure descriptor_pb2 is imported at AddSerializedFile time (matching
-    // pure Python) so subsequent GetOptions()/GetFeatures() calls do not
-    // trigger lazy imports at runtime.
-    if (!PyUpb_ImportDescriptorModule()) goto done;
-  }
   const upb_FileDef* file =
       upb_DefPool_FindFileByNameWithSize(self->symtab, name.data, name.size);
-
   if (file) {
     // If the existing file is equal to the new file, then silently ignore the
     // duplicate add.
-    google_protobuf_FileDescriptorProto* existing = upb_FileDef_ToProto(file, arena);
-    if (!existing) {
-      PyErr_SetNone(PyExc_MemoryError);
+    bool equal = false;
+    if (!PyUpb_DescriptorPool_FileEqualsExisting(file, proto, arena, &equal)) {
       goto done;
     }
-    const upb_MessageDef* m = PyUpb_DescriptorPool_GetFileProtoDef();
-    const int options = kUpb_CompareOption_IncludeUnknownFields;
-    if (upb_Message_IsEqualByDef(UPB_UPCAST(proto), UPB_UPCAST(existing), m,
-                                 options)) {
+    if (equal) {
       result = PyUpb_FileDescriptor_Get(_self, file);
       goto done;
     }
@@ -360,18 +396,7 @@ done:
 
 static PyObject* PyUpb_DescriptorPool_DoAdd(PyObject* _self,
                                             PyObject* file_desc) {
-  if (!PyUpb_Message_Verify(file_desc)) return NULL;
-  const upb_MessageDef* m = PyUpb_Message_GetMsgdef(file_desc);
-  const char* file_proto_name =
-      PYUPB_DESCRIPTOR_PROTO_PACKAGE ".FileDescriptorProto";
-  if (strcmp(upb_MessageDef_FullName(m), file_proto_name) != 0) {
-    return PyErr_Format(PyExc_TypeError, "Can only add FileDescriptorProto");
-  }
-  PyObject* subargs = PyTuple_New(0);
-  if (!subargs) return NULL;
-  PyObject* serialized =
-      PyUpb_Message_SerializeToString(file_desc, subargs, NULL);
-  Py_DECREF(subargs);
+  PyObject* serialized = PyUpb_DescriptorPool_SerializeFileProto(file_desc);
   if (!serialized) return NULL;
   PyObject* ret = PyUpb_DescriptorPool_DoAddSerializedFile(_self, serialized);
   Py_DECREF(serialized);
