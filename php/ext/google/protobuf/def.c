@@ -935,12 +935,28 @@ static void add_name_mappings(const upb_FileDef* file) {
   }
 }
 
+static void ensure_descriptor_proto_added(upb_DefPool* symtab) {
+  if (!upb_DefPool_FindFileByName(symtab,
+                                  "google/protobuf/descriptor.proto")) {
+    const upb_MessageDef* m =
+        google_protobuf_FileDescriptorProto_getmsgdef(symtab);
+    add_name_mappings(upb_MessageDef_File(m));
+  }
+}
+
 static void add_descriptor(upb_DefPool* symtab,
                            const google_protobuf_FileDescriptorProto* file) {
   upb_StringView name = google_protobuf_FileDescriptorProto_name(file);
+  upb_StringView descriptor_name =
+      upb_StringView_FromString("google/protobuf/descriptor.proto");
   upb_Status status;
   const upb_FileDef* file_def;
   upb_Status_Clear(&status);
+
+  if (upb_StringView_IsEqual(name, descriptor_name)) {
+    ensure_descriptor_proto_added(symtab);
+    return;
+  }
 
   if (upb_DefPool_FindFileByNameWithSize(symtab, name.data, name.size)) {
     // Already added.
@@ -953,11 +969,10 @@ static void add_descriptor(upb_DefPool* symtab,
     return;
   }
 
-  // The PHP code generator currently special-cases descriptor.proto.  It
-  // doesn't add it as a dependency even if the proto file actually does
-  // depend on it.
+  // Lazily load descriptor.proto and register its PHP class mappings when a
+  // generated file depends on it.
   if (depends_on_descriptor(file)) {
-    google_protobuf_FileDescriptorProto_getmsgdef(symtab);
+    ensure_descriptor_proto_added(symtab);
   }
 
   file_def = upb_DefPool_AddFile(symtab, file, &status);
