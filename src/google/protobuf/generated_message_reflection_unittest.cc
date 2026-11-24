@@ -76,9 +76,6 @@ class GeneratedMessageReflectionTestHelper {
       const std::vector<const FieldDescriptor*>& fields) {
     lhs->GetReflection()->UnsafeShallowSwapFields(lhs, rhs, fields);
   }
-  static bool IsLazyExtension(const Message& msg, const FieldDescriptor* ext) {
-    return msg.GetReflection()->IsLazyExtension(msg, ext);
-  }
   static bool IsLazyField(const Message& msg, const FieldDescriptor* field) {
     return msg.GetReflection()->IsLazyField(field);
   }

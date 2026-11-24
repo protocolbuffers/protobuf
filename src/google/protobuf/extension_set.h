@@ -617,19 +617,6 @@ class PROTOBUF_EXPORT ExtensionSet {
   bool MoveExtension(Arena* arena, int dst_number, ExtensionSet& src,
                      int src_number);
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool IsLazy(int number) const {
-    const Extension* extension = FindOrNull(number);
-    return extension != nullptr && extension->is_lazy;
-  }
-
-  // Returns a pointer to the LazyField for the given extension number, or
-  // nullptr if the extension is not lazy.
-  // If the extension does not exist, it is created as a lazy extension.
-  // This function returns nullptr if lazy parsing is not supported, if the
-  // extension exists but is not lazy, or if the extension is not a message
-  // type.
-  LazyField* TryGetLazyField(Arena* arena, int number, FieldType type);
-
  private:
   template <typename Type>
   friend class PrimitiveTypeTraits;
@@ -1105,13 +1092,6 @@ class PROTOBUF_EXPORT ExtensionSet {
   // Returns null if the extension is not found.
   static const ClassData* GetClassDataForLazyMessage(
       const MessageLite* extendee, int number);
-
-  // Returns true if extension is present and lazy.
-  bool HasLazy(int number) const;
-
-  // Returns true if the lazy extension has unparsed data. Requires
-  // HasLazy(number) to be true.
-  bool LazyHasUnparsed(int number) const;
 
   // Gets the extension with the given number, creating it if it does not
   // already exist.  Returns true if the extension did not already exist.
@@ -1805,19 +1785,6 @@ class ExtensionIdentifier {
   const int number_;
   typename TypeTraits::InitType default_value_;
 };
-
-template <typename ExtendeeType, typename TypeTraitsType,
-          internal::FieldType field_type, bool is_packed>
-auto TryGetLazyMessageFromExtensionSet(
-    Arena* arena,
-    const google::protobuf::internal::ExtensionIdentifier<
-        ExtendeeType, TypeTraitsType, field_type, is_packed>& extension,
-    ExtensionSet& set) {
-  static_assert(std::is_base_of_v<
-                MessageLite,
-                std::decay_t<typename TypeTraitsType::Singular::ConstType>>);
-  return set.TryGetLazyField(arena, extension.number(), field_type);
-}
 
 // -------------------------------------------------------------------
 // Generated accessors

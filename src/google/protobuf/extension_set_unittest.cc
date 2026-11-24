@@ -1769,9 +1769,6 @@ TEST_F(ExtensionSetTest, MoveLazyMessageExtension) {
   // Dest must have the field as set.
   EXPECT_TRUE(dst.HasExtension(unittest::optional_int32_extension));
 
-  // Dest is lazy.
-  (void)set2.IsLazy(unittest::optional_int32_extension.number());
-
   // Finally, force the parse just to verify.
   EXPECT_EQ(dst.GetExtension(unittest::optional_int32_extension), 1234);
 }

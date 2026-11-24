@@ -264,11 +264,6 @@ bool ExtensionSet::Has(int number) const {
   return !ext->is_cleared;
 }
 
-bool ExtensionSet::HasLazy(int number) const {
-  return Has(number) && FindOrNull(number)->is_lazy;
-}
-
-
 int ExtensionSet::NumExtensions() const {
   int result = 0;
   ForEachNoPrefetch([&result](int /* number */, const Extension& ext) {
