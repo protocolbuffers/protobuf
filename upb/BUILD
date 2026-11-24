@@ -249,6 +249,7 @@ upb_amalgamation(
         "//upb/reflection:descriptor_upb_proto",
         "//upb/reflection:json_enumvalue_options_upb_proto",
         "//upb/reflection:internal",
+        "//upb/util:def_to_proto",
         "//upb/wire",
         "//upb/wire:encode_extension",
         "//upb/wire:back_alloc",

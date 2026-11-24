@@ -114,6 +114,11 @@ class OomTest extends TestBase
 
         $ts = new Timestamp();
         $ts->fromDateTime($this->dateTime);
+
+        // Descriptor::toProto() (upb_MessageDef_ToProto + serialize + decode)
+        $desc = \Google\Protobuf\DescriptorPool::getGeneratedPool()
+            ->getDescriptorByClassName(TestMessage::class);
+        $desc->toProto();
     }
 
     public function testOom()

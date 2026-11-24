@@ -12,6 +12,9 @@
 
 #include "def.h"
 
+// The class entry for Google\Protobuf\Internal\Message.
+extern zend_class_entry* message_ce;
+
 // Registers the PHP Message class.
 void Message_ModuleInit();
 

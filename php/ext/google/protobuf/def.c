@@ -12,9 +12,13 @@
 // This is not self-contained: it must be after other Zend includes.
 #include <Zend/zend_exceptions.h>
 
+#include "arena.h"
+#include "message.h"
 #include "names.h"
 #include "php-upb.h"
 #include "protobuf.h"
+
+static void ensure_descriptor_proto_added(upb_DefPool* symtab);
 
 static void CheckUpbStatus(const upb_Status* status, const char* msg) {
   if (!upb_Status_IsOk(status)) {
@@ -740,6 +744,96 @@ PHP_METHOD(Descriptor, getClass) {
   RETURN_STRING(classname);
 }
 
+/*
+ * Descriptor::toProto()
+ *
+ * Returns a Google\Protobuf\DescriptorProto representing this message type.
+ */
+PHP_METHOD(Descriptor, toProto) {
+  Descriptor* intern = (Descriptor*)Z_OBJ_P(getThis());
+  if (zend_parse_parameters_none() == FAILURE) {
+    return;
+  }
+
+  upb_DefPool* symtab = get_global_symtab();
+  ensure_descriptor_proto_added(symtab);
+  const upb_MessageDef* proto_msgdef =
+      google_protobuf_DescriptorProto_getmsgdef(symtab);
+  const Descriptor* proto_desc = Descriptor_GetFromMessageDef(proto_msgdef);
+  if (!proto_desc) {
+    return;
+  }
+
+  // Older google/cloud-bigquery-storage releases (<= 2.5.1) declare a
+  // placeholder Google\Protobuf\DescriptorProto class that is not a message.
+  // Refuse to wrap a upb message in it.
+  if (!instanceof_function(proto_desc->class_entry, message_ce)) {
+    zend_throw_exception_ex(
+        NULL, 0,
+        "Google\\Protobuf\\DescriptorProto is not a generated protobuf message "
+        "class. An outdated package (such as google/cloud-bigquery-storage "
+        "<= 2.5.1) has declared a placeholder for it. Please upgrade "
+        "google/cloud-bigquery-storage.");
+    return;
+  }
+
+  upb_Arena* tmp_arena = upb_Arena_New();
+  if (!tmp_arena) {
+    OutOfMemory();
+    return;
+  }
+
+  google_protobuf_DescriptorProto* proto =
+      upb_MessageDef_ToProto(intern->msgdef, tmp_arena);
+  if (!proto) {
+    upb_Arena_Free(tmp_arena);
+    OutOfMemory();
+    return;
+  }
+
+  size_t size;
+  char* serialized =
+      google_protobuf_DescriptorProto_serialize(proto, tmp_arena, &size);
+  if (!serialized) {
+    upb_Arena_Free(tmp_arena);
+    OutOfMemory();
+    return;
+  }
+
+  zval arena;
+  if (!Arena_Init(&arena)) {
+    upb_Arena_Free(tmp_arena);
+    return;
+  }
+
+  upb_Arena* msg_arena = Arena_Get(&arena);
+  const upb_MiniTable* mini_table = upb_MessageDef_MiniTable(proto_msgdef);
+  upb_Message* msg = upb_Message_New(mini_table, msg_arena);
+  if (!msg) {
+    zval_ptr_dtor(&arena);
+    upb_Arena_Free(tmp_arena);
+    OutOfMemory();
+    return;
+  }
+
+  upb_DecodeStatus decode_status =
+      upb_Decode(serialized, size, msg, mini_table, NULL, 0, msg_arena);
+  upb_Arena_Free(tmp_arena);
+  if (decode_status == kUpb_DecodeStatus_OutOfMemory) {
+    zval_ptr_dtor(&arena);
+    OutOfMemory();
+    return;
+  }
+  if (decode_status != kUpb_DecodeStatus_Ok) {
+    zval_ptr_dtor(&arena);
+    zend_throw_exception_ex(NULL, 0, "Failed to decode DescriptorProto");
+    return;
+  }
+
+  Message_GetPhpWrapper(return_value, proto_desc, msg, &arena);
+  zval_ptr_dtor(&arena);
+}
+
 // clang-format off
 static zend_function_entry Descriptor_methods[] = {
   PHP_ME(Descriptor, getClass, arginfo_void, ZEND_ACC_PUBLIC)
@@ -749,6 +843,7 @@ static zend_function_entry Descriptor_methods[] = {
   PHP_ME(Descriptor, getOneofDecl, arginfo_getByIndex, ZEND_ACC_PUBLIC)
   PHP_ME(Descriptor, getOneofDeclCount, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(Descriptor, getPublicDescriptor, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(Descriptor, toProto, arginfo_void, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 // clang-format on
@@ -935,12 +1030,28 @@ static void add_name_mappings(const upb_FileDef* file) {
   }
 }
 
+static void ensure_descriptor_proto_added(upb_DefPool* symtab) {
+  if (!upb_DefPool_FindFileByName(symtab,
+                                  "google/protobuf/descriptor.proto")) {
+    const upb_MessageDef* m =
+        google_protobuf_FileDescriptorProto_getmsgdef(symtab);
+    add_name_mappings(upb_MessageDef_File(m));
+  }
+}
+
 static void add_descriptor(upb_DefPool* symtab,
                            const google_protobuf_FileDescriptorProto* file) {
   upb_StringView name = google_protobuf_FileDescriptorProto_name(file);
+  upb_StringView descriptor_name =
+      upb_StringView_FromString("google/protobuf/descriptor.proto");
   upb_Status status;
   const upb_FileDef* file_def;
   upb_Status_Clear(&status);
+
+  if (upb_StringView_IsEqual(name, descriptor_name)) {
+    ensure_descriptor_proto_added(symtab);
+    return;
+  }
 
   if (upb_DefPool_FindFileByNameWithSize(symtab, name.data, name.size)) {
     // Already added.
@@ -953,11 +1064,10 @@ static void add_descriptor(upb_DefPool* symtab,
     return;
   }
 
-  // The PHP code generator currently special-cases descriptor.proto.  It
-  // doesn't add it as a dependency even if the proto file actually does
-  // depend on it.
+  // Lazily load descriptor.proto and register its PHP class mappings when a
+  // generated file depends on it.
   if (depends_on_descriptor(file)) {
-    google_protobuf_FileDescriptorProto_getmsgdef(symtab);
+    ensure_descriptor_proto_added(symtab);
   }
 
   file_def = upb_DefPool_AddFile(symtab, file, &status);
