@@ -9,7 +9,6 @@ package com.google.protobuf;
 
 import com.google.protobuf.FieldSet.FieldDescriptorLite;
 import com.google.protobuf.Internal.EnumLiteMap;
-import com.google.protobuf.Internal.EnumVerifier;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Iterator;
@@ -950,52 +949,6 @@ final class SchemaUtil {
       for (Iterator<Integer> it = enumList.iterator(); it.hasNext(); ) {
         int enumValue = it.next();
         if (enumMap.findValueByNumber(enumValue) == null) {
-          unknownFields =
-              storeUnknownEnum(
-                  containerMessage, number, enumValue, unknownFields, unknownFieldSchema);
-          it.remove();
-        }
-      }
-    }
-    return unknownFields;
-  }
-
-  /** Filters unrecognized enum values in a list. */
-  @CanIgnoreReturnValue
-  static <UT, UB> UB filterUnknownEnumList(
-      Object containerMessage,
-      int number,
-      List<Integer> enumList,
-      EnumVerifier enumVerifier,
-      UB unknownFields,
-      UnknownFieldSchema<UT, UB> unknownFieldSchema) {
-    if (enumVerifier == null) {
-      return unknownFields;
-    }
-    // TODO: Specialize for IntArrayList to avoid boxing.
-    if (enumList instanceof RandomAccess) {
-      int writePos = 0;
-      int size = enumList.size();
-      for (int readPos = 0; readPos < size; ++readPos) {
-        int enumValue = enumList.get(readPos);
-        if (enumVerifier.isInRange(enumValue)) {
-          if (readPos != writePos) {
-            enumList.set(writePos, enumValue);
-          }
-          ++writePos;
-        } else {
-          unknownFields =
-              storeUnknownEnum(
-                  containerMessage, number, enumValue, unknownFields, unknownFieldSchema);
-        }
-      }
-      if (writePos != size) {
-        enumList.subList(writePos, size).clear();
-      }
-    } else {
-      for (Iterator<Integer> it = enumList.iterator(); it.hasNext(); ) {
-        int enumValue = it.next();
-        if (!enumVerifier.isInRange(enumValue)) {
           unknownFields =
               storeUnknownEnum(
                   containerMessage, number, enumValue, unknownFields, unknownFieldSchema);

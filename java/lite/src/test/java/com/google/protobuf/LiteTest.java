@@ -128,6 +128,31 @@ public class LiteTest {
   }
 
   @Test
+  public void testLite_unknownEnumsInUnpackedListArePreserved() throws Exception {
+    ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+    CodedOutputStream output = CodedOutputStream.newInstance(byteStream);
+    // 5432, 6543 and 7654 are not valid enum values for NestedEnum.
+    for (int value : new int[] {5432, NestedEnum.FOO_VALUE, 6543, NestedEnum.BAR_VALUE, 7654}) {
+      output.writeEnum(TestAllTypesLite.REPEATED_NESTED_ENUM_FIELD_NUMBER, value);
+    }
+    output.flush();
+    byte[] payload = byteStream.toByteArray();
+
+    TestAllTypesLite fromBytes = TestAllTypesLite.parseFrom(payload);
+    TestAllTypesLite fromStream = TestAllTypesLite.parseFrom(new ByteArrayInputStream(payload));
+
+    assertThat(fromBytes.getRepeatedNestedEnumList())
+        .containsExactly(NestedEnum.FOO, NestedEnum.BAR)
+        .inOrder();
+    assertThat(
+            UnittestProto3.TestAllTypes.parseFrom(fromBytes.toByteString())
+                .getRepeatedNestedEnumValueList())
+        .containsExactly(NestedEnum.FOO_VALUE, NestedEnum.BAR_VALUE, 5432, 6543, 7654)
+        .inOrder();
+    assertThat(fromStream).isEqualTo(fromBytes);
+  }
+
+  @Test
   public void testLite_multipleRepeatedFieldChunksAreConcatenated() throws Exception {
     ByteString chunk1 =
         UnittestProto3.TestAllTypes.newBuilder()

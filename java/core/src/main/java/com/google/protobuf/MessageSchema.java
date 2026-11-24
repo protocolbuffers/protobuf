@@ -12,6 +12,7 @@ import static com.google.protobuf.ArrayDecoders.decodeBytes;
 import static com.google.protobuf.ArrayDecoders.decodeBytesList;
 import static com.google.protobuf.ArrayDecoders.decodeDouble;
 import static com.google.protobuf.ArrayDecoders.decodeDoubleList;
+import static com.google.protobuf.ArrayDecoders.decodeEnumList;
 import static com.google.protobuf.ArrayDecoders.decodeExtensionOrUnknownField;
 import static com.google.protobuf.ArrayDecoders.decodeFixed32;
 import static com.google.protobuf.ArrayDecoders.decodeFixed32List;
@@ -25,6 +26,7 @@ import static com.google.protobuf.ArrayDecoders.decodeMessageField;
 import static com.google.protobuf.ArrayDecoders.decodeMessageList;
 import static com.google.protobuf.ArrayDecoders.decodePackedBoolList;
 import static com.google.protobuf.ArrayDecoders.decodePackedDoubleList;
+import static com.google.protobuf.ArrayDecoders.decodePackedEnumList;
 import static com.google.protobuf.ArrayDecoders.decodePackedFixed32List;
 import static com.google.protobuf.ArrayDecoders.decodePackedFixed64List;
 import static com.google.protobuf.ArrayDecoders.decodePackedFloatList;
@@ -2673,21 +2675,16 @@ final class MessageSchema<T> implements Schema<T> {
                   listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
               break;
             case 30: // ENUM_LIST:
-              {
-                List<Integer> enumList =
-                    listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset));
-                int fromIndex = enumList.size();
-                reader.readEnumList(enumList);
-                unknownFields =
-                    SchemaUtil.filterUnknownEnumList(
-                        message,
-                        number,
-                        enumList.subList(fromIndex, enumList.size()),
-                        getEnumFieldVerifier(pos),
-                        unknownFields,
-                        unknownFieldSchema);
-                break;
-              }
+              unknownFields =
+                  reader.readEnumList(
+                      (IntArrayList)
+                          listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)),
+                      message,
+                      number,
+                      getEnumFieldVerifier(pos),
+                      unknownFields,
+                      unknownFieldSchema);
+              break;
             case 31: // SFIXED32_LIST:
               reader.readSFixed32List(
                   listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
@@ -2741,21 +2738,16 @@ final class MessageSchema<T> implements Schema<T> {
                   listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
               break;
             case 44: // ENUM_LIST_PACKED:
-              {
-                List<Integer> enumList =
-                    listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset));
-                int fromIndex = enumList.size();
-                reader.readEnumList(enumList);
-                unknownFields =
-                    SchemaUtil.filterUnknownEnumList(
-                        message,
-                        number,
-                        enumList.subList(fromIndex, enumList.size()),
-                        getEnumFieldVerifier(pos),
-                        unknownFields,
-                        unknownFieldSchema);
-                break;
-              }
+              unknownFields =
+                  reader.readEnumList(
+                      (IntArrayList)
+                          listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)),
+                      message,
+                      number,
+                      getEnumFieldVerifier(pos),
+                      unknownFields,
+                      unknownFieldSchema);
+              break;
             case 45: // SFIXED32_LIST_PACKED:
               reader.readSFixed32List(
                   listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
@@ -3189,21 +3181,28 @@ final class MessageSchema<T> implements Schema<T> {
         break;
       case 30: // ENUM_LIST:
       case 44: // ENUM_LIST_PACKED:
-        final int fromIndex = list.size();
         if (wireType == WireFormat.WIRETYPE_LENGTH_DELIMITED) {
-          position = decodePackedVarint32List(data, position, list, registers);
+          position =
+              decodePackedEnumList(
+                  data,
+                  position,
+                  list,
+                  message,
+                  number,
+                  getEnumFieldVerifier(bufferPosition),
+                  registers);
         } else if (wireType == WireFormat.WIRETYPE_VARINT) {
-          position = decodeVarint32List(tag, data, position, limit, list, registers);
-        } else {
-          break;
+          position =
+              decodeEnumList(
+                  tag,
+                  data,
+                  position,
+                  limit,
+                  list,
+                  message,
+                  getEnumFieldVerifier(bufferPosition),
+                  registers);
         }
-        SchemaUtil.filterUnknownEnumList(
-            message,
-            number,
-            ((ProtobufList<Integer>) list).subList(fromIndex, list.size()),
-            getEnumFieldVerifier(bufferPosition),
-            null,
-            (UnknownFieldSchema<UnknownFieldSetLite, UnknownFieldSetLite>) unknownFieldSchema);
         break;
       case 33: // SINT32_LIST:
       case 47: // SINT32_LIST_PACKED:
