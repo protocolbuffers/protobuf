@@ -150,6 +150,7 @@ static PHP_RINIT_FUNCTION(protobuf) {
   if (!PROTOBUF_G(global_symtab)) {
     zend_bool persistent = PROTOBUF_G(keep_descriptor_pool_after_request);
     PROTOBUF_G(global_symtab) = upb_DefPool_New();
+    upb_DefPool_DisableClosedEnumChecking(PROTOBUF_G(global_symtab));
     zend_hash_init(&PROTOBUF_G(name_msg_cache), 64, NULL, NULL, persistent);
     zend_hash_init(&PROTOBUF_G(name_enum_cache), 64, NULL, NULL, persistent);
   }

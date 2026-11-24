@@ -264,7 +264,13 @@ class Message
             case GPBType::FIXED32:
             case GPBType::SFIXED32:
             case GPBType::SINT32:
+                return 0;
             case GPBType::ENUM:
+                $enum_type = $field->getEnumType();
+                if ($enum_type instanceof EnumDescriptor &&
+                    $enum_type->getValueCount() > 0) {
+                    return $enum_type->getValueDescriptorByIndex(0)->getNumber();
+                }
                 return 0;
             case GPBType::INT64:
             case GPBType::UINT64:
