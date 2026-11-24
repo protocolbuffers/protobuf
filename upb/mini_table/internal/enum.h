@@ -8,6 +8,7 @@
 #ifndef UPB_MINI_TABLE_INTERNAL_ENUM_H_
 #define UPB_MINI_TABLE_INTERNAL_ENUM_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 // Must be last.
@@ -25,6 +26,11 @@ extern "C" {
 
 UPB_API_INLINE bool upb_MiniTableEnum_CheckValue(
     const struct upb_MiniTableEnum* e, uint32_t val) {
+  // A closed-enum field whose sub-enum table has not been linked resolves to a
+  // NULL table here (upb_MiniTable_GetSubEnumTable returns NULL for unlinked
+  // fields).  Report every value as unrecognized so callers route it to the
+  // unknown-field set instead of dereferencing NULL.
+  if (UPB_UNLIKELY(e == NULL)) return false;
   if (UPB_LIKELY(val < 64)) {
     const uint64_t mask =
         e->UPB_PRIVATE(data)[0] | ((uint64_t)e->UPB_PRIVATE(data)[1] << 32);
