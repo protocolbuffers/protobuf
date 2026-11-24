@@ -459,11 +459,6 @@ about your project (name and website) so we can add an entry for you.
     *   Website: https://github.com/Neakxs/protocel
     *   Extension: 1177-1178
 
-1.  Cybozu
-
-    *   Website: https://github.com/cybozu/protobuf
-    *   Extension: 1179
-
 1.  EngFlow
 
     *   Website: https://github.com/EngFlow/engflowapis
@@ -624,3 +619,8 @@ about your project (name and website) so we can add an entry for you.
     *   Website:
         https://github.com/searKing/golang/tree/master/tools/protoc-gen-go-tag
     *   Extensions: 1391
+
+1.  Cybozu
+
+    *   Website: https://github.com/cybozu/protobuf
+    *   Extensions: 1392-1393
