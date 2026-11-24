@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 #include <string>
 #include <utility>
 
@@ -123,6 +124,9 @@ MicroString::MicroRep* MicroString::AllocateMicroRep(size_t size,
     // Verify that the size we are going to free later is at least what we asked
     // for.
     ABSL_DCHECK_LE(requested_size, MicroRepSize(capacity));
+    // SizedPtr::p is annotated nullable even though AllocateAtLeast never
+    // returns null.
+    PROTOBUF_ASSUME(alloc.p != nullptr);
     h = reinterpret_cast<MicroRep*>(alloc.p);
   } else {
     capacity = ArenaAlignDefault{}.Ceil(capacity + sizeof(MicroRep)) -
@@ -143,24 +147,31 @@ MicroString::MicroRep* MicroString::AllocateMicroRep(size_t size,
 
 MicroString::LargeRep* MicroString::AllocateOwnedRep(size_t size,
                                                      Arena* arena) {
+  ABSL_DCHECK_LE(size, kMaxOwnedRepCapacity);
   size_t capacity = size;
   LargeRep* h;
   ABSL_DCHECK_GE(capacity, kOwned);
   if (arena == nullptr) {
-    const internal::SizedPtr alloc = internal::AllocateAtLeast(
-        ArenaAlignDefault{}.Ceil(OwnedRepSize(capacity)));
-    capacity = alloc.n - sizeof(LargeRep);
+    const size_t requested_size =
+        ArenaAlignDefault{}.Ceil(OwnedRepSize(capacity));
+    const internal::SizedPtr alloc = internal::AllocateAtLeast(requested_size);
+    capacity = std::min(kMaxOwnedRepCapacity, alloc.n - sizeof(LargeRep));
+    ABSL_DCHECK_LE(requested_size, OwnedRepSize(capacity));
+    // SizedPtr::p is annotated nullable even though AllocateAtLeast never
+    // returns null.
+    PROTOBUF_ASSUME(alloc.p != nullptr);
     h = reinterpret_cast<LargeRep*>(alloc.p);
   } else {
     size_t alloc_size = ArenaAlignDefault{}.Ceil(OwnedRepSize(capacity));
-    capacity = alloc_size - sizeof(LargeRep);
+    capacity = std::min(kMaxOwnedRepCapacity, alloc_size - sizeof(LargeRep));
     auto* alloc = arena->AllocateAligned(alloc_size);
     h = reinterpret_cast<LargeRep*>(alloc);
   }
 
   rep_ =
       reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(h) | kIsLargeRepTag);
-  h->capacity = capacity;
+  ABSL_DCHECK_LE(capacity, std::numeric_limits<uint32_t>::max());
+  h->capacity = static_cast<uint32_t>(capacity);
   h->payload = h->owned_head();
   h->SetInitialSize(size);
 
@@ -218,9 +229,11 @@ void MicroString::SetImpl(absl::string_view data, Arena* arena,
       }
       case kString: {
         auto* h = string_rep();
-        if (h->str.capacity() >= data.size()) {
-          PROTOBUF_DEBUG_COUNTER("MicroString_Set.String").IncLog(data.size());
-          h->str.assign(data.data(), data.size());
+        if (h->str.capacity() >= data.size() ||
+            data.size() > kMaxOwnedRepCapacity) {
+          const uint32_t size = internal::CheckedNarrow<uint32_t>(data.size());
+          PROTOBUF_DEBUG_COUNTER("MicroString_Set.String").IncLog(size);
+          h->str.assign(data.data(), size);
           h->ResetBase();
           return;
         }
@@ -255,9 +268,17 @@ void MicroString::SetImpl(absl::string_view data, Arena* arena,
   }
 
   // Input is too big for MicroString, use the large large_rep representation.
-  LargeRep* h = AllocateOwnedRep(data.size(), arena);
-  memcpy(h->payload, data.data(), data.size());
-  PROTOBUF_DEBUG_COUNTER("MicroString_Set.LargeRep").IncLog(data.size());
+  if (data.size() <= kMaxOwnedRepCapacity) {
+    LargeRep* h = AllocateOwnedRep(data.size(), arena);
+    memcpy(h->payload, data.data(), data.size());
+    PROTOBUF_DEBUG_COUNTER("MicroString_Set.LargeRep").IncLog(data.size());
+  } else {
+    const uint32_t size = internal::CheckedNarrow<uint32_t>(data.size());
+    StringRep* h = AllocateStringRep(arena);
+    h->str.assign(data.data(), size);
+    h->ResetBase();
+    PROTOBUF_DEBUG_COUNTER("MicroString_Set.String").IncLog(size);
+  }
 }
 
 void MicroString::SetImpl(absl::string_view data, const MessageLite& parent,
