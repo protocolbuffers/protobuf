@@ -1886,6 +1886,103 @@ class JsonFormatTest(JsonFormatBase):
         max_recursion_depth=5,
     )
 
+  def testSerializeAnyRecursionDepthLimit(self):
+    def _MakeNestedAny(levels):
+      msg = any_pb2.Any()
+      for _ in range(levels - 1):
+        outer = any_pb2.Any()
+        outer.Pack(msg)
+        msg = outer
+      return msg
+
+    # Depth 5 succeeds with max_recursion_depth=5; depth 6 fails.
+    json_format.MessageToDict(_MakeNestedAny(5), max_recursion_depth=5)
+    self.assertRaisesRegex(
+        json_format.SerializeToJsonError,
+        'Message too deep. Max recursion depth is 5',
+        json_format.MessageToJson,
+        _MakeNestedAny(6),
+        max_recursion_depth=5,
+    )
+    # Default max_recursion_depth=100 rejects >100 nested Any messages.
+    self.assertRaisesRegex(
+        json_format.SerializeToJsonError,
+        'Message too deep. Max recursion depth is 100',
+        json_format.MessageToJson,
+        _MakeNestedAny(101),
+    )
+    # None disables the recursion depth limit.
+    json_format.MessageToJson(_MakeNestedAny(101), max_recursion_depth=None)
+
+  def testSerializeWktRecursionDepthLimit(self):
+    # max_recursion_depth counts protobuf message nesting depth (each recursive
+    # call to _Printer._MessageToJsonObject, matching _Parser.ConvertMessage),
+    # rather than raw JSON `{`/`[` bracket depth.
+    #
+    # Well-known types Struct (map<string, Value>) and ListValue (repeated
+    # Value) wrap every entry in an intermediate google.protobuf.Value message
+    # that is transparent in JSON syntax. Each nested JSON object/array inside
+    # a Struct or ListValue therefore adds 2 protobuf message levels
+    # (Value -> Struct or Value -> ListValue), so JSON nesting does not map 1:1
+    # to protobuf message depth.
+    #
+    # For example, 3 nested JSON objects {'a': {'b': {}}} have protobuf message
+    # depth 5:
+    #   Struct(1) -> Value(2, 'a') -> Struct(3) -> Value(4, 'b') -> Struct(5)
+    shallow_struct = json_format.ParseDict(
+        {'a': {'b': {}}}, struct_pb2.Struct()
+    )
+    self.assertEqual(
+        {'a': {'b': {}}},
+        json_format.MessageToDict(shallow_struct, max_recursion_depth=5),
+    )
+    # 4 nested JSON objects add Value(6, 'c') -> Struct(7), exceeding limit 5
+    # when entering Value(6, 'c').
+    deep_struct = json_format.ParseDict(
+        {'a': {'b': {'c': {}}}}, struct_pb2.Struct()
+    )
+    self.assertRaisesRegex(
+        json_format.SerializeToJsonError,
+        'Message too deep. Max recursion depth is 5',
+        json_format.MessageToJson,
+        deep_struct,
+        max_recursion_depth=5,
+    )
+
+    # 3 nested JSON arrays:
+    #   ListValue(1) -> Value(2) -> ListValue(3) -> Value(4) -> ListValue(5)
+    shallow_list = json_format.ParseDict([[[]]], struct_pb2.ListValue())
+    self.assertEqual(
+        [[[]]],
+        json_format.MessageToDict(shallow_list, max_recursion_depth=5),
+    )
+    # 4 nested JSON arrays add Value(6) -> ListValue(7), failing at depth 6.
+    deep_list = json_format.ParseDict([[[[]]]], struct_pb2.ListValue())
+    self.assertRaisesRegex(
+        json_format.SerializeToJsonError,
+        'Message too deep. Max recursion depth is 5',
+        json_format.MessageToJson,
+        deep_list,
+        max_recursion_depth=5,
+    )
+
+    # Rooted at Value, 2 nested JSON arrays reach depth 4:
+    #   Value(1) -> ListValue(2) -> Value(3) -> ListValue(4)
+    shallow_value = json_format.ParseDict([[]], struct_pb2.Value())
+    self.assertEqual(
+        [[]],
+        json_format.MessageToDict(shallow_value, max_recursion_depth=4),
+    )
+    # 3 nested JSON arrays add Value(5) -> ListValue(6), failing at depth 5.
+    deep_value = json_format.ParseDict([[[]]], struct_pb2.Value())
+    self.assertRaisesRegex(
+        json_format.SerializeToJsonError,
+        'Message too deep. Max recursion depth is 4',
+        json_format.MessageToJson,
+        deep_value,
+        max_recursion_depth=4,
+    )
+
   def testJsonNameConflictSerilize(self):
     message = more_messages_pb2.ConflictJsonName(value=2)
     self.assertEqual(
