@@ -238,7 +238,8 @@ static VALUE free_ext_array(VALUE arg) {
 static VALUE DescriptorPool_find_file_by_name(VALUE _self, VALUE name) {
   DescriptorPool* self = ruby_to_DescriptorPool(_self);
   const char* name_str = get_str(name);
-  const upb_FileDef* filedef = upb_DefPool_FindFileByName(self->symtab, name_str);
+  const upb_FileDef* filedef =
+      upb_DefPool_FindFileByName(self->symtab, name_str);
   if (filedef) {
     return get_filedef_obj(_self, filedef);
   }
@@ -259,10 +260,11 @@ static VALUE DescriptorPool_find_all_extensions(VALUE _self, VALUE extendee) {
   const upb_MessageDef* msgdef = Descriptor_GetMsgDef(extendee);
   size_t count;
 
-  const upb_FieldDef** exts = upb_DefPool_GetAllExtensions(self->symtab, msgdef, &count);
+  const upb_FieldDef** exts =
+      upb_DefPool_GetAllExtensions(self->symtab, msgdef, &count);
   VALUE ary = rb_ary_new2(count);
   if (exts) {
-    struct ext_ensure_args args = { _self, exts, count, ary };
+    struct ext_ensure_args args = {_self, exts, count, ary};
     rb_ensure(build_ext_array, (VALUE)&args, free_ext_array, (VALUE)&args);
   }
   rb_obj_freeze(ary);
@@ -279,13 +281,15 @@ static VALUE DescriptorPool_find_all_extensions(VALUE _self, VALUE extendee) {
  * @param number [Integer]
  * @return [FieldDescriptor, nil]
  */
-static VALUE DescriptorPool_find_extension_by_number(VALUE _self, VALUE extendee, VALUE number) {
+static VALUE DescriptorPool_find_extension_by_number(VALUE _self,
+                                                     VALUE extendee,
+                                                     VALUE number) {
   DescriptorPool* self = ruby_to_DescriptorPool(_self);
   const upb_MessageDef* msgdef = Descriptor_GetMsgDef(extendee);
   int32_t num = NUM2INT(rb_to_int(number));
 
-  const upb_FieldDef* fielddef = upb_DefPool_FindExtensionByNumber(
-      self->symtab, msgdef, num);
+  const upb_FieldDef* fielddef =
+      upb_DefPool_FindExtensionByNumber(self->symtab, msgdef, num);
   if (fielddef) {
     return get_fielddef_obj(_self, fielddef);
   }
@@ -313,9 +317,12 @@ static void DescriptorPool_register(VALUE module) {
   rb_define_method(klass, "add_serialized_file",
                    DescriptorPool_add_serialized_file, 1);
   rb_define_method(klass, "lookup", DescriptorPool_lookup, 1);
-  rb_define_method(klass, "find_file_by_name", DescriptorPool_find_file_by_name, 1);
-  rb_define_method(klass, "find_extension_by_number", DescriptorPool_find_extension_by_number, 2);
-  rb_define_method(klass, "find_all_extensions", DescriptorPool_find_all_extensions, 1);
+  rb_define_method(klass, "find_file_by_name", DescriptorPool_find_file_by_name,
+                   1);
+  rb_define_method(klass, "find_extension_by_number",
+                   DescriptorPool_find_extension_by_number, 2);
+  rb_define_method(klass, "find_all_extensions",
+                   DescriptorPool_find_all_extensions, 1);
   rb_define_singleton_method(klass, "generated_pool",
                              DescriptorPool_generated_pool, 0);
   rb_gc_register_address(&cDescriptorPool);
@@ -787,14 +794,15 @@ err:
 }
 
 /*
- * call-seq:
- *     FileDescriptor.dependencies => Array<FileDescriptor>
+ * ruby-doc: FileDescriptor#dependencies
  *
- * Returns an array of FileDescriptors that this file depends on.
+ * Returns an array of the {FileDescriptor}s that this file depends on.
+ *
+ * @return [Array<FileDescriptor>]
  */
 static VALUE FileDescriptor_dependencies(VALUE _self) {
   FileDescriptor* self = ruby_to_FileDescriptor(_self);
-  VALUE ivar_name = rb_intern("@dependencies");
+  ID ivar_name = rb_intern("@dependencies");
   VALUE memoized = rb_ivar_get(_self, ivar_name);
   if (!NIL_P(memoized)) {
     return memoized;

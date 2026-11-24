@@ -8,16 +8,22 @@ require 'basic_test_pb'
 require 'google/protobuf/descriptor_pb'
 
 class DescriptorPoolTest < Test::Unit::TestCase
+  def setup
+    if defined?(JRUBY_VERSION) && Google::Protobuf::IMPLEMENTATION == :NATIVE
+      omit "Native JRuby does not implement descriptor pool introspection"
+    end
+  end
+
   def test_introspection
     pool = Google::Protobuf::DescriptorPool.generated_pool
 
     file_descriptor = pool.find_file_by_name('basic_test.proto')
-    
+
     refute_nil file_descriptor
     assert_equal 'basic_test.proto', file_descriptor.name
     assert_nil pool.find_file_by_name('non_existent.proto')
-    assert_raise(TypeError) { pool.find_extension_by_number(123, 123) }
-    
+    assert_raise_kind_of(TypeError) { pool.find_extension_by_number(123, 123) }
+
     deps = file_descriptor.dependencies
     assert_kind_of Array, deps
     assert_predicate deps, :frozen?
@@ -54,7 +60,7 @@ class DescriptorPoolTest < Test::Unit::TestCase
     refute_nil message_descriptor
 
     extensions = pool.find_all_extensions(message_descriptor)
-    
+
     assert_kind_of Array, extensions
     assert_predicate extensions, :frozen?
     assert_equal 2, extensions.size

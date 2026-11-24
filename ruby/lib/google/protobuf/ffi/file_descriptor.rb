@@ -13,8 +13,6 @@ module Google
       attach_function :file_def_pool,   :upb_FileDef_Pool,   [:FileDef], :DefPool
       attach_function :file_options,    :FileDescriptor_serialized_options,  [:FileDef, :pointer, Internal::Arena], :pointer
       attach_function :file_to_proto,   :FileDescriptor_serialized_to_proto,  [:FileDef, :pointer, Internal::Arena], :pointer
-      attach_function :file_def_dependency_count, :upb_FileDef_DependencyCount,      [:FileDef], :int
-      attach_function :file_def_dependency,       :upb_FileDef_Dependency,           [:FileDef, :int], FileDescriptor
     end
 
     class FileDescriptor
@@ -92,6 +90,13 @@ module Google
           Array.new(count) { |index| Google::Protobuf::FFI.file_def_dependency(@file_def, index) }.freeze
         end
       end
+    end
+
+    class FFI
+      # These use FileDescriptor as a return type, so they must be attached
+      # after the class is defined.
+      attach_function :file_def_dependency_count, :upb_FileDef_DependencyCount, [:FileDef], :int
+      attach_function :file_def_dependency,       :upb_FileDef_Dependency,      [:FileDef, :int], FileDescriptor
     end
   end
 end

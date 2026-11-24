@@ -88,7 +88,7 @@ module Google
 
         begin
           count = count_ptr.read(:size_t)
-          exts_ptr.read_array_of_pointer(count).map! { |ptr| get_field_descriptor(ptr) }.freeze
+          exts_ptr.read_array_of_pointer(count).map! { |ptr| FieldDescriptor.from_native(ptr) }.freeze
         ensure
           Google::Protobuf::FFI.free(exts_ptr)
         end
@@ -116,11 +116,6 @@ module Google
       def get_file_descriptor file_def
         return nil if file_def.null?
         @descriptor_class_by_def[file_def.address] ||= FileDescriptor.new(file_def, self)
-      end
-
-      def get_field_descriptor field_def
-        return nil if field_def.null?
-        @descriptor_class_by_def[field_def.address] ||= FieldDescriptor.new(field_def, self)
       end
     end
   end
