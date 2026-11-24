@@ -8,6 +8,7 @@
 #include "upb/message/copy.h"
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -16,6 +17,7 @@
 #include "upb/hash/common.h"
 #include "upb/hash/int_table.h"
 #include "upb/hash/str_table.h"
+#include "upb/mem/alloc.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
@@ -242,6 +244,38 @@ static bool upb_Clone_ExtensionValue(const upb_MiniTableField* field,
   return true;
 }
 
+// Serializes a non-canonical extension or demoted unknown aux field into
+// dst's unknown bytes on arena without retaining foreign MiniTable pointers.
+// Encodes into a short-lived temporary arena first so upb_BackAlloc's
+// power-of-two growth blocks are freed immediately instead of bloating arena.
+UPB_NOINLINE static bool upb_Clone_UnknownAuxField(upb_Message* dst,
+                                                   const upb_AuxField* msg_ext,
+                                                   upb_Arena* arena) {
+#if UPB_ASAN || UPB_HWASAN
+  // Use heap blocks under ASAN/HWASAN to avoid leaving poison tags on stack
+  // memory and so sanitizers catch any dangling alias into tmp_arena.
+  upb_Arena* tmp_arena = upb_Arena_New();
+  if (UPB_UNLIKELY(tmp_arena == NULL)) return false;
+#else
+  // Size the stack buffer to 8 KiB (Android's UPB_DEFAULT_MAX_BLOCK_SIZE) so
+  // small and medium extensions avoid heap allocations on tmp_arena, while
+  // larger extensions spill to tmp_arena and immediately free BackAlloc slack.
+  char scratch_buf[8192];
+  upb_Arena* tmp_arena =
+      upb_Arena_Init(scratch_buf, sizeof(scratch_buf), &upb_alloc_global);
+  UPB_ASSERT(tmp_arena != NULL);
+#endif
+
+  upb_StringView encoded;
+  bool ok = upb_EncodeExtension(msg_ext, tmp_arena, &encoded,
+                                /*encode_options=*/0) == kUpb_EncodeStatus_Ok &&
+            (encoded.size == 0 ||
+             UPB_PRIVATE(_upb_Message_AddUnknown)(
+                 dst, encoded.data, encoded.size, arena, kUpb_AddUnknown_Copy));
+  upb_Arena_Free(tmp_arena);
+  return ok;
+}
+
 upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
                                const upb_MiniTable* mini_table,
                                upb_Arena* arena) {
@@ -309,22 +343,13 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
   for (size_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
     if (upb_TaggedAuxPtr_IsUnknownAuxField(tagged_ptr)) {
-      // A non-canonical extension references a `upb_MiniTableExtension` (and
-      // possibly its extendee and sub-message/enum tables) that belongs to a
-      // foreign schema, e.g. the source schema of a `upb_Message_Convert()`.
-      // That schema is not guaranteed to outlive the clone, so we must not
-      // copy the pointer. Instead, serialize the extension into the
-      // destination arena and store it as unknown bytes, preserving order.
+      // A non-canonical extension or demoted field may reference a MiniTable
+      // from a foreign schema (e.g. the source schema of upb_Message_Convert())
+      // that is not guaranteed to outlive the clone, so serialize it into
+      // unknown bytes instead of copying the pointer.
       const upb_AuxField* msg_ext =
           upb_TaggedAuxPtr_UnknownAuxField(tagged_ptr);
-      upb_StringView encoded;
-      if (upb_EncodeExtension(msg_ext, arena, &encoded, /*encode_options=*/0) !=
-          kUpb_EncodeStatus_Ok) {
-        goto err;
-      }
-      if (encoded.size != 0 &&
-          !UPB_PRIVATE(_upb_Message_AddUnknown)(dst, encoded.data, encoded.size,
-                                                arena, kUpb_AddUnknown_Alias)) {
+      if (!upb_Clone_UnknownAuxField(dst, msg_ext, arena)) {
         goto err;
       }
     } else if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
