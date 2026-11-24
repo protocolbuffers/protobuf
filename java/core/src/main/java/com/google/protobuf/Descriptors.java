@@ -2267,6 +2267,9 @@ public final class Descriptors {
           throw new DescriptorValidationException(this, "Field with primitive type has type_name.");
         }
       } else {
+        if (type == null) {
+          throw new DescriptorValidationException(this, "Field missing type and type_name.");
+        }
         if (type.getJavaType() == JavaType.MESSAGE || type.getJavaType() == JavaType.ENUM) {
           throw new DescriptorValidationException(
               this, "Field with message or enum type missing type_name.");
@@ -3248,7 +3251,11 @@ public final class Descriptors {
       FeatureSet.Builder features;
       if (parent == null) {
         Edition edition = getFile().getEdition();
-        features = getEditionDefaults(edition).toBuilder();
+        try {
+          features = getEditionDefaults(edition).toBuilder();
+        } catch (IllegalArgumentException e) {
+          throw new DescriptorValidationException(this, e.getMessage(), e);
+        }
       } else {
         features = parent.features.toBuilder();
       }

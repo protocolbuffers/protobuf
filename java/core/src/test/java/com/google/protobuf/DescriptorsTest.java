@@ -153,14 +153,28 @@ public class DescriptorsTest {
 
       FileDescriptorProto protoMissingEdition =
           FileDescriptorProto.newBuilder().setSyntax("editions").build();
-      IllegalArgumentException exception =
+      DescriptorValidationException exception =
           assertThrows(
-              IllegalArgumentException.class,
+              DescriptorValidationException.class,
               () ->
                   Descriptors.FileDescriptor.buildFrom(protoMissingEdition, new FileDescriptor[0]));
       assertThat(exception)
           .hasMessageThat()
           .contains("Edition EDITION_UNKNOWN is lower than the minimum supported edition");
+
+      FileDescriptorProto protoTooHighEdition =
+          FileDescriptorProto.newBuilder()
+              .setSyntax("editions")
+              .setEdition(Edition.EDITION_99999_TEST_ONLY)
+              .build();
+      DescriptorValidationException highException =
+          assertThrows(
+              DescriptorValidationException.class,
+              () ->
+                  Descriptors.FileDescriptor.buildFrom(protoTooHighEdition, new FileDescriptor[0]));
+      assertThat(highException)
+          .hasMessageThat()
+          .contains("Edition EDITION_99999_TEST_ONLY is greater than the maximum supported edition");
     }
 
     @Test
@@ -752,6 +766,29 @@ public class DescriptorsTest {
         assertThat(e).hasCauseThat().isInstanceOf(NumberFormatException.class);
         assertThat(e).hasCauseThat().hasMessageThat().contains("invalid");
       }
+    }
+
+    @Test
+    public void testFieldMissingTypeAndTypeName() {
+      FileDescriptorProto fileProto =
+          FileDescriptorProto.newBuilder()
+              .setName("foo.proto")
+              .addMessageType(
+                  DescriptorProto.newBuilder()
+                      .setName("Foo")
+                      .addField(
+                          FieldDescriptorProto.newBuilder()
+                              .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                              .setName("bar")
+                              .setNumber(1)))
+              .build();
+
+      DescriptorValidationException exception =
+          assertThrows(
+              DescriptorValidationException.class,
+              () -> Descriptors.FileDescriptor.buildFrom(fileProto, new FileDescriptor[0]));
+      assertThat(exception).hasMessageThat().contains("Foo.bar");
+      assertThat(exception).hasMessageThat().contains("Field missing type and type_name.");
     }
 
     /**
