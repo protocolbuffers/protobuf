@@ -1,0 +1,25 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto3";
+
+package presence_packing_proto3;
+
+message TestProto3PresencePacking {
+  int32 implicit_int32 = 1;
+  optional int32 optional_int32 = 2;
+  optional int64 optional_int64 = 3;
+
+  repeated int32 repeated_default = 10;
+  repeated int32 repeated_unpacked = 11 [packed = false];
+  repeated int32 repeated_deprecated = 12 [deprecated = true];
+
+  oneof choice {
+    int32 oneof_int32 = 20;
+    string oneof_string = 21;
+  }
+}
