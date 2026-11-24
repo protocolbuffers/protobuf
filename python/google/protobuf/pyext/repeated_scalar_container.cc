@@ -1062,9 +1062,18 @@ static PyObject* Remove(PyObject* pself, PyObject* value) {
   }
 
   Py_ssize_t match_index = -1;
-  for (Py_ssize_t i = 0, len = Len(pself); i < len; ++i) {
+  // The comparison can run arbitrary Python code that modifies this container,
+  // so the length is re-read on every iteration and again before deleting.
+  for (Py_ssize_t i = 0; i < Len(pself); ++i) {
     ScopedPyObjectPtr elem(Item(pself, i));
-    if (PyObject_RichCompareBool(elem.get(), value, Py_EQ)) {
+    if (elem == nullptr) {
+      return nullptr;
+    }
+    int result = PyObject_RichCompareBool(elem.get(), value, Py_EQ);
+    if (result < 0) {
+      return nullptr;
+    }
+    if (result) {
       match_index = i;
       break;
     }
@@ -1073,7 +1082,8 @@ static PyObject* Remove(PyObject* pself, PyObject* value) {
     PyErr_SetString(PyExc_ValueError, "remove(x): x not in container");
     return nullptr;
   }
-  if (AssignItem(pself, match_index, nullptr) < 0) {
+  // Like list.remove(), do nothing if the container shrank past the match.
+  if (match_index < Len(pself) && AssignItem(pself, match_index, nullptr) < 0) {
     return nullptr;
   }
   Py_RETURN_NONE;
