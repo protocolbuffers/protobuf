@@ -45,7 +45,20 @@ const upb_MiniTable* SubsetMiniTable(const upb_MiniTable* src, uint64_t mask,
   int field_count = upb_MiniTable_FieldCount(src);
   for (int i = 0; i < field_count; ++i) {
     const upb_MiniTableField* f = upb_MiniTable_GetFieldByIndex(src, i);
-    if (mask & (1ULL << (i % 64))) {
+    // Keep or drop all members of a oneof together, keyed on the oneof's first
+    // member. If a subset kept only some members of a oneof, a payload with
+    // several members of that oneof could resolve to a different winner than
+    // the original schema does, which is expected rather than a Convert bug.
+    int mask_index = i;
+    if (upb_MiniTableField_IsInOneof(f)) {
+      for (int j = 0; j < i; ++j) {
+        if (upb_MiniTable_GetFieldByIndex(src, j)->presence == f->presence) {
+          mask_index = j;
+          break;
+        }
+      }
+    }
+    if (mask & (1ULL << (mask_index % 64))) {
       upb_MiniTableField new_f = *f;
       if (f->UPB_PRIVATE(submsg_ofs) != kUpb_NoSub) {
         new_subs.push_back(*UPB_PRIVATE(_upb_MiniTableField_Sub)(f));
@@ -168,6 +181,14 @@ void ConvertFuzz(const upb::fuzz::MiniTableFuzzInput& input, uint64_t mask1,
 }
 
 FUZZ_TEST(ConvertFuzz, ConvertFuzz);
+
+// Two members of the same oneof both appear on the wire. Previously the subset
+// schemas split the oneof, so the round trip picked a different winner.
+TEST(ConvertFuzz, ConvertFuzzRegression_SplitOneof_b553986132) {
+  ConvertFuzz(upb::fuzz::MiniTableFuzzInput{{"$::1/1*^(|%"}, {}, "", {}},
+              13624504597643522060ULL, 16497767249782210611ULL, "  00",
+              3016566825, 2825661372);
+}
 
 TEST(ConvertFuzz, Convert_IdenticalMinitables_ShallowCopy) {
   ConvertFuzz(
