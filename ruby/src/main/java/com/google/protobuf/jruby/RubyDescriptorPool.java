@@ -14,6 +14,7 @@ import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.ServiceDescriptor;
+import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
@@ -58,6 +59,7 @@ public class RubyDescriptorPool extends RubyObject {
     super(runtime, klazz);
     this.fileDescriptors = new ArrayList<>();
     this.symtab = new HashMap<IRubyObject, IRubyObject>();
+    this.extensions = new HashMap<FieldDescriptor, RubyFieldDescriptor>();
   }
 
   @JRubyMethod
@@ -83,6 +85,14 @@ public class RubyDescriptorPool extends RubyObject {
   @JRubyMethod
   public IRubyObject lookup(ThreadContext context, IRubyObject name) {
     return Helpers.nullToNil(symtab.get(name), context.nil);
+  }
+
+  /**
+   * Returns the {@link RubyFieldDescriptor} registered in this pool for the extension {@code
+   * descriptor}, or null if the extension is not registered in this pool.
+   */
+  protected RubyFieldDescriptor lookupExtension(FieldDescriptor descriptor) {
+    return extensions.get(descriptor);
   }
 
   /*
@@ -169,7 +179,7 @@ public class RubyDescriptorPool extends RubyObject {
   private void registerExtension(
       ThreadContext context, FieldDescriptor descriptor, String parentPath) {
     if (descriptor.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
-      registry.add(descriptor, descriptor.toProto());
+      registry.add(descriptor, DynamicMessage.getDefaultInstance(descriptor.getMessageType()));
     } else {
       registry.add(descriptor);
     }
@@ -178,6 +188,7 @@ public class RubyDescriptorPool extends RubyObject {
         (RubyFieldDescriptor) cFieldDescriptor.newInstance(context, Block.NULL_BLOCK);
     des.setName(name);
     des.setDescriptor(context, descriptor, this);
+    extensions.put(descriptor, des);
     // For MessageSet extensions, there is the possibility of a name conflict. Prefer the Message.
     symtab.putIfAbsent(name, des);
   }
@@ -217,5 +228,7 @@ public class RubyDescriptorPool extends RubyObject {
 
   private List<FileDescriptor> fileDescriptors;
   private Map<IRubyObject, IRubyObject> symtab;
+  // Keyed by descriptor, not name: extension names can collide with messages in symtab.
+  private Map<FieldDescriptor, RubyFieldDescriptor> extensions;
   protected static final ExtensionRegistry registry = ExtensionRegistry.newInstance();
 }

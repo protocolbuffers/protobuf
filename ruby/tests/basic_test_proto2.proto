@@ -222,6 +222,10 @@ message TestNestedExtension {
 
 extend TestExtensions {
   optional int32 optional_int32_extension = 1;
+  optional TestMessage optional_msg_extension = 2;
+  repeated TestMessage repeated_msg_extension = 3;
+  optional TestEnum optional_enum_extension = 4;
+  repeated int32 repeated_int32_extension = 5;
 }
 
 // A message with message_set_wire_format.
