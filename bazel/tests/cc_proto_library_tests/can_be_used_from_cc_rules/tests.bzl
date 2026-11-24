@@ -15,7 +15,11 @@ def _test_can_be_used_from_cc_library(env, target):
 def _test_can_be_used_from_cc_binary(env, target):
     env.expect.that_target(target).has_provider(CcInfo)
 
+def _test_proto_library_in_srcs(env, target):
+    env.expect.that_target(target).has_provider(CcInfo)
+
 TESTS = {
     ":foo": [_test_can_be_used_from_cc_library],
+    ":foo_in_srcs": [_test_proto_library_in_srcs],
     ":bin": [_test_can_be_used_from_cc_binary],
 }

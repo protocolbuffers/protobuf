@@ -35,6 +35,12 @@ cc_library(
     alwayslink = 1,
 )
 
+cc_library(
+    name = "foo_in_srcs",
+    srcs = [":foo_cc_proto"],
+    tags = PREVENT_IMPLICIT_BUILDING_TAGS,
+)
+
 cc_binary(
     name = "bin",
     srcs = ["bin.cc"],
