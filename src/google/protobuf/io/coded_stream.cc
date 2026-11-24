@@ -829,6 +829,7 @@ bool EpsCopyOutputStream::GetDirectBufferPointer(void** data, int* size,
 
 uint8_t* EpsCopyOutputStream::GetDirectBufferForNBytesAndAdvance(int size,
                                                                  uint8_t** pp) {
+  if (size < 0) return nullptr;
   if (had_error_) {
     *pp = buffer_;
     return nullptr;
