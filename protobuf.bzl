@@ -206,6 +206,12 @@ def _proto_gen_impl(ctx):
 
         inputs = [src] + deps.to_list()
         protoc = ctx.executable.protoc or _protoc_files_to_run(ctx).executable
+        protoc_toolchain = (
+            toolchains.PROTO_TOOLCHAIN if (
+                not ctx.executable.protoc and
+                toolchains.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION
+            ) else None
+        )
         tools = [protoc]
         if ctx.executable.plugin:
             plugin = ctx.executable.plugin
@@ -230,6 +236,7 @@ def _proto_gen_impl(ctx):
                 outputs = outs,
                 arguments = args + import_flags.to_list() + [src.path],
                 executable = protoc,
+                toolchain = protoc_toolchain,
                 mnemonic = "ProtoCompile",
                 use_default_shell_env = True,
             )
@@ -254,6 +261,7 @@ def _proto_gen_impl(ctx):
                     command = command,
                     mnemonic = "ProtoCompile",
                     tools = tools,
+                    toolchain = protoc_toolchain,
                     use_default_shell_env = True,
                 )
 
@@ -350,6 +358,7 @@ def _internal_gen_well_known_protos_java_impl(ctx):
 
     ctx.actions.run(
         executable = _protoc_files_to_run(ctx),
+        toolchain = toolchains.PROTO_TOOLCHAIN if toolchains.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION else None,
         inputs = descriptors,
         outputs = [srcjar],
         arguments = [args],
@@ -455,6 +464,7 @@ def _internal_gen_kt_protos(ctx):
 
     ctx.actions.run(
         executable = _protoc_files_to_run(ctx),
+        toolchain = toolchains.PROTO_TOOLCHAIN if toolchains.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION else None,
         inputs = descriptors,
         outputs = [srcjar],
         arguments = [args],
