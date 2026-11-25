@@ -17,6 +17,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/cord.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_lite.h"
@@ -309,7 +310,6 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
 
   auto& set = ExtensionSet(reflection, message);
   auto* extendee = reflection->descriptor_;
-  auto* pool = reflection->descriptor_pool_;
 
   set.ForEach(
       [&](int number, auto& ext) {
@@ -346,8 +346,19 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
             PROTOBUF_HANDLE_CASE(SINT32, SInt32);
             PROTOBUF_HANDLE_CASE(SINT64, SInt64);
 
-            PROTOBUF_HANDLE_CASE(MESSAGE, Message);
-            PROTOBUF_HANDLE_CASE(GROUP, Group);
+#define PROTOBUF_HANDLE_MESSAGE_CASE(TYPE, NAME)                         \
+  case FieldDescriptor::TYPE_##TYPE:                                     \
+    if (GetClassData(ext.ptr.repeated_message_value->Get(0))->is_lite) { \
+      break;                                                             \
+    }                                                                    \
+    func(internal::Repeated##NAME##DynamicExtensionInfo<decltype(ext)>{  \
+        ext, number});                                                   \
+    break;
+            // Message extension visitors expose Message&, whereas forced-lite
+            // extensions on full messages store MessageLite values.
+            PROTOBUF_HANDLE_MESSAGE_CASE(MESSAGE, Message);
+            PROTOBUF_HANDLE_MESSAGE_CASE(GROUP, Group);
+#undef PROTOBUF_HANDLE_MESSAGE_CASE
 
             case FieldDescriptor::TYPE_BYTES:
             case FieldDescriptor::TYPE_STRING:
@@ -382,15 +393,17 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
             PROTOBUF_HANDLE_CASE(SINT32, SInt32);
             PROTOBUF_HANDLE_CASE(SINT64, SInt64);
 
-            PROTOBUF_HANDLE_CASE(GROUP, Group);
+            case FieldDescriptor::TYPE_GROUP:
+              if (!ext.is_lazy &&
+                  GetClassData(*ext.ptr.message_value)->is_lite) {
+                break;
+              }
+              func(internal::GroupDynamicExtensionInfo<decltype(ext)>{ext,
+                                                                      number});
+              break;
             case FieldDescriptor::TYPE_MESSAGE: {
-              const FieldDescriptor* field =
-                  ext.descriptor != nullptr
-                      ? ext.descriptor
-                      : pool->FindExtensionByNumber(extendee, number);
-              ABSL_DCHECK_EQ(field->number(), number);
-              bool is_mset =
-                  field->containing_type()->options().message_set_wire_format();
+              bool is_mset = extendee->options().message_set_wire_format();
+              if (GetClassData(*ext.ptr.message_value)->is_lite) break;
               func(internal::MessageDynamicExtensionInfo<decltype(ext)>{
                   ext, number, is_mset});
               break;
@@ -474,7 +487,8 @@ void ReflectionVisit::VisitMessageFields(Message& message, CallbackFn&& func) {
 }
 
 // Visits present fields of "message" and calls the callback function "func".
-// Skips fields whose ctypes are missing in "mask".
+// Skips fields whose ctypes are missing in "mask", as well as MessageLite
+// extensions (and lazy extensions whose Message prototype cannot be found).
 template <typename MessageT, typename CallbackFn>
 void VisitFields(MessageT& message, CallbackFn&& func, FieldMask mask) {
   ReflectionVisit::VisitFields(message, std::forward<CallbackFn>(func), mask);
@@ -487,6 +501,8 @@ void VisitFields(MessageT& message, CallbackFn&& func, FieldMask mask) {
 // --Each of M elements of a map field whose value type is message are visited
 //   (total M).
 // --A map field whose value type is not message is ignored.
+// --MessageLite extensions (and lazy extensions whose Message prototype cannot
+//   be found) are skipped.
 //
 // This is a helper API built on top of VisitFields to hide specifics about
 // extensions, repeated fields, etc.
