@@ -907,6 +907,10 @@ PHP_METHOD(Message, serializeToJsonString) {
 
   if (size >= sizeof(buf)) {
     char* buf2 = malloc(size + 1);
+    if (!buf2) {
+      zend_error(E_ERROR, "Failed to allocate buffer for JSON encoding");
+      return;
+    }
     upb_JsonEncode(intern->msg, intern->desc->msgdef,
                    DescriptorPool_GetSymbolTable(), options, buf2, size + 1,
                    &status);
