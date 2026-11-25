@@ -1233,5 +1233,39 @@ TEST(ReflectionTest, MapEntryFieldValidation) {
   }
 }
 
+TEST(ReflectionTest, PackageNameLimits) {
+  auto add_pkg = [](upb::DefPool& pool, absl::string_view name,
+                    absl::string_view pkg, upb::Status* status) {
+    status->Clear();
+    upb::Arena arena;
+    google::protobuf::FileDescriptorProto proto;
+    proto.set_syntax("proto3");
+    proto.set_name(name);
+    proto.set_package(pkg);
+    return pool.AddFile(ToUpbDescriptorSet(proto, arena), status);
+  };
+
+  auto dotted_pkg = [](int dots) {
+    std::string pkg = "a";
+    for (int i = 0; i < dots; ++i) {
+      pkg += ".a";
+    }
+    return pkg;
+  };
+
+  upb::DefPool pool;
+  upb::Status status;
+
+  EXPECT_TRUE(add_pkg(pool, "ok_len.proto", std::string(511, 'a'), &status))
+      << status.error_message();
+  EXPECT_TRUE(add_pkg(pool, "ok_dots.proto", dotted_pkg(64), &status))
+      << status.error_message();
+
+  EXPECT_FALSE(add_pkg(pool, "long.proto", std::string(512, 'a'), &status));
+  EXPECT_THAT(status.error_message(), HasSubstr("511"));
+
+  EXPECT_FALSE(add_pkg(pool, "deep.proto", dotted_pkg(65), &status));
+  EXPECT_THAT(status.error_message(), HasSubstr("64"));
+}
 }  // namespace
 }  // namespace upb_test
