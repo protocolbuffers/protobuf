@@ -868,7 +868,7 @@ class Message
                 if (is_null($value)) {
                     return $this->defaultValue($field);
                 }
-                if (is_integer($value)) {
+                if (is_int($value)) {
                     return $value;
                 }
                 $enum_desc = $field->getEnumType();
@@ -1206,7 +1206,7 @@ class Message
                 $this->setStringValue($array);
             } elseif (is_null($array)) {
                 $this->setNullValue(0);
-            } elseif (is_double($array) || is_integer($array)) {
+            } elseif (is_float($array) || is_int($array)) {
                 $this->setNumberValue($array);
             } elseif (is_array($array)) {
                 if (array_values($array) !== $array) {
