@@ -8,11 +8,10 @@
 """Bazel's implementation of cc_proto_library"""
 
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("@rules_cc//cc:find_cc_toolchain.bzl", "use_cc_toolchain")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
-load("//bazel/private:cc_proto_support.bzl", "cc_proto_compile_and_link")
+load("//bazel/private:cc_proto_support.bzl", "cc_proto_compile_and_link", "use_cc_proto_compile_and_link_toolchains")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
 _CC_PROTO_TOOLCHAIN = Label("//bazel/private:cc_toolchain_type")
@@ -124,7 +123,7 @@ cc_proto_aspect = aspect(
                     default = Label("//bazel/flags/cc:proto_toolchain_for_cc"),
                 ),
             }),
-    toolchains = use_cc_toolchain() + toolchains.use_toolchain(_CC_PROTO_TOOLCHAIN),
+    toolchains = use_cc_proto_compile_and_link_toolchains() + toolchains.use_toolchain(_CC_PROTO_TOOLCHAIN),
 )
 
 def _cc_proto_library_impl(ctx):

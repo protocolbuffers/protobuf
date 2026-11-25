@@ -8,9 +8,46 @@
 """Supporting C++ compilation of generated code"""
 
 load("@proto_bazel_features//:features.bzl", "bazel_features")
-load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
+load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain", "use_cc_toolchain")
 load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
+
+_CC_RUNTIMES_TOOLCHAIN_TYPE = Label("@bazel_tools//tools/cpp:cc_runtimes_toolchain_type")
+
+def _has_cc_runtimes_toolchain_type():
+    # The cc_runtimes toolchain type only exists as of Bazel 9.
+    return getattr(bazel_features.cc, "cc_runtimes_toolchain_type", False)
+
+def use_cc_proto_compile_and_link_toolchains():
+    """Returns the toolchains that cc_proto_compile_and_link() needs.
+
+    Rules and aspects that call cc_proto_compile_and_link() must request these toolchains.
+
+    Returns:
+      A list that can be added to the toolchains of a rule or aspect.
+    """
+    if not _has_cc_runtimes_toolchain_type():
+        return use_cc_toolchain()
+    return use_cc_toolchain() + [config_common.toolchain_type(_CC_RUNTIMES_TOOLCHAIN_TYPE, mandatory = False)]
+
+def _get_cc_runtimes(ctx):
+    """Returns the C++ runtime libraries and their compiler flags.
+
+    rules_cc adds these libraries to the dependencies of every C++ target.
+
+    Args:
+        ctx: (RuleCtx) rule context.
+    Returns:
+      (list[Target], list[str]) The runtime libraries and their compiler flags.
+    """
+    if not _has_cc_runtimes_toolchain_type():
+        return [], []
+    cc_runtimes_toolchain = ctx.toolchains[_CC_RUNTIMES_TOOLCHAIN_TYPE]
+
+    if not cc_runtimes_toolchain:
+        return [], []
+    cc_runtimes_info = cc_runtimes_toolchain.cc_runtimes_info
+    return cc_runtimes_info.runtimes, cc_runtimes_info.copts
 
 def get_feature_configuration(ctx, has_sources, extra_requested_features = []):
     """Returns C++ feature configuration for compiling and linking generated C++ files.
@@ -71,6 +108,10 @@ def _get_libraries_from_linking_outputs(linking_outputs, feature_configuration):
 def cc_proto_compile_and_link(ctx, deps, sources, headers, disallow_dynamic_library = None, feature_configuration = None, alwayslink = False, **kwargs):
     """Creates C++ compilation and linking actions for C++ proto sources.
 
+    Like rules_cc's own rules, this also depends on the C++ runtime libraries and passes their
+    compiler flags, if a cc_runtimes toolchain is registered. The calling rule or aspect must
+    request the toolchains returned by use_cc_proto_compile_and_link_toolchains().
+
     Args:
         ctx: rule context
         deps: (list[CcInfo]) List of libraries to be added as dependencies to compilation and linking
@@ -89,6 +130,13 @@ def cc_proto_compile_and_link(ctx, deps, sources, headers, disallow_dynamic_libr
         - A list of temporary files generated durind compilation
     """
     cc_toolchain = find_cc_toolchain(ctx)
+
+    cc_runtimes, cc_runtimes_copts = _get_cc_runtimes(ctx)
+    if cc_runtimes:
+        deps = deps + cc_runtimes
+    if cc_runtimes_copts:
+        kwargs["user_compile_flags"] = cc_runtimes_copts + kwargs.get("user_compile_flags", [])
+
     feature_configuration = feature_configuration or get_feature_configuration(ctx, bool(sources))
     if disallow_dynamic_library == None:
         # TODO: Configure output artifact with action_config

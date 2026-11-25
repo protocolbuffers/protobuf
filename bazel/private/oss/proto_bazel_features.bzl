@@ -10,6 +10,7 @@
 _PROTO_BAZEL_FEATURES = """bazel_features = struct(
   cc = struct(
     builtin_cc_shared_library = {builtin_cc_shared_library},
+    cc_runtimes_toolchain_type = {cc_runtimes_toolchain_type},
     protobuf_on_allowlist = {protobuf_on_allowlist},
   ),
   proto = struct(
@@ -48,6 +49,9 @@ def _proto_bazel_features_impl(rctx):
     # rather than using rules_cc's own Starlark implementation (Bazel 9+).
     builtin_cc_shared_library = major_version_int < 9
 
+    # Whether @bazel_tools//tools/cpp:cc_runtimes_toolchain_type exists.
+    cc_runtimes_toolchain_type = major_version_int >= 9
+
     rctx.file("BUILD.bazel", """
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 bzl_library(
@@ -67,6 +71,7 @@ exports_files(["features.bzl"])
             "True" if major_version_int > 8 or (major_version_int == 8 and minor_version_int >= 2) else "False",
         has_proto_fragment = repr(has_proto_fragment),
         builtin_cc_shared_library = repr(builtin_cc_shared_library),
+        cc_runtimes_toolchain_type = repr(cc_runtimes_toolchain_type),
     ))
 
 proto_bazel_features = repository_rule(
