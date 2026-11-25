@@ -58,7 +58,7 @@ module Google
         instance = allocate
         # TODO This argument mangling doesn't agree with the type signature,
         # but does align with the text of the comments and is required to make unit tests pass.
-        if init_hashmap.empty? and ![:enum, :message].include?(value_type)
+        if ![:enum, :message].include?(value_type) and init_hashmap.empty?
           init_hashmap = value_typeclass
           value_typeclass = nil
         end
@@ -348,7 +348,7 @@ module Google
             Google::Protobuf::FFI.map_set(@map_ptr, key_message_value, value_message_value, arena)
           end
         when Google::Protobuf::Map
-          unless key_type == other.send(:key_type) and value_type == other.send(:value_type) and descriptor == other.descriptor
+          unless key_type == other.send(:key_type) and value_type == other.send(:value_type) and descriptor == other.send(:descriptor)
             raise ArgumentError.new "Attempt to merge Map with mismatching types" #TODO Improve error message by adding type information
           end
           arena.fuse(other.send(:arena))
@@ -364,7 +364,7 @@ module Google
       end
 
       def internal_merge(other)
-        internal_dup.internal_merge_into_self(other)
+        internal_dup.send(:internal_merge_into_self, other)
       end
 
       def initialize(key_type, value_type, value_type_class: nil, initial_values: nil, arena: nil, map: nil, descriptor: nil, name: nil)
