@@ -644,3 +644,25 @@ TEST(MiniTableTest, MapEntryCannotBeExtendable) {
                                          arena.ptr(), status.ptr()));
   EXPECT_FALSE(status.ok());
 }
+
+TEST(MiniTableTest, ExtensionCannotBeMapEntry) {
+  upb::Arena arena;
+  upb::Status status;
+  upb::MtDataEncoder msg_e;
+  ASSERT_TRUE(msg_e.StartMessage(kUpb_MessageModifier_IsExtendable));
+  upb_MiniTable* extendee = upb_MiniTable_Build(
+      msg_e.data().data(), msg_e.data().size(), arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, extendee) << status.error_message();
+
+  upb_MiniTable* map_entry = upb_MiniTable_Build(
+      kMapEntry.data(), kMapEntry.size(), arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, map_entry) << status.error_message();
+
+  upb::MtDataEncoder ext_e;
+  ASSERT_TRUE(ext_e.EncodeExtension(kUpb_FieldType_Message, 100,
+                                    kUpb_FieldModifier_IsRepeated));
+  EXPECT_EQ(nullptr, upb_MiniTableExtension_BuildMessage(
+                         ext_e.data().data(), ext_e.data().size(), extendee,
+                         map_entry, arena.ptr(), status.ptr()));
+  EXPECT_FALSE(status.ok());
+}

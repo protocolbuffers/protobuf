@@ -950,6 +950,13 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
   f->presence = 0;
 
   if (UPB_PRIVATE(_upb_MiniTableField_HasSub)(f)) {
+    if (upb_MiniTableField_IsSubMessage(f)) {
+      const upb_MiniTable* submsg = upb_MiniTableSub_Message(sub);
+      if (submsg && (submsg->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry)) {
+        upb_MdDecoder_ErrorJmp(&decoder->base,
+                               "Extension cannot be a map entry");
+      }
+    }
     // The sub is stored immediately after the upb_MiniTableExtension, whose
     // layout is `field` followed by the pointer-sized `extendee`. Compute the
     // offset for the target platform, since the generator emits it into

@@ -908,8 +908,11 @@ TEST(GeneratedCode, RejectsRepeatedMessageAuxFieldOnPromoteUnknownToMap) {
   ASSERT_TRUE(upb_MiniTable_SetSubMessage(dst_mt, dst_field, map_entry_mt));
 
   upb_Message* dst = _upb_Message_New(dst_mt, arena.ptr());
-  upb_Message* entry = _upb_Message_New(map_entry_mt, arena.ptr());
-  AttachRepeatedMessageAuxField(dst, 3, map_entry_mt, entry, arena.ptr());
+  upb_test_ModelWithExtensions* item =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+  AttachRepeatedMessageAuxField(dst, 3,
+                                &upb_0test__ModelWithExtensions_msg_init,
+                                UPB_UPCAST(item), arena.ptr());
 
   upb_UnknownToMessage_Status promote_result =
       upb_MiniTable_PromoteUnknownToMap(dst, dst_mt, dst_field, 0, arena.ptr());

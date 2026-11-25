@@ -27,6 +27,7 @@
 #include "upb/base/string_view.h"
 #include "upb/mem/alloc.h"
 #include "upb/mem/arena.hpp"
+#include "upb/mini_descriptor/decode.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
 #include "upb/reflection/internal/def_pool.h"
@@ -943,7 +944,7 @@ TEST(ReflectionTest, ValidateMapEntry) {
       {"field { name: 'key' number: 1 type: TYPE_INT32 } "
        "field { name: 'value' number: 2 type: TYPE_MESSAGE "
        "type_name: '.Outer.Entry' }",
-       "value cannot be another map entry"},
+       "invalid map entry field"},
       {"field { name: 'key' number: 1 type: TYPE_INT32 } "
        "field { name: 'value' number: 2 type: TYPE_ENUM "
        "type_name: '.NonZeroEnum' }",
@@ -1182,6 +1183,53 @@ TEST(ReflectionTest, ValidateWellKnownTypes) {
     ASSERT_TRUE(pool.ok()) << pool.status();
     EXPECT_EQ(pool->FindMessageByName(tc.name).wellknowntype(),
               kUpb_WellKnown_Unspecified);
+  }
+}
+
+TEST(ReflectionTest, MapEntryFieldValidation) {
+  auto load = [](std::string_view extra, upb_MiniTablePlatform platform =
+                                             kUpb_MiniTablePlatform_Native) {
+    google::protobuf::FileDescriptorProto file = ParseTextProtoOrDie(absl::StrFormat(
+        R"pb(
+          syntax: "proto2"
+          name: "m.proto"
+          message_type {
+            name: "Entry"
+            options { map_entry: true }
+            field { name: "key" number: 1 type: TYPE_INT32 }
+            field { name: "value" number: 2 type: TYPE_INT32 }
+          }
+          message_type {
+            name: "M"
+            extension_range { start: 100 end: 200 } %s
+          }
+        )pb",
+        extra));
+    upb::Arena arena;
+    upb::DefPool pool;
+    upb::Status status;
+    _upb_DefPool_SetPlatform(pool.ptr(), platform);
+    return static_cast<bool>(
+        pool.AddFile(ToUpbDescriptorSet(file, arena), &status));
+  };
+
+  EXPECT_TRUE(
+      load("field { name: 'f' number: 1 label: LABEL_REPEATED "
+           "type: TYPE_MESSAGE type_name: '.Entry' }"));
+  for (auto platform :
+       {kUpb_MiniTablePlatform_64Bit, kUpb_MiniTablePlatform_32Bit}) {
+    EXPECT_FALSE(
+        load("field { name: 'f' number: 1 label: LABEL_OPTIONAL "
+             "type: TYPE_MESSAGE type_name: '.Entry' }",
+             platform));
+    EXPECT_FALSE(
+        load("field { name: 'f' number: 1 label: LABEL_REPEATED "
+             "type: TYPE_GROUP type_name: '.Entry' }",
+             platform));
+    EXPECT_FALSE(
+        load("extension { name: 'e' number: 100 extendee: '.M' "
+             "label: LABEL_REPEATED type: TYPE_MESSAGE type_name: '.Entry' }",
+             platform));
   }
 }
 

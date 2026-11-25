@@ -318,7 +318,8 @@ bool upb_FieldDef_IsEnum(const upb_FieldDef* f) {
 }
 
 bool upb_FieldDef_IsMap(const upb_FieldDef* f) {
-  return upb_FieldDef_IsRepeated(f) && upb_FieldDef_IsSubMessage(f) &&
+  return upb_FieldDef_IsRepeated(f) && !upb_FieldDef_IsExtension(f) &&
+         upb_FieldDef_Type(f) == kUpb_FieldType_Message &&
          upb_MessageDef_IsMapEntry(upb_FieldDef_MessageSubDef(f));
 }
 
@@ -900,6 +901,11 @@ static void resolve_subdef(upb_DefBuilder* ctx, const char* prefix,
     default:
       // No resolution necessary.
       break;
+  }
+
+  if (upb_FieldDef_IsSubMessage(f) &&
+      upb_MessageDef_IsMapEntry(f->sub.msgdef) && !upb_FieldDef_IsMap(f)) {
+    _upb_DefBuilder_Errf(ctx, "invalid map entry field (%s)", f->full_name);
   }
 }
 
