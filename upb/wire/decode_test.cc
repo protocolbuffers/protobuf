@@ -7,6 +7,8 @@
 
 #include "upb/wire/decode.h"
 
+#include <gtest/gtest.h>
+
 #include <array>
 #include <cstdint>
 #include <cstring>
@@ -18,7 +20,6 @@
 #include <utility>
 #include <vector>
 
-#include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
@@ -35,6 +36,7 @@
 #include "upb/message/accessors.hpp"
 #include "upb/message/array.h"
 #include "upb/message/internal/accessors.h"
+#include "upb/message/internal/array.h"
 #include "upb/message/internal/map.h"  // IWYU pragma: keep
 #include "upb/message/internal/message.h"
 #include "upb/message/map.h"
@@ -574,6 +576,26 @@ TEST(RepeatedFieldTest, UnpackedRepeatedGrowOutOfMemory) {
     EXPECT_EQ(status, kUpb_DecodeStatus_OutOfMemory)
         << upb_DecodeStatus_String(status);
     upb_Arena_Free(arena);
+  }
+}
+
+TEST(RepeatedFieldTest, DecodeReserveOverflowOutOfMemory) {
+  Arena mt_arena;
+  auto [mt, field] =
+      test::MiniTable::MakeSingleFieldTable<test::field_types::Fixed32>(
+          1, kUpb_DecodeFast_Repeated, mt_arena.ptr());
+  const std::string payload = "\x0d\x01\x00\x00\x00";
+
+  for (int options : GetDecodeOptionsToTest()) {
+    Arena arena;
+    upb_Message* msg = upb_Message_New(mt, arena.ptr());
+    upb_Array* arr =
+        upb_Message_GetOrCreateMutableArray(msg, field, arena.ptr());
+    arr->UPB_ONLYBITS(size) = SIZE_MAX;
+
+    EXPECT_EQ(upb_Decode(payload.data(), payload.size(), msg, mt, nullptr,
+                         options, arena.ptr()),
+              kUpb_DecodeStatus_OutOfMemory);
   }
 }
 
