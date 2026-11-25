@@ -281,6 +281,7 @@ cc_test(
         "//upb/mem",
         "//upb/mini_descriptor",
         "//upb/test:parse_text_proto",
+        "@abseil-cpp//absl/base:core_headers",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:check",
         "@abseil-cpp//absl/status",
