@@ -39,3 +39,4 @@ Required.*.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                      
 Required.*.ProtobufInput.BadLength_Varint32BitOverflow                                                             # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.BadTag_OverlongVarint                                                                     # Should have failed to parse, but didn't.
 Required.*.JsonInput.AnyEmpty.*
+Required.*.ProtobufInput.ValidDataMap.STRING.MESSAGE.MergeValueInMapEntry.*
