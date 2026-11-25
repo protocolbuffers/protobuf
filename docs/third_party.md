@@ -29,6 +29,7 @@ programming languages:
 *   C++: https://github.com/tonda-kriz/simple-protobuf
 *   C++: https://EmbeddedProto.com
 *   C++: https://github.com/yksten/struct2x
+*   C++: https://github.com/woven-by-toyota/wolaz-protobuf
 *   C/C++: http://spbc.sf.net/
 *   C#: https://silentorbit.com/protobuf/
 *   Clojure: http://github.com/ninjudd/clojure-protobuf
