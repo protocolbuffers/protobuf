@@ -73,6 +73,7 @@ enum class ExtensionFinderType {
 
 // Parameterized test fixture for FindExtensionInfoFromFieldNumber.
 class FindExtensionTest : public ::testing::TestWithParam<ExtensionFinderType> {
+
  protected:
   std::unique_ptr<GeneratedExtensionFinder> generated_finder_;
   std::unique_ptr<DescriptorPoolExtensionFinder> pool_finder_;
@@ -90,8 +91,7 @@ class FindExtensionTest : public ::testing::TestWithParam<ExtensionFinderType> {
     dynamic_factory_ = std::make_unique<DynamicMessageFactory>(&dynamic_pool_);
     dynamic_factory_->SetDelegateToGeneratedFactory(true);
     pool_finder_ = std::make_unique<DescriptorPoolExtensionFinder>(
-        &dynamic_pool_, dynamic_factory_.get(),
-        MessageT::default_instance().GetDescriptor());
+        &dynamic_pool_, dynamic_factory_.get(), extendee_);
   }
 
   template <typename T>
@@ -1534,6 +1534,7 @@ TEST_F(ExtensionSetTest, Proto3PackedDynamicExtensions) {
   ASSERT_TRUE(message_options.SerializeToString(&reserialized_options));
   EXPECT_EQ(reserialized_options, "\xca\xb5\x18\x01\x01");
 }
+
 
 TEST_F(ExtensionSetTest, Proto3ExtensionPresenceSingular) {
   using protobuf_unittest::Proto3FileExtensions;
