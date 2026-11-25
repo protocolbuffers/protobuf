@@ -12118,6 +12118,13 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
   f->presence = 0;
 
   if (UPB_PRIVATE(_upb_MiniTableField_HasSub)(f)) {
+    if (upb_MiniTableField_IsSubMessage(f)) {
+      const upb_MiniTable* submsg = upb_MiniTableSub_Message(sub);
+      if (submsg && (submsg->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry)) {
+        upb_MdDecoder_ErrorJmp(&decoder->base,
+                               "Extension cannot be a map entry");
+      }
+    }
     // The sub is stored immediately after the upb_MiniTableExtension, whose
     // layout is `field` followed by the pointer-sized `extendee`. Compute the
     // offset for the target platform, since the generator emits it into
@@ -14600,7 +14607,8 @@ bool upb_FieldDef_IsEnum(const upb_FieldDef* f) {
 }
 
 bool upb_FieldDef_IsMap(const upb_FieldDef* f) {
-  return upb_FieldDef_IsRepeated(f) && upb_FieldDef_IsSubMessage(f) &&
+  return upb_FieldDef_IsRepeated(f) && !upb_FieldDef_IsExtension(f) &&
+         upb_FieldDef_Type(f) == kUpb_FieldType_Message &&
          upb_MessageDef_IsMapEntry(upb_FieldDef_MessageSubDef(f));
 }
 
@@ -15182,6 +15190,11 @@ static void resolve_subdef(upb_DefBuilder* ctx, const char* prefix,
     default:
       // No resolution necessary.
       break;
+  }
+
+  if (upb_FieldDef_IsSubMessage(f) &&
+      upb_MessageDef_IsMapEntry(f->sub.msgdef) && !upb_FieldDef_IsMap(f)) {
+    _upb_DefBuilder_Errf(ctx, "invalid map entry field (%s)", f->full_name);
   }
 }
 
