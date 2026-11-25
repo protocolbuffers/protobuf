@@ -13,7 +13,10 @@
 #include <cstdint>
 #include <string>
 
+#include "google/protobuf/descriptor.pb.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/port_def.inc"
 
 namespace google {
