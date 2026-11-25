@@ -72,6 +72,9 @@ VALUE RepeatedField_EmptyFrozen(const upb_FieldDef* f) {
     self->type_info = type_info;
     if (self->type_info.type == kUpb_CType_Message) {
       self->type_class = Descriptor_DefToClass(type_info.def.msgdef);
+    } else if (self->type_info.type == kUpb_CType_Enum) {
+      // GC-root the enumdef too; Convert_UpbToRuby dereferences it.
+      self->type_class = EnumDescriptor_DefToObj(type_info.def.enumdef);
     }
     val = ObjectCache_TryAdd(f, RepeatedField_freeze(val));
   }
@@ -95,6 +98,9 @@ VALUE RepeatedField_GetRubyWrapper(const upb_Array* array, TypeInfo type_info,
     self->type_info = type_info;
     if (self->type_info.type == kUpb_CType_Message) {
       self->type_class = Descriptor_DefToClass(type_info.def.msgdef);
+    } else if (self->type_info.type == kUpb_CType_Enum) {
+      // GC-root the enumdef too; Convert_UpbToRuby dereferences it.
+      self->type_class = EnumDescriptor_DefToObj(type_info.def.enumdef);
     }
     val = ObjectCache_TryAdd(array, val);
   }
