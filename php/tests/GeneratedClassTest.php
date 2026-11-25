@@ -2117,6 +2117,34 @@ class GeneratedClassTest extends TestBase
         $this->assertTrue(true);
     }
 
+    public function testForeachOnMessage()
+    {
+        if (!extension_loaded('protobuf')) {
+            $this->markTestSkipped('Requires the protobuf extension');
+        }
+
+        $m = new TestMessage(['optional_string' => 'test']);
+        $count = 0;
+        foreach ($m as $value) {
+            ++$count;
+        }
+        $this->assertSame(0, $count);
+    }
+
+    public function testForeachOnMessageByReference()
+    {
+        if (!extension_loaded('protobuf')) {
+            $this->markTestSkipped('Requires the protobuf extension');
+        }
+
+        $m = new TestMessage(['optional_string' => 'test']);
+        $count = 0;
+        foreach ($m as &$value) {
+            ++$count;
+        }
+        $this->assertSame(0, $count);
+    }
+
     public function testIssue9440()
     {
         $m = new Test32Fields();

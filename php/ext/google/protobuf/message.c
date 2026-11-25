@@ -401,7 +401,7 @@ static zval* Message_write_property(zend_object* obj, zend_string* member,
 static zval* Message_get_property_ptr_ptr(zend_object* object,
                                           zend_string* member, int type,
                                           void** cache_slot) {
-  return NULL;  // We do not have a properties table.
+  return NULL;
 }
 
 /**
@@ -423,16 +423,6 @@ static zend_object* Message_clone_obj(zend_object* object) {
   zval ret;
   Message_GetPhpWrapper(&ret, intern->desc, clone, &intern->arena);
   return Z_OBJ_P(&ret);
-}
-
-/**
- * Message_get_properties()
- *
- * Object handler for the get_properties event in PHP. This returns a HashTable
- * of our internal properties. We don't support this, so we return NULL.
- */
-static HashTable* Message_get_properties(zend_object* object) {
-  return NULL;  // We don't offer direct references to our properties.
 }
 
 // C Functions from message.h. /////////////////////////////////////////////////
@@ -1550,6 +1540,8 @@ void Message_ModuleInit() {
   // Deny serialization of the Message object.
   message_ce->serialize = protobuf_serialize_deny;
 
+  // Keep the standard get_properties handler so foreach gets an empty table.
+  // Message_SuppressDefaultProperties() sets the declared property count to 0.
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
   h->free_obj = Message_dtor;
   h->compare = Message_compare_objects;
@@ -1557,7 +1549,6 @@ void Message_ModuleInit() {
   h->write_property = Message_write_property;
   h->has_property = Message_has_property;
   h->unset_property = Message_unset_property;
-  h->get_properties = Message_get_properties;
   h->get_property_ptr_ptr = Message_get_property_ptr_ptr;
   h->clone_obj = Message_clone_obj;
 
