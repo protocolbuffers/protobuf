@@ -5,10 +5,10 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include <memory>
 #include <string>
 #include <vector>
 
+#include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
