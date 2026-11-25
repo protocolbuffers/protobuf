@@ -297,6 +297,11 @@ upb_MessageValue Msgval_DeepCopy(upb_MessageValue msgval, TypeInfo type_info,
     case kUpb_CType_String:
     case kUpb_CType_Bytes: {
       size_t n = msgval.str_val.size;
+      if (!n) {
+        new_msgval.str_val.data = NULL;
+        new_msgval.str_val.size = 0;
+        break;
+      }
       char* mem = upb_Arena_Malloc(arena, n);
       if (!mem) Arena_raise_oom();
       new_msgval.str_val.data = mem;

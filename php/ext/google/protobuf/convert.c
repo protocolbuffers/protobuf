@@ -474,7 +474,8 @@ void Convert_UpbToPhp(upb_MessageValue upb_val, zval* php_val, TypeInfo type,
     case kUpb_CType_String:
     case kUpb_CType_Bytes: {
       upb_StringView str = upb_val.str_val;
-      ZVAL_NEW_STR(php_val, zend_string_init(str.data, str.size, 0));
+      ZVAL_NEW_STR(php_val,
+                   zend_string_init(str.data ? str.data : "", str.size, 0));
       break;
     }
     case kUpb_CType_Message:
