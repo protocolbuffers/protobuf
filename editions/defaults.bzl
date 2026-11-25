@@ -33,18 +33,22 @@ def _compile_edition_defaults_impl(ctx):
 
     if ctx.executable.protoc:
         protoc = ctx.executable.protoc
+        toolchain = None
     elif toolchains.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION:
-        toolchain = ctx.toolchains[toolchains.PROTO_TOOLCHAIN]
-        if not toolchain:
+        proto_toolchain = ctx.toolchains[toolchains.PROTO_TOOLCHAIN]
+        if not proto_toolchain:
             fail("Protocol compiler toolchain could not be resolved.")
-        protoc = toolchain.proto.proto_compiler
+        protoc = proto_toolchain.proto.proto_compiler
+        toolchain = toolchains.PROTO_TOOLCHAIN
     else:
         protoc = ctx.executable._protoc_minimal
+        toolchain = None
 
     ctx.actions.run(
         outputs = [out_file],
         inputs = sources,
         executable = protoc,
+        toolchain = toolchain,
         arguments = [args],
         mnemonic = "ProtobufCompileEditionDefaults",
         progress_message = "Generating edition defaults",
