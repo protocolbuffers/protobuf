@@ -58,6 +58,26 @@ UCS2_MAXUNICODE = 65535
 warnings.simplefilter('error', DeprecationWarning)
 
 
+def _serialize_oversize(msg):
+  """Serializes `msg` past the default nesting limit to build parser inputs.
+
+  Leaves `allow_oversize_protos` disabled for C-backed implementations.
+
+  Args:
+    msg: The message to serialize.
+
+  Returns:
+    The serialized bytes.
+  """
+  if api_implementation.Type() == 'python':
+    return msg.SerializeToString()
+  api_implementation._c_module.SetAllowOversizeProtos(True)
+  try:
+    return msg.SerializeToString()
+  finally:
+    api_implementation._c_module.SetAllowOversizeProtos(False)
+
+
 @parameterized.named_parameters(
     ('_proto2', unittest_pb2), ('_proto3', unittest_proto3_arena_pb2)
 )
@@ -2358,7 +2378,7 @@ class TestRecursiveGroup(unittest.TestCase):
     for _ in range(n):
       sub = sub.sub_group
     sub.i = 1
-    return msg.SerializeToString()
+    return _serialize_oversize(msg)
 
   def testRecursiveGroups(self):
     recurse_msg = self_recursive_pb2.SelfRecursive()
@@ -4226,7 +4246,7 @@ class OversizeProtosTest(unittest.TestCase):
     for _ in range(n):
       sub = sub.a
     sub.i = 0
-    return msg.SerializeToString()
+    return _serialize_oversize(msg)
 
   def testSucceedOkSizedProto(self):
     msg = unittest_pb2.TestRecursiveMessage()
@@ -4242,15 +4262,41 @@ class OversizeProtosTest(unittest.TestCase):
     self.assertIn('Error parsing message', str(context.exception))
 
   def testSucceedOversizeProto(self):
+    data = self.GenerateNestedProto(101)
 
     if api_implementation.Type() == 'python':
       decoder.SetRecursionLimit(310)
     else:
       api_implementation._c_module.SetAllowOversizeProtos(True)
+      self.addCleanup(
+          api_implementation._c_module.SetAllowOversizeProtos, False
+      )
 
     msg = unittest_pb2.TestRecursiveMessage()
-    msg.ParseFromString(self.GenerateNestedProto(101))
+    msg.ParseFromString(data)
     decoder.SetRecursionLimit(decoder.DEFAULT_RECURSION_LIMIT)
+
+  @unittest.skipIf(
+      api_implementation.Type() != 'upb',
+      'Serialization depth limit is only enforced in upb.',
+  )
+  def testSerializeExceedingDefaultDepth(self):
+    api_implementation._c_module.SetAllowOversizeProtos(False)
+    msg = unittest_pb2.TestRecursiveMessage()
+    sub = msg
+    for _ in range(101):
+      sub = sub.a
+    sub.i = 0
+    with self.assertRaises(RecursionError):
+      msg.SerializeToString()
+    with self.assertRaises(RecursionError):
+      msg.SerializePartialToString()
+    with self.assertRaises(RecursionError):
+      msg.ByteSize()
+
+    api_implementation._c_module.SetAllowOversizeProtos(True)
+    self.addCleanup(api_implementation._c_module.SetAllowOversizeProtos, False)
+    self.assertGreater(msg.ByteSize(), 0)
 
   def testRecursionMap(self):
     depth = 50
@@ -4288,7 +4334,7 @@ class OversizeProtosTest(unittest.TestCase):
     # message can not be parsed when exceed max recursion depth
     sub.Extensions[ext].i = 123
     with self.assertRaises(message.DecodeError) as context:
-      msg.ParseFromString(msg.SerializeToString())
+      msg.ParseFromString(_serialize_oversize(msg))
     self.assertIn('Error parsing message', str(context.exception))
 
 

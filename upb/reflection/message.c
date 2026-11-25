@@ -203,7 +203,8 @@ bool _upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
   upb_MessageValue val;
   bool ret = true;
 
-  if (--depth == 0) return false;
+  if (depth < 0) return false;
+  depth--;
 
   _upb_Message_DiscardUnknown_shallow(msg);
 

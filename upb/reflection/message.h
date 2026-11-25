@@ -78,7 +78,8 @@ UPB_API bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
                               const upb_FieldDef** f, upb_MessageValue* val,
                               size_t* iter);
 
-// Clears all unknown field data from this message and all submessages.
+// Clears all unknown field data from this message and all submessages up to
+// `maxdepth` levels of nesting, returning false if `maxdepth` is exceeded.
 UPB_API bool upb_Message_DiscardUnknown(upb_Message* msg,
                                         const upb_MessageDef* m,
                                         const upb_DefPool* ext_pool,

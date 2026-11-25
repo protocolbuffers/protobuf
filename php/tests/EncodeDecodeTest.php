@@ -983,6 +983,36 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("9a0400", bin2hex($to));
     }
 
+    public function testDiscardUnknownFieldsAtDefaultMaxDepth()
+    {
+        $cleanPayload = $this->makeRecursiveMessage(100)->serializeToString();
+
+        $dirty = $this->makeRecursiveMessage(100);
+        $cur = $dirty;
+        for ($i = 0; $i < 100; $i++) {
+            $cur = $cur->getRecursive();
+        }
+        $cur->mergeFromString(hex2bin('F80601'));
+        $dirtyPayload = $dirty->serializeToString();
+        $this->assertNotSame($cleanPayload, $dirtyPayload);
+
+        $decoded = new TestMessage();
+        $decoded->mergeFromString($dirtyPayload);
+        $decoded->discardUnknownFields();
+        $this->assertSame($cleanPayload, $decoded->serializeToString());
+    }
+
+    public function testDiscardUnknownFieldsMaxDepthExceeded()
+    {
+        if (!extension_loaded('protobuf')) {
+            $this->markTestSkipped(
+                'discardUnknownFields depth limit is C-extension only');
+        }
+
+        $this->expectException(Exception::class);
+        $this->makeRecursiveMessage(101)->discardUnknownFields();
+    }
+
     public function testJsonUnknown()
     {
         // Test unknown number

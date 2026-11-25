@@ -27,11 +27,16 @@
 #include "upb/base/string_view.h"
 #include "upb/mem/alloc.h"
 #include "upb/mem/arena.hpp"
+#include "upb/message/message.h"
 #include "upb/mini_descriptor/decode.h"
+#include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
 #include "upb/reflection/internal/def_pool.h"
+#include "upb/reflection/message.h"
 #include "upb/test/parse_text_proto.h"
+#include "upb/wire/decode.h"
+#include "upb/wire/encode.h"
 
 namespace upb_test {
 namespace {
@@ -1231,6 +1236,67 @@ TEST(ReflectionTest, MapEntryFieldValidation) {
              "label: LABEL_REPEATED type: TYPE_MESSAGE type_name: '.Entry' }",
              platform));
   }
+}
+
+TEST(ReflectionTest, DiscardUnknownDepthLimit) {
+  upb::DefPool pool;
+  ASSERT_TRUE(_upb_DefPool_LoadDefInit(
+      pool.ptr(), &google_protobuf_unittest_proto_upbdefinit));
+  upb::MessageDefPtr m =
+      pool.FindMessageByName("proto2_unittest.TestRecursiveMessage");
+  ASSERT_TRUE(m);
+  upb::FieldDefPtr child_f = m.FindFieldByName("a");
+  ASSERT_TRUE(child_f);
+  const upb_MiniTable* mt = upb_MessageDef_MiniTable(m.ptr());
+  upb::Arena arena;
+
+  auto add_unknown = [&](upb_Message* msg) {
+    static constexpr char kUnknownVarint[] = {'\xF8', '\x06', '\x01'};
+    ASSERT_EQ(upb_Decode(kUnknownVarint, sizeof(kUnknownVarint), msg, mt,
+                         nullptr, 0, arena.ptr()),
+              kUpb_DecodeStatus_Ok);
+    ASSERT_TRUE(upb_Message_HasUnknown(msg));
+  };
+
+  const int kDefaultDepth =
+      static_cast<int>(upb_EncodeOptions_GetEffectiveMaxDepth(0));
+  ASSERT_EQ(kDefaultDepth, 100);
+
+  // Build root + kDefaultDepth nested submessages (levels 0..100), with an
+  // unknown field at root, level 64, and the leaf.
+  upb_Message* root = upb_Message_New(mt, arena.ptr());
+  ASSERT_NE(root, nullptr);
+  upb_Message* cur = root;
+  upb_Message* mid = nullptr;
+  for (int i = 0; i <= kDefaultDepth; ++i) {
+    if (i == 0 || i == 64 || i == kDefaultDepth) {
+      add_unknown(cur);
+    }
+    if (i == 64) mid = cur;
+    if (i < kDefaultDepth) {
+      cur = upb_Message_Mutable(cur, child_f.ptr(), arena.ptr()).msg;
+      ASSERT_NE(cur, nullptr);
+    }
+  }
+
+  // Negative maxdepth fails immediately without modifying root.
+  EXPECT_FALSE(upb_Message_DiscardUnknown(root, m.ptr(), nullptr, -1));
+  EXPECT_TRUE(upb_Message_HasUnknown(root));
+
+  // Default maxdepth clears levels 0..100 and succeeds.
+  EXPECT_TRUE(
+      upb_Message_DiscardUnknown(root, m.ptr(), nullptr, kDefaultDepth));
+  EXPECT_FALSE(upb_Message_HasUnknown(root));
+  EXPECT_FALSE(upb_Message_HasUnknown(mid));
+  EXPECT_FALSE(upb_Message_HasUnknown(cur));
+
+  // Exceeding maxdepth by one level returns false and preserves level 101.
+  upb_Message* extra = upb_Message_Mutable(cur, child_f.ptr(), arena.ptr()).msg;
+  ASSERT_NE(extra, nullptr);
+  add_unknown(extra);
+  EXPECT_FALSE(
+      upb_Message_DiscardUnknown(root, m.ptr(), nullptr, kDefaultDepth));
+  EXPECT_TRUE(upb_Message_HasUnknown(extra));
 }
 
 }  // namespace

@@ -236,6 +236,16 @@ const upb_FieldDef* PyUpb_Message_GetFieldDef(PyUpb_Message* msg) {
   return (void*)(msg->def & ~(uintptr_t)1);
 }
 
+// Returns the maximum nesting depth for operations that recurse through
+// submessages (parsing, serialization, and DiscardUnknownFields()). Honors
+// `allow_oversize_protos` and otherwise uses the upb wire format default.
+static uint16_t PyUpb_Message_GetMaxDepth(void) {
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  return state->allow_oversize_protos
+             ? UINT16_MAX
+             : upb_EncodeOptions_GetEffectiveMaxDepth(0);
+}
+
 static const upb_MessageDef* _PyUpb_Message_GetMsgdef(PyUpb_Message* msg) {
   // The Python class carries the immutable MessageDef for both reified
   // messages and unset submessage stubs; reading msg->def can race with stub
@@ -1688,8 +1698,7 @@ PyObject* PyUpb_Message_MergeFromString(PyObject* _self, PyObject* arg) {
   const upb_MiniTable* layout = upb_MessageDef_MiniTable(msgdef);
   upb_Arena* arena = PyUpb_Arena_Get(self->arena);
   PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
-  int options =
-      upb_DecodeOptions_MaxDepth(state->allow_oversize_protos ? UINT16_MAX : 0);
+  int options = upb_DecodeOptions_MaxDepth(PyUpb_Message_GetMaxDepth());
   upb_DecodeStatus status =
       upb_Decode(buf, size, self->ptr.msg, layout, extreg, options, arena);
   Py_XDECREF(mv_contiguous);
@@ -1849,7 +1858,11 @@ static PyObject* PyUpb_Message_DiscardUnknownFields(PyUpb_Message* self,
   if (!PyUpb_Message_AssureWritable(self)) return NULL;
   const upb_MessageDef* msgdef = _PyUpb_Message_GetMsgdef(self);
   const upb_DefPool* ext_pool = upb_FileDef_Pool(upb_MessageDef_File(msgdef));
-  upb_Message_DiscardUnknown(self->ptr.msg, msgdef, ext_pool, 64);
+  if (!upb_Message_DiscardUnknown(self->ptr.msg, msgdef, ext_pool,
+                                  PyUpb_Message_GetMaxDepth())) {
+    PyErr_SetString(PyExc_RecursionError, "Messages nested too deeply.");
+    return NULL;
+  }
   Py_RETURN_NONE;
 }
 
@@ -2012,8 +2025,7 @@ PyObject* PyUpb_Message_SerializeInternal(PyObject* _self, PyObject* args,
   }
   const upb_MiniTable* layout = upb_MessageDef_MiniTable(msgdef);
   size_t size = 0;
-  // Python does not currently have any effective limit on serialization depth.
-  int options = upb_EncodeOptions_MaxDepth(UINT16_MAX);
+  int options = upb_EncodeOptions_MaxDepth(PyUpb_Message_GetMaxDepth());
   if (check_required) options |= kUpb_EncodeOption_CheckRequired;
   if (deterministic) options |= kUpb_EncodeOption_Deterministic;
   char* pb;
@@ -2024,6 +2036,8 @@ PyObject* PyUpb_Message_SerializeInternal(PyObject* _self, PyObject* args,
   if (status != kUpb_EncodeStatus_Ok) {
     if (status == kUpb_EncodeStatus_OutOfMemory) {
       PyErr_SetNone(PyExc_MemoryError);
+    } else if (status == kUpb_EncodeStatus_MaxDepthExceeded) {
+      PyErr_SetString(PyExc_RecursionError, "Messages nested too deeply.");
     } else {
       PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
       PyObject* errors = PyUpb_Message_FindInitializationErrors(_self, NULL);
