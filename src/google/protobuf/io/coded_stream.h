@@ -1119,7 +1119,8 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodedOutputStream {
   void Trim() { cur_ = impl_.Trim(cur_); }
 
   // Skips a number of bytes, leaving the bytes unmodified in the underlying
-  // buffer.  Returns false if an underlying write error occurs.  This is
+  // buffer.  Returns false if an underlying write error occurs or `count` is
+  // negative; a negative `count` puts the stream in an error state.  This is
   // mainly useful with GetDirectBufferPointer().
   // Note of caution, the skipped bytes may contain uninitialized data. The
   // caller must make sure that the skipped bytes are properly initialized,
@@ -1145,9 +1146,10 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodedOutputStream {
   // returns a pointer directly into the buffer and advances over these bytes.
   // The caller may then write directly into this buffer (e.g. using the
   // *ToArray static methods) rather than go through CodedOutputStream.  If
-  // there are not enough bytes available, returns NULL.  The return pointer is
-  // invalidated as soon as any other non-const method of CodedOutputStream
-  // is called.
+  // there are not enough bytes available, returns NULL.  If `size` is
+  // negative, returns NULL and puts the stream in an error state.  The return
+  // pointer is invalidated as soon as any other non-const method of
+  // CodedOutputStream is called.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD uint8_t*
   GetDirectBufferForNBytesAndAdvance(int size) {
     return impl_.GetDirectBufferForNBytesAndAdvance(size, &cur_);

@@ -783,7 +783,10 @@ uint8_t* EpsCopyOutputStream::FlushAndResetBuffer(uint8_t* ptr) {
 }
 
 bool EpsCopyOutputStream::Skip(int count, uint8_t** pp) {
-  if (count < 0) return false;
+  if (count < 0) {
+    *pp = Error();
+    return false;
+  }
   if (had_error_) {
     *pp = buffer_;
     return false;
@@ -829,7 +832,10 @@ bool EpsCopyOutputStream::GetDirectBufferPointer(void** data, int* size,
 
 uint8_t* EpsCopyOutputStream::GetDirectBufferForNBytesAndAdvance(int size,
                                                                  uint8_t** pp) {
-  if (size < 0) return nullptr;
+  if (size < 0) {
+    *pp = Error();
+    return nullptr;
+  }
   if (had_error_) {
     *pp = buffer_;
     return nullptr;

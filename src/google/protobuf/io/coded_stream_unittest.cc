@@ -1311,6 +1311,43 @@ TEST_F(CodedStreamTest, GetDirectBufferPointerInlineInput) {
   EXPECT_EQ(0, size);
 }
 
+TEST_F(CodedStreamTest, GetDirectBufferForNBytesAndAdvanceNegativeSizeErrors) {
+  for (int size : {-16, INT_MIN}) {
+    std::vector<uint8_t> out(32, 0);
+    ArrayOutputStream output(out.data(), static_cast<int>(out.size()));
+    CodedOutputStream coded_output(&output);
+
+    EXPECT_EQ(coded_output.GetDirectBufferForNBytesAndAdvance(size), nullptr);
+    EXPECT_TRUE(coded_output.HadError());
+  }
+}
+
+TEST_F(CodedStreamTest, SkipOutput) {
+  std::vector<uint8_t> out(32, 'x');
+  ArrayOutputStream output(out.data(), static_cast<int>(out.size()));
+  CodedOutputStream coded_output(&output);
+
+  coded_output.WriteRaw("ab", 2);
+  EXPECT_TRUE(coded_output.Skip(2));
+  coded_output.WriteRaw("cd", 2);
+  coded_output.Trim();
+  EXPECT_FALSE(coded_output.HadError());
+  EXPECT_EQ(coded_output.ByteCount(), 6);
+  EXPECT_EQ(absl::string_view(reinterpret_cast<const char*>(out.data()), 6),
+            "abxxcd");
+}
+
+TEST_F(CodedStreamTest, SkipOutputNegativeCountErrors) {
+  for (int count : {-1, INT_MIN}) {
+    std::vector<uint8_t> out(32, 0);
+    ArrayOutputStream output(out.data(), static_cast<int>(out.size()));
+    CodedOutputStream coded_output(&output);
+
+    EXPECT_FALSE(coded_output.Skip(count));
+    EXPECT_TRUE(coded_output.HadError());
+  }
+}
+
 // -------------------------------------------------------------------
 // Limits
 
