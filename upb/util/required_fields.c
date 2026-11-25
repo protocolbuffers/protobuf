@@ -256,14 +256,15 @@ static void upb_util_FindUnsetRequiredInternal(upb_FindContext* ctx,
       // Map field.
       const upb_FieldDef* val_f = upb_MessageDef_Field(sub_m, 1);
       const upb_MessageDef* val_m = upb_FieldDef_MessageSubDef(val_f);
-      if (!val_m) continue;
-      const upb_Map* map = val.map_val;
-      size_t iter = kUpb_Map_Begin;
-      upb_MessageValue key, map_val;
-      while (upb_Map_Next(map, &key, &map_val, &iter)) {
-        upb_FindContext_Push(ctx, (upb_FieldPathEntry){.map_key = key});
-        upb_util_FindUnsetRequiredInternal(ctx, map_val.msg_val, val_m);
-        upb_FindContext_Pop(ctx);
+      if (val_m) {
+        const upb_Map* map = val.map_val;
+        size_t iter = kUpb_Map_Begin;
+        upb_MessageValue key, map_val;
+        while (upb_Map_Next(map, &key, &map_val, &iter)) {
+          upb_FindContext_Push(ctx, (upb_FieldPathEntry){.map_key = key});
+          upb_util_FindUnsetRequiredInternal(ctx, map_val.msg_val, val_m);
+          upb_FindContext_Pop(ctx);
+        }
       }
     } else if (upb_FieldDef_IsRepeated(f)) {
       // Repeated field.
