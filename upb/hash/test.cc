@@ -660,3 +660,86 @@ TEST(IntTableTest, InPlaceGrow) {
 
   upb_Arena_Free(arena);
 }
+
+TEST(Table, StringTableCopyAndFailureIsolation) {
+  upb::Arena src_arena;
+  upb_strtable src;
+  ASSERT_TRUE(upb_strtable_init(&src, 4, src_arena.ptr()));
+
+  // Copying an empty table yields an empty valid table.
+  upb::Arena dst_arena;
+  upb_strtable empty_copy;
+  ASSERT_TRUE(upb_strtable_copy(&empty_copy, &src, dst_arena.ptr()));
+  EXPECT_EQ(upb_strtable_count(&empty_copy), 0);
+
+  // Populate enough entries to exercise chaining and copy.
+  for (int i = 0; i < 12; i++) {
+    std::string k = "key_" + std::to_string(i);
+    ASSERT_TRUE(upb_strtable_insert(&src, k.data(), k.size(),
+                                    upb_value_int32(i + 100), src_arena.ptr()));
+  }
+
+  upb_strtable dst;
+  ASSERT_TRUE(upb_strtable_copy(&dst, &src, dst_arena.ptr()));
+  EXPECT_EQ(upb_strtable_count(&dst), 12);
+  for (int i = 0; i < 12; i++) {
+    std::string k = "key_" + std::to_string(i);
+    upb_value val;
+    ASSERT_TRUE(upb_strtable_lookup2(&dst, k.data(), k.size(), &val));
+    EXPECT_EQ(upb_value_getint32(val), i + 100);
+  }
+
+  // OOM during copy must leave dest untouched.
+  alignas(16) char tiny_buf[256];
+  upb_Arena* oom_arena = upb_Arena_Init(tiny_buf, sizeof(tiny_buf), nullptr);
+  ASSERT_NE(oom_arena, nullptr);
+  upb_strtable untouched = {};
+  EXPECT_FALSE(upb_strtable_copy(&untouched, &src, oom_arena));
+  EXPECT_EQ(untouched.t.count, 0);
+  EXPECT_EQ(untouched.t.mask, 0);
+  EXPECT_EQ(untouched.t.entries, nullptr);
+  upb_Arena_Free(oom_arena);
+
+  // Corrupted src with non-zero count and null entries fails cleanly.
+  upb_strtable bad_src = {};
+  bad_src.t.count = 1;
+  EXPECT_FALSE(upb_strtable_copy(&untouched, &bad_src, dst_arena.ptr()));
+  EXPECT_EQ(untouched.t.count, 0);
+}
+
+TEST(Table, ClearHandlesNullAndPopulatedTables) {
+  // Zero-initialized tables (entries == nullptr) must not trigger UB in clear.
+  upb_strtable zero_str = {};
+  upb_strtable_clear(&zero_str);
+  EXPECT_EQ(zero_str.t.count, 0);
+
+  upb_exttable zero_ext = {};
+  upb_exttable_clear(&zero_ext);
+  EXPECT_EQ(zero_ext.t.count, 0);
+
+  upb_inttable zero_int = {};
+  upb_inttable_clear(&zero_int);
+  EXPECT_EQ(zero_int.t.count, 0);
+
+  // Populated strtable and exttable clear properly.
+  upb::Arena arena;
+  upb_strtable str_t;
+  ASSERT_TRUE(upb_strtable_init(&str_t, 4, arena.ptr()));
+  ASSERT_TRUE(
+      upb_strtable_insert(&str_t, "abc", 3, upb_value_int32(1), arena.ptr()));
+  upb_strtable_clear(&str_t);
+  EXPECT_EQ(upb_strtable_count(&str_t), 0);
+  upb_value v;
+  EXPECT_FALSE(upb_strtable_lookup2(&str_t, "abc", 3, &v));
+
+  upb_exttable ext_t;
+  ASSERT_TRUE(upb_exttable_init(&ext_t, 4, arena.ptr()));
+  const upb_MiniTable* mt1 = &upb_0test__TestExtensions_msg_init;
+  const upb_MiniTableExtension* ext1_10 =
+      upb_test_TestExtensions_optional_int32_ext_ext;
+  ASSERT_TRUE(
+      upb_exttable_insert(&ext_t, mt1, (const uint32_t*)ext1_10, arena.ptr()));
+  upb_exttable_clear(&ext_t);
+  EXPECT_EQ(upb_exttable_count(&ext_t), 0);
+  EXPECT_EQ(upb_exttable_lookup(&ext_t, mt1, 1000), nullptr);
+}
