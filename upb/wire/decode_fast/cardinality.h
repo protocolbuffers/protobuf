@@ -396,10 +396,10 @@ bool upb_DecodeFast_GetArrayForAppend(upb_Decoder* d, const char* ptr,
   if (UPB_LIKELY(!arr)) {
     // upb_Array does not exist yet.  Create if with an appropriate initial
     // capacity, as long as the arena has enough size in the current block.
-    int start_cap = _UPB_ARRAY_DEFAULT_INITIAL_SIZE;
+    size_t start_cap = _UPB_ARRAY_DEFAULT_INITIAL_SIZE;
 
     // A few arbitrary choices on the initial capacity, could be tuned later.
-    while (start_cap < elems) start_cap *= 2;
+    while (start_cap < (size_t)elems) start_cap *= 2;
 
     arr = UPB_PRIVATE(_upb_Array_New)(&d->arena, start_cap, lg2);
     if (!arr) {
