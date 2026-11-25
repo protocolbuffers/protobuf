@@ -2657,4 +2657,81 @@ class EncodeDecodeTest extends TestBase
             $this->assertSame(0, count($m->getRepeatedInt32()));
         }
     }
+
+    private function assertJsonEncodeDepthLimit($atLimit, $overLimit)
+    {
+        $this->assertNotEmpty($atLimit->serializeToJsonString());
+        try {
+            $overLimit->serializeToJsonString();
+            $this->fail('Expected an exception for exceeding the JSON recursion limit');
+        } catch (Exception $e) {
+            $this->assertStringContainsString('Max depth exceeded', $e->getMessage());
+        }
+
+        if (!extension_loaded('protobuf')) {
+            // Exercise serializeToJsonStream() directly so pass 2 and
+            // GPBJsonWire depth forwarding are verified on over-limit inputs.
+            try {
+                $output = new CodedOutputStream(65536);
+                $overLimit->serializeToJsonStream($output);
+                $this->fail('Expected an exception for exceeding the JSON recursion limit in serializeToJsonStream');
+            } catch (Exception $e) {
+                $this->assertStringContainsString('Max depth exceeded', $e->getMessage());
+            }
+        }
+    }
+
+    public function testJsonEncodeRecursionLimit()
+    {
+        $makeNestedAny = function ($depth) {
+            $cur = (new Int32Value())->setValue(1);
+            for ($i = 0; $i < $depth; $i++) {
+                $outer = new Any();
+                $outer->pack($cur);
+                $cur = $outer;
+            }
+            return $cur;
+        };
+        $this->assertJsonEncodeDepthLimit($makeNestedAny(100), $makeNestedAny(101));
+
+        $makeNestedAnyMessage = function ($depth) {
+            $cur = new TestAny();
+            for ($i = 0; $i < $depth; $i++) {
+                if ($i > 0) {
+                    $cur = (new TestAny())->setAny($cur);
+                }
+                $outer = new Any();
+                $outer->pack($cur);
+                $cur = $outer;
+            }
+            return $cur;
+        };
+        $this->assertJsonEncodeDepthLimit(
+            $makeNestedAnyMessage(100),
+            $makeNestedAnyMessage(101)
+        );
+
+        $this->assertJsonEncodeDepthLimit(
+            $this->makeRecursiveMessage(99),
+            $this->makeRecursiveMessage(100)
+        );
+
+        $makeNestedStruct = function ($depth) {
+            $cur = new Struct();
+            for ($i = 1; $i < $depth; $i++) {
+                $cur = (new Struct())->setFields(['a' => (new Value())->setStructValue($cur)]);
+            }
+            return $cur;
+        };
+        $this->assertJsonEncodeDepthLimit($makeNestedStruct(100), $makeNestedStruct(101));
+
+        $makeNestedList = function ($depth) {
+            $cur = new ListValue();
+            for ($i = 1; $i < $depth; $i++) {
+                $cur = (new ListValue())->setValues([(new Value())->setListValue($cur)]);
+            }
+            return $cur;
+        };
+        $this->assertJsonEncodeDepthLimit($makeNestedList(100), $makeNestedList(101));
+    }
 }

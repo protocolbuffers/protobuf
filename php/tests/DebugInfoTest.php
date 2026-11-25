@@ -350,6 +350,20 @@ EOL;
         ], $m->__debugInfo());
     }
 
+    public function testNestedAnyRecursionLimit()
+    {
+        $cur = (new Int32Value())->setValue(1);
+        for ($i = 0; $i < 101; $i++) {
+            $outer = new Any();
+            $outer->pack($cur);
+            $cur = $outer;
+        }
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Max depth exceeded');
+        $cur->__debugInfo();
+    }
+
     public function testEnum()
     {
         $m = new TestMessage();

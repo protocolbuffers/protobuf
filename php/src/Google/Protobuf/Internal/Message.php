@@ -1474,12 +1474,23 @@ class Message
     /**
      * @ignore
      */
-    private function serializeFieldToJsonStream(&$output, $field)
+    private function serializeFieldToJsonStream(&$output, $field, $depth = 0)
     {
         $getter = $field->getGetter();
         $values = $this->$getter();
         return GPBJsonWire::serializeFieldToStream(
-            $values, $field, $output, !GPBUtil::hasSpecialJsonMapping($this));
+            $values, $field, $output, !GPBUtil::hasSpecialJsonMapping($this), $depth);
+    }
+
+    /**
+     * @ignore
+     */
+    private static function checkJsonRecursionDepth($depth)
+    {
+        if ($depth >= CodedInputStream::DEFAULT_RECURSION_LIMIT) {
+            throw new \Exception(
+                "Error occurred during JSON serialization: Max depth exceeded");
+        }
     }
 
     /**
@@ -1500,10 +1511,12 @@ class Message
     /**
      * @ignore
      */
-    public function serializeToJsonStream(&$output)
+    public function serializeToJsonStream(&$output, $depth = 0)
     {
         $options = $output->getOptions();
         if (is_a($this, 'Google\Protobuf\Any')) {
+            self::checkJsonRecursionDepth($depth);
+            $next_depth = $depth + 1;
             $output->writeRaw("{", 1);
             $type_field = $this->desc->getFieldByNumber(1);
             $value_msg = $this->unpack();
@@ -1517,13 +1530,14 @@ class Message
             // Serialize value
             if (GPBUtil::hasSpecialJsonMapping($value_msg)) {
                 $output->writeRaw(",\"value\":", 9);
-                $value_msg->serializeToJsonStream($output);
+                $value_msg->serializeToJsonStream($output, $next_depth);
             } else {
                 $value_fields = $value_msg->desc->getField();
                 foreach ($value_fields as $field) {
                     if ($value_msg->existField($field, $options)) {
                         $output->writeRaw(",", 1);
-                        if (!$value_msg->serializeFieldToJsonStream($output, $field)) {
+                        if (!$value_msg->serializeFieldToJsonStream(
+                            $output, $field, $next_depth)) {
                             return false;
                         }
                     }
@@ -1544,25 +1558,30 @@ class Message
             $timestamp = json_encode($timestamp);
             $output->writeRaw($timestamp, strlen($timestamp));
         } elseif (get_class($this) === 'Google\Protobuf\ListValue') {
+            self::checkJsonRecursionDepth($depth);
             $field = $this->desc->getField()[1];
             if (!$this->existField($field, $options)) {
                 $output->writeRaw("[]", 2);
             } else {
-                if (!$this->serializeFieldToJsonStream($output, $field)) {
+                if (!$this->serializeFieldToJsonStream($output, $field, $depth + 1)) {
                     return false;
                 }
             }
         } elseif (get_class($this) === 'Google\Protobuf\Struct') {
+            self::checkJsonRecursionDepth($depth);
             $field = $this->desc->getField()[1];
             if (!$this->existField($field, $options)) {
                 $output->writeRaw("{}", 2);
             } else {
-                if (!$this->serializeFieldToJsonStream($output, $field)) {
+                if (!$this->serializeFieldToJsonStream($output, $field, $depth + 1)) {
                     return false;
                 }
             }
         } else {
+            $next_depth = $depth;
             if (!GPBUtil::hasSpecialJsonMapping($this)) {
+                self::checkJsonRecursionDepth($depth);
+                $next_depth = $depth + 1;
                 $output->writeRaw("{", 1);
             }
             $fields = $this->desc->getField();
@@ -1575,7 +1594,7 @@ class Message
                     } else {
                         $output->writeRaw(",", 1);
                     }
-                    if (!$this->serializeFieldToJsonStream($output, $field)) {
+                    if (!$this->serializeFieldToJsonStream($output, $field, $next_depth)) {
                         return false;
                     }
                 }
@@ -1732,7 +1751,7 @@ class Message
     /**
      * @ignore
      */
-    private function fieldDataOnlyJsonByteSize($field, $value, $options = 0)
+    private function fieldDataOnlyJsonByteSize($field, $value, $options = 0, $depth = 0)
     {
         $size = 0;
 
@@ -1827,7 +1846,7 @@ class Message
                 $size += 2;  // size for \"\"
                 break;
             case GPBType::MESSAGE:
-                $size += $value->jsonByteSize($options);
+                $size += $value->jsonByteSize($options, $depth);
                 break;
 #             case GPBType::GROUP:
 #                 // TODO: Add support.
@@ -1905,7 +1924,7 @@ class Message
     /**
      * @ignore
      */
-    private function fieldJsonByteSize($field, $options = 0)
+    private function fieldJsonByteSize($field, $options = 0, $depth = 0)
     {
         $size = 0;
 
@@ -1945,8 +1964,8 @@ class Message
                         if ($additional_quote) {
                             $size += 2;  // size for ""
                         }
-                        $size += $this->fieldDataOnlyJsonByteSize($key_field, $key, $options);
-                        $size += $this->fieldDataOnlyJsonByteSize($value_field, $value, $options);
+                        $size += $this->fieldDataOnlyJsonByteSize($key_field, $key, $options, $depth);
+                        $size += $this->fieldDataOnlyJsonByteSize($value_field, $value, $options, $depth);
                         $size += 1;  // size for :
                     }
                 }
@@ -1969,7 +1988,7 @@ class Message
                     $size += $count - 1;                     // size for commas
                     $getter = $field->getGetter();
                     foreach ($values as $value) {
-                        $size += $this->fieldDataOnlyJsonByteSize($field, $value, $options);
+                        $size += $this->fieldDataOnlyJsonByteSize($field, $value, $options, $depth);
                     }
                 }
             }
@@ -1984,7 +2003,7 @@ class Message
             }
             $getter = $field->getGetter();
             $value = $this->$getter();
-            $size += $this->fieldDataOnlyJsonByteSize($field, $value, $options);
+            $size += $this->fieldDataOnlyJsonByteSize($field, $value, $options, $depth);
         }
         return $size;
     }
@@ -2033,10 +2052,32 @@ class Message
     /**
      * @ignore
      */
-    public function jsonByteSize($options = 0)
+    private function fieldsJsonByteSize($options = 0, $depth = 0)
+    {
+        $size = 0;
+        $fields = $this->desc->getField();
+        $count = 0;
+        foreach ($fields as $field) {
+            $field_size = $this->fieldJsonByteSize($field, $options, $depth);
+            $size += $field_size;
+            if ($field_size != 0) {
+                $count++;
+            }
+        }
+        // size for comma
+        $size += $count > 0 ? ($count - 1) : 0;
+        return $size;
+    }
+
+    /**
+     * @ignore
+     */
+    public function jsonByteSize($options = 0, $depth = 0)
     {
         $size = 0;
         if (is_a($this, 'Google\Protobuf\Any')) {
+            self::checkJsonRecursionDepth($depth);
+            $next_depth = $depth + 1;
             // Size for "{}".
             $size += 2;
 
@@ -2050,13 +2091,12 @@ class Message
             if (GPBUtil::hasSpecialJsonMapping($value_msg)) {
                 // Size for "\",value\":".
                 $size += 9;
-                $size += $value_msg->jsonByteSize($options);
+                $size += $value_msg->jsonByteSize($options, $next_depth);
             } else {
-                $value_size = $value_msg->jsonByteSize($options);
-                // size === 2 it's empty message {} which is not serialized inside any
-                if ($value_size !== 2) {
-                    // Size for value. +1 for comma, -2 for "{}".
-                    $size += $value_size -1;
+                $value_size = $value_msg->fieldsJsonByteSize($options, $next_depth);
+                if ($value_size !== 0) {
+                    // Size for value. +1 for comma.
+                    $size += $value_size + 1;
                 }
             }
         } elseif (get_class($this) === 'Google\Protobuf\FieldMask') {
@@ -2070,40 +2110,35 @@ class Message
             $timestamp = json_encode($timestamp);
             $size += strlen($timestamp);
         } elseif (get_class($this) === 'Google\Protobuf\ListValue') {
+            self::checkJsonRecursionDepth($depth);
             $field = $this->desc->getField()[1];
             if ($this->existField($field, $options)) {
-                $field_size = $this->fieldJsonByteSize($field, $options);
+                $field_size = $this->fieldJsonByteSize($field, $options, $depth + 1);
                 $size += $field_size;
             } else {
                 // Size for "[]".
                 $size += 2;
             }
         } elseif (get_class($this) === 'Google\Protobuf\Struct') {
+            self::checkJsonRecursionDepth($depth);
             $field = $this->desc->getField()[1];
             if ($this->existField($field, $options)) {
-                $field_size = $this->fieldJsonByteSize($field, $options);
+                $field_size = $this->fieldJsonByteSize($field, $options, $depth + 1);
                 $size += $field_size;
             } else {
                 // Size for "{}".
                 $size += 2;
             }
         } else {
+            $next_depth = $depth;
             if (!GPBUtil::hasSpecialJsonMapping($this)) {
+                self::checkJsonRecursionDepth($depth);
+                $next_depth = $depth + 1;
                 // Size for "{}".
                 $size += 2;
             }
 
-            $fields = $this->desc->getField();
-            $count = 0;
-            foreach ($fields as $field) {
-                $field_size = $this->fieldJsonByteSize($field, $options);
-                $size += $field_size;
-                if ($field_size != 0) {
-                  $count++;
-                }
-            }
-            // size for comma
-            $size += $count > 0 ? ($count - 1) : 0;
+            $size += $this->fieldsJsonByteSize($options, $next_depth);
         }
         return $size;
     }

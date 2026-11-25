@@ -17,7 +17,7 @@ class GPBJsonWire
     public static function serializeFieldToStream(
         $value,
         $field,
-        &$output, $has_field_name = true)
+        &$output, $has_field_name = true, $depth = 0)
     {
         if ($has_field_name) {
             $output->writeRaw("\"", 1);
@@ -29,14 +29,16 @@ class GPBJsonWire
             $value,
             $field,
             $output,
-            !$has_field_name);
+            !$has_field_name,
+            $depth);
     }
 
     public static function serializeFieldValueToStream(
         $values,
         $field,
         &$output,
-        $is_well_known = false)
+        $is_well_known = false,
+        $depth = 0)
     {
         if ($field->isMap()) {
             $output->writeRaw("{", 1);
@@ -71,7 +73,8 @@ class GPBJsonWire
                     $key,
                     $key_field,
                     $output,
-                    $is_well_known)) {
+                    $is_well_known,
+                    $depth)) {
                     return false;
                 }
                 if ($additional_quote) {
@@ -82,7 +85,8 @@ class GPBJsonWire
                     $value,
                     $value_field,
                     $output,
-                    $is_well_known)) {
+                    $is_well_known,
+                    $depth)) {
                     return false;
                 }
             }
@@ -101,7 +105,8 @@ class GPBJsonWire
                     $value,
                     $field,
                     $output,
-                    $is_well_known)) {
+                    $is_well_known,
+                    $depth)) {
                     return false;
                 }
             }
@@ -112,14 +117,15 @@ class GPBJsonWire
                 $values,
                 $field,
                 $output,
-                $is_well_known);
+                $is_well_known,
+                $depth);
         }
     }
 
     private static function serializeSingularFieldValueToStream(
         $value,
         $field,
-        &$output, $is_well_known = false)
+        &$output, $is_well_known = false, $depth = 0)
     {
         switch ($field->getType()) {
             case GPBType::SFIXED32:
@@ -218,7 +224,7 @@ class GPBJsonWire
             //      trigger_error("Not implemented.", E_ERROR);
             //      break;
             case GPBType::MESSAGE:
-                $value->serializeToJsonStream($output);
+                $value->serializeToJsonStream($output, $depth);
                 break;
             default:
                 user_error("Unsupported type.");
