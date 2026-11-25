@@ -904,6 +904,49 @@ int MaybeReleaseOneofBeforeMerge(CMessage* self, const Message& other) {
   });
 }
 
+// Detach Python CMessage wrappers for map message values that will be
+// freed when the C++ MergeFrom replaces entries with matching keys.
+// This mirrors the fix in MapContainer::MergeFrom (map_container.cc) but
+// covers the message-level MergeFrom and MergeFromString paths that were
+// missed by commit 182d500292.
+// `message` must be the already-writable Message* for `self`.
+void MaybeDetachMapMessageValues(CMessage* self, Message* message,
+                                 const Message& other) {
+  // Early exit: nothing to detach if there are no live Python wrappers for
+  // child submessages.
+  CMessage::SubMessagesMap* subs = self->child_submessages.TryGet();
+  if (subs == nullptr || subs->IsEmpty()) {
+    return;
+  }
+
+  const Descriptor* descriptor = message->GetDescriptor();
+  const Reflection* reflection = message->GetReflection();
+  const Reflection* other_reflection = other.GetReflection();
+
+  for (int i = 0; i < descriptor->field_count(); ++i) {
+    const FieldDescriptor* field = descriptor->field(i);
+    if (!field->is_map()) continue;
+    if (field->message_type()->map_value()->cpp_type() !=
+        FieldDescriptor::CPPTYPE_MESSAGE) {
+      continue;
+    }
+
+    auto other_entries = other_reflection->GetMap(other, field);
+    if (!other_entries.ok() || other_entries->empty()) {
+      continue;
+    }
+    auto entries = reflection->MutableMap(message, field);
+    if (!entries.ok()) {
+      continue;
+    }
+    for (auto entry : *other_entries) {
+      if (auto it = entries->find(entry.key()); it != entries->end()) {
+        self->DetachSubMessage(it->value().MutableMessageValue());
+      }
+    }
+  }
+}
+
 }  // namespace cmessage
 
 // After a Merge, visit every sub-message that was read-only, and
@@ -2198,6 +2241,9 @@ PyObject* MergeFrom(CMessage* self, PyObject* arg) {
   if (MaybeReleaseOneofBeforeMerge(self, *other_message->message) < 0) {
     return nullptr;
   }
+  // Detach Python wrappers for map message values whose keys exist in the
+  // source message -- MergeFrom will replace (and free) those entries.
+  MaybeDetachMapMessageValues(self, message, *other_message->message);
 
   message->MergeFrom(*other_message->message);
   // Child message might be lazily created before MergeFrom. Make sure they
@@ -2351,6 +2397,9 @@ static PyObject* MergeFromStringImpl(CMessage* self, PyObject* arg,
     if (MaybeReleaseOneofBeforeMerge(self, *temp_message) < 0) {
       return nullptr;
     }
+    // Detach Python wrappers for map message values whose keys exist in the
+    // incoming data -- MergeFrom will replace (and free) those entries.
+    MaybeDetachMapMessageValues(self, message, *temp_message);
 
     message->MergeFrom(*temp_message);
 
