@@ -88,6 +88,21 @@ typedef bool eqlfunc_t(upb_key k1, upb_value v1, lookupkey_t k2);
 
 static bool isfull(upb_table* t) { return upb_table_isfull(t); }
 
+static bool table_bytes(const upb_table* t, size_t* bytes) {
+  return !upb_MulOverflow(upb_table_size(t), sizeof(upb_tabent), bytes);
+}
+
+static void table_clear(upb_table* t) {
+  t->count = 0;
+  if (!t->entries) return;
+  size_t bytes;
+  if (UPB_UNLIKELY(!table_bytes(t, &bytes))) {
+    UPB_ASSERT(false);
+    return;
+  }
+  memset((char*)t->entries, 0, bytes);
+}
+
 static bool init(upb_table* t, uint8_t size_lg2, upb_Arena* a) {
   if (size_lg2 >= 32) {
     return false;
@@ -96,7 +111,7 @@ static bool init(upb_table* t, uint8_t size_lg2, upb_Arena* a) {
   uint32_t size = 1U << size_lg2;
   t->mask = size - 1;  // 0 mask if size_lg2 is 0
   size_t bytes;
-  if (upb_MulOverflow(upb_table_size(t), sizeof(upb_tabent), &bytes)) {
+  if (!table_bytes(t, &bytes)) {
     return false;
   }
   if (bytes > 0) {
@@ -531,11 +546,7 @@ bool upb_strtable_init(upb_strtable* t, size_t expected_size, upb_Arena* a) {
   return init(&t->t, size_lg2, a);
 }
 
-void upb_strtable_clear(upb_strtable* t) {
-  size_t bytes = upb_table_size(&t->t) * sizeof(upb_tabent);
-  t->t.count = 0;
-  memset((char*)t->t.entries, 0, bytes);
-}
+void upb_strtable_clear(upb_strtable* t) { table_clear(&t->t); }
 
 bool upb_strtable_resize(upb_strtable* t, size_t size_lg2, upb_Arena* a) {
   if (t->t.entries != NULL && _upb_log2_table_size(&t->t) >= size_lg2) {
@@ -574,12 +585,13 @@ bool upb_strtable_copy(upb_strtable* dest, const upb_strtable* src,
   if (src->t.count == 0) {
     return upb_strtable_init(dest, 0, a);
   }
-  dest->t.count = src->t.count;
-  dest->t.mask = src->t.mask;
-  dest->t.entries =
-      upb_Arena_Malloc(a, upb_table_size(&src->t) * sizeof(upb_tabent));
-  if (!dest->t.entries) return false;
-  upb_tabent* restrict dest_entries = dest->t.entries;
+  if (!src->t.entries) return false;
+  size_t bytes;
+  if (UPB_UNLIKELY(!table_bytes(&src->t, &bytes))) {
+    return false;
+  }
+  upb_tabent* restrict dest_entries = upb_Arena_Malloc(a, bytes);
+  if (!dest_entries) return false;
   const upb_tabent* restrict src_entries = src->t.entries;
   size_t table_size = upb_table_size(&src->t);
   for (size_t i = 0; i < table_size; i++) {
@@ -604,6 +616,9 @@ bool upb_strtable_copy(upb_strtable* dest, const upb_strtable* src,
       *dest_ent = (upb_tabent){};
     }
   }
+  dest->t.count = src->t.count;
+  dest->t.mask = src->t.mask;
+  dest->t.entries = dest_entries;
   return true;
 }
 
@@ -744,11 +759,7 @@ bool upb_exttable_init(upb_exttable* t, size_t expected_size, upb_Arena* a) {
   return init(&t->t, size_lg2, a);
 }
 
-void upb_exttable_clear(upb_exttable* t) {
-  size_t bytes = upb_table_size(&t->t) * sizeof(upb_tabent);
-  t->t.count = 0;
-  memset((char*)t->t.entries, 0, bytes);
-}
+void upb_exttable_clear(upb_exttable* t) { table_clear(&t->t); }
 
 bool upb_exttable_resize(upb_exttable* t, size_t size_lg2, upb_Arena* a) {
   upb_exttable new_table;
@@ -895,9 +906,15 @@ static bool upb_inttable_trygrow(upb_inttable* t, size_t size_lg2,
     return false;
   }
   size_t old_size = upb_table_size(&t->t);
-  size_t old_bytes = old_size * sizeof(upb_tabent);
+  size_t old_bytes;
+  if (UPB_UNLIKELY(!table_bytes(&t->t, &old_bytes))) {
+    return false;
+  }
   size_t new_size = (size_t)1 << size_lg2;
-  size_t new_bytes = new_size * sizeof(upb_tabent);
+  size_t new_bytes;
+  if (UPB_UNLIKELY(upb_MulOverflow(new_size, sizeof(upb_tabent), &new_bytes))) {
+    return false;
+  }
   // The entries never overlap `*t`, but the compiler cannot prove that, so
   // without this local every store to an entry would force `t->t.entries` to
   // be reloaded.
@@ -911,7 +928,7 @@ static bool upb_inttable_trygrow(upb_inttable* t, size_t size_lg2,
   }
 
   // Zero out the newly extended region of the table buffer.
-  memset(entries + old_size, 0, (new_size - old_size) * sizeof(upb_tabent));
+  memset(entries + old_size, 0, new_bytes - old_bytes);
 
   // This one-past-the-end pointer is guaranteed to be distinct from NULL and
   // any valid internal collision chain pointer in the entire table.
@@ -1051,11 +1068,7 @@ bool upb_inttable_remove(upb_inttable* t, uintptr_t key, upb_value* val) {
   return success;
 }
 
-void upb_inttable_clear(upb_inttable* t) {
-  size_t bytes = upb_table_size(&t->t) * sizeof(upb_tabent);
-  t->t.count = 0;
-  memset((char*)t->t.entries, 0, bytes);
-}
+void upb_inttable_clear(upb_inttable* t) { table_clear(&t->t); }
 
 bool upb_inttable_next(const upb_inttable* t, uintptr_t* key, upb_value* val,
                        intptr_t* iter) {
