@@ -1596,6 +1596,47 @@ TEST(GeneratedMessageReflectionTest, SwapFieldsForeignFieldCheck) {
                "Field does not match message type");
 }
 
+TEST(GeneratedMessageReflectionTest, EnumForeignFieldCheck) {
+  unittest::TestAllTypes message;
+  const Reflection* reflection = message.GetReflection();
+
+  // Passing an enum field descriptor from a different message type to the
+  // Descriptor overloads of SetEnum / SetRepeatedEnum / AddEnum must fail.
+  // Without this check, the foreign field's layout offset is applied to
+  // this message, corrupting memory (or crashing); and a non-enum field
+  // (e.g. a map field, whose enum_type() is null) crashes inside the
+  // usage-error reporter itself, because the enum-value check runs before
+  // any containing-type check.
+  const FieldDescriptor* foreign_field =
+      unittest::TestRequiredEnum::descriptor()->FindFieldByName(
+          "required_enum");
+  const EnumValueDescriptor* value =
+      unittest::ForeignEnum_descriptor()->FindValueByNumber(5);
+  EXPECT_DEATH(reflection->SetEnum(&message, foreign_field, value),
+               "Field does not match message type");
+  EXPECT_DEATH(reflection->SetRepeatedEnum(&message, foreign_field, 0, value),
+               "Field does not match message type");
+  EXPECT_DEATH(reflection->AddEnum(&message, foreign_field, value),
+               "Field does not match message type");
+
+  // A non-enum field of this message must fail the same way, not crash in
+  // the enum-value error reporter.
+  const FieldDescriptor* int_field =
+      unittest::TestAllTypes::descriptor()->FindFieldByName(
+          "optional_int32");
+  EXPECT_DEATH(reflection->SetEnum(&message, int_field, value),
+               "Field is not the right type");
+
+  // Same-type enum setters still work.
+  const FieldDescriptor* own_field =
+      unittest::TestAllTypes::descriptor()->FindFieldByName(
+          "optional_nested_enum");
+  const EnumValueDescriptor* own_value =
+      unittest::TestAllTypes_NestedEnum_descriptor()->FindValueByNumber(1);
+  reflection->SetEnum(&message, own_field, own_value);
+  EXPECT_EQ(unittest::TestAllTypes::FOO, message.optional_nested_enum());
+}
+
 TEST(GeneratedMessageReflectionTest, OneofForeignDescriptorCheck) {
   unittest::TestAllTypes message1;
   const Reflection* reflection = message1.GetReflection();
