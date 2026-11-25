@@ -7,17 +7,20 @@
 
 #include "google/protobuf/compiler/retention.h"
 
-#include <algorithm>
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/match.h"
 #include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/repeated_ptr_field.h"
 
 namespace google {
 namespace protobuf {
