@@ -3279,8 +3279,7 @@ void MethodDescriptor::CopyTo(MethodDescriptorProto* proto) const {
 namespace {
 
 bool IsGroupSyntax(Edition edition, const FieldDescriptor* desc) {
-  return IsLegacyEdition(edition) &&
-         desc->type() == FieldDescriptor::TYPE_GROUP;
+  return IsLegacyEdition(edition) && internal::cpp::IsGroupLike(*desc);
 }
 
 template <typename OptionsT>
