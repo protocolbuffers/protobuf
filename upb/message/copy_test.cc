@@ -25,6 +25,7 @@
 #include "google/protobuf/test_messages_proto2.upb_minitable.h"
 #include "upb/base/string_view.h"
 #include "upb/base/upcast.h"
+#include "upb/mem/alloc.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
 #include "upb/message/internal/accessors.h"
@@ -787,6 +788,305 @@ TEST(GeneratedCode, DeepCloneMessageNonCanonicalExtensions) {
                              upb_StringView_FromString("LifecycleValue")));
 
   upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, DeepCloneLargeNonCanonicalExtensionsDoesNotBloatArena) {
+  // Payload just over 128 KiB - 128 bytes forces upb_BackAlloc to allocate a
+  // ~256 KiB power-of-two block per extension during serialization.
+  constexpr size_t kLargePayloadSize = 131100;
+  constexpr int kNumItems = 3;
+  std::string payloads[kNumItems] = {
+      std::string(kLargePayloadSize, 'a'),
+      std::string(kLargePayloadSize, 'b'),
+      std::string(kLargePayloadSize, 'c'),
+  };
+
+  upb_Arena* source_arena = upb_Arena_New();
+  upb_test_ModelWithSubMessages* msg =
+      upb_test_ModelWithSubMessages_new(source_arena);
+  for (int i = 0; i < kNumItems; ++i) {
+    upb_test_ModelWithExtensions* item =
+        upb_test_ModelWithSubMessages_add_items(msg, source_arena);
+    ASSERT_NE(item, nullptr);
+    upb_test_ModelExtension1* ext = upb_test_ModelExtension1_new(source_arena);
+    ASSERT_NE(ext, nullptr);
+    upb_test_ModelExtension1_set_str(
+        ext,
+        upb_StringView_FromDataAndSize(payloads[i].data(), payloads[i].size()));
+    ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+        UPB_UPCAST(item), upb_test_ModelExtension1_model_ext_ext, &ext,
+        source_arena));
+  }
+
+  upb_Arena* dst_arena = upb_Arena_New();
+  upb_test_ModelWithSubMessages* clone =
+      (upb_test_ModelWithSubMessages*)upb_Message_DeepClone(
+          UPB_UPCAST(msg), &upb_0test__ModelWithSubMessages_msg_init,
+          dst_arena);
+  ASSERT_NE(clone, nullptr);
+
+  // Temporary upb_BackAlloc blocks (~256 KiB each, ~768 KiB total) must not be
+  // retained on dst_arena; dst_arena should only hold exact-sized copies of the
+  // ~393 KiB total payload plus small message overhead.
+  const uintptr_t allocated = upb_Arena_SpaceAllocated(dst_arena, nullptr);
+  EXPECT_LT(allocated, kNumItems * kLargePayloadSize + 32768);
+
+  // Also verify upb_Message_DeepCopy into an existing message.
+  upb_Arena* copy_arena = upb_Arena_New();
+  upb_test_ModelWithSubMessages* copy_dst =
+      upb_test_ModelWithSubMessages_new(copy_arena);
+  ASSERT_TRUE(upb_Message_DeepCopy(UPB_UPCAST(copy_dst), UPB_UPCAST(msg),
+                                   &upb_0test__ModelWithSubMessages_msg_init,
+                                   copy_arena));
+  EXPECT_LT(upb_Arena_SpaceAllocated(copy_arena, nullptr),
+            kNumItems * kLargePayloadSize + 32768);
+
+  upb_Arena_Free(source_arena);
+
+  // Round-trip the clone with an extension registry to verify payload contents.
+  upb_Arena* verify_arena = upb_Arena_New();
+  char* buf = nullptr;
+  size_t size = 0;
+  ASSERT_EQ(
+      upb_Encode(UPB_UPCAST(clone), &upb_0test__ModelWithSubMessages_msg_init,
+                 0, verify_arena, &buf, &size),
+      kUpb_EncodeStatus_Ok);
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(verify_arena);
+  ASSERT_NE(extreg, nullptr);
+  ASSERT_EQ(
+      upb_ExtensionRegistry_Add(extreg, upb_test_ModelExtension1_model_ext_ext),
+      kUpb_ExtensionRegistryStatus_Ok);
+  upb_test_ModelWithSubMessages* parsed =
+      upb_test_ModelWithSubMessages_parse_ex(buf, size, extreg, 0,
+                                             verify_arena);
+  ASSERT_NE(parsed, nullptr);
+  size_t item_count = 0;
+  const upb_test_ModelWithExtensions* const* items =
+      upb_test_ModelWithSubMessages_items(parsed, &item_count);
+  ASSERT_EQ(item_count, kNumItems);
+  for (int i = 0; i < kNumItems; ++i) {
+    const upb_test_ModelExtension1* parsed_ext =
+        upb_test_ModelExtension1_model_ext(items[i]);
+    ASSERT_NE(parsed_ext, nullptr);
+    upb_StringView str = upb_test_ModelExtension1_str(parsed_ext);
+    EXPECT_EQ(std::string_view(str.data, str.size), payloads[i]);
+  }
+
+  upb_Arena_Free(verify_arena);
+  upb_Arena_Free(copy_arena);
+  upb_Arena_Free(dst_arena);
+}
+
+TEST(GeneratedCode, DeepCloneNonCanonicalExtensionFixedSizeArena) {
+  std::string payload(9000, 'x');
+  upb_Arena* source_arena = upb_Arena_New();
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(source_arena);
+  upb_test_ModelExtension1* ext = upb_test_ModelExtension1_new(source_arena);
+  upb_test_ModelExtension1_set_str(
+      ext, upb_StringView_FromDataAndSize(payload.data(), payload.size()));
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext, &ext,
+      source_arena));
+
+  // Fixed-size arena (alloc == nullptr) with insufficient capacity fails
+  // cleanly.
+  char small_buf[256];
+  upb_Arena* small_arena =
+      upb_Arena_Init(small_buf, sizeof(small_buf), nullptr);
+  EXPECT_EQ(upb_Message_DeepClone(UPB_UPCAST(msg),
+                                  &upb_0test__ModelWithExtensions_msg_init,
+                                  small_arena),
+            nullptr);
+  upb_Arena_Free(small_arena);
+
+  // Fixed-size arena (alloc == nullptr) with sufficient capacity (> 8 KiB)
+  // succeeds into fixed_buf.
+  char fixed_buf[12288];
+  upb_Arena* fixed_arena =
+      upb_Arena_Init(fixed_buf, sizeof(fixed_buf), nullptr);
+  upb_Message* clone = upb_Message_DeepClone(
+      UPB_UPCAST(msg), &upb_0test__ModelWithExtensions_msg_init, fixed_arena);
+  ASSERT_NE(clone, nullptr);
+  upb_Arena_Free(source_arena);
+
+  upb_Arena* verify_arena = upb_Arena_New();
+  char* buf = nullptr;
+  size_t size = 0;
+  ASSERT_EQ(upb_Encode(clone, &upb_0test__ModelWithExtensions_msg_init, 0,
+                       verify_arena, &buf, &size),
+            kUpb_EncodeStatus_Ok);
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(verify_arena);
+  ASSERT_NE(extreg, nullptr);
+  ASSERT_EQ(
+      upb_ExtensionRegistry_Add(extreg, upb_test_ModelExtension1_model_ext_ext),
+      kUpb_ExtensionRegistryStatus_Ok);
+  upb_test_ModelWithExtensions* parsed =
+      upb_test_ModelWithExtensions_parse_ex(buf, size, extreg, 0, verify_arena);
+  ASSERT_NE(parsed, nullptr);
+  const upb_test_ModelExtension1* parsed_ext =
+      upb_test_ModelExtension1_model_ext(parsed);
+  ASSERT_NE(parsed_ext, nullptr);
+  upb_StringView str = upb_test_ModelExtension1_str(parsed_ext);
+  EXPECT_EQ(std::string_view(str.data, str.size), payload);
+
+  upb_Arena_Free(verify_arena);
+  upb_Arena_Free(fixed_arena);
+}
+
+struct TrackingAlloc {
+  upb_alloc alloc;
+  int live_blocks = 0;
+  bool ran_cleanup = false;
+};
+
+void* TrackingAllocFunc(upb_alloc* alloc, void* ptr, size_t oldsize,
+                        size_t size, size_t* actual_size) {
+  TrackingAlloc* tracking = reinterpret_cast<TrackingAlloc*>(alloc);
+  EXPECT_EQ(alloc->func, &TrackingAllocFunc);
+  EXPECT_FALSE(tracking->ran_cleanup);
+  if (size == 0) {
+    tracking->live_blocks--;
+  } else if (ptr == nullptr) {
+    tracking->live_blocks++;
+  }
+  return upb_alloc_global.func(&upb_alloc_global, ptr, oldsize, size,
+                               actual_size);
+}
+
+void TrackingAllocCleanup(upb_alloc* alloc) {
+  TrackingAlloc* tracking = reinterpret_cast<TrackingAlloc*>(alloc);
+  EXPECT_EQ(alloc->cleanup, &TrackingAllocCleanup);
+  EXPECT_EQ(tracking->live_blocks, 0);
+  EXPECT_FALSE(tracking->ran_cleanup);
+  tracking->ran_cleanup = true;
+}
+
+TEST(GeneratedCode, DeepCloneNonCanonicalExtensionCustomAllocCleanup) {
+  std::string small_payload(128, 's');
+  std::string large_payload(12288, 'l');
+
+  upb_Arena* source_arena = upb_Arena_New();
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(source_arena);
+  upb_test_ModelExtension1* ext_small =
+      upb_test_ModelExtension1_new(source_arena);
+  upb_test_ModelExtension1_set_str(
+      ext_small, upb_StringView_FromDataAndSize(small_payload.data(),
+                                                small_payload.size()));
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext, &ext_small,
+      source_arena));
+
+  upb_test_ModelExtension2* ext_2 = upb_test_ModelExtension2_new(source_arena);
+  upb_test_ModelExtension2_set_i(ext_2, 42);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_ModelExtension2_model_ext_ext, &ext_2,
+      source_arena));
+
+  upb_test_ModelExtension1* ext_large =
+      upb_test_ModelExtension1_new(source_arena);
+  upb_test_ModelExtension1_set_str(
+      ext_large, upb_StringView_FromDataAndSize(large_payload.data(),
+                                                large_payload.size()));
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext, &ext_large,
+      source_arena));
+
+  TrackingAlloc tracking = {{&TrackingAllocFunc, &TrackingAllocCleanup}};
+  upb_Arena* dst_arena = upb_Arena_Init(nullptr, 0, &tracking.alloc);
+  ASSERT_NE(dst_arena, nullptr);
+
+  upb_Message* clone = upb_Message_DeepClone(
+      UPB_UPCAST(msg), &upb_0test__ModelWithExtensions_msg_init, dst_arena);
+  ASSERT_NE(clone, nullptr);
+  // Freeing the temporary encode arena must not run dst_arena's alloc cleanup.
+  EXPECT_FALSE(tracking.ran_cleanup);
+  EXPECT_GT(tracking.live_blocks, 0);
+
+  upb_Arena_Free(source_arena);
+
+  upb_Arena* verify_arena = upb_Arena_New();
+  char* buf = nullptr;
+  size_t size = 0;
+  ASSERT_EQ(upb_Encode(clone, &upb_0test__ModelWithExtensions_msg_init, 0,
+                       verify_arena, &buf, &size),
+            kUpb_EncodeStatus_Ok);
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(verify_arena);
+  ASSERT_NE(extreg, nullptr);
+  ASSERT_EQ(
+      upb_ExtensionRegistry_Add(extreg, upb_test_ModelExtension1_model_ext_ext),
+      kUpb_ExtensionRegistryStatus_Ok);
+  ASSERT_EQ(
+      upb_ExtensionRegistry_Add(extreg, upb_test_ModelExtension2_model_ext_ext),
+      kUpb_ExtensionRegistryStatus_Ok);
+  upb_test_ModelWithExtensions* parsed =
+      upb_test_ModelWithExtensions_parse_ex(buf, size, extreg, 0, verify_arena);
+  ASSERT_NE(parsed, nullptr);
+  const upb_test_ModelExtension1* parsed_ext1 =
+      upb_test_ModelExtension1_model_ext(parsed);
+  ASSERT_NE(parsed_ext1, nullptr);
+  upb_StringView str = upb_test_ModelExtension1_str(parsed_ext1);
+  EXPECT_EQ(std::string_view(str.data, str.size), large_payload);
+  const upb_test_ModelExtension2* parsed_ext2 =
+      upb_test_ModelExtension2_model_ext(parsed);
+  ASSERT_NE(parsed_ext2, nullptr);
+  EXPECT_EQ(upb_test_ModelExtension2_i(parsed_ext2), 42);
+  upb_Arena_Free(verify_arena);
+
+  upb_Arena_Free(dst_arena);
+  EXPECT_TRUE(tracking.ran_cleanup);
+  EXPECT_EQ(tracking.live_blocks, 0);
+}
+
+TEST(GeneratedCode, DeepCloneNonCanonicalExtensionOutOfMemory) {
+  if (!upb_AllocationCount_IsAvailable()) {
+    GTEST_SKIP() << "Allocation count fault injection not available.";
+  }
+
+  std::string small_payload(64, 'a');
+  std::string large_payload(12288, 'b');
+  upb_Arena* source_arena = upb_Arena_New();
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(source_arena);
+
+  upb_test_ModelExtension1* ext1 = upb_test_ModelExtension1_new(source_arena);
+  upb_test_ModelExtension1_set_str(
+      ext1, upb_StringView_FromDataAndSize(small_payload.data(),
+                                           small_payload.size()));
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext, &ext1,
+      source_arena));
+
+  upb_test_ModelExtension1* ext2 = upb_test_ModelExtension1_new(source_arena);
+  upb_test_ModelExtension1_set_str(
+      ext2, upb_StringView_FromDataAndSize(large_payload.data(),
+                                           large_payload.size()));
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext, &ext2,
+      source_arena));
+
+  auto run_clone = [&]() -> bool {
+    upb_Arena* dst_arena = upb_Arena_New();
+    if (dst_arena == nullptr) return false;
+    upb_Message* clone = upb_Message_DeepClone(
+        UPB_UPCAST(msg), &upb_0test__ModelWithExtensions_msg_init, dst_arena);
+    upb_Arena_Free(dst_arena);
+    return clone != nullptr;
+  };
+
+  upb_AllocationCount_Reset();
+  ASSERT_TRUE(run_clone());
+  const size_t total_allocations = upb_AllocationCount_Get();
+  EXPECT_GT(total_allocations, 0u);
+
+  for (size_t i = 0; i < total_allocations; ++i) {
+    upb_AllocationCount_Reset();
+    upb_AllocationCount_FailOn(i);
+    EXPECT_FALSE(run_clone()) << "Unexpectedly succeeded at alloc " << i;
+  }
+  upb_AllocationCount_Reset();
+  upb_Arena_Free(source_arena);
 }
 
 }  // namespace
