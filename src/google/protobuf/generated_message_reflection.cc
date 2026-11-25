@@ -1298,11 +1298,8 @@ void Reflection::SwapOneofField(Message* lhs, Message* rhs,
   } else if (!unsafe_shallow_swap) {
     ClearOneof(rhs, oneof_descriptor);
   }
-
-  if (unsafe_shallow_swap) {
-    *MutableOneofCase(lhs, oneof_descriptor) = oneof_case_rhs;
-    *MutableOneofCase(rhs, oneof_descriptor) = oneof_case_lhs;
-  }
+  // Each InternalMoveOneofField<true> call already clears the source's
+  // oneof_case and sets the destination's.
 }
 
 void Reflection::Swap(Message* lhs, Message* rhs) const {
