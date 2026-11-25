@@ -416,15 +416,26 @@ static PyObject* PyUpb_Descriptor_GetExtensionRanges(PyObject* _self,
   PyUpb_DescriptorBase* self = (PyUpb_DescriptorBase*)_self;
   int n = upb_MessageDef_ExtensionRangeCount(self->def);
   PyObject* range_list = PyList_New(n);
+  if (!range_list) return NULL;
 
   for (int i = 0; i < n; i++) {
     const upb_ExtensionRange* range =
         upb_MessageDef_ExtensionRange(self->def, i);
     PyObject* start = PyLong_FromLong(upb_ExtensionRange_Start(range));
     PyObject* end = PyLong_FromLong(upb_ExtensionRange_End(range));
+    if (!start || !end) {
+      Py_XDECREF(start);
+      Py_XDECREF(end);
+      Py_DECREF(range_list);
+      return NULL;
+    }
     PyObject* tuple = PyTuple_Pack(2, start, end);
     Py_DECREF(start);
     Py_DECREF(end);
+    if (!tuple) {
+      Py_DECREF(range_list);
+      return NULL;
+    }
     PyList_SetItem(range_list, i, tuple);
   }
 
