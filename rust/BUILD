@@ -15,10 +15,7 @@ load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 
 licenses(["notice"])
 
-exports_files([
-    "Cargo.Bazel.lock",
-    "Cargo.lock",
-])
+exports_files(["Cargo.lock"])
 
 package_group(
     name = "protobuf_internal",
