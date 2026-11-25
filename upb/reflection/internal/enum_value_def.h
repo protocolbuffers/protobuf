@@ -23,6 +23,9 @@ extern "C" {
 
 upb_EnumValueDef* _upb_EnumValueDef_At(const upb_EnumValueDef* v, int i);
 
+// Returns the custom JSON name from (pb.enumvalue.json).string if set, or NULL.
+const char* _upb_EnumValueDef_CustomJsonName(const upb_EnumValueDef* v);
+
 // Allocate and initialize an array of |n| enum value defs owned by |e|.
 upb_EnumValueDef* _upb_EnumValueDefs_New(
     upb_DefBuilder* ctx, const char* prefix, int n,
