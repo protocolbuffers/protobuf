@@ -695,9 +695,9 @@ namespace Google.Protobuf
                             throw new InvalidProtocolBufferException($"Unsupported conversion from JSON number for field type {field.FieldType}");
                     }
                 }
-                catch (OverflowException)
+                catch (OverflowException ex)
                 {
-                    throw new InvalidProtocolBufferException($"Value out of range: {value}");
+                    throw new InvalidProtocolBufferException($"Value out of range: {value}", ex);
                 }
             }
         }
@@ -848,13 +848,13 @@ namespace Google.Protobuf
             {
                 return parser(text, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent, CultureInfo.InvariantCulture);
             }
-            catch (FormatException)
+            catch (FormatException ex)
             {
-                throw new InvalidProtocolBufferException($"Invalid numeric value for type: {text}");
+                throw new InvalidProtocolBufferException($"Invalid numeric value for type: {text}", ex);
             }
-            catch (OverflowException)
+            catch (OverflowException ex)
             {
-                throw new InvalidProtocolBufferException($"Value out of range: {text}");
+                throw new InvalidProtocolBufferException($"Value out of range: {text}", ex);
             }
         }
 
@@ -943,9 +943,9 @@ namespace Google.Protobuf
                 message.Descriptor.Fields[Timestamp.SecondsFieldNumber].Accessor.SetValue(message, timestamp.Seconds);
                 message.Descriptor.Fields[Timestamp.NanosFieldNumber].Accessor.SetValue(message, timestamp.Nanos);
             }
-            catch (FormatException)
+            catch (FormatException ex)
             {
-                throw new InvalidProtocolBufferException("Invalid Timestamp value: " + token.StringValue);
+                throw new InvalidProtocolBufferException("Invalid Timestamp value: " + token.StringValue, ex);
             }
         }
 
@@ -987,9 +987,9 @@ namespace Google.Protobuf
                 message.Descriptor.Fields[Duration.SecondsFieldNumber].Accessor.SetValue(message, seconds);
                 message.Descriptor.Fields[Duration.NanosFieldNumber].Accessor.SetValue(message, nanos);
             }
-            catch (FormatException)
+            catch (FormatException ex)
             {
-                throw new InvalidProtocolBufferException($"Invalid Duration value: {token.StringValue}");
+                throw new InvalidProtocolBufferException($"Invalid Duration value: {token.StringValue}", ex);
             }
         }
 
