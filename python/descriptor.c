@@ -1960,6 +1960,7 @@ static PyType_Spec* desc_specs[] = {
 
 bool PyUpb_InitDescriptor(PyObject* m) {
   PyUpb_ModuleState* s = PyUpb_ModuleState_GetFromModule(m);
+  if (!s) return false;
 
   for (size_t i = 0; i < kPyUpb_Descriptor_Count; i++) {
     s->descriptor_types[i] = PyUpb_AddClass(m, desc_specs[i]);
