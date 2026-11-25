@@ -13470,9 +13470,30 @@ static const upb_FileDef* _upb_DefPool_AddFile(
   return upb_DefBuilder_AddFileToPool(&ctx, s, file_proto, name, status);
 }
 
+static const size_t kUpb_MaxPackageNameLength = 511;
+static const size_t kUpb_MaxPackagePeriods = 64;
+
 const upb_FileDef* upb_DefPool_AddFile(
     upb_DefPool* s, const google_protobuf_FileDescriptorProto* file_proto,
     upb_Status* status) {
+  const upb_StringView package = google_protobuf_FileDescriptorProto_package(file_proto);
+  if (package.size > kUpb_MaxPackageNameLength) {
+    upb_Status_SetErrorFormat(
+        status, "Package name is too long (exceeds limit of %zu characters)",
+        kUpb_MaxPackageNameLength);
+    return NULL;
+  }
+  size_t dots = 0;
+  for (size_t i = 0; i < package.size; i++) {
+    if (package.data[i] == '.' && ++dots > kUpb_MaxPackagePeriods) {
+      upb_Status_SetErrorFormat(
+          status,
+          "Package name has too many components (exceeds limit of %zu "
+          "periods)",
+          kUpb_MaxPackagePeriods);
+      return NULL;
+    }
+  }
   return _upb_DefPool_AddFile(s, file_proto, NULL, status);
 }
 
