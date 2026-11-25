@@ -50,15 +50,30 @@ static upb_UnknownToMessageRet upb_MiniTable_ParseUnknownMessage(
   const char* data;
   size_t size;
   if (unknown->type == kUpb_MessageUnknownType_StringView) {
+    upb_EpsCopyInputStream stream;
     const char* ptr = unknown->value.bytes.data;
     uint32_t tag;
     uint64_t message_len = 0;
-    // This assumes that the unknown field is a message type, so it is
-    // a delimited wire type.
-    ptr = upb_WireReader_ReadTag(ptr, &tag, NULL);
-    ptr = upb_WireReader_ReadVarint(ptr, &message_len, NULL);
-    data = ptr;
-    size = message_len;
+    upb_EpsCopyInputStream_Init(&stream, &ptr, unknown->value.bytes.size);
+    // The unknown field must actually be a delimited value (i.e. a message
+    // payload), and its declared length must fit in the bytes remaining in
+    // the unknown region. Otherwise the length is attacker-controlled data
+    // that upb_Decode() would read past the end of the region.
+    ptr = upb_WireReader_ReadTag(ptr, &tag, &stream);
+    if (UPB_UNLIKELY(!ptr) ||
+        UPB_UNLIKELY(upb_WireReader_GetWireType(tag) != kUpb_WireType_Delimited)) {
+      ret.status = kUpb_UnknownToMessage_ParseError;
+      return ret;
+    }
+    ptr = upb_WireReader_ReadVarint(ptr, &message_len, &stream);
+    if (UPB_UNLIKELY(!ptr) || UPB_UNLIKELY(message_len > (uint64_t)INT32_MAX) ||
+        UPB_UNLIKELY(!upb_EpsCopyInputStream_CheckSize(
+                         &stream, ptr, (int)message_len))) {
+      ret.status = kUpb_UnknownToMessage_ParseError;
+      return ret;
+    }
+    data = UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(&stream, ptr);
+    size = (size_t)message_len;
   } else {
     // TODO: b/531520525 - After `upb_Message_Convert` supports non-canonical
     // extensions, this can be optimized via converting the
