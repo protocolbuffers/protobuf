@@ -369,7 +369,7 @@ static PyObject* ToStr(PyObject* pself) {
 
 static void ReorderAttached(RepeatedCompositeContainer* self,
                             PyObject* child_list) {
-  const Py_ssize_t length = Length(reinterpret_cast<PyObject*>(self));
+  const Py_ssize_t length = PyList_GET_SIZE(child_list);
   if (length == 0) return;
 
   Message* message = cmessage::AssureWritable(self->parent);
