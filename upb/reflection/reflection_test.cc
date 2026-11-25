@@ -410,6 +410,168 @@ TEST(ReflectionTest, TooManyRequiredFieldsFailGracefully) {
               HasSubstr("Too many required fields"));
 }
 
+TEST(ReflectionTest, ValidOneofMapEntryAndMessageSetAccepted) {
+  upb::DefPool pool = LoadDescriptorProto(
+                          R"pb(
+                            syntax: "proto2"
+                            name: "valid_defs.proto"
+                            message_type {
+                              name: "WithOneof"
+                              oneof_decl { name: "choice" }
+                              field {
+                                name: "a"
+                                number: 1
+                                label: LABEL_OPTIONAL
+                                type: TYPE_INT32
+                                oneof_index: 0
+                              }
+                            }
+                            message_type {
+                              name: "ValidEntry"
+                              options { map_entry: true }
+                              field {
+                                name: "key"
+                                number: 1
+                                label: LABEL_OPTIONAL
+                                type: TYPE_INT32
+                              }
+                              field {
+                                name: "value"
+                                number: 2
+                                label: LABEL_OPTIONAL
+                                type: TYPE_INT32
+                              }
+                            }
+                            message_type {
+                              name: "ValidMessageSet"
+                              options { message_set_wire_format: true }
+                              extension_range { start: 4 end: 100 }
+                            }
+                          )pb")
+                          .value();
+
+  upb::MessageDefPtr message = pool.FindMessageByName("WithOneof");
+  ASSERT_TRUE(message);
+  ASSERT_EQ(upb_MessageDef_OneofCount(message.ptr()), 1);
+  const upb_OneofDef* oneof = upb_MessageDef_Oneof(message.ptr(), 0);
+  ASSERT_THAT(oneof, NotNull());
+  EXPECT_FALSE(upb_OneofDef_IsSynthetic(oneof));
+  ASSERT_EQ(upb_OneofDef_FieldCount(oneof), 1);
+
+  const upb_FieldDef* field =
+      upb_MessageDef_FindFieldByName(message.ptr(), "a");
+  ASSERT_THAT(field, NotNull());
+  EXPECT_EQ(upb_OneofDef_Field(oneof, 0), field);
+  EXPECT_EQ(upb_OneofDef_LookupNumber(oneof, 1), field);
+  EXPECT_EQ(upb_FieldDef_RealContainingOneof(field), oneof);
+
+  upb::MessageDefPtr entry = pool.FindMessageByName("ValidEntry");
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(upb_MessageDef_IsMapEntry(entry.ptr()));
+
+  upb::MessageDefPtr msgset = pool.FindMessageByName("ValidMessageSet");
+  ASSERT_TRUE(msgset);
+  EXPECT_EQ(upb_MessageDef_OneofCount(msgset.ptr()), 0);
+
+  upb::DefPool proto3_pool = LoadDescriptorProto(
+                                 R"pb(
+                                   syntax: "proto3"
+                                   name: "valid_proto3_optional.proto"
+                                   message_type {
+                                     name: "WithSyntheticOneof"
+                                     oneof_decl { name: "_x" }
+                                     field {
+                                       name: "x"
+                                       number: 1
+                                       label: LABEL_OPTIONAL
+                                       type: TYPE_INT32
+                                       oneof_index: 0
+                                       proto3_optional: true
+                                     }
+                                   }
+                                 )pb")
+                                 .value();
+  upb::MessageDefPtr synth_msg =
+      proto3_pool.FindMessageByName("WithSyntheticOneof");
+  ASSERT_TRUE(synth_msg);
+  ASSERT_EQ(upb_MessageDef_OneofCount(synth_msg.ptr()), 1);
+  const upb_OneofDef* synth_oneof = upb_MessageDef_Oneof(synth_msg.ptr(), 0);
+  ASSERT_THAT(synth_oneof, NotNull());
+  EXPECT_TRUE(upb_OneofDef_IsSynthetic(synth_oneof));
+  ASSERT_EQ(upb_OneofDef_FieldCount(synth_oneof), 1);
+  EXPECT_THAT(upb_OneofDef_Field(synth_oneof, 0), NotNull());
+}
+
+TEST(ReflectionTest, EmptyOneofInMessageSetRejected) {
+  absl::StatusOr<upb::DefPool> pool = LoadDescriptorProto(
+      R"pb(
+        syntax: "proto2"
+        name: "empty_oneof_msgset.proto"
+        message_type {
+          name: "EmptyOneofMsgSet"
+          options { message_set_wire_format: true }
+          extension_range { start: 4 end: 100 }
+          oneof_decl { name: "empty" }
+        }
+      )pb");
+  ASSERT_FALSE(pool.ok());
+  EXPECT_EQ(std::string_view(pool.status().message()),
+            "Oneof must have at least one field (EmptyOneofMsgSet.empty)");
+}
+
+TEST(ReflectionTest, EmptyOneofInMessageRejected) {
+  absl::StatusOr<upb::DefPool> pool = LoadDescriptorProto(
+      R"pb(
+        syntax: "proto2"
+        name: "empty_oneof_msg.proto"
+        message_type {
+          name: "EmptyOneofMsg"
+          oneof_decl { name: "choice" }
+          oneof_decl { name: "empty" }
+          field {
+            name: "a"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            oneof_index: 0
+          }
+        }
+      )pb");
+  ASSERT_FALSE(pool.ok());
+  EXPECT_EQ(std::string_view(pool.status().message()),
+            "Oneof must have at least one field (EmptyOneofMsg.empty)");
+}
+
+TEST(ReflectionTest, MapEntryWithOneofRejected) {
+  absl::StatusOr<upb::DefPool> pool = LoadDescriptorProto(
+      R"pb(
+        syntax: "proto2"
+        name: "map_entry_oneof.proto"
+        message_type {
+          name: "BadEntry"
+          options { map_entry: true }
+          oneof_decl { name: "choice" }
+          field {
+            name: "key"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            oneof_index: 0
+          }
+          field {
+            name: "value"
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+        }
+      )pb");
+  ASSERT_FALSE(pool.ok());
+  EXPECT_EQ(std::string_view(pool.status().message()),
+            "map entry (BadEntry) cannot contain extensions, extension "
+            "ranges, nested types, or oneofs");
+}
+
 #define STRING_AND_SIZE(string) string, strlen(string)
 
 TEST(ReflectionTest, FindMethodByName) {
