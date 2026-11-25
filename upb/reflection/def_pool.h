@@ -70,9 +70,8 @@ UPB_API const upb_FieldDef* upb_DefPool_FindExtensionByName(
 const upb_FieldDef* upb_DefPool_FindExtensionByNameWithSize(
     const upb_DefPool* s, const char* name, size_t size);
 
-const upb_FieldDef* upb_DefPool_FindExtensionByNumber(const upb_DefPool* s,
-                                                      const upb_MessageDef* m,
-                                                      int32_t fieldnum);
+UPB_API const upb_FieldDef* upb_DefPool_FindExtensionByNumber(
+    const upb_DefPool* s, const upb_MessageDef* m, int32_t fieldnum);
 
 UPB_API const upb_ServiceDef* upb_DefPool_FindServiceByName(
     const upb_DefPool* s, const char* name);
@@ -90,9 +89,8 @@ UPB_NODISCARD UPB_API const upb_FileDef* upb_DefPool_AddFile(
 UPB_API const upb_ExtensionRegistry* upb_DefPool_ExtensionRegistry(
     const upb_DefPool* s);
 
-const upb_FieldDef** upb_DefPool_GetAllExtensions(const upb_DefPool* s,
-                                                  const upb_MessageDef* m,
-                                                  size_t* count);
+UPB_API const upb_FieldDef** upb_DefPool_GetAllExtensions(
+    const upb_DefPool* s, const upb_MessageDef* m, size_t* count);
 
 // If called, closed enums will be treated as open enums. This is non-standard
 // behavior and will cause conformance tests to fail, but it is more useful

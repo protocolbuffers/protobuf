@@ -19,6 +19,8 @@ module Google
       attach_function :lookup_msg,            :upb_DefPool_FindMessageByName,  [:DefPool, :string], Descriptor
       attach_function :lookup_service,        :upb_DefPool_FindServiceByName,  [:DefPool, :string], ServiceDescriptor
       attach_function :lookup_file,           :upb_DefPool_FindFileByName,     [:DefPool, :string], FileDescriptor
+      attach_function :lookup_all_extensions, :upb_DefPool_GetAllExtensions, [:DefPool, Descriptor, :pointer], :pointer
+      attach_function :lookup_extension_by_number, :upb_DefPool_FindExtensionByNumber, [:DefPool, Descriptor, :int32], FieldDescriptor
 
         # FileDescriptorProto
       attach_function :parse,                 :FileDescriptorProto_parse,      [:binary_string, :size_t, Internal::Arena], :FileDescriptorProto
@@ -63,6 +65,43 @@ module Google
           Google::Protobuf::FFI.lookup_extension(@descriptor_pool, name) ||
           Google::Protobuf::FFI.lookup_service(@descriptor_pool, name) ||
           Google::Protobuf::FFI.lookup_file(@descriptor_pool, name)
+      end
+
+      # Finds FileDescriptor by name and returns it, or nil if none exist
+      #
+      # @param name [String]
+      # @return [FileDescriptor, nil]
+      def find_file_by_name(name)
+        Google::Protobuf::FFI.lookup_file(@descriptor_pool, name)
+      end
+
+      # Finds all extensions of the given message descriptor and returns them
+      # as an array of FieldDescriptor.
+      #
+      # @param message_descriptor [Descriptor]
+      # @return [Array<FieldDescriptor>]
+      def find_all_extensions(message_descriptor)
+        count_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
+        exts_ptr = Google::Protobuf::FFI.lookup_all_extensions(@descriptor_pool, message_descriptor, count_ptr)
+
+        return [].freeze if exts_ptr.null?
+
+        begin
+          count = count_ptr.read(:size_t)
+          exts_ptr.read_array_of_pointer(count).map! { |ptr| FieldDescriptor.from_native(ptr) }.freeze
+        ensure
+          Google::Protobuf::FFI.free(exts_ptr)
+        end
+      end
+
+      # Finds an extension by its extendee (message descriptor) and number.
+      # Returns the FieldDescriptor or nil if none exists.
+      #
+      # @param message_descriptor [Descriptor]
+      # @param number [Integer]
+      # @return [FieldDescriptor, nil]
+      def find_extension_by_number(message_descriptor, number)
+        Google::Protobuf::FFI.lookup_extension_by_number(@descriptor_pool, message_descriptor, number)
       end
 
       def self.generated_pool

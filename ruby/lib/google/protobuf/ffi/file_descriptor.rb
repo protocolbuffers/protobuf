@@ -80,6 +80,23 @@ module Google
           Google::Protobuf::FileDescriptorProto.decode(buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze)
         end
       end
+
+      # Returns an array of FileDescriptors that this file depends on.
+      #
+      # @return [Array<FileDescriptor>]
+      def dependencies
+        @dependencies ||= begin
+          count = Google::Protobuf::FFI.file_def_dependency_count(@file_def)
+          Array.new(count) { |index| Google::Protobuf::FFI.file_def_dependency(@file_def, index) }.freeze
+        end
+      end
+    end
+
+    class FFI
+      # These use FileDescriptor as a return type, so they must be attached
+      # after the class is defined.
+      attach_function :file_def_dependency_count, :upb_FileDef_DependencyCount, [:FileDef], :int
+      attach_function :file_def_dependency,       :upb_FileDef_Dependency,      [:FileDef, :int], FileDescriptor
     end
   end
 end
