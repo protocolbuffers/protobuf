@@ -130,6 +130,10 @@ Flag arguments:
 
 -   `APPEND_PATH` — A flag that causes the base path of all proto schema files
     to be added to `IMPORT_DIRS`.
+-   `CODEGEN` — A flag that adds the protoc invocations to CMake's global
+    `codegen` target, so the sources can be generated without building the
+    rest of the project (e.g. for code analysis tools). Requires CMake 3.31 or
+    newer and policy `CMP0171` set to `NEW`.
 
 Single-value arguments:
 
