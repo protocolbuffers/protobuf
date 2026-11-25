@@ -1087,6 +1087,7 @@ class PROTOBUF_EXPORT Reflection final {
   [[deprecated(
       "Please use GetMutableRepeatedFieldRef() instead")]] RepeatedField<T>*
   MutableRepeatedField(Message* msg, const FieldDescriptor* d) const {
+      CheckMutableRepeatedFieldField(d, "MutableRepeatedField");
     return MutableRepeatedFieldInternal<T>(
         msg, d, GetRepeatedFieldIntent::kExposeDirectly);
   }
@@ -1111,6 +1112,7 @@ class PROTOBUF_EXPORT Reflection final {
   [[deprecated(
       "Please use GetMutableRepeatedFieldRef() instead")]] RepeatedPtrField<T>*
   MutableRepeatedPtrField(Message* msg, const FieldDescriptor* d) const {
+      CheckMutableRepeatedFieldField(d, "MutableRepeatedPtrField");
     return MutableRepeatedPtrFieldInternal<T>(
         msg, d, GetRepeatedFieldIntent::kExposeDirectly);
   }
@@ -1383,6 +1385,14 @@ class PROTOBUF_EXPORT Reflection final {
   // This makes it easier to catch bugs in callers.
   template <typename T>
   void VerifyFieldType(const FieldDescriptor* field) const;
+
+  // Verifies that `field` belongs to this reflection's message type, crashing
+  // with a usage error otherwise. Used by the deprecated
+  // MutableRepeatedField / MutableRepeatedPtrField accessors, which are
+  // defined in this header and so cannot use the USAGE_CHECK_* macros
+  // (defined in the .cc file).
+  void CheckMutableRepeatedFieldField(const FieldDescriptor* field,
+                                      const char* method) const;
 
   template <typename Type>
   const Type& GetRaw(const Message& message,
