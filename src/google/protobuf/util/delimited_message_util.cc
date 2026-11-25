@@ -10,6 +10,8 @@
 
 #include "google/protobuf/util/delimited_message_util.h"
 
+#include <climits>
+
 #include "google/protobuf/io/coded_stream.h"
 
 namespace google {
@@ -51,6 +53,8 @@ bool ParseDelimitedFromCodedStream(MessageLite* message,
     if (clean_eof != nullptr) *clean_eof = input->CurrentPosition() == start;
     return false;
   }
+
+  if (size > INT_MAX) return false;
 
   // Get the position after any size bytes have been read (and only the message
   // itself remains).
