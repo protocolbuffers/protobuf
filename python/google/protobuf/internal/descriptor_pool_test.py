@@ -1987,6 +1987,49 @@ class DescriptorPoolParaTest(parameterized.TestCase):
       descriptor_pool.Default().FindFileContainingSymbol(malicious_name)
     self.assertIn('Tail.Content', str(exc.exception))
 
+  @parameterized.named_parameters(
+      ('MaxLength', 'a' * 511),
+      ('MaxPeriods', '.'.join(['a'] * 65)),
+  )
+  @unittest.skipIf(
+      api_implementation.Type() != 'python',
+      'Pure-Python package name limit checks',
+  )
+  def testValidPackageNameLimits(self, pkg):
+    file_proto = descriptor_pb2.FileDescriptorProto(
+        name='valid_pkg.proto', package=pkg
+    )
+    pool = descriptor_pool.DescriptorPool()
+    pool.Add(file_proto)
+    self.assertEqual(pkg, pool.FindFileByName(file_proto.name).package)
+    pool2 = descriptor_pool.DescriptorPool()
+    self.assertEqual(
+        pkg, pool2.AddSerializedFile(file_proto.SerializeToString()).package
+    )
+
+  @parameterized.named_parameters(
+      ('TooLong', 'a' * 512, 'maximum length of 511 characters'),
+      ('TooManyPeriods', '.'.join(['a'] * 66), 'maximum of 64 periods'),
+  )
+  @unittest.skipIf(
+      api_implementation.Type() != 'python',
+      'Pure-Python package name limit checks',
+  )
+  def testInvalidPackageNameLimits(self, pkg, expected_pattern):
+    file_proto = descriptor_pb2.FileDescriptorProto(
+        name='invalid_pkg.proto', package=pkg
+    )
+    pool = descriptor_pool.DescriptorPool()
+    with self.assertRaisesRegex(TypeError, expected_pattern):
+      pool.Add(file_proto)
+    with self.assertRaisesRegex(TypeError, expected_pattern):
+      pool.AddSerializedFile(file_proto.SerializeToString())
+    db = descriptor_database.DescriptorDatabase()
+    db.Add(file_proto)
+    db_pool = descriptor_pool.DescriptorPool(db)
+    with self.assertRaisesRegex(TypeError, expected_pattern):
+      db_pool.FindFileByName(file_proto.name)
+
 
 if __name__ == '__main__':
   unittest.main()

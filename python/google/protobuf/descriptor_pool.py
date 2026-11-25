@@ -46,6 +46,23 @@ from google.protobuf.internal import python_message
 
 _USE_C_DESCRIPTORS = descriptor._USE_C_DESCRIPTORS  # pylint: disable=protected-access
 
+_MAX_PACKAGE_NAME_LENGTH = 511
+_MAX_PACKAGE_PERIODS = 64
+
+
+def _ValidatePackageName(package):
+  if not package:
+    return
+  if len(package) > _MAX_PACKAGE_NAME_LENGTH:
+    raise TypeError(
+        'Package name exceeds maximum length of %d characters.'
+        % _MAX_PACKAGE_NAME_LENGTH
+    )
+  if package.count('.') > _MAX_PACKAGE_PERIODS:
+    raise TypeError(
+        'Package name exceeds maximum of %d periods.' % _MAX_PACKAGE_PERIODS
+    )
+
 
 def _NormalizeFullyQualifiedName(name):
   """Remove leading period from fully-qualified type name.
@@ -193,6 +210,7 @@ class DescriptorPool(object):
       file_desc_proto (FileDescriptorProto): The file descriptor to add.
     """
 
+    _ValidatePackageName(file_desc_proto.package)
     self._internal_db.Add(file_desc_proto)
 
   def AddSerializedFile(self, serialized_file_desc_proto):
@@ -863,6 +881,8 @@ class DescriptorPool(object):
     """
     if file_proto.name in self._file_descriptors:
       return self._file_descriptors[file_proto.name]
+
+    _ValidatePackageName(file_proto.package)
 
     with self._lock:
       if file_proto.name in self._file_descriptors:
