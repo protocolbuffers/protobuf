@@ -149,8 +149,8 @@ CodedInputStream::IncrementRecursionDepthAndPushLimit(int byte_limit) {
 }
 
 CodedInputStream::Limit CodedInputStream::ReadLengthAndPushLimit() {
-  uint32_t length;
-  return PushLimit(ReadVarint32(&length) ? length : 0);
+  int length;
+  return PushLimit(ReadVarintSizeAsInt(&length) ? length : 0);
 }
 
 bool CodedInputStream::DecrementRecursionDepthAndPopLimit(Limit limit) {
