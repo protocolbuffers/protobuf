@@ -2534,7 +2534,12 @@ int Reflection::GetEnumValue(const Message& message,
 
 void Reflection::SetEnum(Message* message, const FieldDescriptor* field,
                          const EnumValueDescriptor* value) const {
-  // Usage checked by SetEnumValue.
+  // Like SetEnumValue, the field must belong to this message and be a
+  // singular enum field. USAGE_CHECK_ENUM_VALUE alone does not check that:
+  // a foreign enum field reaches SetEnumValueInternal with a wild layout
+  // offset, and a non-enum field (e.g. a map field, whose enum_type() is
+  // null) crashes inside ReportReflectionUsageEnumTypeError itself.
+  USAGE_MUTABLE_CHECK_ALL(SetEnum, SINGULAR, ENUM);
   USAGE_CHECK_ENUM_VALUE(SetEnum);
   SetEnumValueInternal(message, field, value->number());
 }
@@ -2590,7 +2595,9 @@ int Reflection::GetRepeatedEnumValue(const Message& message,
 void Reflection::SetRepeatedEnum(Message* message, const FieldDescriptor* field,
                                  int index,
                                  const EnumValueDescriptor* value) const {
-  // Usage checked by SetRepeatedEnumValue.
+  // Like SetRepeatedEnumValue, the field must belong to this message and be
+  // a repeated enum field; see SetEnum above.
+  USAGE_MUTABLE_CHECK_ALL(SetRepeatedEnum, REPEATED, ENUM);
   USAGE_CHECK_ENUM_VALUE(SetRepeatedEnum);
   SetRepeatedEnumValueInternal(message, field, index, value->number());
 }
@@ -2625,7 +2632,9 @@ void Reflection::SetRepeatedEnumValueInternal(Message* message,
 
 void Reflection::AddEnum(Message* message, const FieldDescriptor* field,
                          const EnumValueDescriptor* value) const {
-  // Usage checked by AddEnumValue.
+  // Like AddEnumValue, the field must belong to this message and be a
+  // repeated enum field; see SetEnum above.
+  USAGE_MUTABLE_CHECK_ALL(AddEnum, REPEATED, ENUM);
   USAGE_CHECK_ENUM_VALUE(AddEnum);
   AddEnumValueInternal(message, field, value->number());
 }
