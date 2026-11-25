@@ -1062,6 +1062,476 @@ TEST_F(FileDescriptorTest, AbslStringifyWorks) {
   EXPECT_THAT(s, HasSubstr("TestMessageWithCustomOptions"));
 }
 
+TEST_F(FileDescriptorTest, DebugStringNonGroupLikeTypeGroupDoesNotRecurse) {
+  // Self-referential, mutual, nested ancestor back-edge, message-scoped
+  // extension (self and cross-message), and oneof TYPE_GROUP fields must not
+  // be rendered as inline group definitions.
+  {
+    DescriptorPool pool;
+    FileDescriptorProto proto;
+    ASSERT_TRUE(TextFormat::ParseFromString(
+        R"pb(
+          name: "self_and_mutual.proto"
+          package: "pkg"
+          message_type {
+            name: "Self"
+            field {
+              name: "self"
+              number: 1
+              label: LABEL_OPTIONAL
+              type: TYPE_GROUP
+              type_name: ".pkg.Self"
+            }
+            field {
+              name: "g"
+              number: 2
+              label: LABEL_OPTIONAL
+              type: TYPE_GROUP
+              type_name: ".pkg.Self"
+            }
+            oneof_decl { name: "oo" }
+            field {
+              name: "oo_self"
+              number: 3
+              label: LABEL_OPTIONAL
+              type: TYPE_GROUP
+              type_name: ".pkg.Self"
+              oneof_index: 0
+            }
+            extension_range { start: 100 end: 200 }
+            extension {
+              name: "ext_self"
+              number: 100
+              extendee: ".pkg.Self"
+              label: LABEL_OPTIONAL
+              type: TYPE_GROUP
+              type_name: ".pkg.Self"
+            }
+          }
+          message_type {
+            name: "A"
+            field {
+              name: "b"
+              number: 1
+              label: LABEL_OPTIONAL
+              type: TYPE_GROUP
+              type_name: ".pkg.B"
+            }
+            extension {
+              name: "g"
+              number: 100
+              extendee: ".pkg.B"
+              label: LABEL_OPTIONAL
+              type: TYPE_GROUP
+              type_name: ".pkg.B.G"
+            }
+          }
+          message_type {
+            name: "B"
+            extension_range { start: 100 end: 200 }
+            nested_type {
+              name: "G"
+              field {
+                name: "x"
+                number: 1
+                label: LABEL_OPTIONAL
+                type: TYPE_INT32
+              }
+            }
+            field {
+              name: "a"
+              number: 1
+              label: LABEL_OPTIONAL
+              type: TYPE_GROUP
+              type_name: ".pkg.A"
+            }
+          }
+          message_type {
+            name: "Outer"
+            nested_type {
+              name: "Inner"
+              field {
+                name: "outer"
+                number: 1
+                label: LABEL_OPTIONAL
+                type: TYPE_GROUP
+                type_name: ".pkg.Outer"
+              }
+            }
+            field {
+              name: "inner"
+              number: 1
+              label: LABEL_OPTIONAL
+              type: TYPE_GROUP
+              type_name: ".pkg.Outer.Inner"
+            }
+          }
+        )pb",
+        &proto));
+
+    const FileDescriptor* file = pool.BuildFile(proto);
+    ASSERT_NE(file, nullptr);
+
+    const std::string expected = R"schema(syntax = "proto2";
+
+package pkg;
+
+message Self {
+  optional .pkg.Self self = 1;
+  optional .pkg.Self g = 2;
+  oneof oo {
+    .pkg.Self oo_self = 3;
+  }
+  extensions 100 to 199;
+  extend .pkg.Self {
+    optional .pkg.Self ext_self = 100;
+  }
+}
+
+message A {
+  optional .pkg.B b = 1;
+  extend .pkg.B {
+    optional .pkg.B.G g = 100;
+  }
+}
+
+message B {
+  message G {
+    optional int32 x = 1;
+  }
+  optional .pkg.A a = 1;
+  extensions 100 to 199;
+}
+
+message Outer {
+  optional group Inner = 1 {
+    optional .pkg.Outer outer = 1;
+  }
+}
+
+)schema";
+    EXPECT_EQ(file->DebugString(), expected);
+
+    const Descriptor* self_msg = file->FindMessageTypeByName("Self");
+    ASSERT_NE(self_msg, nullptr);
+    EXPECT_EQ(self_msg->FindFieldByName("self")->DebugString(),
+              "optional .pkg.Self self = 1;\n");
+    EXPECT_EQ(self_msg->FindOneofByName("oo")->DebugString(),
+              "oneof oo {\n  .pkg.Self oo_self = 3;\n}\n");
+  }
+}
+
+TEST_F(FileDescriptorTest, DebugStringNonGroupLikeFileAndNameMismatch) {
+  // Cross-file file-level extension whose name matches the target message
+  // lowercased (both containing_type() and extension_scope() are nullptr) must
+  // not inline the imported message body.
+  {
+    DescriptorPool pool;
+    FileDescriptorProto dep_proto;
+    ASSERT_TRUE(TextFormat::ParseFromString(
+        R"pb(
+          name: "dep.proto"
+          package: "pkg"
+          message_type {
+            name: "ExtTarget"
+            extension_range { start: 100 end: 200 }
+          }
+          message_type {
+            name: "Shared"
+            field { name: "v" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          }
+        )pb",
+        &dep_proto));
+    ASSERT_NE(pool.BuildFile(dep_proto), nullptr);
+
+    FileDescriptorProto main_proto;
+    ASSERT_TRUE(TextFormat::ParseFromString(
+        R"pb(
+          name: "main.proto"
+          package: "pkg"
+          dependency: "dep.proto"
+          extension {
+            name: "shared"
+            number: 100
+            extendee: ".pkg.ExtTarget"
+            label: LABEL_OPTIONAL
+            type: TYPE_GROUP
+            type_name: ".pkg.Shared"
+          }
+        )pb",
+        &main_proto));
+    const FileDescriptor* main_file = pool.BuildFile(main_proto);
+    ASSERT_NE(main_file, nullptr);
+
+    const std::string expected = R"schema(syntax = "proto2";
+
+import "dep.proto";
+package pkg;
+
+extend .pkg.ExtTarget {
+  optional .pkg.Shared shared = 100;
+}
+
+)schema";
+    EXPECT_EQ(main_file->DebugString(), expected);
+  }
+
+  // Mismatched-name and duplicate-reference nested TYPE_GROUP fields preserve
+  // their field names and avoid duplicating the nested message body.
+  {
+    DescriptorPool pool;
+    FileDescriptorProto proto;
+    ASSERT_TRUE(TextFormat::ParseFromString(
+        R"pb(
+          name: "mismatched_name.proto"
+          package: "pkg"
+          message_type {
+            name: "Dup"
+            nested_type {
+              name: "Grp"
+              field {
+                name: "x"
+                number: 1
+                label: LABEL_OPTIONAL
+                type: TYPE_INT32
+              }
+            }
+            field {
+              name: "a"
+              number: 1
+              label: LABEL_OPTIONAL
+              type: TYPE_GROUP
+              type_name: ".pkg.Dup.Grp"
+            }
+            field {
+              name: "b"
+              number: 2
+              label: LABEL_OPTIONAL
+              type: TYPE_GROUP
+              type_name: ".pkg.Dup.Grp"
+            }
+          }
+          message_type {
+            name: "Mixed"
+            nested_type {
+              name: "Grp"
+              field {
+                name: "y"
+                number: 1
+                label: LABEL_OPTIONAL
+                type: TYPE_INT32
+              }
+            }
+            field {
+              name: "grp"
+              number: 1
+              label: LABEL_OPTIONAL
+              type: TYPE_GROUP
+              type_name: ".pkg.Mixed.Grp"
+            }
+            field {
+              name: "alias"
+              number: 2
+              label: LABEL_OPTIONAL
+              type: TYPE_GROUP
+              type_name: ".pkg.Mixed.Grp"
+            }
+          }
+        )pb",
+        &proto));
+    const FileDescriptor* file = pool.BuildFile(proto);
+    ASSERT_NE(file, nullptr);
+
+    const std::string expected = R"schema(syntax = "proto2";
+
+package pkg;
+
+message Dup {
+  message Grp {
+    optional int32 x = 1;
+  }
+  optional .pkg.Dup.Grp a = 1;
+  optional .pkg.Dup.Grp b = 2;
+}
+
+message Mixed {
+  optional group Grp = 1 {
+    optional int32 y = 1;
+  }
+  optional .pkg.Mixed.Grp alias = 2;
+}
+
+)schema";
+    EXPECT_EQ(file->DebugString(), expected);
+  }
+
+  // Placeholder TYPE_GROUP with AllowUnknownDependencies() must not fabricate
+  // an empty group block.
+  {
+    DescriptorPool pool;
+    pool.AllowUnknownDependencies();
+    FileDescriptorProto proto;
+    ASSERT_TRUE(TextFormat::ParseFromString(
+        R"pb(
+          name: "placeholder.proto"
+          package: "pkg"
+          message_type {
+            name: "Holder"
+            field {
+              name: "missing"
+              number: 1
+              label: LABEL_OPTIONAL
+              type: TYPE_GROUP
+              type_name: ".pkg.Missing"
+            }
+          }
+        )pb",
+        &proto));
+    const FileDescriptor* file = pool.BuildFile(proto);
+    ASSERT_NE(file, nullptr);
+
+    const std::string expected = R"schema(syntax = "proto2";
+
+package pkg;
+
+message Holder {
+  optional .pkg.Missing missing = 1;
+}
+
+)schema";
+    EXPECT_EQ(file->DebugString(), expected);
+  }
+}
+
+TEST_F(FileDescriptorTest, DebugStringPreservesValidProto2GroupSyntax) {
+  DescriptorPool pool;
+  FileDescriptorProto proto;
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "valid_groups.proto"
+        package: "pkg"
+        message_type {
+          name: "ExtTarget"
+          extension_range { start: 100 end: 200 }
+        }
+        message_type {
+          name: "FileExtGrp"
+          field { name: "w" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+        }
+        message_type {
+          name: "Container"
+          nested_type {
+            name: "NestedGrp"
+            field { name: "x" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          }
+          nested_type {
+            name: "OneofGrp"
+            field { name: "y" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          }
+          nested_type {
+            name: "MsgExtGrp"
+            field { name: "z" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          }
+          oneof_decl { name: "oo" }
+          field {
+            name: "nestedgrp"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_GROUP
+            type_name: ".pkg.Container.NestedGrp"
+          }
+          field {
+            name: "oneofgrp"
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_GROUP
+            type_name: ".pkg.Container.OneofGrp"
+            oneof_index: 0
+          }
+          extension {
+            name: "msgextgrp"
+            number: 100
+            extendee: ".pkg.ExtTarget"
+            label: LABEL_OPTIONAL
+            type: TYPE_GROUP
+            type_name: ".pkg.Container.MsgExtGrp"
+          }
+        }
+        extension {
+          name: "fileextgrp"
+          number: 101
+          extendee: ".pkg.ExtTarget"
+          label: LABEL_OPTIONAL
+          type: TYPE_GROUP
+          type_name: ".pkg.FileExtGrp"
+        }
+      )pb",
+      &proto));
+
+  const FileDescriptor* file = pool.BuildFile(proto);
+  ASSERT_NE(file, nullptr);
+
+  const std::string expected = R"schema(syntax = "proto2";
+
+package pkg;
+
+message ExtTarget {
+  extensions 100 to 199;
+}
+
+message Container {
+  optional group NestedGrp = 1 {
+    optional int32 x = 1;
+  }
+  oneof oo {
+    group OneofGrp = 2 {
+      optional int32 y = 1;
+    }
+  }
+  extend .pkg.ExtTarget {
+    optional group MsgExtGrp = 100 {
+      optional int32 z = 1;
+    }
+  }
+}
+
+extend .pkg.ExtTarget {
+  optional group FileExtGrp = 101 {
+    optional int32 w = 1;
+  }
+}
+
+)schema";
+  EXPECT_EQ(file->DebugString(), expected);
+
+  DebugStringOptions elide_opts;
+  elide_opts.elide_group_body = true;
+  const std::string expected_elided = R"schema(syntax = "proto2";
+
+package pkg;
+
+message ExtTarget {
+  extensions 100 to 199;
+}
+
+message Container {
+  optional group NestedGrp = 1 { ... };
+  oneof oo {
+    group OneofGrp = 2 { ... };
+  }
+  extend .pkg.ExtTarget {
+    optional group MsgExtGrp = 100 { ... };
+  }
+}
+
+extend .pkg.ExtTarget {
+  optional group FileExtGrp = 101 { ... };
+}
+
+)schema";
+  EXPECT_EQ(file->DebugStringWithOptions(elide_opts), expected_elided);
+}
+
 // ===================================================================
 
 FileDescriptorProto MakeFileDescriptorProtoWithImports(
