@@ -50,6 +50,8 @@ namespace Google.Protobuf
                 case WireFormat.WireType.Varint:
                     ParsingPrimitives.ParseRawVarint32(ref buffer, ref state);
                     break;
+                default:
+                    throw InvalidProtocolBufferException.InvalidWireType();
             }
         }
 

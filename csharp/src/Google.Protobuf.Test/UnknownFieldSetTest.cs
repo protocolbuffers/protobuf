@@ -9,6 +9,7 @@
 
 using System.IO;
 using Google.Protobuf.TestProtos;
+using Google.Protobuf.WellKnownTypes;
 using NUnit.Framework;
 
 namespace Google.Protobuf
@@ -198,6 +199,30 @@ namespace Google.Protobuf
             Assert.AreEqual(tag, input.ReadTag());
 
             Assert.Throws<InvalidProtocolBufferException>(() => UnknownFieldSet.MergeFieldFrom(null, input));
+        }
+
+        [TestCase(6)]
+        [TestCase(7)]
+        public void DiscardUnknownFieldsRejectsInvalidWireType(int wireType)
+        {
+            var data = new byte[] { (byte) WireFormat.MakeTag(3, (WireFormat.WireType) wireType) };
+
+            Assert.Throws<InvalidProtocolBufferException>(
+                () => TestEmptyMessage.Parser.WithDiscardUnknownFields(true).ParseFrom(data));
+        }
+
+        [TestCase(6)]
+        [TestCase(7)]
+        public void MapEntryRejectsInvalidWireType(int wireType)
+        {
+            var data = new byte[]
+            {
+                0x0a, // Struct.fields, length-delimited
+                0x01, // map entry length
+                (byte) WireFormat.MakeTag(3, (WireFormat.WireType) wireType)
+            };
+
+            Assert.Throws<InvalidProtocolBufferException>(() => Struct.Parser.ParseFrom(data));
         }
     }
 }

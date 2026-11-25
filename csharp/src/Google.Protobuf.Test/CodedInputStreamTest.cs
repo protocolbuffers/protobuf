@@ -762,6 +762,19 @@ namespace Google.Protobuf
             Assert.AreEqual("field 3", input.ReadString());
         }
 
+        [TestCase(6)]
+        [TestCase(7)]
+        public void SkipGroup_InvalidWireType(int wireType)
+        {
+            var input = new CodedInputStream(Bytes(
+                (int) WireFormat.MakeTag(1, WireFormat.WireType.StartGroup),
+                (int) WireFormat.MakeTag(3, (WireFormat.WireType) wireType),
+                (int) WireFormat.MakeTag(1, WireFormat.WireType.EndGroup)));
+            Assert.AreEqual(WireFormat.MakeTag(1, WireFormat.WireType.StartGroup), input.ReadTag());
+
+            Assert.Throws<InvalidProtocolBufferException>(input.SkipLastField);
+        }
+
         [Test]
         public void SkipGroup_WrongEndGroupTag()
         {
