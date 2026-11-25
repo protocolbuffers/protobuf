@@ -1615,6 +1615,55 @@ TEST(GeneratedMessageReflectionTest, OneofForeignDescriptorCheck) {
       "Oneof does not match message type");
 }
 
+TEST(GeneratedMessageReflectionTest, MutableRepeatedFieldForeignFieldCheck) {
+  unittest::ForeignMessage message;
+  const Reflection* reflection = message.GetReflection();
+
+  // Passing a repeated field descriptor from a different message type to the
+  // deprecated MutableRepeatedField / MutableRepeatedPtrField accessors must
+  // fail. Without this check, SetHasBit runs first and indexes
+  // has_bit_indices_[field->index()] out of bounds (see #31783, leg 21):
+  // the has-bit read lands past the target object before
+  // MutableRawRepeatedField's containing-type check is ever reached.
+  const FieldDescriptor* foreign_int32 =
+      unittest::TestAllTypes::descriptor()->FindFieldByName("repeated_int32");
+  const FieldDescriptor* foreign_string =
+      unittest::TestAllTypes::descriptor()->FindFieldByName("repeated_string");
+  const FieldDescriptor* foreign_message =
+      unittest::TestAllTypes::descriptor()->FindFieldByName(
+          "repeated_foreign_message");
+  PROTOBUF_IGNORE_DEPRECATION_START
+  EXPECT_DEATH((void)reflection->MutableRepeatedField<int32_t>(
+                   &message, foreign_int32),
+               "Field does not match message type");
+  EXPECT_DEATH((void)reflection->MutableRepeatedPtrField<std::string>(
+                   &message, foreign_string),
+               "Field does not match message type");
+  EXPECT_DEATH(
+      (void)reflection->MutableRepeatedPtrField<unittest::ForeignMessage>(
+          &message, foreign_message),
+      "Field does not match message type");
+  PROTOBUF_IGNORE_DEPRECATION_STOP
+
+  // Same-type access still works.
+  unittest::TestAllTypes own;
+  const Reflection* own_reflection = own.GetReflection();
+  PROTOBUF_IGNORE_DEPRECATION_START
+  RepeatedField<int32_t>* own_int32 =
+      own_reflection->MutableRepeatedField<int32_t>(
+          &own, unittest::TestAllTypes::descriptor()->FindFieldByName(
+                    "repeated_int32"));
+  own_int32->Add(7);
+  EXPECT_EQ(1, own_int32->size());
+  RepeatedPtrField<std::string>* own_string =
+      own_reflection->MutableRepeatedPtrField<std::string>(
+          &own, unittest::TestAllTypes::descriptor()->FindFieldByName(
+                    "repeated_string"));
+  own_string->Add("x");
+  EXPECT_EQ(1, own_string->size());
+  PROTOBUF_IGNORE_DEPRECATION_STOP
+}
+
 #endif  // GTEST_HAS_DEATH_TEST
 
 class GeneratedMessageReflectionCordAccessorsTest : public testing::Test {
