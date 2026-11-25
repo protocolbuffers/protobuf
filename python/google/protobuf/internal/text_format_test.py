@@ -894,18 +894,49 @@ class TextFormatParserTests(TextFormatBase):
         max_recursion_depth=4,
     )
 
-  def testParseDefaultBehaviorRemainsUnbounded(self, message_module):
-    del message_module
-    message = descriptor_pb2.DescriptorProto()
-    text = 'nested_type {' * 110 + '}' * 110
+  def testParseDefaultRecursionDepthLimit(self, message_module):
+    max_ok_text = 'child {' * 99 + '}' * 99
+    too_deep_text = 'child {' * 100 + '}' * 100
 
-    try:
-      text_format.Parse(text, message)
-    except Exception as exc:  # noqa: BLE001
-      self.fail(
-          'expected default parsing to remain unbounded, '
-          f'got {type(exc).__name__}: {exc}'
-      )
+    text_format.Parse(max_ok_text, message_module.NestedTestAllTypes())
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        'Message too deep. Max recursion depth is 100',
+        text_format.Parse,
+        too_deep_text,
+        message_module.NestedTestAllTypes(),
+    )
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        'Message too deep. Max recursion depth is 100',
+        text_format.Merge,
+        too_deep_text,
+        message_module.NestedTestAllTypes(),
+    )
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        'Message too deep. Max recursion depth is 100',
+        text_format.ParseLines,
+        [too_deep_text],
+        message_module.NestedTestAllTypes(),
+    )
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        'Message too deep. Max recursion depth is 100',
+        text_format.MergeLines,
+        [too_deep_text],
+        message_module.NestedTestAllTypes(),
+    )
+    text_format.Parse(
+        too_deep_text,
+        message_module.NestedTestAllTypes(),
+        max_recursion_depth=None,
+    )
+    text_format.Parse(
+        too_deep_text,
+        message_module.NestedTestAllTypes(),
+        max_recursion_depth=101,
+    )
 
   def testParseAllFields(self, message_module):
     message = message_module.TestAllTypes()

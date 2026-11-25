@@ -64,6 +64,7 @@ _INTEGER_CHECKERS = (
 _FLOAT_INFINITY = re.compile('-?inf(?:inity)?f?$', re.IGNORECASE)
 _FLOAT_NAN = re.compile('nanf?$', re.IGNORECASE)
 _FLOAT_OCTAL_PREFIX = re.compile('-?0[0-9]+')
+_DEFAULT_MAX_RECURSION_DEPTH = 100
 _PERCENT_ENCODING = re.compile(r'^%[\da-fA-F][\da-fA-F]$')
 _TYPE_NAME = re.compile(r'^[^\d\W]\w*(\.[^\d\W]\w*)*$')
 _QUOTES = frozenset(("'", '"'))
@@ -687,7 +688,7 @@ def Parse(
     allow_field_number=False,
     descriptor_pool=None,
     allow_unknown_field=False,
-    max_recursion_depth=None,
+    max_recursion_depth=_DEFAULT_MAX_RECURSION_DEPTH,
 ):
   """Parses a text representation of a protocol message into a message.
 
@@ -727,14 +728,9 @@ def Parse(
       Avoid to use this option if possible. It may hide some errors (e.g.
       spelling error on field name)
     max_recursion_depth: Optional maximum recursion depth of the message to be
-      parsed: Text Format inputs over this depth will fail to parse. ``None``
-        means no additional limit (the Python runtime will enforce some limit
-        due to call stack limits). As Text Format is primarily intended to be
-        used on trusted configuration inputs, and to maintain backwards
-        compatibility, the default of ``None`` (unbounded) is intentional. For
-        better consistency with what messages will successfully round trip
-        through binary wire format, or for the discouraged case of processing
-        untrusted Text Format inputs, setting a limit of 100 is recommended.
+      parsed: Text Format inputs over this depth will fail to parse. Defaults
+      to 100 (matching binary wire format and ProtoJSON). ``None`` disables
+      the limit (the Python runtime will still enforce call stack limits).
 
   Returns:
     Message: The same message passed as argument.
@@ -760,7 +756,7 @@ def Merge(
     allow_field_number=False,
     descriptor_pool=None,
     allow_unknown_field=False,
-    max_recursion_depth=None,
+    max_recursion_depth=_DEFAULT_MAX_RECURSION_DEPTH,
 ):
   """Parses a text representation of a protocol message into a message.
 
@@ -779,14 +775,9 @@ def Merge(
       Avoid to use this option if possible. It may hide some errors (e.g.
       spelling error on field name)
     max_recursion_depth: Optional maximum recursion depth of the message to be
-      parsed: Text Format inputs over this depth will fail to parse. ``None``
-        means no additional limit (the Python runtime will enforce some limit
-        due to call stack limits). As Text Format is primarily intended to be
-        used on trusted configuration inputs, and to maintain backwards
-        compatibility, the default of ``None`` (unbounded) is intentional. For
-        better consistency with what messages will successfully round trip
-        through binary wire format, or for the discouraged case of processing
-        untrusted Text Format inputs, setting a limit of 100 is recommended.
+      parsed: Text Format inputs over this depth will fail to parse. Defaults
+      to 100 (matching binary wire format and ProtoJSON). ``None`` disables
+      the limit (the Python runtime will still enforce call stack limits).
 
   Returns:
     Message: The same message passed as argument.
@@ -812,7 +803,7 @@ def ParseLines(
     allow_field_number=False,
     descriptor_pool=None,
     allow_unknown_field=False,
-    max_recursion_depth=None,
+    max_recursion_depth=_DEFAULT_MAX_RECURSION_DEPTH,
 ):
   """Parses a text representation of a protocol message into a message.
 
@@ -829,14 +820,9 @@ def ParseLines(
       Avoid to use this option if possible. It may hide some errors (e.g.
       spelling error on field name)
     max_recursion_depth: Optional maximum recursion depth of the message to be
-      parsed: Text Format inputs over this depth will fail to parse. ``None``
-        means no additional limit (the Python runtime will enforce some limit
-        due to call stack limits). As Text Format is primarily intended to be
-        used on trusted configuration inputs, and to maintain backwards
-        compatibility, the default of ``None`` (unbounded) is intentional. For
-        better consistency with what messages will successfully round trip
-        through binary wire format, or for the discouraged case of processing
-        untrusted Text Format inputs, setting a limit of 100 is recommended.
+      parsed: Text Format inputs over this depth will fail to parse. Defaults
+      to 100 (matching binary wire format and ProtoJSON). ``None`` disables
+      the limit (the Python runtime will still enforce call stack limits).
 
   Returns:
     The same message passed as argument.
@@ -861,7 +847,7 @@ def MergeLines(
     allow_field_number=False,
     descriptor_pool=None,
     allow_unknown_field=False,
-    max_recursion_depth=None,
+    max_recursion_depth=_DEFAULT_MAX_RECURSION_DEPTH,
 ):
   """Parses a text representation of a protocol message into a message.
 
@@ -878,14 +864,9 @@ def MergeLines(
       Avoid to use this option if possible. It may hide some errors (e.g.
       spelling error on field name)
     max_recursion_depth: Optional maximum recursion depth of the message to be
-      parsed: Text Format inputs over this depth will fail to parse. ``None``
-        means no additional limit (the Python runtime will enforce some limit
-        due to call stack limits). As Text Format is primarily intended to be
-        used on trusted configuration inputs, and to maintain backwards
-        compatibility, the default of ``None`` (unbounded) is intentional. For
-        better consistency with what messages will successfully round trip
-        through binary wire format, or for the discouraged case of processing
-        untrusted Text Format inputs, setting a limit of 100 is recommended.
+      parsed: Text Format inputs over this depth will fail to parse. Defaults
+      to 100 (matching binary wire format and ProtoJSON). ``None`` disables
+      the limit (the Python runtime will still enforce call stack limits).
 
   Returns:
     The same message passed as argument.
@@ -912,7 +893,7 @@ class _Parser(object):
       allow_field_number=False,
       descriptor_pool=None,
       allow_unknown_field=False,
-      max_recursion_depth=None,
+      max_recursion_depth=_DEFAULT_MAX_RECURSION_DEPTH,
   ):
     self.allow_unknown_extension = allow_unknown_extension
     self.allow_field_number = allow_field_number
