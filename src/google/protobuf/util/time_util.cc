@@ -7,20 +7,23 @@
 
 #include "google/protobuf/util/time_util.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <ctime>
 #include <string>
 
-#include "google/protobuf/duration.pb.h"
-#include "google/protobuf/timestamp.pb.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/int128.h"
+#include "absl/strings/ascii.h"
+#include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
+#include "google/protobuf/duration.pb.h"
+#include "google/protobuf/timestamp.pb.h"
 #include "google/protobuf/util/internal_timeval.h"  // IWYU pragma: keep for timeval
 
 // Must go after other includes.
@@ -235,6 +238,18 @@ static int64_t Pow(int64_t x, int y) {
   return result;
 }
 
+static bool IsAsciiDigits(absl::string_view value) {
+  if (value.empty()) {
+    return false;
+  }
+  for (char c : value) {
+    if (!absl::ascii_isdigit(static_cast<unsigned char>(c))) {
+      return false;
+    }
+  }
+  return true;
+}
+
 bool TimeUtil::FromString(absl::string_view value, Duration* duration) {
   if (value.length() <= 1 || value[value.length() - 1] != 's') {
     return false;
@@ -243,25 +258,16 @@ bool TimeUtil::FromString(absl::string_view value, Duration* duration) {
   size_t sign_length = (negative ? 1 : 0);
   // Parse the duration value as two integers rather than a float value
   // to avoid precision loss.
-  std::string seconds_part, nanos_part;
+  absl::string_view seconds_part, nanos_part;
   size_t pos = value.find_last_of('.');
-  if (pos == std::string::npos) {
-    seconds_part = std::string(
-        value.substr(sign_length, value.length() - 1 - sign_length));
+  if (pos == absl::string_view::npos) {
+    seconds_part = value.substr(sign_length, value.length() - 1 - sign_length);
     nanos_part = "0";
   } else {
-    seconds_part = std::string(value.substr(sign_length, pos - sign_length));
-    nanos_part = std::string(value.substr(pos + 1, value.length() - pos - 2));
+    seconds_part = value.substr(sign_length, pos - sign_length);
+    nanos_part = value.substr(pos + 1, value.length() - pos - 2);
   }
-  char* end;
-  static_assert(sizeof(int64_t) == sizeof(long long),
-                "sizeof int64_t is not sizeof long long");
-  int64_t seconds = std::strtoll(seconds_part.c_str(), &end, 10);
-  if (end != seconds_part.c_str() + seconds_part.length()) {
-    return false;
-  }
-  int64_t nanos = std::strtoll(nanos_part.c_str(), &end, 10);
-  if (end != nanos_part.c_str() + nanos_part.length()) {
+  if (!IsAsciiDigits(seconds_part) || !IsAsciiDigits(nanos_part)) {
     return false;
   }
   // Fractional digits beyond nano-second precision cannot be represented.
@@ -269,6 +275,12 @@ bool TimeUtil::FromString(absl::string_view value, Duration* duration) {
   // Pow() silently treats as 0, leaving the value unscaled before it is
   // truncated to 32 bits (e.g. "0.3294967297s" parsed as -999999999ns).
   if (nanos_part.length() > 9) {
+    return false;
+  }
+  int64_t seconds;
+  int64_t nanos;
+  if (!absl::SimpleAtoi(seconds_part, &seconds) ||
+      !absl::SimpleAtoi(nanos_part, &nanos)) {
     return false;
   }
   nanos = nanos * Pow(10, static_cast<int>(9 - nanos_part.length()));
@@ -375,7 +387,12 @@ Timestamp TimeUtil::SecondsToTimestamp(int64_t seconds) {
 int64_t TimeUtil::TimestampToNanoseconds(const Timestamp& timestamp) {
   ABSL_DCHECK(IsTimestampValid(timestamp))
       << "Timestamp is outside of the valid range";
-  return timestamp.seconds() * kNanosPerSecond + timestamp.nanos();
+  // Use unsigned arithmetic because negative timestamps carry non-negative
+  // nanos, so seconds * 1e9 can be -9223372037000000000 (< INT64_MIN) even
+  // when adding nanos brings the total back into [INT64_MIN, INT64_MAX].
+  return static_cast<int64_t>(static_cast<uint64_t>(timestamp.seconds()) *
+                                  static_cast<uint64_t>(kNanosPerSecond) +
+                              static_cast<uint64_t>(timestamp.nanos()));
 }
 
 int64_t TimeUtil::TimestampToMicroseconds(const Timestamp& timestamp) {
@@ -493,7 +510,7 @@ Duration& operator*=(Duration& d, int64_t r) {  // NOLINT
     value *= static_cast<uint64_t>(r);
   } else {
     negative = !negative;
-    value *= static_cast<uint64_t>(-r);
+    value *= uint64_t{0} - static_cast<uint64_t>(r);
   }
   ToDuration(value, negative, &d);
   return d;
@@ -522,7 +539,7 @@ Duration& operator/=(Duration& d, int64_t r) {  // NOLINT
     value /= static_cast<uint64_t>(r);
   } else {
     negative = !negative;
-    value /= static_cast<uint64_t>(-r);
+    value /= uint64_t{0} - static_cast<uint64_t>(r);
   }
   ToDuration(value, negative, &d);
   return d;
@@ -553,11 +570,11 @@ int64_t operator/(const Duration& d1, const Duration& d2) {
   absl::uint128 value1, value2;
   ToUint128(d1, &value1, &negative1);
   ToUint128(d2, &value2, &negative2);
-  int64_t result = absl::Uint128Low64(value1 / value2);
+  uint64_t quotient = absl::Uint128Low64(value1 / value2);
   if (negative1 != negative2) {
-    result = -result;
+    return static_cast<int64_t>(uint64_t{0} - quotient);
   }
-  return result;
+  return static_cast<int64_t>(quotient);
 }
 
 Timestamp& operator+=(Timestamp& t, const Duration& d) {  // NOLINT
