@@ -230,6 +230,7 @@ def _proto_gen_impl(ctx):
                 outputs = outs,
                 arguments = args + import_flags.to_list() + [src.path],
                 executable = protoc,
+                toolchain = None if ctx.executable.protoc else toolchains.PROTO_TOOLCHAIN,
                 mnemonic = "ProtoCompile",
                 use_default_shell_env = True,
             )
@@ -254,6 +255,7 @@ def _proto_gen_impl(ctx):
                     command = command,
                     mnemonic = "ProtoCompile",
                     tools = tools,
+                    toolchain = None if ctx.executable.protoc else toolchains.PROTO_TOOLCHAIN,
                     use_default_shell_env = True,
                 )
 
@@ -350,6 +352,7 @@ def _internal_gen_well_known_protos_java_impl(ctx):
 
     ctx.actions.run(
         executable = _protoc_files_to_run(ctx),
+        toolchain = toolchains.PROTO_TOOLCHAIN,
         inputs = descriptors,
         outputs = [srcjar],
         arguments = [args],
@@ -455,6 +458,7 @@ def _internal_gen_kt_protos(ctx):
 
     ctx.actions.run(
         executable = _protoc_files_to_run(ctx),
+        toolchain = toolchains.PROTO_TOOLCHAIN,
         inputs = descriptors,
         outputs = [srcjar],
         arguments = [args],
