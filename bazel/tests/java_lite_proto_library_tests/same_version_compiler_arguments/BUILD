@@ -11,7 +11,7 @@ load("//bazel/tests:java_lite_proto_library_tests/test_utils.bzl", "JAVA_LITE_PR
 load("//bazel/tests:proto_bzl_test_suite.bzl", "bzl_test_suite")
 load(":tests.bzl", "TESTS")
 
-package(default_applicable_licenses = ["//:license"])
+package(default_applicable_licenses = ["//:license", "//:package_metadata"])
 
 proto_library(
     name = "foo_proto",

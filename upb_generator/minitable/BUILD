@@ -14,7 +14,7 @@ load(
     "bootstrap_cc_library",
 )
 
-package(default_applicable_licenses = ["//:license"])
+package(default_applicable_licenses = ["//:license", "//:package_metadata"])
 
 licenses(["notice"])
 

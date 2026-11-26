@@ -9,7 +9,7 @@ load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("//bazel/private:compat_flag.bzl", "compat_bool_flag", "compat_label_flag", "compat_string_list_flag")
 
 package(
-    default_applicable_licenses = ["//:license"],
+    default_applicable_licenses = ["//:license", "//:package_metadata"],
     default_visibility = ["//visibility:public"],
 )
 

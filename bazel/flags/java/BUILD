@@ -8,7 +8,7 @@
 load("//bazel/private:compat_flag.bzl", "compat_label_flag")
 
 package(
-    default_applicable_licenses = ["//:license"],
+    default_applicable_licenses = ["//:license", "//:package_metadata"],
     default_visibility = [
         "//bazel/private:__pkg__",
         "//bazel/tests:__subpackages__",

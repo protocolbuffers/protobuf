@@ -10,7 +10,7 @@ load("//bazel:proto_library.bzl", "proto_library")
 load("//bazel/tests:proto_bzl_test_suite.bzl", "bzl_test_suite")
 load(":tests.bzl", "TESTS", "cc_proto_library_macro")
 
-package(default_applicable_licenses = ["//:license"])
+package(default_applicable_licenses = ["//:license", "//:package_metadata"])
 
 proto_library(
     name = "a_p",

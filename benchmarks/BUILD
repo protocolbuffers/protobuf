@@ -27,7 +27,7 @@ load(
     "tmpl_cc_binary",
 )
 
-package(default_applicable_licenses = ["//:license"])
+package(default_applicable_licenses = ["//:license", "//:package_metadata"])
 
 licenses(["notice"])
 
