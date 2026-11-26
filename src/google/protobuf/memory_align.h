@@ -100,10 +100,20 @@ struct MemoryAlignImpl {
     return reinterpret_cast<T*>((intptr + align() - 1) & ~(align() - 1));
   }
 
+  template <typename T>
+  T* Floor(T* ptr) const {
+    return reinterpret_cast<T*>(Floor(reinterpret_cast<uintptr_t>(ptr)));
+  }
+
   constexpr size_t CeilDefaultAligned(size_t n) const;
 
   template <typename T>
   T* CeilDefaultAligned(T* ptr) const;
+
+  constexpr size_t ModDefaultAligned(size_t n) const;
+
+  template <typename T>
+  size_t ModDefaultAligned(T* ptr) const;
 
   // Address sanitizer enabled alignment check
   template <typename T>
@@ -126,6 +136,17 @@ struct ArenaAlignDefault : MemoryAlignImpl<std::integral_constant<size_t, 8>> {
   constexpr T* CeilDefaultAligned(T* ptr) const {
     ABSL_DCHECK(IsAligned(ptr));
     return ptr;
+  }
+
+  constexpr size_t ModDefaultAligned(size_t n) const {
+    ABSL_DCHECK(IsAligned(n));
+    return 0;
+  }
+
+  template <typename T>
+  constexpr size_t ModDefaultAligned(T* ptr) const {
+    ABSL_DCHECK(IsAligned(ptr));
+    return 0;
   }
 };
 
@@ -164,6 +185,18 @@ template <typename T>
 inline T* MemoryAlignImpl<AlignT>::CeilDefaultAligned(T* ptr) const {
   ABSL_DCHECK(ArenaAlignDefault{}.IsAligned(ptr));
   return Ceil(ptr);
+}
+
+template <typename AlignT>
+constexpr size_t MemoryAlignImpl<AlignT>::ModDefaultAligned(size_t n) const {
+  ABSL_DCHECK(ArenaAlignDefault{}.IsAligned(n));
+  return n & (align() - 1);
+}
+
+template <typename AlignT>
+template <typename T>
+inline size_t MemoryAlignImpl<AlignT>::ModDefaultAligned(T* ptr) const {
+  return ModDefaultAligned(reinterpret_cast<uintptr_t>(ptr));
 }
 
 }  // namespace internal

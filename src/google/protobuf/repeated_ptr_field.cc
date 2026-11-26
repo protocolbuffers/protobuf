@@ -88,10 +88,10 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount,
           return r->elements + current_size_;
         }
       }
-      auto* alloc =
+      auto res =
           arena->AllocateDefaultAligned<internal::AllocationClient::kArray>(
               bytes);
-      new_rep = reinterpret_cast<Rep*>(alloc);
+      new_rep = reinterpret_cast<Rep*>(res.ptr);
     }
   }
 

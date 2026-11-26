@@ -39,8 +39,10 @@
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/barrier.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/arena_alloc_result.h"
 #include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/arena_cleanup.h"
+#include "google/protobuf/arena_seed.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/extension_set.h"
@@ -1764,7 +1766,8 @@ void VerifyArenaOverhead(Arena& arena, size_t overhead) {
 
 TEST_F(ArenaTest, FirstArenaOverhead) {
   Arena arena;
-  VerifyArenaOverhead(arena, internal::SerialArena::kBlockHeaderSize);
+  VerifyArenaOverhead(arena, internal::SerialArena::kBlockHeaderSize +
+                                 internal::ArenaSeedPolicy::kArenaPtrSize);
 }
 
 
@@ -1998,7 +2001,7 @@ TEST_F(ArenaTest, TryGrowTailSuccess) {
 
   // The next allocation from the arena must be contiguous with the grown
   // buffer.
-  char* next = Arena::CreateArray<char>(arena(), 16);
+  char* next = Arena::CreateArray<char>(arena(), 8);
   EXPECT_EQ(next, p + kInitialSize + kGrowth1 + kGrowth2);
 }
 
