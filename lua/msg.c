@@ -937,6 +937,9 @@ static int lupb_decode(lua_State* L) {
   size_t len;
   const upb_MessageDef* m = lupb_MessageDef_check(L, 1);
   const char* pb = lua_tolstring(L, 2, &len);
+  if (pb == NULL) {
+    return luaL_error(L, "Expected string or number");
+  }
   const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
   upb_Message* msg = lupb_msg_pushnew(L, 1);
   upb_Arena* arena = lupb_Arenaget(L, -1);
