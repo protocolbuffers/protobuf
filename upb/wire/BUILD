@@ -187,6 +187,28 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "decode_large_array_test",
+    size = "large",
+    srcs = ["decode_large_array_test.cc"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
+    shard_count = 5,
+    deps = [
+        ":wire",
+        "//upb/base",
+        "//upb/base:internal",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/mini_descriptor",
+        "//upb/mini_descriptor:internal",
+        "//upb/mini_table",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 proto_library(
     name = "decode_test_proto",
     srcs = ["decode_test.proto"],
