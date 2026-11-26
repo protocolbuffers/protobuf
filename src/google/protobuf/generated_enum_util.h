@@ -85,9 +85,13 @@ PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 PROTOBUF_EXPORT std::vector<uint32_t> GenerateEnumData(
     absl::Span<const int32_t> values);
 
+// Span-based overload: replaces raw pointer arithmetic (data += N, data[pos])
+// with Span accessors and subspan.  All element accesses go through
+// Span::operator[], which is bounds-checked when building with
+// ABSL_OPTION_HARDENED=1.
 PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
-PROTOBUF_ALWAYS_INLINE bool ValidateEnumInlined(int value,
-                                                const uint32_t* data) {
+PROTOBUF_ALWAYS_INLINE bool ValidateEnumInlined(
+    int value, absl::Span<const uint32_t> data) {
   const int16_t min_seq = static_cast<int16_t>(data[0] & 0xFFFF);
   const uint16_t length_seq = static_cast<uint16_t>(data[0] >> 16);
   uint64_t adjusted =
@@ -104,16 +108,29 @@ PROTOBUF_ALWAYS_INLINE bool ValidateEnumInlined(int value,
     return ((data[2 + (adjusted / 32)] >> (adjusted % 32)) & 1) == 1;
   }
 
-  // Check if the value is on the ordered part.
+  // Search the ordered (Eytzinger layout) section via a sized subspan,
+  // replacing the raw `data += offset; data[pos]` pattern.
   const uint16_t num_ordered = static_cast<uint16_t>(data[1] >> 16);
-  data += 2 + length_bitmap / 32;
+  auto ordered = data.subspan(2 + length_bitmap / 32, num_ordered);
   size_t pos = 0;
   while (pos < num_ordered) {
-    const int32_t sample = static_cast<int32_t>(data[pos]);
+    const int32_t sample = static_cast<int32_t>(ordered[pos]);
     if (sample == value) return true;
     pos = 2 * pos + (sample > value ? 1 : 2);
   }
   return false;
+}
+
+// Legacy raw-pointer overload for callers that don't know the data size.
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
+PROTOBUF_ALWAYS_INLINE bool ValidateEnumInlined(int value,
+                                                const uint32_t* data) {
+  // The data is self-describing: total size = 2 header words +
+  // bitmap_bits/32 bitmap words + num_ordered Eytzinger tree nodes.
+  const uint16_t bitmap_bits = static_cast<uint16_t>(data[1] & 0xFFFF);
+  const uint16_t num_ordered = static_cast<uint16_t>(data[1] >> 16);
+  return ValidateEnumInlined(
+      value, absl::MakeConstSpan(data, 2 + bitmap_bits / 32 + num_ordered));
 }
 
 // Abseil flag implementation for LITE enums.
