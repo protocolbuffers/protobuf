@@ -568,7 +568,8 @@ class NumpyBindingTest(parameterized.TestCase):
   def test_repeated_string_tobytes(self, message_module):
     m = message_module.TestAllTypes(repeated_string=['12'])
     arr = np.array(m.repeated_string)
-    self.assertEqual(arr.tobytes(), b'1\x00\x00\x002\x00\x00\x00')
+    expected = np.array(['12'], dtype=arr.dtype)
+    self.assertEqual(arr.tobytes(), expected.tobytes())
 
   @parameterized.named_parameters(
       ('_proto2', unittest_pb2), ('_proto3', unittest_proto3_arena_pb2)
@@ -661,7 +662,7 @@ class NumpyBindingTest(parameterized.TestCase):
     self.assertEqual(np.array(m.repeated_uint64).dtype, np.uint64)
     self.assertEqual(np.array(m.repeated_float).dtype, np.float32)
     self.assertEqual(np.array(m.repeated_double).dtype, np.float64)
-    self.assertEqual(np.array(m.repeated_string).dtype, np.dtype('<U1'))
+    self.assertEqual(np.array(m.repeated_string).dtype, np.dtype('U1'))
     self.assertEqual(np.array(m.repeated_bytes).dtype, np.dtype('S3'))
     self.assertEqual(np.array(m.repeated_bool).dtype, np.dtype('bool'))
     message = json_format_pb2.TestRepeatedEnum(
@@ -720,7 +721,7 @@ class NumpyBindingTest(parameterized.TestCase):
     self.assertEqual(np.array(m.repeated_uint64).dtype, np.uint64)
     self.assertEqual(np.array(m.repeated_float).dtype, np.float32)
     self.assertEqual(np.array(m.repeated_double).dtype, np.float64)
-    self.assertEqual(np.array(m.repeated_string).dtype, np.dtype('<U1'))
+    self.assertEqual(np.array(m.repeated_string).dtype, np.dtype('U1'))
     self.assertEqual(np.array(m.repeated_bytes).dtype, np.dtype('S1'))
 
   @parameterized.product(
