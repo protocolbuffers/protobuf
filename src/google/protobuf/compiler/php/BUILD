@@ -35,7 +35,6 @@ cc_library(
     deps = [
         "//src/google/protobuf",
         "//src/google/protobuf:port",
-        "//src/google/protobuf/compiler:code_generator",
         "@abseil-cpp//absl/strings",
     ],
 )
