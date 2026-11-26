@@ -8,6 +8,7 @@
 #include "upb/message/copy.h"
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -27,7 +28,6 @@
 #include "upb/message/internal/types.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
-#include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/size_log2.h"
@@ -37,6 +37,31 @@
 
 // Must be last.
 #include "upb/port/def.inc"
+
+// `remaining_depth < 0` disables depth enforcement (unlimited cloning/copying).
+// Non-negative values enforce that at most `remaining_depth` levels of
+// nested submessages may appear beneath the current message.
+static upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
+                                      const upb_MiniTable* mini_table,
+                                      upb_Arena* arena, int remaining_depth);
+
+static upb_Message* _upb_Message_DeepClone(const upb_Message* msg,
+                                           const upb_MiniTable* m,
+                                           upb_Arena* arena,
+                                           int remaining_depth) {
+  upb_Message* clone = upb_Message_New(m, arena);
+  if (!clone) return NULL;
+  return _upb_Message_Copy(clone, msg, m, arena, remaining_depth);
+}
+
+static upb_Message* _upb_Message_DeepCloneChild(const upb_Message* msg,
+                                                const upb_MiniTable* m,
+                                                upb_Arena* arena,
+                                                int remaining_depth) {
+  if (UPB_UNLIKELY(remaining_depth == 0)) return NULL;
+  int next_depth = remaining_depth > 0 ? remaining_depth - 1 : -1;
+  return _upb_Message_DeepClone(msg, m, arena, next_depth);
+}
 
 static upb_StringView upb_Clone_StringView(upb_StringView str,
                                            upb_Arena* arena) {
@@ -52,7 +77,8 @@ static upb_StringView upb_Clone_StringView(upb_StringView str,
 }
 
 static bool upb_Clone_MessageValue(void* value, upb_CType value_type,
-                                   const upb_MiniTable* sub, upb_Arena* arena) {
+                                   const upb_MiniTable* sub, upb_Arena* arena,
+                                   int remaining_depth) {
   switch (value_type) {
     case kUpb_CType_Bool:
     case kUpb_CType_Float:
@@ -80,7 +106,8 @@ static bool upb_Clone_MessageValue(void* value, upb_CType value_type,
       UPB_ASSERT(sub);
       const upb_Message* source = *(upb_Message**)value;
       UPB_ASSERT(source);
-      upb_Message* clone = upb_Message_DeepClone(source, sub, arena);
+      upb_Message* clone =
+          _upb_Message_DeepCloneChild(source, sub, arena, remaining_depth);
       *(upb_Message**)value = clone;
       return clone != NULL;
     } break;
@@ -91,10 +118,11 @@ static bool upb_Clone_MessageValue(void* value, upb_CType value_type,
 static bool upb_Clone_MapValue(upb_value* tabval, size_t map_val_size,
                                upb_CType value_field_type,
                                const upb_MiniTable* value_sub, upb_Arena* arena,
-                               upb_value* cloned_tabval) {
+                               int remaining_depth, upb_value* cloned_tabval) {
   upb_MessageValue val;
   _upb_map_fromvalue(*tabval, &val, map_val_size);
-  if (!upb_Clone_MessageValue(&val, value_field_type, value_sub, arena)) {
+  if (!upb_Clone_MessageValue(&val, value_field_type, value_sub, arena,
+                              remaining_depth)) {
     return false;
   }
   *cloned_tabval = (upb_value){0};  // Initialize
@@ -104,10 +132,10 @@ static bool upb_Clone_MapValue(upb_value* tabval, size_t map_val_size,
   return true;
 }
 
-upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
-                           upb_CType value_type,
-                           const upb_MiniTable* map_entry_table,
-                           upb_Arena* arena) {
+static upb_Map* _upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
+                                   upb_CType value_type,
+                                   const upb_MiniTable* map_entry_table,
+                                   upb_Arena* arena, int remaining_depth) {
   upb_Map* cloned_map = upb_Arena_Malloc(arena, sizeof(upb_Map));
   if (cloned_map == NULL) {
     return NULL;
@@ -138,7 +166,8 @@ upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
           upb_strtable_next2(&cloned_map->t.strtable, &key, &tabval, &iter)) {
         upb_value cloned_tabval;
         if (!upb_Clone_MapValue(&tabval, map->val_size, value_field_type,
-                                value_sub, arena, &cloned_tabval)) {
+                                value_sub, arena, remaining_depth,
+                                &cloned_tabval)) {
           return NULL;
         }
         upb_strtable_setentryvalue(&cloned_map->t.strtable, iter,
@@ -156,7 +185,8 @@ upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
       while (upb_inttable_next(&cloned_map->t.inttable, &key, &tabval, &iter)) {
         upb_value cloned_tabval;
         if (!upb_Clone_MapValue(&tabval, map->val_size, value_field_type,
-                                value_sub, arena, &cloned_tabval)) {
+                                value_sub, arena, remaining_depth,
+                                &cloned_tabval)) {
           return NULL;
         }
         upb_inttable_setentryvalue(&cloned_map->t.inttable, iter,
@@ -167,11 +197,19 @@ upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
   return cloned_map;
 }
 
+upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
+                           upb_CType value_type,
+                           const upb_MiniTable* map_entry_table,
+                           upb_Arena* arena) {
+  return _upb_Map_DeepClone(map, key_type, value_type, map_entry_table, arena,
+                            /*remaining_depth=*/-1);
+}
+
 static upb_Map* upb_Message_Map_DeepClone(const upb_Map* map,
                                           const upb_MiniTable* mini_table,
                                           const upb_MiniTableField* f,
-                                          upb_Message* clone,
-                                          upb_Arena* arena) {
+                                          upb_Message* clone, upb_Arena* arena,
+                                          int remaining_depth) {
   UPB_ASSERT(!upb_Message_IsFrozen(clone));
   const upb_MiniTable* map_entry_table = upb_MiniTable_MapEntrySubMessage(f);
   UPB_ASSERT(map_entry_table);
@@ -180,9 +218,10 @@ static upb_Map* upb_Message_Map_DeepClone(const upb_Map* map,
   const upb_MiniTableField* value_field =
       upb_MiniTable_MapValue(map_entry_table);
 
-  upb_Map* cloned_map = upb_Map_DeepClone(
-      map, upb_MiniTableField_CType(key_field),
-      upb_MiniTableField_CType(value_field), map_entry_table, arena);
+  upb_Map* cloned_map =
+      _upb_Map_DeepClone(map, upb_MiniTableField_CType(key_field),
+                         upb_MiniTableField_CType(value_field), map_entry_table,
+                         arena, remaining_depth);
   if (!cloned_map) {
     return NULL;
   }
@@ -190,8 +229,10 @@ static upb_Map* upb_Message_Map_DeepClone(const upb_Map* map,
   return cloned_map;
 }
 
-upb_Array* upb_Array_DeepClone(const upb_Array* array, upb_CType value_type,
-                               const upb_MiniTable* sub, upb_Arena* arena) {
+static upb_Array* _upb_Array_DeepClone(const upb_Array* array,
+                                       upb_CType value_type,
+                                       const upb_MiniTable* sub,
+                                       upb_Arena* arena, int remaining_depth) {
   const size_t size = upb_Array_Size(array);
   const int lg2 = UPB_PRIVATE(_upb_CType_SizeLg2)(value_type);
   upb_Array* cloned_array = UPB_PRIVATE(_upb_Array_New)(arena, size, lg2);
@@ -203,7 +244,8 @@ upb_Array* upb_Array_DeepClone(const upb_Array* array, upb_CType value_type,
   }
   for (size_t i = 0; i < size; ++i) {
     upb_MessageValue val = upb_Array_Get(array, i);
-    if (!upb_Clone_MessageValue(&val, value_type, sub, arena)) {
+    if (!upb_Clone_MessageValue(&val, value_type, sub, arena,
+                                remaining_depth)) {
       return NULL;
     }
     upb_Array_Set(cloned_array, i, val);
@@ -211,18 +253,25 @@ upb_Array* upb_Array_DeepClone(const upb_Array* array, upb_CType value_type,
   return cloned_array;
 }
 
+upb_Array* upb_Array_DeepClone(const upb_Array* array, upb_CType value_type,
+                               const upb_MiniTable* sub, upb_Arena* arena) {
+  return _upb_Array_DeepClone(array, value_type, sub, arena,
+                              /*remaining_depth=*/-1);
+}
+
 static bool upb_Message_Array_DeepClone(const upb_Array* array,
                                         const upb_MiniTable* mini_table,
                                         const upb_MiniTableField* field,
-                                        upb_Message* clone, upb_Arena* arena) {
+                                        upb_Message* clone, upb_Arena* arena,
+                                        int remaining_depth) {
   UPB_ASSERT(!upb_Message_IsFrozen(clone));
   UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(field);
   upb_Array* cloned_array =
-      upb_Array_DeepClone(array, upb_MiniTableField_CType(field),
-                          upb_MiniTableField_CType(field) == kUpb_CType_Message
-                              ? upb_MiniTable_GetSubMessageTable(field)
-                              : NULL,
-                          arena);
+      _upb_Array_DeepClone(array, upb_MiniTableField_CType(field),
+                           upb_MiniTableField_CType(field) == kUpb_CType_Message
+                               ? upb_MiniTable_GetSubMessageTable(field)
+                               : NULL,
+                           arena, remaining_depth);
   if (!cloned_array) return false;
 
   // Clear out upb_Array* due to parent memcpy.
@@ -232,19 +281,21 @@ static bool upb_Message_Array_DeepClone(const upb_Array* array,
 
 static bool upb_Clone_ExtensionValue(const upb_MiniTableField* field,
                                      const upb_AuxField* source,
-                                     upb_AuxField* dest, upb_Arena* arena) {
+                                     upb_AuxField* dest, upb_Arena* arena,
+                                     int remaining_depth) {
   upb_MessageValue val = upb_Extension_GetValue(source);
   if (!upb_Clone_MessageValue(&val, upb_MiniTableField_CType(field),
-                              upb_MiniTable_SubMessage(field), arena)) {
+                              upb_MiniTable_SubMessage(field), arena,
+                              remaining_depth)) {
     return false;
   }
   upb_Extension_SetValue(dest, val);
   return true;
 }
 
-upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
-                               const upb_MiniTable* mini_table,
-                               upb_Arena* arena) {
+static upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
+                                      const upb_MiniTable* mini_table,
+                                      upb_Arena* arena, int remaining_depth) {
   UPB_ASSERT(!upb_Message_IsFrozen(dst));
   if (UPB_UNLIKELY(mini_table->UPB_PRIVATE(size) < sizeof(upb_Message))) {
     return NULL;
@@ -262,8 +313,8 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
           if (sub_message != NULL) {
             const upb_MiniTable* sub_message_table =
                 upb_MiniTable_GetSubMessageTable(field);
-            upb_Message* dst_sub_message =
-                upb_Message_DeepClone(sub_message, sub_message_table, arena);
+            upb_Message* dst_sub_message = _upb_Message_DeepCloneChild(
+                sub_message, sub_message_table, arena, remaining_depth);
             if (dst_sub_message == NULL) goto err;
 
             upb_Message_SetBaseFieldMessage(dst, field, dst_sub_message);
@@ -287,15 +338,16 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
       if (upb_MiniTableField_IsMap(field)) {
         const upb_Map* map = upb_Message_GetMap(src, field);
         if (map != NULL) {
-          if (!upb_Message_Map_DeepClone(map, mini_table, field, dst, arena)) {
+          if (!upb_Message_Map_DeepClone(map, mini_table, field, dst, arena,
+                                         remaining_depth)) {
             goto err;
           }
         }
       } else {
         const upb_Array* array = upb_Message_GetArray(src, field);
         if (array != NULL) {
-          if (!upb_Message_Array_DeepClone(array, mini_table, field, dst,
-                                           arena)) {
+          if (!upb_Message_Array_DeepClone(array, mini_table, field, dst, arena,
+                                           remaining_depth)) {
             goto err;
           }
         }
@@ -317,8 +369,28 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
       // destination arena and store it as unknown bytes, preserving order.
       const upb_AuxField* msg_ext =
           upb_TaggedAuxPtr_UnknownAuxField(tagged_ptr);
+      int encode_options = 0;
+      if (remaining_depth >= 0) {
+        const upb_MiniTableField* ext_field =
+            upb_Extension_MiniTableField(msg_ext);
+        if (upb_MiniTableField_IsSubMessage(ext_field)) {
+          bool has_submsg = false;
+          if (upb_MiniTableField_IsArray(ext_field)) {
+            const upb_Array* arr = upb_Extension_GetArray(msg_ext);
+            has_submsg = arr != NULL && upb_Array_Size(arr) > 0;
+          } else {
+            has_submsg = upb_Extension_GetValue(msg_ext).msg_val != NULL;
+          }
+          if (has_submsg) {
+            if (UPB_UNLIKELY(remaining_depth == 0)) goto err;
+            UPB_ASSERT(remaining_depth <= UINT16_MAX);
+            encode_options =
+                (int)upb_EncodeOptions_MaxDepth((uint16_t)remaining_depth);
+          }
+        }
+      }
       upb_StringView encoded;
-      if (upb_EncodeExtension(msg_ext, arena, &encoded, /*encode_options=*/0) !=
+      if (upb_EncodeExtension(msg_ext, arena, &encoded, encode_options) !=
           kUpb_EncodeStatus_Ok) {
         goto err;
       }
@@ -336,7 +408,8 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
       if (!dst_ext) goto err;
 
       if (upb_MiniTableField_IsScalar(field)) {
-        if (!upb_Clone_ExtensionValue(field, msg_ext, dst_ext, arena)) {
+        if (!upb_Clone_ExtensionValue(field, msg_ext, dst_ext, arena,
+                                      remaining_depth)) {
           goto err;
         }
       } else {
@@ -344,9 +417,9 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
         UPB_ASSERT(upb_MiniTableField_IsArray(field));
         const upb_Array* msg_array = upb_Extension_GetArray(msg_ext);
         UPB_ASSERT(msg_array);
-        upb_Array* cloned_array =
-            upb_Array_DeepClone(msg_array, upb_MiniTableField_CType(field),
-                                upb_MiniTable_SubMessage(field), arena);
+        upb_Array* cloned_array = _upb_Array_DeepClone(
+            msg_array, upb_MiniTableField_CType(field),
+            upb_MiniTable_SubMessage(field), arena, remaining_depth);
         if (!cloned_array) goto err;
 
         upb_Extension_SetArray(dst_ext, cloned_array);
@@ -368,21 +441,39 @@ err:
   return NULL;
 }
 
+bool upb_Message_DeepCopyWithMaxDepth(upb_Message* dst, const upb_Message* src,
+                                      const upb_MiniTable* mini_table,
+                                      upb_Arena* arena, int max_depth) {
+  UPB_ASSERT(!upb_Message_IsFrozen(dst));
+  upb_Message_Clear(dst, mini_table);
+  if (UPB_UNLIKELY(max_depth < 0)) return false;
+  if (max_depth > UINT16_MAX) max_depth = UINT16_MAX;
+  return _upb_Message_Copy(dst, src, mini_table, arena, max_depth) != NULL;
+}
+
 bool upb_Message_DeepCopy(upb_Message* dst, const upb_Message* src,
                           const upb_MiniTable* mini_table, upb_Arena* arena) {
   UPB_ASSERT(!upb_Message_IsFrozen(dst));
   upb_Message_Clear(dst, mini_table);
-  return _upb_Message_Copy(dst, src, mini_table, arena) != NULL;
+  return _upb_Message_Copy(dst, src, mini_table, arena,
+                           /*remaining_depth=*/-1) != NULL;
 }
 
 // Deep clones a message using the provided target arena.
 //
 // Returns NULL on failure.
+upb_Message* upb_Message_DeepCloneWithMaxDepth(const upb_Message* msg,
+                                               const upb_MiniTable* m,
+                                               upb_Arena* arena,
+                                               int max_depth) {
+  if (UPB_UNLIKELY(max_depth < 0)) return NULL;
+  if (max_depth > UINT16_MAX) max_depth = UINT16_MAX;
+  return _upb_Message_DeepClone(msg, m, arena, max_depth);
+}
+
 upb_Message* upb_Message_DeepClone(const upb_Message* msg,
                                    const upb_MiniTable* m, upb_Arena* arena) {
-  upb_Message* clone = upb_Message_New(m, arena);
-  if (!clone) return NULL;
-  return _upb_Message_Copy(clone, msg, m, arena);
+  return _upb_Message_DeepClone(msg, m, arena, /*remaining_depth=*/-1);
 }
 
 // Performs a shallow copy.

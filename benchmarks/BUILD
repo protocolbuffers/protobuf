@@ -99,6 +99,7 @@ cc_test(
         "//upb/json",
         "//upb/mem",
         "//upb/message",
+        "//upb/message:copy",
         "//upb/mini_table",
         "//upb/reflection",
         "//upb/reflection:internal",
