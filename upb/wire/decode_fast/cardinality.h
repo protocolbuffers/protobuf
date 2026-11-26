@@ -203,8 +203,9 @@ void upb_DecodeFastField_SetArraySize(upb_DecodeFastArray* field,
   const char* start = upb_Array_MutableDataPtr(field->arr);
   UPB_ASSERT(start != NULL && field->dst != NULL &&
              (const char*)field->dst >= start);
-  field->arr->UPB_PRIVATE(size) = (size_t)((const char*)field->dst - start) /
-                                  upb_DecodeFast_ValueBytes(type);
+  UPB_PRIVATE(_upb_Array_SetSize)(field->arr,
+                                  (size_t)((const char*)field->dst - start) /
+                                      upb_DecodeFast_ValueBytes(type));
 }
 
 // Tells the compiler that the array being appended to (both the upb_Array and

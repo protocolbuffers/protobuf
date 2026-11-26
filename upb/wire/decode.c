@@ -35,6 +35,7 @@
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
+#include "upb/port/overflow.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/constants.h"
 #include "upb/wire/internal/decoder.h"
@@ -89,13 +90,23 @@ enum {
 #define OP_VARPCK_LG2(n) (n + 9) /* n in [0, 2, 3] => op in [9, 11, 12] */
 
 static bool _upb_Decoder_Reserve(upb_Decoder* d, upb_Array* arr, size_t elem) {
-  bool need_realloc =
-      arr->UPB_PRIVATE(capacity) - arr->UPB_PRIVATE(size) < elem;
-  if (need_realloc && !UPB_PRIVATE(_upb_Array_Realloc)(
-                          arr, arr->UPB_PRIVATE(size) + elem, &d->arena)) {
+  const size_t size = UPB_PRIVATE(_upb_Array_GetSize)(arr);
+  bool need_realloc = UPB_PRIVATE(_upb_Array_GetCapacity)(arr) - size < elem;
+  if (need_realloc &&
+      !UPB_PRIVATE(_upb_Array_Realloc)(arr, size + elem, &d->arena)) {
     upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
   }
   return need_realloc;
+}
+
+// Adds `count` to the size of `arr`, which must already have room for them
+// (see _upb_Decoder_Reserve()).
+UPB_FORCEINLINE void _upb_Decoder_AddToArraySize(upb_Array* arr, size_t count) {
+  size_t size;
+  const bool overflow =
+      upb_AddOverflow(UPB_PRIVATE(_upb_Array_GetSize)(arr), count, &size);
+  UPB_ASSERT(!overflow);
+  UPB_PRIVATE(_upb_Array_SetSize)(arr, size);
 }
 
 typedef struct {
@@ -252,8 +263,8 @@ const char* _upb_Decoder_DecodeFixedPacked(upb_Decoder* d, const char* ptr,
   if (count == 0) return ptr;
   _upb_Decoder_Reserve(d, arr, count);
   void* mem = UPB_PTR_AT(upb_Array_MutableDataPtr(arr),
-                         arr->UPB_PRIVATE(size) << lg2, void);
-  arr->UPB_PRIVATE(size) += count;
+                         UPB_PRIVATE(_upb_Array_GetSize)(arr) << lg2, void);
+  _upb_Decoder_AddToArraySize(arr, count);
   if (upb_IsLittleEndian()) {
     memcpy(mem, sv.data, sv.size);
   } else {
@@ -289,16 +300,16 @@ const char* _upb_Decoder_DecodeVarintPacked(upb_Decoder* d, const char* ptr,
   int scale = 1 << lg2;
   ptrdiff_t delta = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, val->size);
   char* out = UPB_PTR_AT(upb_Array_MutableDataPtr(arr),
-                         arr->UPB_PRIVATE(size) << lg2, void);
+                         UPB_PRIVATE(_upb_Array_GetSize)(arr) << lg2, void);
   while (!upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
     wireval elem;
     ptr = upb_WireReader_ReadVarint(ptr, &elem.uint64_val, EPS(d));
     _upb_Decoder_Munge(field, &elem);
     if (_upb_Decoder_Reserve(d, arr, 1)) {
       out = UPB_PTR_AT(upb_Array_MutableDataPtr(arr),
-                       arr->UPB_PRIVATE(size) << lg2, void);
+                       UPB_PRIVATE(_upb_Array_GetSize)(arr) << lg2, void);
     }
-    arr->UPB_PRIVATE(size)++;
+    _upb_Decoder_AddToArraySize(arr, 1);
     memcpy(out, &elem, scale);
     out += scale;
   }
@@ -313,7 +324,7 @@ static const char* _upb_Decoder_DecodeEnumPacked(
   const upb_MiniTableEnum* e = upb_MiniTable_GetSubEnumTable(field);
   ptrdiff_t delta = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, val->size);
   char* out = UPB_PTR_AT(upb_Array_MutableDataPtr(arr),
-                         arr->UPB_PRIVATE(size) * 4, void);
+                         UPB_PRIVATE(_upb_Array_GetSize)(arr) * 4, void);
   while (!upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
     wireval elem;
     ptr = upb_WireReader_ReadVarint(ptr, &elem.uint64_val, EPS(d));
@@ -332,9 +343,9 @@ static const char* _upb_Decoder_DecodeEnumPacked(
     _upb_Decoder_MungeInt32(&elem);
     if (_upb_Decoder_Reserve(d, arr, 1)) {
       out = UPB_PTR_AT(upb_Array_MutableDataPtr(arr),
-                       arr->UPB_PRIVATE(size) * 4, void);
+                       UPB_PRIVATE(_upb_Array_GetSize)(arr) * 4, void);
     }
-    arr->UPB_PRIVATE(size)++;
+    _upb_Decoder_AddToArraySize(arr, 1);
     memcpy(out, &elem, 4);
     out += 4;
   }
@@ -376,35 +387,35 @@ static const char* _upb_Decoder_DecodeToArray(upb_Decoder* d, const char* ptr,
     case kUpb_DecodeOp_Scalar8Byte:
       /* Append scalar value. */
       mem = UPB_PTR_AT(upb_Array_MutableDataPtr(arr),
-                       arr->UPB_PRIVATE(size) << op, void);
-      arr->UPB_PRIVATE(size)++;
+                       UPB_PRIVATE(_upb_Array_GetSize)(arr) << op, void);
+      _upb_Decoder_AddToArraySize(arr, 1);
       memcpy(mem, val, 1 << op);
       return ptr;
     case kUpb_DecodeOp_String: {
       /* Append string. */
       upb_StringView* str = (upb_StringView*)upb_Array_MutableDataPtr(arr) +
-                            arr->UPB_PRIVATE(size);
+                            UPB_PRIVATE(_upb_Array_GetSize)(arr);
       ptr = _upb_Decoder_ReadString2(d, ptr, val->size, str,
                                      /*validate_utf8=*/true);
-      arr->UPB_PRIVATE(size)++;
+      _upb_Decoder_AddToArraySize(arr, 1);
       return ptr;
     }
     case kUpb_DecodeOp_Bytes: {
       /* Append bytes. */
       upb_StringView* str = (upb_StringView*)upb_Array_MutableDataPtr(arr) +
-                            arr->UPB_PRIVATE(size);
+                            UPB_PRIVATE(_upb_Array_GetSize)(arr);
       ptr = _upb_Decoder_ReadString2(d, ptr, val->size, str,
                                      /*validate_utf8=*/false);
-      arr->UPB_PRIVATE(size)++;
+      _upb_Decoder_AddToArraySize(arr, 1);
       return ptr;
     }
     case kUpb_DecodeOp_SubMessage: {
       /* Append submessage / group. */
-      upb_Message** target =
-          UPB_PTR_AT(upb_Array_MutableDataPtr(arr),
-                     arr->UPB_PRIVATE(size) * sizeof(void*), upb_Message*);
+      upb_Message** target = UPB_PTR_AT(
+          upb_Array_MutableDataPtr(arr),
+          UPB_PRIVATE(_upb_Array_GetSize)(arr) * sizeof(void*), upb_Message*);
       upb_Message* submsg = _upb_Decoder_NewSubMessage(d, field, target);
-      arr->UPB_PRIVATE(size)++;
+      _upb_Decoder_AddToArraySize(arr, 1);
       if (UPB_UNLIKELY(field->UPB_PRIVATE(descriptortype) ==
                        kUpb_FieldType_Group)) {
         return _upb_Decoder_DecodeKnownGroup(d, ptr, submsg, field);
