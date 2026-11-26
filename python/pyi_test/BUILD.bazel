@@ -1,0 +1,140 @@
+load("@rules_python//python:py_binary.bzl", "py_binary")
+load("@rules_python//python:py_test.bzl", "py_test")
+load("//bazel:proto_library.bzl", "proto_library")
+load("//bazel:py_proto_library.bzl", "py_proto_library")
+load(":pyi_test.bzl", "node_tool", "pyi_files")
+
+package(default_applicable_licenses = ["//:license"])
+
+proto_library(
+    name = "fixture_import_proto",
+    srcs = ["fixture_import.proto"],
+)
+
+py_proto_library(
+    name = "fixture_import_py_pb2",
+    deps = [":fixture_import_proto"],
+)
+
+proto_library(
+    name = "fixture_proto",
+    srcs = ["fixture.proto"],
+    deps = [
+        ":fixture_import_proto",
+        "//:duration_proto",
+        "//:timestamp_proto",
+    ],
+)
+
+py_proto_library(
+    name = "fixture_py_pb2",
+    deps = [":fixture_proto"],
+)
+
+pyi_files(
+    name = "fixture_pyi",
+    dep = ":fixture_py_pb2",
+)
+
+proto_library(
+    name = "self_fields_proto",
+    srcs = ["self_fields.proto"],
+)
+
+py_proto_library(
+    name = "self_fields_py_pb2",
+    deps = [":self_fields_proto"],
+)
+
+pyi_files(
+    name = "self_fields_pyi",
+    dep = ":self_fields_py_pb2",
+)
+
+proto_library(
+    name = "keyword_oneof_proto",
+    srcs = ["keyword_oneof.proto"],
+)
+
+py_proto_library(
+    name = "keyword_oneof_py_pb2",
+    deps = [":keyword_oneof_proto"],
+)
+
+pyi_files(
+    name = "keyword_oneof_pyi",
+    dep = ":keyword_oneof_py_pb2",
+)
+
+py_test(
+    name = "golden_test",
+    size = "small",
+    srcs = ["golden_test.py"],
+    args = [
+        "$(locations :fixture_pyi)",
+        "$(locations :self_fields_pyi)",
+        "$(locations :keyword_oneof_pyi)",
+    ],
+    data = glob(["*_pb2.pyi.golden"]) + [
+        ":fixture_pyi",
+        ":self_fields_pyi",
+        ":keyword_oneof_pyi",
+    ],
+    tags = [
+        "manual",
+        "staleness_test",
+    ],
+)
+
+py_binary(
+    name = "mypy_bin",
+    srcs = ["mypy_main.py"],
+    main = "mypy_main.py",
+    deps = ["@pyi_test_pip_deps//mypy"],
+    tags = ["manual"],
+)
+
+node_tool(
+    name = "node",
+    tags = ["manual"],
+)
+
+py_test(
+    name = "typecheck_golden_test",
+    size = "small",
+    srcs = ["typecheck_test.py"],
+    main = "typecheck_test.py",
+    data = [
+        "mypy.golden",
+        "mypy.ini",
+        "pyrefly.golden",
+        "pyrefly.toml",
+        "pyright.golden",
+        "pyrightconfig.json",
+        "ty.golden",
+        "ty.toml",
+        "typing_test.py",
+        ":fixture_py_pb2",
+        ":fixture_pyi",
+        ":keyword_oneof_py_pb2",
+        ":keyword_oneof_pyi",
+        ":mypy_bin",
+        ":node",
+        ":self_fields_pyi",
+        ":self_fields_py_pb2",
+        "//:protobuf_python",
+        "@pyi_test_tools//tools/pyrefly",
+        "@pyi_test_tools//tools/ty",
+        "@pyright//:dist",
+        "@pyright//:index.js",
+    ],
+    tags = [
+        "manual",
+        "staleness_test",
+    ],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+    visibility = ["//bazel/tests:__pkg__"],
+)
