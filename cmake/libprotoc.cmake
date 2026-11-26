@@ -21,11 +21,13 @@ target_link_libraries(libprotoc PUBLIC libupb ${protobuf_ABSL_USED_TARGETS})
 protobuf_configure_target(libprotoc)
 if(protobuf_BUILD_SHARED_LIBS)
   target_compile_definitions(libprotoc
-    PUBLIC  PROTOBUF_USE_DLLS
-    PRIVATE LIBPROTOC_EXPORTS)
+    PUBLIC PROTOBUF_USE_DLLS)
 endif()
+
+target_compile_definitions(libprotoc
+  PRIVATE LIBPROTOC_EXPORTS)
+
 set_target_properties(libprotoc PROPERTIES
-    COMPILE_DEFINITIONS LIBPROTOC_EXPORTS
     VERSION ${protobuf_VERSION}
     OUTPUT_NAME ${LIB_PREFIX}protoc
     DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}"
