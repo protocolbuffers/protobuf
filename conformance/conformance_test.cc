@@ -459,7 +459,7 @@ void ConformanceTestSuite::RunValidBinaryInputTest(
                  require_same_wire_format);
 }
 
-void ConformanceTestSuite::VerifyResponse(
+bool ConformanceTestSuite::VerifyResponse(
     const ConformanceRequestSetting& setting,
     const std::string& equivalent_wire_format,
     const ConformanceResponse& response, bool need_report_success,
@@ -481,7 +481,7 @@ void ConformanceTestSuite::VerifyResponse(
       test.set_failure_message(
           "Response didn't have any field in the Response.");
       ReportFailure(test, level, request, response);
-      return;
+      return false;
 
     case ConformanceResponse::kParseError:
     case ConformanceResponse::kTimeoutError:
@@ -489,14 +489,14 @@ void ConformanceTestSuite::VerifyResponse(
     case ConformanceResponse::kSerializeError:
       test.set_failure_message("Failed to parse input or produce output.");
       ReportFailure(test, level, request, response);
-      return;
+      return false;
 
     case ConformanceResponse::kSkipped:
       ReportSkip(test, request, response);
-      return;
+      return false;
 
     default:
-      if (!ParseResponse(response, setting, test_message.get())) return;
+      if (!ParseResponse(response, setting, test_message.get())) return false;
   }
 
   MessageDifferencer differencer;
@@ -522,10 +522,12 @@ void ConformanceTestSuite::VerifyResponse(
     if (need_report_success) {
       ReportSuccess(test);
     }
+    return true;
   } else {
     test.set_failure_message(absl::StrCat(
         "Output was not equivalent to reference message: ", differences));
     ReportFailure(test, level, request, response);
+    return false;
   }
 }
 
