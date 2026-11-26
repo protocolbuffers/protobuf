@@ -789,6 +789,97 @@ TEST(GeneratedCode, DeepCloneMessageNonCanonicalExtensions) {
   upb_Arena_Free(arena);
 }
 
+TEST(GeneratedCode, DeepCloneMapWithAbsentStringValue) {
+  // Regression test: cloning a map<string,string> entry where the value field
+  // is absent in the wire format produces a {NULL, 0} StringView internally.
+  // upb_Clone_MessageValue must handle this without passing NULL to memcpy.
+  //
+  // Wire format for field 69 (map<string, string> map_string_string):
+  //   tag = (69 << 3) | 2 = 0x022a → varint bytes 0xaa 0x04
+  //   map entry submessage (key only, no value):
+  //     field 1 (key): tag=0x0a, len=5, "hello"
+  const uint8_t wire[] = {
+      0xaa, 0x04,                                // field 69, wiretype 2
+      0x07,                                      // submessage length = 7
+      0x0a, 0x05, 'h', 'e', 'l', 'l', 'o',      // key = "hello"
+      // value field is absent → defaults to {NULL, 0}
+  };
+
+  upb_Arena* source_arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(source_arena);
+  ASSERT_EQ(upb_Decode(reinterpret_cast<const char*>(wire), sizeof(wire),
+                        UPB_UPCAST(msg),
+                        &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
+                        nullptr, 0, source_arena),
+            kUpb_DecodeStatus_Ok);
+
+  // Verify the map entry was parsed with key="hello".
+  upb_StringView key;
+  upb_StringView value;
+  size_t iter = kUpb_Map_Begin;
+  ASSERT_TRUE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_map_string_string_next(
+          msg, &key, &value, &iter));
+  EXPECT_TRUE(upb_StringView_IsEqual(key, upb_StringView_FromString("hello")));
+  EXPECT_EQ(value.size, 0);
+
+  // DeepClone — this triggered memcpy(dst, NULL, 0) before the fix.
+  upb_Arena* clone_arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* clone =
+      (protobuf_test_messages_proto2_TestAllTypesProto2*)upb_Message_DeepClone(
+          UPB_UPCAST(msg),
+          &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
+          clone_arena);
+  ASSERT_NE(clone, nullptr);
+
+  upb_Arena_Free(source_arena);
+
+  // Verify the clone has the same map content.
+  iter = kUpb_Map_Begin;
+  ASSERT_TRUE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_map_string_string_next(
+          clone, &key, &value, &iter));
+  EXPECT_TRUE(upb_StringView_IsEqual(key, upb_StringView_FromString("hello")));
+  EXPECT_EQ(value.size, 0);
+
+  upb_Arena_Free(clone_arena);
+}
+
+TEST(GeneratedCode, DeepCopyMapWithAbsentStringValue) {
+  // Same scenario as above but via DeepCopy instead of DeepClone.
+  const uint8_t wire[] = {
+      0xaa, 0x04, 0x07,
+      0x0a, 0x05, 'h', 'e', 'l', 'l', 'o',
+  };
+
+  upb_Arena* arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* src =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
+  ASSERT_EQ(upb_Decode(reinterpret_cast<const char*>(wire), sizeof(wire),
+                        UPB_UPCAST(src),
+                        &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
+                        nullptr, 0, arena),
+            kUpb_DecodeStatus_Ok);
+
+  protobuf_test_messages_proto2_TestAllTypesProto2* dst =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
+  EXPECT_TRUE(upb_Message_DeepCopy(
+      UPB_UPCAST(dst), UPB_UPCAST(src),
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init, arena));
+
+  upb_StringView key;
+  upb_StringView value;
+  size_t iter = kUpb_Map_Begin;
+  ASSERT_TRUE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_map_string_string_next(
+          dst, &key, &value, &iter));
+  EXPECT_TRUE(upb_StringView_IsEqual(key, upb_StringView_FromString("hello")));
+  EXPECT_EQ(value.size, 0);
+
+  upb_Arena_Free(arena);
+}
+
 }  // namespace
 
 #include "upb/port/undef.inc"

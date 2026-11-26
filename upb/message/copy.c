@@ -66,14 +66,17 @@ static bool upb_Clone_MessageValue(void* value, upb_CType value_type,
     case kUpb_CType_String:
     case kUpb_CType_Bytes: {
       upb_StringView source = *(upb_StringView*)value;
-      size_t size = source.size;
-      void* cloned_data = upb_Arena_Malloc(arena, size);
+      if (source.size == 0) {
+        *(upb_StringView*)value = upb_StringView_FromDataAndSize(NULL, 0);
+        return true;
+      }
+      void* cloned_data = upb_Arena_Malloc(arena, source.size);
       if (cloned_data == NULL) {
         return false;
       }
+      memcpy(cloned_data, source.data, source.size);
       *(upb_StringView*)value =
-          upb_StringView_FromDataAndSize(cloned_data, size);
-      memcpy(cloned_data, source.data, size);
+          upb_StringView_FromDataAndSize(cloned_data, source.size);
       return true;
     } break;
     case kUpb_CType_Message: {
