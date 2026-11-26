@@ -1485,6 +1485,29 @@ class JsonFormatTest(JsonFormatBase):
         message,
     )
 
+  def testErrorPathThroughNestedStructAndList(self):
+    class UnknownClass(object):
+
+      def __str__(self):
+        return 'v'
+
+    self.assertRaisesRegex(
+        json_format.ParseError,
+        r'unexpected type .* at Struct\.a\.b\[1\]\.c$',
+        json_format.ParseDict,
+        {'a': {'b': [0, {'c': UnknownClass()}]}},
+        struct_pb2.Struct(),
+    )
+
+  def testLongKeyWithManyDescendants(self):
+    # Error paths must not be eagerly built for every value: that would copy
+    # the long key once per descendant, making parsing quadratic in the input
+    # size (minutes of CPU for this ~1MB input).
+    long_key = 'k' * 1_000_000
+    message = struct_pb2.Struct()
+    json_format.Parse(json.dumps({long_key: [0] * 100_000}), message)
+    self.assertLen(message.fields[long_key].list_value.values, 100_000)
+
   def testTimestampInvalidStringValue(self):
     message = json_format_proto3_pb2.TestTimestamp()
     text = '{"value": {"foo": 123}}'
