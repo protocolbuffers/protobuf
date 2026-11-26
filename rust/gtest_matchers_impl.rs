@@ -51,7 +51,10 @@ impl<T> Matcher<&T> for MessageMatcher<T>
 where
     T: MatcherEq,
 {
-    fn matches(&self, actual: &T) -> MatcherResult {
+    fn matches(
+        &self,
+        actual: &T,
+    ) -> MatcherResult {
         if self.partial {
             actual.matches_partially(&self.expected).into()
         } else {
@@ -79,7 +82,10 @@ impl<T> Matcher<T> for MessageMatcher<T>
 where
     T: MatcherEq + Copy,
 {
-    fn matches(&self, actual: T) -> MatcherResult {
+    fn matches(
+        &self,
+        actual: T,
+    ) -> MatcherResult {
         if self.partial {
             actual.matches_partially(&self.expected).into()
         } else {
