@@ -1267,5 +1267,90 @@ TEST(ReflectionTest, PackageNameLimits) {
   EXPECT_FALSE(add_pkg(pool, "deep.proto", dotted_pkg(65), &status));
   EXPECT_THAT(status.error_message(), HasSubstr("64"));
 }
+
+// Named control for the allocation-failure tests below: with no injected
+// failure, construction, feature-defaults lookup, and a generated-registry
+// load all succeed on an unmodified allocator.
+TEST(ReflectionTest, DefPoolAllocationControl) {
+  upb_DefPool* s = upb_DefPool_New();
+  ASSERT_NE(s, nullptr);
+  EXPECT_NE(upb_DefPool_FeatureSetDefaults(s), nullptr);
+  EXPECT_TRUE(
+      _upb_DefPool_LoadDefInit(s, &google_protobuf_unittest_proto_upbdefinit));
+  EXPECT_NE(upb_DefPool_FindFileByName(s, "google/protobuf/unittest.proto"),
+            nullptr);
+  upb_DefPool_Free(s);
+}
+
+// Fails each allocation made by upb_DefPool_New() in turn. Every failure must
+// make it return NULL without crashing during cleanup (and, under ASan/LSan,
+// without leaking).
+TEST(ReflectionTest, DefPoolNewAllocationFailure) {
+  if (!upb_AllocationCount_IsAvailable()) return;
+
+  // Control: with no injected failure, upb_DefPool_New() succeeds.
+  upb_AllocationCount_Reset();
+  upb_DefPool* s = upb_DefPool_New();
+  ASSERT_NE(s, nullptr);
+  size_t total_allocations = upb_AllocationCount_Get();
+  upb_DefPool_Free(s);
+  ASSERT_GT(total_allocations, 0);
+  RecordProperty("allocation_failure_cases", std::to_string(total_allocations));
+
+  for (size_t i = 0; i < total_allocations; ++i) {
+    SCOPED_TRACE(i);
+    upb_AllocationCount_Reset();
+    upb_AllocationCount_FailOn(i);
+    s = upb_DefPool_New();
+    size_t attempted_allocations = upb_AllocationCount_Get();
+    upb_AllocationCount_Reset();
+    EXPECT_GT(attempted_allocations, i);
+    EXPECT_EQ(s, nullptr) << "upb_DefPool_New() unexpectedly succeeded when "
+                          << "allocation number " << i << " was failed.";
+    if (s) upb_DefPool_Free(s);
+
+    // Cleanup must leave the generated registry usable by the next pool.
+    s = upb_DefPool_New();
+    ASSERT_NE(s, nullptr);
+    EXPECT_NE(upb_DefPool_FeatureSetDefaults(s), nullptr);
+    upb_DefPool_Free(s);
+  }
+  upb_AllocationCount_Reset();
+}
+
+// For a file that is not yet in the pool, _upb_DefPool_LoadDefInit() first
+// allocates the dependency-stack buffer used by the iterative
+// _upb_DefPool_LoadDefInitEx() and then a temporary parse arena per loaded
+// file in load_def_init_node(). Failing either entry allocation must fail the
+// load cleanly and leave the pool usable.
+TEST(ReflectionTest, DefPoolLoadDefInitAllocationFailure) {
+  if (!upb_AllocationCount_IsAvailable()) return;
+
+  upb_DefPool* s = upb_DefPool_New();
+  ASSERT_NE(s, nullptr);
+  ASSERT_EQ(upb_DefPool_FindFileByName(s, "google/protobuf/unittest.proto"),
+            nullptr);
+
+  // Allocation 0 is the dependency-stack buffer; allocation 1 is the parse
+  // arena of the first file the loader visits for this request.
+  for (size_t i = 0; i < 2; ++i) {
+    SCOPED_TRACE(i);
+    upb_AllocationCount_Reset();
+    upb_AllocationCount_FailOn(i);
+    bool ok =
+        _upb_DefPool_LoadDefInit(s, &google_protobuf_unittest_proto_upbdefinit);
+    upb_AllocationCount_Reset();
+    EXPECT_FALSE(ok);
+    EXPECT_EQ(upb_DefPool_FindFileByName(s, "google/protobuf/unittest.proto"),
+              nullptr);
+  }
+
+  // Control: once allocations succeed again, the same load succeeds.
+  EXPECT_TRUE(
+      _upb_DefPool_LoadDefInit(s, &google_protobuf_unittest_proto_upbdefinit));
+  EXPECT_NE(upb_DefPool_FindFileByName(s, "google/protobuf/unittest.proto"),
+            nullptr);
+  upb_DefPool_Free(s);
+}
 }  // namespace
 }  // namespace upb_test
