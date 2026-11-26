@@ -556,6 +556,40 @@ class PROTOC_EXPORT CommandLineInterface {
 };
 
 }  // namespace compiler
+
+// Validation of .proto file paths before code generation. These are used by
+// CommandLineInterface; individual code generators should not need to call
+// them, since every file they receive has already been validated.
+namespace internal {
+
+// Validates that a .proto file path is safe to embed in generated code, build
+// files, and output paths: it must be non-empty, must not contain control
+// characters, backslashes, or characters that could enable code or shell
+// injection, and must be a canonical relative path: no leading or trailing
+// '/', no consecutive slashes, and no "." or ".." path segments.
+//
+// Returns true if `path` is valid. Otherwise returns false and, if `error` is
+// non-null, populates it with a human-readable description of the problem.
+PROTOC_EXPORT bool IsValidProtoFilePath(absl::string_view path,
+                                        std::string* error);
+
+// Applies IsValidProtoFilePath() to the names of `files` and of every file
+// whose descriptor protoc may emit alongside them: their transitive imports,
+// plus the direct option imports of `files` and those files' transitive
+// imports (matching what protoc puts in CodeGeneratorRequests, dependency
+// manifests, and descriptor sets). Option import names of every visited file
+// are also checked, without loading those files. Called by CommandLineInterface
+// before invoking any code generator, so that individual generators may assume
+// file names are safe. Descriptors built from --descriptor_set_in never pass
+// through the .proto parser or DiskSourceTree, so this is the only check they
+// receive.
+//
+// Returns true if all names are valid. Otherwise returns false and, if `error`
+// is non-null, populates it with a human-readable description of the problem.
+PROTOC_EXPORT bool ValidateFilePathsForCodeGeneration(
+    const std::vector<const FileDescriptor*>& files, std::string* error);
+
+}  // namespace internal
 }  // namespace protobuf
 }  // namespace google
 
