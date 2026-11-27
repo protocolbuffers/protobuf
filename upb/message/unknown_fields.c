@@ -191,6 +191,12 @@ upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(
 
   upb_Message_DeleteUnknownStatus res =
       upb_Message_DeleteUnknown2(msg, &unknown, iter, arena);
+  if (res == kUpb_DeleteUnknown_IterUpdated &&
+      unknown.type != kUpb_MessageUnknownType_StringView) {
+    return upb_Message_NextUnknown(msg, data, iter)
+               ? kUpb_DeleteUnknown_IterUpdated
+               : kUpb_DeleteUnknown_DeletedLast;
+  }
   UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_StringView);
   if (res == kUpb_DeleteUnknown_IterUpdated ||
       res == kUpb_DeleteUnknown_DeletedLast) {
