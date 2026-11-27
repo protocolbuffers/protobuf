@@ -1981,3 +1981,49 @@ TEST(MessageTest, ArrayMapAndExtensionRegistryOverflow) {
             kUpb_ExtensionRegistryStatus_OutOfMemory);
   EXPECT_EQ(upb_ExtensionRegistry_Size(reg), 0u);
 }
+
+TEST(MessageTest, MessageNextSkipsExtensionsMissingFromExtPool) {
+  upb::Arena arena;
+  upb::DefPool full_pool;
+  upb::DefPool empty_pool;
+
+  const upb_MessageDef* msg_def =
+      upb_test_TestExtensions_getmsgdef(full_pool.ptr());
+  ASSERT_NE(msg_def, nullptr);
+
+  // Looking up an unregistered MiniTableExtension returns nullptr instead of
+  // aborting or returning an uninitialized pointer.
+  EXPECT_EQ(upb_DefPool_FindExtensionByMiniTable(
+                empty_pool.ptr(), upb_test_TestExtensions_optional_int32_ext_ext),
+            nullptr);
+
+  upb_test_TestExtensions* msg = upb_test_TestExtensions_new(arena.ptr());
+  upb_test_TestExtensions_set_optional_int32_ext(msg, 42, arena.ptr());
+
+  // Iteration with an ext_pool that lacks the extension skips it cleanly.
+  size_t iter = kUpb_Message_Begin;
+  const upb_FieldDef* f = nullptr;
+  upb_MessageValue val;
+  EXPECT_FALSE(upb_Message_Next(UPB_UPCAST(msg), msg_def, empty_pool.ptr(), &f,
+                                &val, &iter));
+
+  // Public reflection consumers (e.g. JSON encode, DiscardUnknown) handle it.
+  upb::Status status;
+  char buf[64];
+  size_t len = upb_JsonEncode(UPB_UPCAST(msg), msg_def, empty_pool.ptr(), 0,
+                              buf, sizeof(buf), status.ptr());
+  EXPECT_TRUE(status.ok()) << status.error_message();
+  EXPECT_EQ(std::string(buf, len), "{}");
+  EXPECT_TRUE(upb_Message_DiscardUnknown(UPB_UPCAST(msg), msg_def,
+                                         empty_pool.ptr(), 100));
+
+  // Positive control: iteration with full_pool yields the extension.
+  iter = kUpb_Message_Begin;
+  ASSERT_TRUE(upb_Message_Next(UPB_UPCAST(msg), msg_def, full_pool.ptr(), &f,
+                               &val, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_FieldDef_Number(f), 1000u);
+  EXPECT_EQ(val.int32_val, 42);
+  EXPECT_FALSE(upb_Message_Next(UPB_UPCAST(msg), msg_def, full_pool.ptr(), &f,
+                                &val, &iter));
+}

@@ -622,8 +622,9 @@ upb_Arena* _upb_DefPool_Arena(const upb_DefPool* s) { return s->arena; }
 const upb_FieldDef* upb_DefPool_FindExtensionByMiniTable(
     const upb_DefPool* s, const upb_MiniTableExtension* ext) {
   upb_value v;
-  bool ok = upb_inttable_lookup(&s->exts, (uintptr_t)ext, &v);
-  UPB_ASSERT(ok);
+  if (!upb_inttable_lookup(&s->exts, (uintptr_t)ext, &v)) {
+    return NULL;
+  }
   return upb_value_getconstptr(v);
 }
 
