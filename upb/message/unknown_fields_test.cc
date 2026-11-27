@@ -527,4 +527,94 @@ TEST(GeneratedCode, FindUnknown2_NegativeDepthLimitOnGroup) {
   upb_Arena_Free(arena);
 }
 
+TEST(GeneratedCode, DeleteUnknownSkipsNonCanonicalAuxField) {
+  upb::Arena arena;
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+
+  const char u1[] = "\x90\x06\x07";
+  const char u2[] = "\x98\x06\x09";
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(msg), u1, sizeof(u1) - 1, arena.ptr(), kUpb_AddUnknown_Copy));
+
+  upb_test_ModelExtension2* extension2 =
+      upb_test_ModelExtension2_new(arena.ptr());
+  upb_test_ModelExtension2_set_i(extension2, 42);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_ModelExtension2_model_ext_ext, &extension2,
+      arena.ptr()));
+
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(msg), u2, sizeof(u2) - 1, arena.ptr(), kUpb_AddUnknown_Copy));
+
+  // Deleting u1 must skip the intervening AuxField and advance to u2.
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_StringView data;
+  ASSERT_TRUE(upb_Message_NextUnknown(UPB_UPCAST(msg), &data, &iter));
+  EXPECT_EQ(std::string(data.data, data.size), std::string(u1, sizeof(u1) - 1));
+
+  EXPECT_EQ(upb_Message_DeleteUnknown(UPB_UPCAST(msg), &data, &iter,
+                                      arena.ptr()),
+            kUpb_DeleteUnknown_IterUpdated);
+  EXPECT_EQ(std::string(data.data, data.size), std::string(u2, sizeof(u2) - 1));
+
+  EXPECT_EQ(upb_Message_DeleteUnknown(UPB_UPCAST(msg), &data, &iter,
+                                      arena.ptr()),
+            kUpb_DeleteUnknown_DeletedLast);
+  EXPECT_EQ(data.data, nullptr);
+  EXPECT_EQ(data.size, 0u);
+
+  // The non-canonical AuxField remains intact and encodable.
+  upb_FindUnknownRet2 found = upb_Message_FindUnknown2(
+      UPB_UPCAST(msg),
+      upb_MiniTableExtension_Number(upb_test_ModelExtension2_model_ext_ext), 0);
+  EXPECT_EQ(found.status, kUpb_FindUnknown_Ok);
+  EXPECT_EQ(found.unknown.type, kUpb_MessageUnknownType_AuxField);
+}
+
+TEST(GeneratedCode, DeleteUnknownFollowedOnlyByAuxFieldReturnsDeletedLast) {
+  upb::Arena arena;
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+
+  const char raw[] = "\x90\x06\x07\x98\x06\x09";
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(msg), raw, sizeof(raw) - 1, arena.ptr(),
+      kUpb_AddUnknown_Copy));
+
+  upb_test_ModelExtension2* extension2 =
+      upb_test_ModelExtension2_new(arena.ptr());
+  upb_test_ModelExtension2_set_i(extension2, 77);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_ModelExtension2_model_ext_ext, &extension2,
+      arena.ptr()));
+
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_StringView data;
+  ASSERT_TRUE(upb_Message_NextUnknown(UPB_UPCAST(msg), &data, &iter));
+  EXPECT_EQ(data.size, 6u);
+
+  // Strip prefix: should remain on the second half of the same StringView.
+  upb_StringView prefix = {data.data, 3};
+  EXPECT_EQ(upb_Message_DeleteUnknown(UPB_UPCAST(msg), &prefix, &iter,
+                                      arena.ptr()),
+            kUpb_DeleteUnknown_IterUpdated);
+  EXPECT_EQ(std::string(prefix.data, prefix.size), std::string(raw + 3, 3));
+
+  // Delete remainder: must skip the trailing AuxField and return DeletedLast.
+  EXPECT_EQ(upb_Message_DeleteUnknown(UPB_UPCAST(msg), &prefix, &iter,
+                                      arena.ptr()),
+            kUpb_DeleteUnknown_DeletedLast);
+  EXPECT_EQ(prefix.data, nullptr);
+  EXPECT_EQ(prefix.size, 0u);
+
+  // Non-canonical AuxField must still serialize cleanly.
+  char* buf = nullptr;
+  size_t size = 0;
+  EXPECT_EQ(upb_Encode(UPB_UPCAST(msg), &upb_0test__ModelWithExtensions_msg_init,
+                       0, arena.ptr(), &buf, &size),
+            kUpb_EncodeStatus_Ok);
+  EXPECT_GT(size, 0u);
+}
+
 }  // namespace
