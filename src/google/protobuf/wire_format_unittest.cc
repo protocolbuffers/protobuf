@@ -283,6 +283,138 @@ TEST(WireFormatLiteTest, ReadPackedPrimitiveInvalidInputAllocatesHuge) {
   coded_input.PopLimit(limit);
 }
 
+TEST(WireFormatLiteTest, ReadPackedPrimitiveRejectsTruncatedField) {
+  // A packed varint field whose declared length extends past the available
+  // bytes must be rejected, not silently accepted with a short value list.
+  // Field 1, length-delimited, declared length 5, but only 3 payload bytes
+  // follow (varints 1, 2, 3).
+  const uint8_t data[] = {(1 << 3) | 2, 5, 1, 2, 3};
+  io::CodedInputStream input(data, sizeof(data));
+  ASSERT_EQ((1 << 3) | 2, input.ReadTag());
+
+  RepeatedField<int32_t> values;
+  EXPECT_FALSE((WireFormatLite::ReadPackedPrimitive<int32_t,
+                                                    WireFormatLite::TYPE_INT32>(
+      &input, &values)));
+}
+
+TEST(WireFormatLiteTest, ReadPackedPrimitiveAcceptsExactFitAtBufferEnd) {
+  // Regression guard: a packed field that ends exactly at the buffer end is
+  // the common case where PushLimit() refuses the new limit (the declared
+  // length is not strictly smaller than the bytes to the current limit).
+  // It must still parse.
+  const uint8_t data[] = {(1 << 3) | 2, 3, 1, 2, 3};
+  io::CodedInputStream input(data, sizeof(data));
+  ASSERT_EQ((1 << 3) | 2, input.ReadTag());
+
+  RepeatedField<int32_t> values;
+  EXPECT_TRUE((WireFormatLite::ReadPackedPrimitive<int32_t,
+                                                   WireFormatLite::TYPE_INT32>(
+      &input, &values)));
+  ASSERT_EQ(3, values.size());
+  EXPECT_EQ(1, values[0]);
+  EXPECT_EQ(2, values[1]);
+  EXPECT_EQ(3, values[2]);
+}
+
+namespace {
+
+// Builds the wire bytes for one packed field: tag, then |declared_length|,
+// then |payload|.
+std::string PackedFieldData(int field_number, uint32_t declared_length,
+                            const std::string& payload) {
+  std::string data;
+  {
+    io::StringOutputStream raw_output(&data);
+    io::CodedOutputStream output(&raw_output);
+    WireFormatLite::WriteTag(field_number,
+                             WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+                             &output);
+    output.WriteVarint32(declared_length);
+    output.WriteString(payload);
+  }
+  return data;
+}
+
+}  // namespace
+
+TEST(WireFormatTest, ReflectionParseRejectsTruncatedPackedVarint) {
+  // packed_int32: declare 5 payload bytes, supply 3 (varints 1, 2, 3).
+  const FieldDescriptor* field =
+      proto2_unittest::TestPackedTypes::descriptor()->FindFieldByName(
+          "packed_int32");
+  ASSERT_TRUE(field != nullptr);
+  const std::string data = PackedFieldData(field->number(), 5, "\x01\x02\x03");
+
+  // The reflection-based parser backs MergePartialFromCodedStream() and
+  // DynamicMessage parsing.
+  {
+    io::CodedInputStream input(
+        reinterpret_cast<const uint8_t*>(data.data()), data.size());
+    proto2_unittest::TestPackedTypes message;
+    EXPECT_FALSE(WireFormat::ParseAndMergePartial(&input, &message));
+  }
+  {
+    DynamicMessageFactory factory;
+    std::unique_ptr<Message> message(factory.GetPrototype(
+        proto2_unittest::TestPackedTypes::descriptor())->New());
+    io::CodedInputStream input(
+        reinterpret_cast<const uint8_t*>(data.data()), data.size());
+    EXPECT_FALSE(WireFormat::ParseAndMergePartial(&input, message.get()));
+  }
+  // The table-driven parser rejects the same input too.
+  {
+    proto2_unittest::TestPackedTypes message;
+    EXPECT_FALSE(message.ParseFromString(data));
+  }
+}
+
+TEST(WireFormatTest, ReflectionParseRejectsTruncatedPackedFixed) {
+  // packed_fixed32: declare 12 payload bytes, supply 8 (two complete
+  // fixed32 values). The fixed-size element reads themselves succeed, so
+  // the truncation is only visible by comparing the declared length against
+  // the available bytes.
+  const FieldDescriptor* field =
+      proto2_unittest::TestPackedTypes::descriptor()->FindFieldByName(
+          "packed_fixed32");
+  ASSERT_TRUE(field != nullptr);
+  std::string payload;
+  payload.resize(8, '\x01');
+  const std::string data = PackedFieldData(field->number(), 12, payload);
+
+  {
+    io::CodedInputStream input(
+        reinterpret_cast<const uint8_t*>(data.data()), data.size());
+    proto2_unittest::TestPackedTypes message;
+    EXPECT_FALSE(WireFormat::ParseAndMergePartial(&input, &message));
+  }
+  {
+    proto2_unittest::TestPackedTypes message;
+    EXPECT_FALSE(message.ParseFromString(data));
+  }
+}
+
+TEST(WireFormatTest, ReflectionParseAcceptsPackedFieldEndingAtBufferEnd) {
+  // Regression guard: a packed field whose declared length reaches exactly
+  // to the end of the buffer must keep parsing (PushLimit() refuses limits
+  // that are not strictly smaller than the remaining bytes, so this common
+  // case goes through the refusal path even though nothing is truncated).
+  const FieldDescriptor* field =
+      proto2_unittest::TestPackedTypes::descriptor()->FindFieldByName(
+          "packed_int32");
+  ASSERT_TRUE(field != nullptr);
+  const std::string data = PackedFieldData(field->number(), 3, "\x01\x02\x03");
+
+  io::CodedInputStream input(
+      reinterpret_cast<const uint8_t*>(data.data()), data.size());
+  proto2_unittest::TestPackedTypes message;
+  EXPECT_TRUE(WireFormat::ParseAndMergePartial(&input, &message));
+  ASSERT_EQ(3, message.packed_int32_size());
+  EXPECT_EQ(1, message.packed_int32(0));
+  EXPECT_EQ(2, message.packed_int32(1));
+  EXPECT_EQ(3, message.packed_int32(2));
+}
+
 TEST(WireFormatTest, ParseMessageSetItemInvalidInputAllocatesHuge) {
   uint8_t buffer[20];
   uint8_t* target = buffer;
