@@ -372,6 +372,17 @@ static bool upb_Message_ConvertArrayField(upb_Converter* c, upb_Message* dst,
   const upb_MiniTable* dst_sub_mt = upb_MiniTable_SubMessage(dst_f);
   const upb_MiniTable* src_sub_mt = upb_MiniTable_SubMessage(src_f);
 
+  if (upb_MiniTableField_CType(dst_f) == kUpb_CType_Message) {
+    if (upb_Array_Size(src_arr) == 0) {
+      if (dst_sub_mt == NULL) return true;
+    } else if (src_sub_mt == NULL) {
+      upb_ErrorHandler_ThrowError(&c->err, kUpb_ConvertStatus_Incompatible);
+    } else if (dst_sub_mt == NULL) {
+      upb_Message_DemoteToAuxField(c, dst, src, src_f);
+      return true;
+    }
+  }
+
   if (dst_sub_mt != src_sub_mt || upb_MiniTableField_IsClosedEnum(dst_f) ||
       upb_MiniTableField_IsClosedEnum(src_f)) {
     upb_Array* dst_arr =
@@ -550,6 +561,22 @@ static bool upb_Message_ConvertMapField(upb_Converter* c, upb_Message* dst,
   const upb_MiniTable* src_entry_mt = upb_MiniTable_MapEntrySubMessage(src_f);
   const upb_MiniTableField* dst_val_f = upb_MiniTable_MapValue(dst_entry_mt);
 
+  if (upb_MiniTableField_CType(dst_val_f) == kUpb_CType_Message) {
+    const upb_MiniTable* dst_val_mt = upb_MiniTable_SubMessage(dst_val_f);
+    const upb_MiniTableField* src_val_f = upb_MiniTable_MapValue(src_entry_mt);
+    const upb_MiniTable* src_val_mt = upb_MiniTable_SubMessage(src_val_f);
+    if (upb_Map_Size(src_map) == 0) {
+      if (dst_val_mt == NULL) return true;
+    } else if (src_val_mt == NULL) {
+      upb_ErrorHandler_ThrowError(&c->err, kUpb_ConvertStatus_Incompatible);
+    } else if (dst_val_mt == NULL) {
+      char* ptr =
+          upb_Message_EncodeUnknownField(c, dst, src, src_f, NULL, depth);
+      upb_Message_FlushUnknownChunk(c, dst, ptr);
+      return true;
+    }
+  }
+
   if (dst_entry_mt != src_entry_mt ||
       upb_MiniTableField_IsClosedEnum(dst_val_f)) {
     upb_Map* dst_map = upb_Map_DeepConvert(
@@ -603,6 +630,14 @@ static void upb_Message_ConvertField(upb_Converter* c, upb_Message* dst,
 
       const upb_MiniTable* dst_sub_mt = upb_MiniTable_SubMessage(dst_f);
       const upb_MiniTable* src_sub_mt = upb_MiniTable_SubMessage(src_f);
+
+      if (src_sub_mt == NULL) {
+        upb_ErrorHandler_ThrowError(&c->err, kUpb_ConvertStatus_Incompatible);
+      }
+      if (dst_sub_mt == NULL) {
+        upb_Message_DemoteToAuxField(c, dst, src, src_f);
+        return;
+      }
 
       if (dst_sub_mt == src_sub_mt) {
         upb_Message_SetMessage(dst, dst_f, (upb_Message*)src_sub);
@@ -675,6 +710,22 @@ static void upb_Message_ConvertField(upb_Converter* c, upb_Message* dst,
 // sets the field of `dst_mt` or the extension in `extreg` with the same number
 // (failing if the types differ), or keeps the entry as an unknown entry
 // otherwise.
+static void upb_Message_AddUnknownAuxField(upb_Converter* c, upb_Message* dst,
+                                           const upb_AuxField* src_ext,
+                                           const upb_MiniTableField* src_f,
+                                           upb_MessageValue val) {
+  upb_AuxField* msg_ext =
+      upb_MiniTableField_IsExtension(src_f)
+          ? UPB_PRIVATE(_upb_Message_CreateUnknownExtension)(
+                dst, UPB_PRIVATE(_upb_Extension_MiniTableExtension)(src_ext),
+                c->arena)
+          : UPB_PRIVATE(_upb_Message_CreateUnknownField)(dst, src_f, c->arena);
+  if (!msg_ext) {
+    upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+  }
+  upb_Extension_SetValue(msg_ext, val);
+}
+
 static void upb_Message_ConvertExtension(upb_Converter* c, upb_Message* dst,
                                          const upb_MiniTable* dst_mt,
                                          const upb_AuxField* src_ext,
@@ -702,17 +753,7 @@ static void upb_Message_ConvertExtension(upb_Converter* c, upb_Message* dst,
     // unknown entry. An actual extension keeps its
     // upb_MiniTableExtension (and so its extendee); a non-extension aux field
     // is added by its field (which is shared with the source).
-    upb_AuxField* msg_ext =
-        upb_MiniTableField_IsExtension(src_f)
-            ? UPB_PRIVATE(_upb_Message_CreateUnknownExtension)(
-                  dst, UPB_PRIVATE(_upb_Extension_MiniTableExtension)(src_ext),
-                  c->arena)
-            : UPB_PRIVATE(_upb_Message_CreateUnknownField)(dst, src_f,
-                                                           c->arena);
-    if (!msg_ext) {
-      upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
-    }
-    upb_Extension_SetValue(msg_ext, val);
+    upb_Message_AddUnknownAuxField(c, dst, src_ext, src_f, val);
     return;
   }
 
@@ -732,6 +773,28 @@ static void upb_Message_ConvertExtension(upb_Converter* c, upb_Message* dst,
         dst_ext ? upb_MiniTableExtension_GetSubMessage(dst_ext)
                 : upb_MiniTable_SubMessage(dst_f);
     const upb_MiniTable* src_sub_mt = upb_MiniTable_SubMessage(src_f);
+
+    if (dst_sub_mt == NULL) {
+      if (dst_ext != NULL) {
+        upb_ErrorHandler_ThrowError(&c->err, kUpb_ConvertStatus_Incompatible);
+      }
+      if (upb_MiniTableField_IsArray(dst_f) &&
+          upb_Array_Size(val.array_val) == 0) {
+        return;
+      }
+      if (src_sub_mt == NULL) {
+        upb_ErrorHandler_ThrowError(&c->err, kUpb_ConvertStatus_Incompatible);
+      }
+      upb_Message_AddUnknownAuxField(c, dst, src_ext, src_f, val);
+      return;
+    }
+    if (src_sub_mt == NULL) {
+      if (upb_MiniTableField_IsArray(dst_f) &&
+          upb_Array_Size(val.array_val) == 0) {
+        return;
+      }
+      upb_ErrorHandler_ThrowError(&c->err, kUpb_ConvertStatus_Incompatible);
+    }
 
     if (upb_MiniTableField_IsArray(dst_f)) {
       if (dst_sub_mt != src_sub_mt) {
