@@ -37,6 +37,8 @@
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
+#include "upb/mini_table/internal/message.h"
+#include "upb/mini_table/internal/sub.h"
 #include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/internal/def_pool.h"
@@ -3813,4 +3815,262 @@ TEST(ConvertTest, AuxFieldIncompatibleWithDestinationFieldFails) {
                 &upb__test__convert__MessageWithRepeatedInt64_msg_init, nullptr,
                 0, 0, arena.ptr()),
             nullptr);
+}
+
+// Clones `src` onto `arena`, setting submessage pointers of all message fields
+// to `override_sub` (pass nullptr to produce unlinked submessage fields).
+static const upb_MiniTable* CloneMiniTableWithSub(
+    const upb_MiniTable* src, const upb_MiniTable* override_sub,
+    upb_Arena* arena) {
+  int field_count = upb_MiniTable_FieldCount(src);
+  size_t sub_count = 0;
+  for (int i = 0; i < field_count; ++i) {
+    const upb_MiniTableField* f =
+        upb_MiniTable_GetFieldByIndex(src, static_cast<uint32_t>(i));
+    if (f->UPB_PRIVATE(submsg_ofs) != kUpb_NoSub) {
+      ++sub_count;
+    }
+  }
+
+  size_t mt_padded_size = UPB_ALIGN_UP(sizeof(upb_MiniTable), 8);
+  size_t fields_bytes =
+      static_cast<size_t>(field_count) * sizeof(upb_MiniTableField);
+  size_t fields_padded_size = UPB_ALIGN_UP(fields_bytes, 8);
+  size_t subs_bytes = sub_count * sizeof(upb_MiniTableSubInternal);
+  size_t total_size = mt_padded_size + fields_padded_size + subs_bytes;
+
+  upb_MiniTable* new_mt =
+      static_cast<upb_MiniTable*>(upb_Arena_Malloc(arena, total_size));
+  upb_MiniTableField* fields_ptr =
+      UPB_PTR_AT(new_mt, mt_padded_size, upb_MiniTableField);
+  upb_MiniTableSubInternal* subs_ptr =
+      UPB_PTR_AT(fields_ptr, fields_padded_size, upb_MiniTableSubInternal);
+
+  std::memcpy(new_mt, src, sizeof(upb_MiniTable));
+  size_t sub_idx = 0;
+  for (int i = 0; i < field_count; ++i) {
+    const upb_MiniTableField* src_f =
+        upb_MiniTable_GetFieldByIndex(src, static_cast<uint32_t>(i));
+    fields_ptr[i] = *src_f;
+    if (src_f->UPB_PRIVATE(submsg_ofs) != kUpb_NoSub) {
+      subs_ptr[sub_idx] = *UPB_PRIVATE(_upb_MiniTableField_Sub)(src_f);
+      if (upb_MiniTableField_CType(src_f) == kUpb_CType_Message) {
+        subs_ptr[sub_idx].UPB_PRIVATE(submsg) = override_sub;
+      }
+      UPB_PRIVATE(_upb_MiniTableField_SetSub)(&fields_ptr[i],
+                                              &subs_ptr[sub_idx]);
+      ++sub_idx;
+    }
+  }
+
+  new_mt->UPB_ONLYBITS(fields) = fields_ptr;
+  new_mt->UPB_ONLYBITS(field_count) = static_cast<uint16_t>(field_count);
+  new_mt->UPB_PRIVATE(dense_below) = 0;
+  new_mt->UPB_PRIVATE(table_mask) = 0xff;
+  return new_mt;
+}
+
+TEST(ConvertTest, UnlinkedDestinationScalarSubmessage) {
+  upb::Arena arena;
+  const upb_MiniTable* src_mt = &upb__test__convert__MessageWithMsg_msg_init;
+  const upb_MiniTable* dst_mt =
+      CloneMiniTableWithSub(src_mt, nullptr, arena.ptr());
+
+  upb_test_convert_MessageWithMsg* src =
+      upb_test_convert_MessageWithMsg_new(arena.ptr());
+  upb_test_convert_MessageWithInt32* sub =
+      upb_test_convert_MessageWithInt32_new(arena.ptr());
+  upb_test_convert_MessageWithInt32_set_f1(sub, 123);
+  upb_test_convert_MessageWithMsg_set_msg(src, sub);
+
+  const upb_Message* dst = upb_Message_Convert(
+      UPB_UPCAST(src), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(dst, nullptr);
+  EXPECT_EQ(
+      upb_Message_GetMessage(dst, upb_MiniTable_FindFieldByNumber(dst_mt, 1)),
+      nullptr);
+  EXPECT_TRUE(upb_Message_HasUnknown(dst));
+
+  char* wire_buf = nullptr;
+  size_t wire_size = 0;
+  ASSERT_EQ(upb_Encode(dst, dst_mt, 0, arena.ptr(), &wire_buf, &wire_size),
+            kUpb_EncodeStatus_Ok);
+
+  const upb_Message* rt =
+      upb_Message_Convert(dst, dst_mt, src_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(rt, nullptr);
+  const upb_test_convert_MessageWithInt32* rt_sub =
+      upb_test_convert_MessageWithMsg_msg(
+          (const upb_test_convert_MessageWithMsg*)rt);
+  ASSERT_NE(rt_sub, nullptr);
+  EXPECT_EQ(upb_test_convert_MessageWithInt32_f1(rt_sub), 123);
+}
+
+TEST(ConvertTest, UnlinkedDestinationRepeatedSubmessage) {
+  upb::Arena arena;
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithRepeatedMsg_msg_init;
+  const upb_MiniTable* dst_mt =
+      CloneMiniTableWithSub(src_mt, nullptr, arena.ptr());
+
+  upb_test_convert_MessageWithRepeatedMsg* src =
+      upb_test_convert_MessageWithRepeatedMsg_new(arena.ptr());
+  upb_test_convert_MessageWithInt32* sub =
+      upb_test_convert_MessageWithInt32_new(arena.ptr());
+  upb_test_convert_MessageWithInt32_set_f1(sub, 456);
+  upb_test_convert_MessageWithInt32** arr =
+      upb_test_convert_MessageWithRepeatedMsg_resize_msgs(src, 1, arena.ptr());
+  arr[0] = sub;
+
+  const upb_Message* dst = upb_Message_Convert(
+      UPB_UPCAST(src), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(dst, nullptr);
+  EXPECT_EQ(
+      upb_Message_GetArray(dst, upb_MiniTable_FindFieldByNumber(dst_mt, 1)),
+      nullptr);
+  EXPECT_TRUE(upb_Message_HasUnknown(dst));
+
+  char* wire_buf = nullptr;
+  size_t wire_size = 0;
+  ASSERT_EQ(upb_Encode(dst, dst_mt, 0, arena.ptr(), &wire_buf, &wire_size),
+            kUpb_EncodeStatus_Ok);
+
+  const upb_Message* rt =
+      upb_Message_Convert(dst, dst_mt, src_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(rt, nullptr);
+  size_t size = 0;
+  const upb_test_convert_MessageWithInt32* const* rt_arr =
+      upb_test_convert_MessageWithRepeatedMsg_msgs(
+          (const upb_test_convert_MessageWithRepeatedMsg*)rt, &size);
+  ASSERT_EQ(size, 1u);
+  EXPECT_EQ(upb_test_convert_MessageWithInt32_f1(rt_arr[0]), 456);
+}
+
+TEST(ConvertTest, UnlinkedDestinationMapValueSubmessage) {
+  upb::Arena arena;
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithMapMessage_msg_init;
+  const upb_MiniTableField* map_f = upb_MiniTable_FindFieldByNumber(src_mt, 1);
+  const upb_MiniTable* unlinked_entry_mt = CloneMiniTableWithSub(
+      upb_MiniTable_MapEntrySubMessage(map_f), nullptr, arena.ptr());
+  const upb_MiniTable* dst_mt =
+      CloneMiniTableWithSub(src_mt, unlinked_entry_mt, arena.ptr());
+
+  upb_test_convert_MessageWithMapMessage* src =
+      upb_test_convert_MessageWithMapMessage_new(arena.ptr());
+  upb_test_convert_MessageWithInt32* val =
+      upb_test_convert_MessageWithInt32_new(arena.ptr());
+  upb_test_convert_MessageWithInt32_set_f1(val, 789);
+  ASSERT_TRUE(upb_test_convert_MessageWithMapMessage_map_msg_set(
+      src, 10, val, arena.ptr()));
+
+  const upb_Message* dst = upb_Message_Convert(
+      UPB_UPCAST(src), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(dst, nullptr);
+  EXPECT_EQ(upb_Message_GetMap(dst, upb_MiniTable_FindFieldByNumber(dst_mt, 1)),
+            nullptr);
+  EXPECT_TRUE(upb_Message_HasUnknown(dst));
+
+  char* wire_buf = nullptr;
+  size_t wire_size = 0;
+  ASSERT_EQ(upb_Encode(dst, dst_mt, 0, arena.ptr(), &wire_buf, &wire_size),
+            kUpb_EncodeStatus_Ok);
+
+  const upb_Message* rt =
+      upb_Message_Convert(dst, dst_mt, src_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(rt, nullptr);
+  upb_test_convert_MessageWithInt32* rt_val = nullptr;
+  ASSERT_TRUE(upb_test_convert_MessageWithMapMessage_map_msg_get(
+      (const upb_test_convert_MessageWithMapMessage*)rt, 10, &rt_val));
+  EXPECT_EQ(upb_test_convert_MessageWithInt32_f1(rt_val), 789);
+}
+
+TEST(ConvertTest, UnlinkedDestinationAuxFieldSubmessages) {
+  upb::Arena arena;
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  // Scalar AuxField -> unlinked destination scalar field.
+  {
+    const upb_MiniTable* src_mt = &upb__test__convert__MessageWithMsg_msg_init;
+    const upb_MiniTable* dst_mt =
+        CloneMiniTableWithSub(src_mt, nullptr, arena.ptr());
+
+    upb_test_convert_MessageWithMsg* src =
+        upb_test_convert_MessageWithMsg_new(arena.ptr());
+    upb_test_convert_MessageWithInt32* sub =
+        upb_test_convert_MessageWithInt32_new(arena.ptr());
+    upb_test_convert_MessageWithInt32_set_f1(sub, 321);
+    upb_test_convert_MessageWithMsg_set_msg(src, sub);
+
+    const upb_Message* mid = upb_Message_Convert(
+        UPB_UPCAST(src), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
+    ASSERT_NE(mid, nullptr);
+
+    const upb_Message* dst =
+        upb_Message_Convert(mid, empty_mt, dst_mt, nullptr, 0, 0, arena.ptr());
+    ASSERT_NE(dst, nullptr);
+    EXPECT_EQ(
+        upb_Message_GetMessage(dst, upb_MiniTable_FindFieldByNumber(dst_mt, 1)),
+        nullptr);
+    EXPECT_TRUE(upb_Message_HasUnknown(dst));
+
+    char* wire_buf = nullptr;
+    size_t wire_size = 0;
+    ASSERT_EQ(upb_Encode(dst, dst_mt, 0, arena.ptr(), &wire_buf, &wire_size),
+              kUpb_EncodeStatus_Ok);
+
+    const upb_Message* rt =
+        upb_Message_Convert(dst, dst_mt, src_mt, nullptr, 0, 0, arena.ptr());
+    ASSERT_NE(rt, nullptr);
+    const upb_test_convert_MessageWithInt32* rt_sub =
+        upb_test_convert_MessageWithMsg_msg(
+            (const upb_test_convert_MessageWithMsg*)rt);
+    ASSERT_NE(rt_sub, nullptr);
+    EXPECT_EQ(upb_test_convert_MessageWithInt32_f1(rt_sub), 321);
+  }
+
+  // Repeated AuxField -> unlinked destination repeated field.
+  {
+    const upb_MiniTable* src_mt =
+        &upb__test__convert__MessageWithRepeatedMsg_msg_init;
+    const upb_MiniTable* dst_mt =
+        CloneMiniTableWithSub(src_mt, nullptr, arena.ptr());
+
+    upb_test_convert_MessageWithRepeatedMsg* src =
+        upb_test_convert_MessageWithRepeatedMsg_new(arena.ptr());
+    upb_test_convert_MessageWithInt32* sub =
+        upb_test_convert_MessageWithInt32_new(arena.ptr());
+    upb_test_convert_MessageWithInt32_set_f1(sub, 654);
+    upb_test_convert_MessageWithInt32** arr =
+        upb_test_convert_MessageWithRepeatedMsg_resize_msgs(src, 1,
+                                                            arena.ptr());
+    arr[0] = sub;
+
+    const upb_Message* mid = upb_Message_Convert(
+        UPB_UPCAST(src), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
+    ASSERT_NE(mid, nullptr);
+
+    const upb_Message* dst =
+        upb_Message_Convert(mid, empty_mt, dst_mt, nullptr, 0, 0, arena.ptr());
+    ASSERT_NE(dst, nullptr);
+    EXPECT_EQ(
+        upb_Message_GetArray(dst, upb_MiniTable_FindFieldByNumber(dst_mt, 1)),
+        nullptr);
+    EXPECT_TRUE(upb_Message_HasUnknown(dst));
+
+    char* wire_buf = nullptr;
+    size_t wire_size = 0;
+    ASSERT_EQ(upb_Encode(dst, dst_mt, 0, arena.ptr(), &wire_buf, &wire_size),
+              kUpb_EncodeStatus_Ok);
+
+    const upb_Message* rt =
+        upb_Message_Convert(dst, dst_mt, src_mt, nullptr, 0, 0, arena.ptr());
+    ASSERT_NE(rt, nullptr);
+    size_t size = 0;
+    const upb_test_convert_MessageWithInt32* const* rt_arr =
+        upb_test_convert_MessageWithRepeatedMsg_msgs(
+            (const upb_test_convert_MessageWithRepeatedMsg*)rt, &size);
+    ASSERT_EQ(size, 1u);
+    EXPECT_EQ(upb_test_convert_MessageWithInt32_f1(rt_arr[0]), 654);
+  }
 }
