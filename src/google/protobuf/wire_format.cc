@@ -400,6 +400,17 @@ bool WireFormat::ParseAndMergeField(
     uint32_t length;
     if (!input->ReadVarint32(&length)) return false;
     io::CodedInputStream::Limit limit = input->PushLimit(length);
+    // PushLimit() silently refuses a limit that extends past the current one,
+    // which happens when the declared length reaches beyond the available
+    // bytes (e.g. a truncated buffer). Reject the field in that case instead
+    // of accepting the partial contents. BytesUntilLimit() is -1 when no
+    // limit is in place, which also means the declared length cannot be met.
+    int bytes_until_limit = input->BytesUntilLimit();
+    if (bytes_until_limit < 0 ||
+        static_cast<uint32_t>(bytes_until_limit) < length) {
+      input->PopLimit(limit);
+      return false;
+    }
 
     switch (field->type()) {
 #define HANDLE_PACKED_TYPE(TYPE, CPPTYPE, CPPTYPE_METHOD)                      \

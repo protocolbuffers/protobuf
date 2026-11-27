@@ -1113,6 +1113,14 @@ inline bool WireFormatLite::ReadPackedPrimitive(io::CodedInputStream* input,
   int length;
   if (!input->ReadVarintSizeAsInt(&length)) return false;
   io::CodedInputStream::Limit limit = input->PushLimit(length);
+  // PushLimit() silently refuses a limit that extends past the current one,
+  // which happens when the declared length reaches beyond the available
+  // bytes (e.g. a truncated buffer). Reject the field in that case instead
+  // of accepting the partial contents.
+  if (input->BytesUntilLimit() < length) {
+    input->PopLimit(limit);
+    return false;
+  }
   while (input->BytesUntilLimit() > 0) {
     CType value;
     if (!ReadPrimitive<CType, DeclaredType>(input, &value)) return false;
