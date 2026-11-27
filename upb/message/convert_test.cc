@@ -3814,3 +3814,64 @@ TEST(ConvertTest, AuxFieldIncompatibleWithDestinationFieldFails) {
                 0, 0, arena.ptr()),
             nullptr);
 }
+
+TEST(ConvertTest, ClosedToOpenRepeatedEnumAuxFieldDoesNotMutateSource) {
+  upb::Arena src_arena;
+  const upb_MiniTable* src_mt = &upb__test__convert__Proto2EnumMessage_msg_init;
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+  const upb_MiniTable* dst_mt =
+      &protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init;
+
+  // Field 51 (repeated_nested_enum), tag = (51 << 3) | 0 = 0x198 -> 0x98 0x03.
+  // 4 valid BAR (1) values fill initial array capacity; 5 unknown values force
+  // reallocation when decoded into an open-enum destination.
+  const char wire[] = {
+      static_cast<char>(0x98), 0x03, 1,  static_cast<char>(0x98), 0x03, 1,
+      static_cast<char>(0x98), 0x03, 1,  static_cast<char>(0x98), 0x03, 1,
+      static_cast<char>(0x98), 0x03, 99, static_cast<char>(0x98), 0x03, 98,
+      static_cast<char>(0x98), 0x03, 97, static_cast<char>(0x98), 0x03, 96,
+      static_cast<char>(0x98), 0x03, 95,
+  };
+  upb_test_convert_Proto2EnumMessage* src =
+      upb_test_convert_Proto2EnumMessage_new(src_arena.ptr());
+  ASSERT_EQ(kUpb_DecodeStatus_Ok,
+            upb_Decode(wire, sizeof(wire), UPB_UPCAST(src), src_mt, nullptr, 0,
+                       src_arena.ptr()));
+
+  // Demote the closed-enum repeated field to an unknown aux field while
+  // preserving the unknown wire values.
+  const upb_Message* mid = upb_Message_Convert(
+      UPB_UPCAST(src), src_mt, empty_mt, nullptr, 0, 0, src_arena.ptr());
+  ASSERT_NE(mid, nullptr);
+
+  // Convert into an open-enum schema on a separate short-lived arena.
+  {
+    upb::Arena dst_arena;
+    const upb_Message* dst_msg = upb_Message_Convert(
+        mid, empty_mt, dst_mt, nullptr, 0, 0, dst_arena.ptr());
+    ASSERT_NE(dst_msg, nullptr);
+
+    const auto* dst =
+        (const protobuf_test_messages_proto3_TestAllTypesProto3*)dst_msg;
+    size_t dst_count = 0;
+    const int* dst_values =
+        protobuf_test_messages_proto3_TestAllTypesProto3_repeated_nested_enum(
+            dst, &dst_count);
+    ASSERT_EQ(dst_count, 9u);
+    EXPECT_EQ(dst_values[0],
+              protobuf_test_messages_proto3_TestAllTypesProto3_BAR);
+    EXPECT_EQ(dst_values[3],
+              protobuf_test_messages_proto3_TestAllTypesProto3_BAR);
+    EXPECT_EQ(dst_values[4], 99);
+    EXPECT_EQ(dst_values[8], 95);
+  }
+
+  // dst_arena is now freed; reading src must neither UAF nor see mutations.
+  size_t src_count = 0;
+  const int* src_values =
+      upb_test_convert_Proto2EnumMessage_repeated_nested_enum(src, &src_count);
+  ASSERT_EQ(src_count, 4u);
+  for (size_t i = 0; i < src_count; ++i) {
+    EXPECT_EQ(src_values[i], upb_test_convert_Proto2EnumMessage_BAR);
+  }
+}

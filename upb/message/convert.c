@@ -780,8 +780,8 @@ static void upb_Message_ConvertExtension(upb_Converter* c, upb_Message* dst,
       }
     }
   } else {
-    // Scalar non-message type.
-    if (upb_MiniTableField_IsClosedEnum(dst_f)) {
+    // Non-message type.
+    if (upb_Converter_NeedsClosedEnumDeepConvert(dst_f, src_f)) {
       if (upb_MiniTableField_IsArray(dst_f)) {
         upb_Array* dst_arr = upb_Array_New(c->arena, kUpb_CType_Int32);
         if (!dst_arr)
