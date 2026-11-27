@@ -965,8 +965,9 @@ static void jsondec_field(jsondec* d, upb_Message* msg,
 
   if (name.size >= 2 && name.data[0] == '[' &&
       name.data[name.size - 1] == ']') {
-    f = upb_DefPool_FindExtensionByNameWithSize(d->symtab, name.data + 1,
-                                                name.size - 2);
+    f = d->symtab ? upb_DefPool_FindExtensionByNameWithSize(
+                        d->symtab, name.data + 1, name.size - 2)
+                  : NULL;
     if (f && upb_FieldDef_ContainingType(f) != m) {
       jsondec_errf(
           d, "Extension %s extends message %s, but was seen in message %s",
@@ -1427,6 +1428,10 @@ static const upb_MessageDef* jsondec_typeurl(jsondec* d, upb_Message* msg,
 
   if (ptr == type_url.data || ptr == end) {
     jsondec_err(d, "Type url must have at least one '/' and non-empty host");
+  }
+
+  if (!d->symtab) {
+    jsondec_err(d, "Tried to decode Any, but no symtab was provided");
   }
 
   ptr++;
