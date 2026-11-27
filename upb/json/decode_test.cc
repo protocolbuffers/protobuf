@@ -558,4 +558,52 @@ TEST(JsonTest, NonCanonicalWellKnownTypesRoundTripAsRegularMessages) {
   EXPECT_STREQ(buf, kJson);
 }
 
+TEST(JsonTest, NullSymtabExtensionAndAny) {
+  upb::Arena arena;
+  upb::DefPool pool;
+  const upb_MessageDef* m = upb_test_Box_getmsgdef(pool.ptr());
+  ASSERT_NE(m, nullptr);
+
+  // Bracketed extension key with symtab == nullptr fails cleanly as unknown.
+  {
+    upb::Status status;
+    upb_test_Box* box = upb_test_Box_new(arena.ptr());
+    const char* json = R"({"[upb_test.ext_tag]": 1})";
+    EXPECT_FALSE(upb_JsonDecode(json, strlen(json), UPB_UPCAST(box), m,
+                                /*symtab=*/nullptr, 0, arena.ptr(),
+                                status.ptr()));
+    EXPECT_FALSE(status.ok());
+    EXPECT_NE(std::string(status.error_message()).find("No such field"),
+              std::string::npos);
+  }
+
+  // With IgnoreUnknown and symtab == nullptr, bracketed key is safely skipped.
+  {
+    upb::Status status;
+    upb_test_Box* box = upb_test_Box_new(arena.ptr());
+    const char* json = R"({"[upb_test.ext_tag]": 1, "value": 7})";
+    EXPECT_TRUE(upb_JsonDecode(json, strlen(json), UPB_UPCAST(box), m,
+                               /*symtab=*/nullptr,
+                               upb_JsonDecode_IgnoreUnknown, arena.ptr(),
+                               status.ptr()))
+        << status.error_message();
+    EXPECT_EQ(upb_test_Box_new_value(box), 7);
+  }
+
+  // Decoding google.protobuf.Any with symtab == nullptr fails cleanly.
+  {
+    upb::Status status;
+    upb_test_Box* box = upb_test_Box_new(arena.ptr());
+    const char* json =
+        R"({"any_val": {"@type": "type.googleapis.com/upb_test.Box"}})";
+    EXPECT_FALSE(upb_JsonDecode(json, strlen(json), UPB_UPCAST(box), m,
+                                /*symtab=*/nullptr, 0, arena.ptr(),
+                                status.ptr()));
+    EXPECT_FALSE(status.ok());
+    EXPECT_NE(
+        std::string(status.error_message()).find("no symtab was provided"),
+        std::string::npos);
+  }
+}
+
 }  // namespace
