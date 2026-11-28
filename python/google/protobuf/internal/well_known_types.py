@@ -616,18 +616,9 @@ class Struct(object):
     self.update(dictionary)
 
   def _internal_compare(self, other):
-    size = len(self)
-    if size != len(other):
-      return False
-    for key, value in self.items():
-      if key not in other:
-        return False
-      if isinstance(other[key], (dict, list)):
-        if not value._internal_compare(other[key]):
-          return False
-      elif value != other[key]:
-        return False
-    return True
+    return len(self) == len(other) and all(
+        key in other and value == other[key] for key, value in self.items()
+    )
 
   def keys(self):  # pylint: disable=invalid-name
     return self.fields.keys()
@@ -690,16 +681,9 @@ class ListValue(object):
     self.extend(elem_seq)
 
   def _internal_compare(self, other):
-    size = len(self)
-    if size != len(other):
-      return False
-    for i in range(size):
-      if isinstance(other[i], (dict, list)):
-        if not self[i]._internal_compare(other[i]):
-          return False
-      elif self[i] != other[i]:
-        return False
-    return True
+    return len(self) == len(other) and all(
+        value == other_value for value, other_value in zip(self, other)
+    )
 
   def items(self):
     for i in range(len(self)):
