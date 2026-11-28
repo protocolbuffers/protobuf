@@ -1182,7 +1182,8 @@ static const char* VarintParseSlowArm(const char* p, uint64_t* out,
 
 // The caller must ensure that p points to at least 10 valid bytes.
 template <typename T>
-[[nodiscard]] const char* VarintParse(const char* p, T* out) {
+[[nodiscard]] PROTOBUF_ALWAYS_INLINE const char* VarintParse(const char* p,
+                                                             T* out) {
   AssertBytesAreReadable(p, 10);
 #if defined(__aarch64__) && defined(ABSL_IS_LITTLE_ENDIAN) && !defined(_MSC_VER)
   // This optimization is not supported in big endian mode
@@ -1570,9 +1571,8 @@ const char* EpsCopyInputStream::ReadPackedFixed(const MessageLite& parent,
 }
 
 template <typename Add>
-const char* EpsCopyInputStream::ReadPackedVarintArray(const char* ptr,
-                                                      const char* end,
-                                                      Add add) {
+PROTOBUF_ALWAYS_INLINE const char* EpsCopyInputStream::ReadPackedVarintArray(
+    const char* ptr, const char* end, Add add) {
   while (ptr < end) {
     uint64_t varint;
     ptr = VarintParse(ptr, &varint);

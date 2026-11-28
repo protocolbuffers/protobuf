@@ -32,6 +32,9 @@
 #include "google/protobuf/wire_format_lite.h"
 #include "utf8_validity.h"
 
+#if defined(__ARM_NEON)
+#include <arm_neon.h>
+#endif
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -826,6 +829,26 @@ int CountVarintsAssumingLargeArray(const char* ptr, const char* end) {
   // of bytes with the highest bit set.
   int num_varints = end - ptr;
   ABSL_DCHECK_GE(num_varints, int{sizeof(uint64_t)});
+
+#if defined(__ARM_NEON)
+  if (num_varints >= 32) {
+    const uint8_t* p = reinterpret_cast<const uint8_t*>(ptr);
+    const uint8_t* e = reinterpret_cast<const uint8_t*>(end);
+    while (e - p >= 16) {
+      const int chunks =
+          static_cast<int>(std::min<std::ptrdiff_t>((e - p) >> 4, 255));
+      uint8x16_t acc = vdupq_n_u8(0);
+      for (int i = 0; i < chunks; ++i, p += 16) {
+        acc = vaddq_u8(acc, vshrq_n_u8(vld1q_u8(p), 7));
+      }
+      num_varints -= static_cast<int>(vaddlvq_u8(acc));
+    }
+    for (; p < e; ++p) {
+      num_varints -= (*p >> 7);
+    }
+    return num_varints;
+  }
+#endif
 
   // Count in whole blocks, except for the last one.
   const char* const limit = end - sizeof(uint64_t);
