@@ -800,6 +800,23 @@ class TimeUtilTest(TimeUtilTestBase):
 @testing_refleaks.TestCase
 class StructTest(unittest.TestCase):
 
+  def testEqualityWithNestedPythonValues(self):
+    for value, other in (
+        (1, {}),
+        (None, []),
+        ([], {}),
+        ({}, []),
+        ([1], [2]),
+        ({'a': [1]}, {'a': [1]}),
+    ):
+      with self.subTest(value=value, other=other):
+        struct = struct_pb2.Struct()
+        struct['key'] = value
+        seq = struct_pb2.ListValue()
+        seq.append(value)
+        self.assertEqual(struct == {'key': other}, value == other)
+        self.assertEqual(seq == [other], value == other)
+
   def testEmptyDict(self):
     # in operator for empty initialized struct
     msg = well_known_types_test_pb2.WKTMessage(optional_struct={})
